@@ -1,0 +1,77 @@
+
+@keyframes changeLetter {
+  0% {
+    content: "suivre";
+  }
+
+  100% {
+    content: "partager";
+  }
+}
+
+.multiwords::before {
+content: "";
+animation: changeLetter infinite 5s alternate;
+padding-left: 10px;
+}
+.img{
+background:url('https://media.istockphoto.com/vectors/vector-finance-pattern-finance-seamless-background-vector-id943758512') repeat, -moz-linear-gradient(top,  #7abcff 0%, #4096ee 100%); /* FF3.6-15 */
+background:url('https://media.istockphoto.com/vectors/vector-finance-pattern-finance-seamless-background-vector-id943758512') repeat, -webkit-linear-gradient(top,  #7abcff 0%,#4096ee 100%); /* Chrome10-25,Safari5.1-6 */
+background:url('https://media.istockphoto.com/vectors/vector-finance-pattern-finance-seamless-background-vector-id943758512') repeat, linear-gradient(to bottom,  #7abcff 0%,#4096ee 100%); 
+filter: blur(2px);
+background-color:#92ddff;
+opacity: 0.5;
+transform: skew(30deg);
+translate: 100px;
+scale: 1.4;
+}
+
+.img:after {
+position: absolute;
+content: " ";
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+z-index: 0;
+background: linear-gradient(to bottom,  #7abcff 0%,#4096ee 100%);
+opacity: 0.9;
+}
+
+.crypto-block {
+position: relative;
+}
+
+.crypto-wrap-1 {
+position: absolute;
+width: 2rem;
+left: 1rem;
+bottom:6rem;
+}
+
+.crypto-wrap-2 {
+position: absolute;
+width: 2rem;
+top: 2rem;
+left: 4rem;
+}
+
+.crypto-wrap-3{
+position: absolute;
+width: 2rem;
+left: 19rem ;
+top:16rem;
+}
+
+.crypto-wrap-4 {
+position: absolute;
+width: 2rem;
+left: 22rem;
+top:4rem;
+}
+
+.crypto-wrap-5 {
+position: absolute;
+left: 6rem;
+top: 0rem;
+}
