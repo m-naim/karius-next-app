@@ -23,7 +23,6 @@ function Login({ setToken }) {
         authService.login(email, password).then(
             () => {
                 router.push("/explore");
-                window.location.reload();
             },
             (error) => {
                 const resMessage = (error.response && error.response.data && error.response.data.message) || error.message || error.toString();
