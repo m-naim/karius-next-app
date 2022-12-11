@@ -1,5 +1,5 @@
 import config from './config.js';
-import http from './http.js';
+import http from './http';
 
 const host = config.API_URL;
 
@@ -20,16 +20,17 @@ const login = (email, password) => {
     .then((response) => {
       console.log(response);
       if (response) {
-        localStorage.setItem("user", JSON.stringify(response));
+        if (typeof window !== "undefined") localStorage.setItem("user", JSON.stringify(response));
       }
       return response;
     });
 };
 const logout = () => {
-  localStorage.removeItem("user");
+  if (typeof window !== "undefined")  localStorage.removeItem("user");
 };
 const getCurrentUser = () => {
-  return 'JSON.parse(localStorage.getItem("user"));'
+  if (typeof window !== "undefined") return JSON.parse(localStorage.getItem("user"));
+  return
 };
 
 const authService = {

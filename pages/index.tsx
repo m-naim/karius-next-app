@@ -3,6 +3,9 @@ import Layout from '../components/Layout'
 import Image from "next/image";
 
 import btc from '../assets/img/crypto.btc.svg'
+import eth from '../assets/img/crypto.eth.svg'
+import googl from '../assets/img/google.svg'
+import msft from '../assets/img/crypto.btc.svg'
 import processorImg from '../assets/img/processor.png'
 
 import styles from '../styles/Home.module.css'
@@ -15,14 +18,14 @@ const IndexPage = () => (
 
           <Image src={btc} alt="crypto" className="lazy lazyLoaded" width={30} height={30}/>
 
-          <Image src={btc} alt="crypto" className="crypto-wrap-2 animate-bounce" width={30} height={30}/>
+          <Image src={eth} alt="crypto" className="crypto-wrap-2 animate-bounce" width={30} height={30}/>
 
 
 
-          <Image src={btc} alt="crypto" className="crypto-wrap-3 animate-bounce" width={30} height={30}/>
+          <Image src={googl} alt="crypto" className="crypto-wrap-3 animate-bounce" width={30} height={30}/>
 
 
-          <Image src={btc} alt="crypto" className="crypto-wrap-4 animate-bounce" width={30} height={30}/>
+          <Image src={msft} alt="crypto" className="crypto-wrap-4 animate-bounce" width={30} height={30}/>
 
 
         <Image src={processorImg} alt="processor" className="crypto-wrap-5" width={300} height={300}/>

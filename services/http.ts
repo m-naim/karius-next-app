@@ -10,12 +10,13 @@ async function CheckError(response) {
 }
 
 function authHeader() {
-  const user = JSON.parse(localStorage.getItem('user'));
-  if (user && user.token) {
-    return { 'x-auth-token': user.token };
-  } else {
-    return {};
+  if (typeof window !== "undefined") {
+    const user = JSON.parse(localStorage.getItem('user'))
+    if (user && user.token) {
+      return { 'x-auth-token': user.token };
+    } 
   }
+  return {};
 }
 
 function post(path, body) {
