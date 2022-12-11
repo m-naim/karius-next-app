@@ -9,7 +9,7 @@ import Modal from '../layout/Modal';
 
 const toPrecentille = (val) => round10(val * 100, -2) + '%';
 
-function Table({ propRows = data.rows, columns = data.columns, addtransaction, type = 'allocation', editable }) {
+function Table({ propRows = data.rows, columns = data.columns, addtransaction, type = 'allocation', editable=false }) {
     const { isShowing, toggle } = useModal();
     const [ticker, setTicker] = useState("");
 

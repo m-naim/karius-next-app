@@ -1,9 +1,11 @@
-import { React, useState, useLayoutEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useRouter } from 'next/router';
+import React,{  useState, useLayoutEffect } from 'react';
 import portfolioService from '../../services/portfolioService'
 
 function StatisticsView(props) {
-    const { id } = useParams();
+    const router = useRouter()
+    const id:string = router.query.id[0]
+    
     const [portfolio, setPortfolio] = useState();
     const [loading, setLoading] = useState(true);
     const fetchData = async () => {
@@ -15,7 +17,7 @@ function StatisticsView(props) {
         }
         catch {
             console.log("error api");
-            setPortfolio({});
+            setPortfolio(null);
         }
     };
 

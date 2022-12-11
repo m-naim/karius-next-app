@@ -7,8 +7,8 @@ import portfolioService from '../../services/portfolioService';
 function AddTransaction({ hide, addClick, symbol }) {
     const [ticker, setTicker] = useState(symbol);
     const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
-    const [qty, setQty] = useState(1);
-    const [prix, setPrix] = useState(0);
+    const [qty, setQty] = useState('1');
+    const [prix, setPrix] = useState('0');
     const [sense, setSense] = useState("buy");
     
 

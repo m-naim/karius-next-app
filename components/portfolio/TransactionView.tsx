@@ -1,12 +1,13 @@
-import {React,useState,useLayoutEffect} from 'react';
-import Table from '../../components/Table';
-import { useParams } from 'react-router-dom';
+import { useRouter } from 'next/router';
+import React,{useState,useLayoutEffect} from 'react';
+import Table from '../../components/data/Table';
 import portfolioService from '../../services/portfolioService'
 
 const columns=['symbol','date','qty','price'] 
 function TransactionView(props) {
-    const {id} = useParams();
-    const [portfolio, setPortfolio] = useState({allocation:[],transactions:[]});
+    const router = useRouter()
+    const id:string = router.query.id[0]
+    const [portfolio, setPortfolio] = useState({_id:'',allocation:[],transactions:[]});
 
     const fetchData = async () => {
         try{
@@ -24,7 +25,7 @@ function TransactionView(props) {
         }
         catch{
             console.log("error api");
-            setPortfolio({allocation:[],transactions:[]});
+            setPortfolio({_id:'',allocation:[],transactions:[]});
         }
     };
 
