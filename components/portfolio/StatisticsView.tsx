@@ -4,13 +4,13 @@ import portfolioService from '../../services/portfolioService'
 
 function StatisticsView(props) {
     const router = useRouter()
-    const id:string = router.query.id[0]
+    const {id} = router.query
     
     const [portfolio, setPortfolio] = useState();
     const [loading, setLoading] = useState(true);
     const fetchData = async () => {
         try {
-            const data = await portfolioService.getMetrics(id);
+            const data = await portfolioService.getMetrics(id as string);
             console.log(data);
             setPortfolio(data[0]);
             setLoading(false)

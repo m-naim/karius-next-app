@@ -26,7 +26,7 @@ const Layout = ({ children, title = 'This is the default title' }: Props) => (
     <footer className='bg-dark'>
       <nav>
         <Link href="/">Home</Link> | <Link href="/about">About</Link> |{' '}
-        <Link href="/users">Users List</Link> |{' '}
+        <Link href="/users">Users List</Link> {' '} | <Link href="/charts">charts</Link> |
         <a href="/api/users">Users API</a>
       </nav>
       <hr />

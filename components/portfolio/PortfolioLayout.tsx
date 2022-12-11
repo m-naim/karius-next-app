@@ -17,7 +17,7 @@ type Props = {
 
 const PortfolioLayout = ({ children }: Props) => {
   const router = useRouter()
-  const id:string = router.query.id[0]
+  const {id} = router.query
 
   const [followed, setFollowed] = useState(false);
   const [editable, setEditable] = useState(false);
@@ -26,7 +26,7 @@ const PortfolioLayout = ({ children }: Props) => {
   const [variationPct, setVariationPct] = useState(0);
 
   const fetchData = async () => {
-      const response = await portfolioService.getData(id);
+      const response = await portfolioService.getData(id as string);
 
       const userId = authService.getCurrentUser().user.id;
       if (response.followers.includes(userId)) setFollowed(true);
@@ -85,6 +85,7 @@ const PortfolioLayout = ({ children }: Props) => {
       if (pftData.dividends === undefined) return 0
       return round10(pftData?.dividends.yearly.values.reduce((cum, e) => cum + e, 0), -2)
   }
+
   return (
     <Layout>
       <div className=' flex flex-col place-items-center bg-dark w-full overflow-hidden'>
@@ -167,7 +168,6 @@ const PortfolioLayout = ({ children }: Props) => {
           {children}
         </div>
       </div>
-
     </Layout>
   )
 }

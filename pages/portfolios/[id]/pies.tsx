@@ -3,10 +3,10 @@ import { Doughnut } from 'react-chartjs-2'
 import palette from 'google-palette';
 import portfolioService from '../../../services/portfolioService'
 import { useRouter } from 'next/router';
-
-import { Chart, ArcElement } from 'chart.js'
 import PortfolioLayout from '../../../components/portfolio/PortfolioLayout';
-Chart.register(ArcElement);
+import { Chart as ChartJS, ArcElement, Tooltip, Legend,Title } from 'chart.js';
+
+ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
 
 const defaultData = {
@@ -15,6 +15,7 @@ const defaultData = {
     {
       backgroundColor: palette('tol-rainbow', 10).map((hex) => '#' + hex),
       data: [10.1, 20],
+      hoverOffset:40
     }
   ]
 };
@@ -28,9 +29,10 @@ const tooltip = {
   }
 }
 
-function Pies({ adata }) {
+function Pies() {
   const router = useRouter()
-  const { id } = router.query;
+  const {id} = router.query
+
   const [actions, setActions] = useState(defaultData);
   const [secteurs, setSecteurs] = useState(defaultData);
   const [industries, setIndustries] = useState(defaultData);
@@ -39,7 +41,7 @@ function Pies({ adata }) {
 
   const fetchData = async () => {
     try {
-      const result = await portfolioService.get(id);
+      const result = await portfolioService.get(id as string);
       getDistrib(result.allocation, 'name', setActions);
       getDistrib(result.allocation, 'currency', setDevises);
       getDistrib(result.allocation, 'sector', setSecteurs);
@@ -75,6 +77,7 @@ function Pies({ adata }) {
         {
           backgroundColor: '',
           data: [],
+          hoverOffset:20,
         }
       ]
     };
@@ -106,24 +109,32 @@ function Pies({ adata }) {
   }
 
 
-  return loading ? <PortfolioLayout><div className='bg-dark'>wait</div></PortfolioLayout> :
+  return loading ? <PortfolioLayout><div>wait</div></PortfolioLayout> :
     <PortfolioLayout>
       <div className='w-full gap-4 flex flex-wrap place-content-around p-4  '>
         {['Actions', 'Secteurs', 'Industries', 'Devises'].map(type => {
           return (
 
-            <div className='w-full lg:w-1/3 border rounded-md p-4 max-w-[20em]' >
+            <div className='w-full lg:w-1/3 shadow rounded-md p-2 max-w-[25em]' >
               <Doughnut
+
                 data={{
-                  labels: getDisplay(type).labels,
-                  datasets: getDisplay(type).datasets
+                  labels: getDisplay(type)['labels'],
+                  datasets: getDisplay(type)['datasets']
                 }}
+
                 options={{
                   responsive: true,
+                  layout:{
+                    padding:20,
+                  },
+                  elements:{
+                    arc:{
+                      borderWidth: 0,
+                    }
+                  },
+                  cutout:80,
                   plugins: {
-                    datalabels: {
-                      color: '#36A2EB'
-                    },
                     legend: {
                       display: false,
                     },
@@ -131,9 +142,12 @@ function Pies({ adata }) {
                       display: true,
                       text: type
                     },
-                    tooltip
+                  
                   }
-                }} />
+                
+                }} 
+                
+                />
             </div>
           )
         }

@@ -10,14 +10,15 @@ const columns=['symbol','weight','qty','last','bep']
 
 function PortfolioView({ children, to, ...props }) {
     const router = useRouter()
-    const id = router.query.id[0]
+    const {id} = router.query
+    
     
     const [portfolio, setPortfolio] = useState({_id:'',allocation:[],transactions:[]});
     const [editable, setEditable] = useState(false);
 
     const fetchData = async () => {
         try{
-            const data = await portfolioService.get(id);
+            const data = await portfolioService.get(id as string) ;
             const userId= authService.getCurrentUser().user.id;
 
             data.allocation= data.allocation.map((item, i) => {

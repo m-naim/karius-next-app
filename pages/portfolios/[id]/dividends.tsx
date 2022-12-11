@@ -29,13 +29,13 @@ const chartOptions = {
         mode: 'index',
     },
 }
-let dividendsData = {};
+let dividendsData:any = {};
 
 
 function DividendsView(props) {
 
     const router = useRouter()
-    const { id } = router.query;
+    const {id} = router.query
 
     const [loading, setLoading] = useState(true);
     const [name, setName] = useState("");

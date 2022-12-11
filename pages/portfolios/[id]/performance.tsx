@@ -59,8 +59,8 @@ const BenchMarkChois = {
 }
 
 const listBenchMarks = ["CAC40", "S&P500"];
-let perfsData = {};
-let datesInit = [];
+let perfsData:any = {};
+let datesInit:any = [];
 
 const AllTimePerfs = {};
 const benchMarks = [];
@@ -69,7 +69,7 @@ const palette = ['rgb(209, 99, 255)', 'rgb(109, 199, 55)'];
 
 function Performance() {
     const router = useRouter()
-    const { id } = router.query;
+    const {id} = router.query
 
     const [name, setName] = useState("");
     const [dates, setDates] = useState(chartDataInit.labels);
@@ -86,8 +86,8 @@ function Performance() {
     }
     const fetchData = async () => {
         try {
-            await portfolioService.getPerformances(id);
-            const data = await portfolioService.get(id);
+            await portfolioService.getPerformances(id as string);
+            const data = await portfolioService.get(id as string);
             datesInit = formatDateStr(data.perfs.date);
             perfsData = data.perfs;
 

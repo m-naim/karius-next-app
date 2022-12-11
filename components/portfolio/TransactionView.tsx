@@ -6,12 +6,12 @@ import portfolioService from '../../services/portfolioService'
 const columns=['symbol','date','qty','price'] 
 function TransactionView(props) {
     const router = useRouter()
-    const id:string = router.query.id[0]
+    const {id} = router.query
     const [portfolio, setPortfolio] = useState({_id:'',allocation:[],transactions:[]});
 
     const fetchData = async () => {
         try{
-            const data = await portfolioService.get(id);
+            const data = await portfolioService.get(id as string);
 
             data.allocation= data.allocation.map((item, i) => {
                 item.id = i + 1;
