@@ -53,7 +53,7 @@ function DividendsView(props) {
     const fetchData = async () => {
         try {
             portfolioService.getDividends(id);
-            const data = await portfolioService.get(id);
+            const data = await portfolioService.get(id as string);
             dividendsData = data.dividends;
             setName(data.name);
             setDates(get_years(dividendsData.yearly.Date))
