@@ -1,7 +1,7 @@
 import React from 'react';
 import Selectable from './Selectable';
 
-function MultiSelect({ list, select, active, className }) {
+function MultiSelect({ list, select, active, className='' }) {
     return (
         <div className={`p-1 multi-select ${className}`}>
             {

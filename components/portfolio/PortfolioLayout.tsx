@@ -17,7 +17,7 @@ type Props = {
 
 const PortfolioLayout = ({ children }: Props) => {
   const router = useRouter()
-  const { id } = router.query
+  const id:string = router.query.id[0]
 
   const [followed, setFollowed] = useState(false);
   const [editable, setEditable] = useState(false);

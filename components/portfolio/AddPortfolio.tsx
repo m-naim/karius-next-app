@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 
 function AddPortfolio({ hide, addClick }) {
     const [name, setName] = useState("");
-    const [value, setValue] = useState(10000);
+    const [value, setValue] = useState('10000');
     const [visibility, setVisibility] = useState("public");
 
     return (

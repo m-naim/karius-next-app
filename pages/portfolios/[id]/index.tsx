@@ -10,9 +10,9 @@ const columns=['symbol','weight','qty','last','bep']
 
 function PortfolioView({ children, to, ...props }) {
     const router = useRouter()
-    const { id } = router.query;
+    const id = router.query.id[0]
     
-    const [portfolio, setPortfolio] = useState({allocation:[],transactions:[]});
+    const [portfolio, setPortfolio] = useState({_id:'',allocation:[],transactions:[]});
     const [editable, setEditable] = useState(false);
 
     const fetchData = async () => {
@@ -34,7 +34,7 @@ function PortfolioView({ children, to, ...props }) {
         }
         catch{
             console.log("error api");
-            setPortfolio({allocation:[],transactions:[]});
+            setPortfolio({_id:'',allocation:[],transactions:[]});
         }
     };
 
