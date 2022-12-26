@@ -5,12 +5,15 @@ import { add, format } from 'date-fns';
 import MultiSelect from '../../../components/layout/MultiSelect';
 import PortfolioLayout from '../../../components/portfolio/PortfolioLayout';
 import { useRouter } from 'next/router';
+import { Chart, CategoryScale, LinearScale, LineElement } from 'chart.js'
+import { LineValue } from '../../../components/charts/LineValue';
+Chart.register(CategoryScale, LinearScale, LineElement);
 
 let dataSetItem = {
     label: "Performance",
     backgroundColor: 'rgb(109, 99, 255)',
     borderColor: 'rgb(132, 149, 243)',
-    data: [0, 1],
+    data: [0, 1,3,5,4,6,7],
 }
 const chartDataInit = {
     labels: [],
@@ -74,7 +77,7 @@ function Performance() {
     const [name, setName] = useState("");
     const [dates, setDates] = useState(chartDataInit.labels);
     const [perfs, setPerfs] = useState(chartDataInit.datasets[0].data)
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     const [period, setPeriod] = useState('ALL');
     const [graphType, setType] = useState('%Variation');
@@ -86,13 +89,13 @@ function Performance() {
     }
     const fetchData = async () => {
         try {
-            await portfolioService.getPerformances(id as string);
+            // await portfolioService.getPerformances(id as string);
             const data = await portfolioService.get(id as string);
             datesInit = formatDateStr(data.perfs.date);
             perfsData = data.perfs;
 
             setName(data.name);
-            setDates(datesInit)
+            setDates(datesInit);
             setPerfs(perfsData.performance);
             setLoading(false)
         }
@@ -106,7 +109,7 @@ function Performance() {
         let dataset = {
             label,
             data,
-            backgroundColor: color,
+            // backgroundColor: color,
             borderColor: color
         }
 
@@ -140,7 +143,7 @@ function Performance() {
             const prevVal = values[index - 1];
             return ((currVal - prevVal) / prevVal);
         })
-            .map(v => {
+        .map(v => {
                 x = x * (1 + v);
                 return (x - 1) * 100;
             }
@@ -236,27 +239,24 @@ function Performance() {
 
                     <div className='md:p-6 mt-2 flex flex-wrap justify-between items-center w-full'>
                         <MultiSelect className='w-full md:max-w-[300px]' list={['Valeur', 'Profits/Pertes', '%Variation']} active={graphType} select={handleTypeSelect} />
-
-                        <div className='w-full m-2 min-h-[400px] order-2 md:order-3'>
                             {
                                 dates.length > 0 ?
-                                    <Line redraw id={'perf'} options={chartOptions}
+                                    <LineValue 
                                         data={{
                                             labels: dates,
                                             datasets: [{
                                                 label: "Performance",
-                                                backgroundColor: 'rgb(109, 99, 255)',
-                                                borderColor: 'rgb(109, 99, 255',
+                                                backgroundColor: 'rgb(109, 99, 255,0.1)',
+                                                borderColor: 'rgb(109, 99, 255)',
                                                 data: perfs,
 
                                             }, ...benchmarksPerfs]
-                                        }} /> : null}
+                                        }} /> : <LineValue />}
 
-                        </div>
                         <MultiSelect className='w-full md:max-w-xs order-3 md:order-2' list={['1M', '6M', '1Y', 'ALL']} active={period} select={handlePeriodClick} />
                     </div>
 
-                    <div className='w-1/2 min-w-[10em] m-10'>
+                    <div className='min-w-[8em] m-4'>
 
                         <div className='flex m-4 gap-4'>
 

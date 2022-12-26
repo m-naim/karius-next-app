@@ -60,7 +60,7 @@ function PortfolioView({ children, to, ...props }) {
 
     return (
         <PortfolioLayout>
-            <div className='bg-dark'>
+            <div className='bg-dark-primary p-10 rounded-md shadow'>
                 <Table columns={columns} editable={editable} propRows={portfolio.allocation} addtransaction={addtransaction} />
             </div>
         </PortfolioLayout>

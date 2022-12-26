@@ -39,7 +39,6 @@ function Table({ propRows = data.rows, columns = data.columns, addtransaction, t
             <div className='flex place-content-between py-4'>
                 <p className='text-lg'>{rows.length} éléments</p>
                 <div className='flex gap-8'>
-                    <button className='text-blue-500 hover:text-white hover:bg-blue-600 font-bold py-1 px-8 rounded-full focus:outline-none focus:shadow-outline'>Trier</button>
                     {editable && <button className='btn-primary' onClick={toggle} >+ Ajouter</button>}
                 </div>
                 <Modal isShowing={isShowing} hide={() => toggle()}>

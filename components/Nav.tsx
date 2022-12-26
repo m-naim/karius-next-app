@@ -14,11 +14,11 @@ function Nav(props) {
     const close = () => setPopover(false);
     const logout = () => authService.logout();
     return (
-        <nav className='px-6 box-border flex place-content-between items-center shadow-md overflow-hidden dark:bg-gray-700'>
+        <nav className='px-6 box-border flex place-content-between items-center shadow-md overflow-hidden bg-dark-primary  border-b border-slate-500/10'>
             <div className='flex lg:px-14'>
 
-                <div className='p-2 flex gap-1 mx-10'>
-                    <Link className='text-3xl font-large font-bold text-primary hover:text-blue-900 dark:text-slate-100' href="/">Karius </Link>
+                <div className='p-2 flex gap-1 mx-4'>
+                    <Link className='text-3xl font-large font-bold text-primary hover:text-primary dark:text-slate-100' href="/">Karius </Link>
                     <span className='text-[8px] h-5 bg-primary rounded-md p-1' >Beta</span>
                 </div>
 

@@ -1,8 +1,7 @@
 
-import { User } from '../../interfaces'
 import Layout from '../../components/Layout'
-import ListDetail from '../../components/ListDetail'
 import { Dunut } from '../../components/charts/Dunut'
+import { LineValue } from '../../components/charts/LineValue'
 
 
 
@@ -10,7 +9,7 @@ const Charts = () => {
 
   return (
     <Layout>
-        <Dunut/>
+        <LineValue />
     </Layout>
   )
 }

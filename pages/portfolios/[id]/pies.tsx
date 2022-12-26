@@ -5,38 +5,19 @@ import portfolioService from '../../../services/portfolioService'
 import { useRouter } from 'next/router';
 import PortfolioLayout from '../../../components/portfolio/PortfolioLayout';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend,Title } from 'chart.js';
+import { Dunut } from '../../../components/charts/Dunut';
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
-
-const defaultData = {
-  labels: ['a', 'b'],
-  datasets: [
-    {
-      backgroundColor: palette('tol-rainbow', 10).map((hex) => '#' + hex),
-      data: [10.1, 20],
-      hoverOffset:40
-    }
-  ]
-};
-
-const tooltip = {
-  callbacks: {
-    label: function (context) {
-      const labelIndex = (context.datasetIndex * 2) + context.dataIndex;
-      return context.chart.data.labels[labelIndex] + ': ' + context.formattedValue + '%';
-    }
-  }
-}
 
 function Pies() {
   const router = useRouter()
   const {id} = router.query
 
-  const [actions, setActions] = useState(defaultData);
-  const [secteurs, setSecteurs] = useState(defaultData);
-  const [industries, setIndustries] = useState(defaultData);
-  const [devises, setDevises] = useState(defaultData);
+  const [actions, setActions] = useState();
+  const [secteurs, setSecteurs] = useState();
+  const [industries, setIndustries] = useState();
+  const [devises, setDevises] = useState();
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
@@ -115,38 +96,13 @@ function Pies() {
         {['Actions', 'Secteurs', 'Industries', 'Devises'].map(type => {
           return (
 
-            <div className='w-full lg:w-1/3 shadow rounded-md p-2 max-w-[25em]' >
-              <Doughnut
-
+            <div className='w-full shadow rounded-md p-2 max-w-[30em] bg-dark-primary' >
+              <Dunut
+                title={type}
                 data={{
                   labels: getDisplay(type)['labels'],
                   datasets: getDisplay(type)['datasets']
-                }}
-
-                options={{
-                  responsive: true,
-                  layout:{
-                    padding:20,
-                  },
-                  elements:{
-                    arc:{
-                      borderWidth: 0,
-                    }
-                  },
-                  cutout:80,
-                  plugins: {
-                    legend: {
-                      display: false,
-                    },
-                    title: {
-                      display: true,
-                      text: type
-                    },
-                  
-                  }
-                
-                }} 
-                
+                }}  
                 />
             </div>
           )

@@ -13,18 +13,20 @@ type Props = {
 }
 const Explorer = ({ pftArray,items }: Props) => {
   return (
-    <Layout title="About | Next.js + TypeScript Example">
+    <Layout title="Explorer | Karius">
 
-      <div className='flex flex-col justify-center items-center bg-dark p-4'>
+      <div className='flex flex-col justify-center items-center bg-dark'>
 
-          <section className='flex w-full lg:w-2/3 m-2 place-content-between'>
-              <p className='text-2xl justify-start text-sky-700'>Explorer</p>
+          <section className='w-full bg-dark-primary flex justify-center p-4'>
+            <div className='flex w-full lg:w-2/3 m-2 '>
+              <p className='text-2xl justify-start text-primary'>Explorer</p>
+            </div>
           </section>
 
           <div className='flex w-full lg:w-2/3 flex-col'>
               <div className='grid grid-cols-2 md:grid-cols-4 gap-20 w-full place-content-between px-4 rounded-3xl '>
-                  <p>Name</p>
-                  <p className='hidden md:block text-gray-500'>Value</p>
+                  <p className='hidden md:block text-gray-500'>Nom</p>
+                  <p className='hidden md:block text-gray-500'>valeur</p>
                   <p className='text-gray-500'>Variation</p>
                   <p className='hidden md:block text-gray-500'>Positions</p>
               </div>

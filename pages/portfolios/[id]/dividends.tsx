@@ -91,11 +91,11 @@ function DividendsView(props) {
         loading ? <div>Loading ...</div> :
             <PortfolioLayout>
 
-                <div className='flex flex-col lg:flex-row bg-dark'>
+                <div className='flex flex-col lg:flex-row bg-dark-primary p-6 rounded-md'>
 
                     <div className='p-6 m-2 flex flex-col items-center  max-w-4xl'>
 
-                        <div className='w-full m-2 min-h-[200px]'>
+                        <div className='w-full m-2 min-h-[400px]'>
                             {dates.length > 0 ?
                                 <Bar
                                     id={'Dividends'}

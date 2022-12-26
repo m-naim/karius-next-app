@@ -11,8 +11,8 @@ import processorImg from '../assets/img/processor.png'
 import styles from '../styles/Home.module.css'
 
 const IndexPage = () => (
-  <Layout title="Home | Next.js + TypeScript Example">
-    <header className="bg-dark flex place-items-center justify-around w-screen gap-0 flex-col md:flex-row-reverse overflow-hidden">
+  <Layout title="Karius">
+    <header className="bg-dark-primary flex place-items-center justify-around w-screen gap-0 flex-col md:flex-row-reverse overflow-hidden">
 
       <div className='crypto-block w-full max-w-sm h-80 ' >
 
@@ -54,24 +54,24 @@ const IndexPage = () => (
       </div>
     </header >
 
-    <section className='w-full p-6 bg-gray-50 dark:bg-slate-700'>
-      <p className='text-center text-xl text-primary'> Rejoignez la communauté</p>
+    <section className='w-full p-6 bg-dark-primary'>
+      <p className='text-center text-md'> Rejoignez la communauté</p>
       <div className='flex justify-evenly p-6'>
         <div className='flex flex-col'>
-          <h3 className='text-center text-primary text-5xl'>5</h3>
-          <h5 className='text-lg'>Utilisateurs</h5>
+          <h3 className='text-center text-primary text-6xl'>5</h3>
+          <h5 className='text-md'>Utilisateurs</h5>
         </div>
 
         <div>
-          <h3 className='text-center text-primary text-5xl'>12</h3>
-          <h5 className='text-lg'>Portefeuilles Crées</h5>
+          <h3 className='text-center text-primary text-6xl'>12</h3>
+          <h5 className='text-md'>Portefeuilles Crées</h5>
         </div>
       </div>
     </section>
 
     <section className='w-full p-8 bg-dark'>
       <div className='flex flex-wrap justify-center -m-4'>
-        <div className='shadow-md p-6 bg-white md:w-1/4 w-full m-4 bg-dark bg-blue-50 dark:bg-slate-700 rounded'>
+        <div className='shadow-md p-6 md:w-1/4 w-full m-4 bg-dark 0 bg-dark-primary rounded'>
           <div className='flex gap-4 content-center items-center'>
             <div className='w-12 h-12 text-primary rounded-md'><img src="https://img.icons8.com/color/48/000000/combo-chart--v2.png" /></div>
             <h4 className='mb'>Tracker votre portfolio</h4>
@@ -79,7 +79,7 @@ const IndexPage = () => (
           <p className='text-md text-gray-600'>Suivrez vos performances</p>
           <p className='text-md text-gray-600'>Comparer vos performances les indices et les autres portefeuilles</p>
         </div>
-        <div className='shadow-md p-6 bg-white md:w-1/4 w-full m-4 bg-dark bg-blue-50 dark:bg-slate-700 rounded'>
+        <div className='shadow-md p-6 md:w-1/4 w-full m-4 bg-dark bg-dark-primary rounded'>
           <div className='flex gap-4 content-center items-center'>
             <div className='w-12 h-12 rounded-md'><img src="https://img.icons8.com/nolan/96/light.png" /></div>
 
@@ -88,7 +88,7 @@ const IndexPage = () => (
           <p className='text-md text-gray-600'>Recherche simple de portefeuilles</p>
           <p className='text-md text-gray-600'>Plein de statistiques sur les portefeuilles</p>
         </div>
-        <div className='shadow-md p-6 bg-white md:w-1/4 w-full m-4 bg-dark bg-blue-50 dark:bg-slate-700 rounded'>
+        <div className='shadow-md p-6 md:w-1/4 w-full m-4 bg-dark bg-dark-primary rounded'>
           <div className='flex gap-4 content-center items-center'>
             <div className='w-12 h-12 rounded-md'><img src="https://img.icons8.com/color/48/000000/share--v2.png" /></div>
             <h4 className='mb'>Partagez</h4>
@@ -96,14 +96,14 @@ const IndexPage = () => (
           <p className='text-md text-gray-600'>Partager vous portefeuilles avec vos amis et la communauté</p>
           <p className='text-md text-gray-600'>Comparer les performances et autres statistiques</p>
         </div>
-        <div className='shadow-md p-6 bg-white md:w-1/4 w-full m-4 bg-dark bg-blue-50 dark:bg-slate-700 rounded'>
+        <div className='shadow-md p-6 md:w-1/4 w-full m-4 bg-dark bg-dark-primary rounded'>
           <div className='flex gap-4 content-center items-center'>
             <div className='w-12 h-12 rounded-md'><img src="https://img.icons8.com/3d-fluency/100/000000/document.png" /></div>
             <h4 className='mb'>Saisie facile</h4>
           </div>
           <p className='text-md text-gray-600'>import votre portefeuille a partir d'un fichier Excel</p>
         </div>
-        <div className='shadow-md p-6 bg-white md:w-1/4 w-full m-4 bg-dark bg-blue-50 dark:bg-slate-700 rounded'>
+        <div className='shadow-md p-6 md:w-1/4 w-full m-4 bg-dark bg-dark-primary rounded'>
           <div className='flex gap-4 content-center items-center'>
             <div className='w-12 h-12 rounded-md'><img src="https://img.icons8.com/ios-filled/50/228BE6/bell.png" /></div>
             <h4 className='mb'>Alertes intelligentes</h4>
@@ -112,7 +112,7 @@ const IndexPage = () => (
           <p className='text-md text-gray-600'>Notifications programmées</p>
         </div>
 
-        <div className='shadow-md p-6 bg-white md:w-1/4 w-full m-4 bg-dark bg-blue-50 dark:bg-slate-700 rounded'>
+        <div className='shadow-md p-6 md:w-1/4 w-full m-4 bg-dark bg-dark-primary rounded'>
           <div className='flex gap-4 content-center items-center'>
             <div className='w-12 h-12 rounded-md'><img src="https://img.icons8.com/external-nawicon-glyph-nawicon/64/228BE6/external-tax-business-nawicon-glyph-nawicon.png" /></div>
             <h4 className='mb'>Calcule des Impôts </h4>

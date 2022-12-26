@@ -72,7 +72,7 @@ function PortfoliosList(props) {
                 </Modal>
             <div className='flex w-full max-w-5xl flex-col py-6'>
                 <div className='grid grid-cols-2 md:grid-cols-4 gap-20 w-full place-content-between px-4 rounded-3xl '>
-                    <p>Name</p>
+                    <p className='hidden md:block text-gray-500'>Name</p>
                     <p className='hidden md:block text-gray-500'>Value</p>
                     <p className='text-gray-500'>Variation</p>
                     <p className='hidden md:block text-gray-500'>Positions</p>

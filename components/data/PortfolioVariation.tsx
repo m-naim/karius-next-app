@@ -10,6 +10,6 @@ export default function PortfolioVariation({pft}) {
   }
   return (
 
-    <p className='text-sm rounded-md px-2 py-1'>{getVariation(pft)}%</p>
+    <p className='text-md rounded-md px-2 py-1'>{getVariation(pft)}%</p>
   )
 }

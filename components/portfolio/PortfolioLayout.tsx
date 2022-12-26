@@ -9,6 +9,7 @@ import { round10 } from '../../utils/decimalAjustement';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Layout from '../Layout'
+import CustomLink from '../CustomLink';
 
 type Props = {
   children?: ReactNode
@@ -17,7 +18,7 @@ type Props = {
 
 const PortfolioLayout = ({ children }: Props) => {
   const router = useRouter()
-  const {id} = router.query
+  const { id } = router.query
 
   const [followed, setFollowed] = useState(false);
   const [editable, setEditable] = useState(false);
@@ -26,78 +27,78 @@ const PortfolioLayout = ({ children }: Props) => {
   const [variationPct, setVariationPct] = useState(0);
 
   const fetchData = async () => {
-      const response = await portfolioService.getData(id as string);
+    const response = await portfolioService.getData(id as string);
 
-      const userId = authService.getCurrentUser().user.id;
-      if (response.followers.includes(userId)) setFollowed(true);
-      if (response.owner === userId) setEditable(true);
-      getDayVariation(response.perfs.total)
-      setPftData(response);
-      try {
-          await stockService.update(id);
-      } catch (error) {
-          console.log(error);
-          
-      }
+    const userId = authService.getCurrentUser().user.id;
+    if (response.followers.includes(userId)) setFollowed(true);
+    if (response.owner === userId) setEditable(true);
+    getDayVariation(response.perfs.total)
+    setPftData(response);
+    try {
+      await stockService.update(id);
+    } catch (error) {
+      console.log(error);
+
+    }
   };
 
   const getDayVariation = (total) => {
-      if (!total) {
-          console.error(total);
-          return
-      }
-      const last = total.length
-      setVariation(round10(total[last - 1] - total[last - 2], -2))
-      setVariationPct(round10((total[last - 1] - total[last - 2]) / total[last - 2] * 100, -2))
+    if (!total) {
+      console.error(total);
+      return
+    }
+    const last = total.length
+    setVariation(round10(total[last - 1] - total[last - 2], -2))
+    setVariationPct(round10((total[last - 1] - total[last - 2]) / total[last - 2] * 100, -2))
   }
 
   useLayoutEffect(() => {
-      fetchData();
+    fetchData();
   }, []);
 
   const follow = async () => {
-      try {
-          setFollowed(!followed);
-          await portfolioService.follow(id);
-      }
-      catch {
-          console.log("error");
-      }
+    try {
+      setFollowed(!followed);
+      await portfolioService.follow(id);
+    }
+    catch {
+      console.log("error");
+    }
   }
 
   const deletePortfolio = async () => {
-      try {
-          await portfolioService.deletePortfolio(id);
-          router.push("/portfolios");
-      }
-      catch {
-          console.log("error");
-      }
+    try {
+      await portfolioService.deletePortfolio(id);
+      router.push("/portfolios");
+    }
+    catch {
+      console.log("error");
+    }
   }
 
   const camputeRandement = () => {
-      if (pftData.dividends === undefined) return 0
-      const last = pftData.dividends.yearly.values.slice(-1);
-      return round10(last / pftData.total_value * 100, -2)
+    if (pftData.dividends === undefined) return 0
+    const last = pftData.dividends.yearly.values.slice(-1);
+    return round10(last / pftData.total_value * 100, -2)
   }
 
   const getPctRandement = () => {
-      if (pftData.dividends === undefined) return 0
-      return round10(pftData?.dividends.yearly.values.reduce((cum, e) => cum + e, 0), -2)
+    if (pftData.dividends === undefined) return 0
+    return round10(pftData?.dividends.yearly.values.reduce((cum, e) => cum + e, 0), -2)
   }
 
   return (
     <Layout>
       <div className=' flex flex-col place-items-center bg-dark w-full overflow-hidden'>
-        <div className='flex flex-col place-content-between bg-dark p-4 w-full max-w-6xl rounded-md mt-2'>
-          <div className='flex items-start gap-8 bg-dark'>
+        <div className='flex flex-col items-center bg-dark-primary pt-4 px-4 w-full rounded-md'>
+          <div className='flex items-start justify-between max-w-6xl w-full'>
 
             <div className='flex flex-col self-start items-start'>
-              <h3>{pftData.name}</h3>
+              <h2 className='font-bold'>{pftData.name}</h2>
               <p className='text-gray-500'> {pftData.followers?.length} abonnées</p>
             </div>
-            <div className='flex gap-4 items-center m-1 bg-dark'>
-              <button onClick={follow} className={'flex items-center text-gray-600  hover:shadow-md dark:text-white py-1 px-4 rounded-xl border focus:outline-none focus:shadow-outline' + (followed ? ' text-amber-500 dark:text-amber-300' : '')}>
+            <div className='flex gap-4 items-center m-1'>
+              <button onClick={follow} className={'flex items-center hover:shadow-md bg-dark-primary py-1 px-4 rounded-xl border focus:outline-none focus:shadow-outline' + (followed ? ' text-amber-500 dark:text-amber-300' : '')}>
                 <svg viewBox="0 0 1000 1000" width="1rem" height="1rem" aria-hidden="true">
                   <path
                     fill="currentColor"
@@ -109,64 +110,67 @@ const PortfolioLayout = ({ children }: Props) => {
 
               {editable &&
                 <>
-                  <button onClick={deletePortfolio} className='border text-gray-600  hover:shadow-md dark:text-white py-1 px-4 rounded-xl focus:outline-none focus:shadow-outline'>Supprimer</button>
-                  <button className='border text-gray-600  hover:shadow-md dark:text-white py-1 px-4 rounded-xl focus:outline-none focus:shadow-outline'>Modifier</button>
+                  <button onClick={deletePortfolio} className='border hover:shadow-md bg-dark-primary py-1 px-4 rounded-xl focus:outline-none focus:shadow-outline'>Supprimer</button>
+                  <button className='border hover:shadow-md bg-dark-primary py-1 px-4 rounded-xl focus:outline-none focus:shadow-outline'>Modifier</button>
                 </>
               }
               {/* <button className='shadow-md text-gray-500  hover:bg-gray-100 text-white py-1 px-4 rounded-xl border focus:outline-none focus:shadow-outline'>Partager</button> */}
             </div>
           </div>
-          <div className='flex justify-between max-w-xl'>
-            <div className='flex flex-col'>
-              <p>Valeur Total</p>
-              <div className='flex gap-4'>
-                <p>{round10(pftData.total_value, -2)}€</p>
-                <PortfolioVariation pft={pftData} />
-              </div>
-            </div>
+          <div className="w-full max-w-6xl text-xl font-medium text-center text-gray-400 overflow-auto">
+            <ul className="flex pt-2 gap-10">
+              <li className="mr-2 p-1 rounded-md">
+                <CustomLink to={`/portfolios/${id}`}>Valeurs</CustomLink>
+              </li>
+              <li className="mr-2 p-1 rounded-md">
+                <CustomLink to={`/portfolios/${id}/performance`}>Performance</CustomLink>
+              </li>
+              <li className="mr-2 p-1 rounded-md">
+                <CustomLink to={`/portfolios/${id}/pies`}>Diversification</CustomLink>
+              </li>
+              {/* <li className="mr-2">
+              <CustomLink to={`/portfolios/${id}/orders`}>Transactions</CustomLink>
+            </li> */}
+              <li className="mr-2 p-1 rounded-md">
+                <CustomLink to={`/portfolios/${id}/dividends`}>Dividendes</CustomLink>
+              </li>
+              {/* <li className="mr-2">
+              <CustomLink to={`/portfolios/${id}/stats`}>Statistiques</CustomLink>
+            </li> */}
+            </ul>
+          </div>
+        </div>
 
-            <div className='flex flex-col'>
-              <p>Variation du jour</p>
-              <div className='flex gap-4'>
-                <p>{variationPct} %</p>
-                <p>{variation} €</p>
-              </div>
+        <div className='flex justify-between m-2 max-w-4xl w-full'>
+          <div className='flex flex-col p-4 bg-dark-primary rounded-md'>
+            <p className='text-sm'>Valeur Total</p>
+            <div className='flex gap-4'>
+              <p className='text-xl'>{round10(pftData.total_value, -2)}€</p>
+              <PortfolioVariation pft={pftData} />
             </div>
+          </div>
 
-            <div className='flex flex-col'>
-              <p>Rendement</p>
-              <div className='flex gap-4'>
-                <p> {camputeRandement()} %</p>
-                <p>+ {getPctRandement()}</p>
-              </div>
+          <div className='flex flex-col p-4 bg-dark-primary rounded-md'>
+            <p className='text-sm'>Variation du jour</p>
+            <div className='flex gap-4'>
+              <p className='text-xl'>{variation}€</p>
+              <p>{variationPct}%</p>
+            </div>
+          </div>
+
+          <div className='flex flex-col p-4 bg-dark-primary rounded-md'>
+            <p className='text-sm'>Rendement</p>
+            <div className='flex gap-4'>
+              <p className='text-xl'>{getPctRandement()}€</p>
+              <p>+{camputeRandement()}%</p>
             </div>
           </div>
         </div>
-        <div className="w-full max-w-6xl text-md font-medium text-center text-gray-500 border-b border-gray-200 dark:border-slate-600 overflow-auto">
-          <ul className="flex  ">
-            <li className="mr-2">
-              <Link href={`/portfolios/${id}/`}>Valeurs</Link>
-            </li>
-            <li className="mr-2">
-              <Link href={`/portfolios/${id}/performance`}>Performances</Link>
-            </li>
-            <li className="mr-2">
-              <Link href={`/portfolios/${id}/pies`}>Allocation</Link>
-            </li>
-            {/* <li className="mr-2">
-              <Link href={`/portfolios/${id}/orders`}>Transactions</Link>
-            </li> */}
-            <li className="mr-2">
-              <Link href={`/portfolios/${id}/dividends`}>Dividendes</Link>
-            </li>
-            {/* <li className="mr-2">
-              <Link href={`/portfolios/${id}/stats`}>Statistiques</Link>
-            </li> */}
-          </ul>
-        </div>
+
         <div className="bg-dark md:p-6 w-full max-w-6xl rounded-md">
           {children}
         </div>
+
       </div>
     </Layout>
   )

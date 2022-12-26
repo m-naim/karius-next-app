@@ -29,7 +29,7 @@ function getData(portfolioName='curent') {
 }
 
 function follow(id) {
-  return http.put(`${host}/api/v1/portfolio/follow/${id}`,null);
+  return http.put(`${host}/api/v1/portfolio/follow/${id}`,{});
 }
 
 function post(state) {
@@ -73,7 +73,7 @@ function deletePortfolio(id) {
 }
 
 function getPerformances(id){
-  return http.get(`${qwantHost}/api/v1/portfolio/${id}/performance`);
+  return http.get(`${host}/api/v1/portfolio/${id}/performance`);
 }
 function getDividends(id){
   return http.get(`${qwantHost}/api/v1/portfolio/${id}/dividends`);

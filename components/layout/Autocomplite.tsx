@@ -31,9 +31,9 @@ function Autocomplite({ value, setValue, fetchData }) {
                     }
                 } />
 
-            {show && options.length > 0 && <ul id="auto" className='bg-dark rounded-lg border border-gray-200 w-full text-gray-900 divide-y divide-solid mt-1'>
+            {show && options.length > 0 && <ul id="auto" className='bg-dark-primary rounded-lg border border-gray-200 w-full divide-y divide-solid mt-1'>
                 {options.map(op =>
-                    <li onClick={() => select(op.symbol)} key={op.symbol} className='px-6 py-2 flex gap-6 content-center cursor-pointer hover:bg-gray-200' >
+                    <li onClick={() => select(op.symbol)} key={op.symbol} className='px-6 py-2 flex gap-6 content-center cursor-pointer hover:bg-gray-200/20' >
                         {op.logo && <img className='w-8 h-8 inline-block rounded-full ring-2 ring-white mt-1' src={op.logo} alt='log' />}
                         <div className='flex flex-col'>
                             <span >{op.name}</span>
