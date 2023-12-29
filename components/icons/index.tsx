@@ -19,7 +19,7 @@ const components = {
 
 const Icon = ({ kind, size = 6 }) => {
 
-    if (!kind || (kind === 'mail' && !/^mailto:\w+([.-]?\w+)@\w+([.-]?\w+)(.\w{2,3})+$/.test(href)))
+    if (!kind)
         return null
     const SvgIcon = components[kind]
 
