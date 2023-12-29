@@ -1,4 +1,3 @@
-import Layout from '@/components/molecules/layouts/Layout'
 import { Features } from '@/components/molecules/home/Features';
 import Hero from '@/components/molecules/home/Hero';
 import NewsletterForm from 'pliny/ui/NewsletterForm';
