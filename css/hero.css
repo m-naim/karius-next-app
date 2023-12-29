@@ -1,0 +1,46 @@
+.options {
+  display: none;
+}
+
+.autocomplite:hover+.options {
+  display: block;
+}
+
+
+.crypto-block {
+  position: relative;
+}
+
+.crypto-wrap-1 {
+  position: absolute;
+  width: 2rem;
+  left: 1rem;
+  bottom: 6rem;
+}
+
+.crypto-wrap-2 {
+  position: absolute;
+  width: 2rem;
+  top: 2rem;
+  left: 4rem;
+}
+
+.crypto-wrap-3 {
+  position: absolute;
+  width: 2rem;
+  left: 19rem;
+  top: 16rem;
+}
+
+.crypto-wrap-4 {
+  position: absolute;
+  width: 2rem;
+  left: 22rem;
+  top: 4rem;
+}
+
+.crypto-wrap-5 {
+  position: absolute;
+  left: 6rem;
+  top: 0rem;
+}
