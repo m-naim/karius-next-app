@@ -1,9 +1,8 @@
 import React, { ReactNode } from 'react'
-import Link from 'next/link'
 import Head from 'next/head'
 import Nav from './Nav'
 import Footer from './Footer'
-import PageTitle from '@/components/mdx/PageTitle'
+import PageTitle from '@/components/PageTitle'
 
 type Props = {
   children?: ReactNode
