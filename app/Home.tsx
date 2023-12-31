@@ -7,7 +7,7 @@ const Home = () => (
   <>
     <Hero></Hero>
     <div className="flex items-center justify-center pt-4">
-      <NewsletterForm />
+      <NewsletterForm title='Vous voulez être informé de la sortie du produit?'/>
     </div>
     <Features></Features>
     <section>
