@@ -10,6 +10,7 @@ import Tag from '@/components/Tag'
 import siteMetadata from '@/data/siteMetadata'
 import ScrollTopAndComment from '@/components/ScrollTopAndComment'
 import TOCInline from '@/components/TOCInline'
+import { Toc } from 'pliny/mdx-plugins'
 
 const editUrl = (path) => `${siteMetadata.siteRepo}/blob/main/data/${path}`
 const discussUrl = (path) =>
@@ -22,12 +23,12 @@ const postDateTemplate: Intl.DateTimeFormatOptions = {
   day: 'numeric',
 }
 
-const Socials= ()=>(
+const Socials = () => (
   <div className="pb-6 pt-6 text-sm text-gray-700 dark:text-gray-300">
-                <Link href="/" rel="nofollow">
-                  Discuss on Twitter
-                </Link>
-                {` • `}
+    <Link href="/" rel="nofollow">
+      Discuss on Twitter
+    </Link>
+    {` • `}
   </div>
 )
 
@@ -36,19 +37,25 @@ interface LayoutProps {
   authorDetails: CoreContent<Authors>[]
   next?: { path: string; title: string }
   prev?: { path: string; title: string }
-  children: ReactNode,
-  toc: any
+  children: ReactNode
+  toc: Toc
 }
 
-export default function PostLayout({ content,toc, authorDetails, next, prev, children }: LayoutProps) {
+export default function PostLayout({
+  content,
+  toc,
+  authorDetails,
+  next,
+  prev,
+  children,
+}: LayoutProps) {
   const { filePath, path, slug, date, title, tags } = content
   const basePath = path.split('/')[0]
 
-  
   return (
     <SectionContainer>
       <ScrollTopAndComment />
-      <article >
+      <article>
         <div className="xl:divide-y xl:divide-gray-200 xl:dark:divide-gray-700">
           <header className="pt-6 xl:pb-6">
             <div className="space-y-1 text-center">
@@ -69,11 +76,12 @@ export default function PostLayout({ content,toc, authorDetails, next, prev, chi
           </header>
           <div
             className=" divide-y divide-gray-200 pb-8 dark:divide-gray-700 xl:grid xl:grid-cols-5 xl:gap-x-6 xl:divide-y-0"
-            style={{ gridTemplateRows: 'auto 1fr'}}
+            style={{ gridTemplateRows: 'auto 1fr' }}
           >
-
-            <div className="xl:order-2 divide-y divide-gray-200 dark:divide-gray-700 xl:col-span-3 xl:pb-0">
-              <div className="h-full overflow-scroll prose max-w-none pt-10 pb-8 dark:prose-dark">{children}</div>
+            <div className="divide-y divide-gray-200 dark:divide-gray-700 xl:order-2 xl:col-span-3 xl:pb-0">
+              <div className="prose h-full max-w-none overflow-scroll pb-8 pt-10 dark:prose-dark">
+                {children}
+              </div>
               {/* <div className="pt-6 pb-6 text-sm text-gray-700 dark:text-gray-300">
                 <Link href={discussUrl(slug)} rel="nofollow">
                   {'En Parler sur Twitter'}
@@ -82,14 +90,12 @@ export default function PostLayout({ content,toc, authorDetails, next, prev, chi
               </div> */}
             </div>
 
-
-            <dl className="xl:order-3 hidden divide-y divide-gray-200 xl:block pt-6 pb-10 xl:col-span-1 xl:border-b xl:border-gray-200 xl:pt-11 xl:dark:border-gray-700">
+            <dl className="hidden divide-y divide-gray-200 pb-10 pt-6 xl:order-3 xl:col-span-1 xl:block xl:border-b xl:border-gray-200 xl:pt-11 xl:dark:border-gray-700">
               <TOCInline toc={toc} toHeading={3} />
             </dl>
 
-            <footer className="xl:h-full pt-6 pb-10 xl:col-span-1 xl:order-1">
+            <footer className="pb-10 pt-6 xl:order-1 xl:col-span-1 xl:h-full">
               <div className="xl:sticky xl:top-4">
-
                 <div className=" divide-gray-200 text-sm font-medium leading-5 dark:divide-gray-700 xl:col-start-1 xl:row-start-2 xl:divide-y">
                   {tags && (
                     <div className="py-4 xl:py-8">

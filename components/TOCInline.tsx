@@ -28,7 +28,6 @@ const TOCInline = ({
   asDisclosure = false,
   exclude = '',
 }) => {
-  
   const re = Array.isArray(exclude)
     ? new RegExp('^(' + exclude.join('|') + ')$', 'i')
     : new RegExp('^(' + exclude + ')$', 'i')
@@ -39,10 +38,12 @@ const TOCInline = ({
   )
 
   const tocList = (
-    <ul className="border-l-4 p-4 py-12 mt-12 sticky top-0 ">
+    <ul className="sticky top-0 mt-12 border-l-4 p-4 py-12 ">
       {filteredToc.map((heading) => (
         <li key={heading.value} className={`${heading.depth >= indentDepth && 'ml-6'}`}>
-          <a href={heading.url} className="target:text-blue-600 hover:text-blue-600 h">{heading.value}</a>
+          <a href={heading.url} className="h target:text-blue-600 hover:text-blue-600">
+            {heading.value}
+          </a>
         </li>
       ))}
     </ul>
@@ -52,7 +53,7 @@ const TOCInline = ({
     <>
       {asDisclosure ? (
         <details open>
-          <summary className="ml-6 pt-2 pb-2 text-xl font-bold">Table of Contents</summary>
+          <summary className="ml-6 pb-2 pt-2 text-xl font-bold">Table of Contents</summary>
           <div className="ml-6">{tocList}</div>
         </details>
       ) : (
