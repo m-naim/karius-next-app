@@ -45,7 +45,7 @@ export const Features = () => {
           <h2 className="mb-4 text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
             Fonctionnalités sur Mesure pour un Investissement Personnel Optimal.
           </h2>
-          <p className="text-gray-500 dark:text-gray-400 sm:text-xl">
+          <p className="text-gray-500 sm:text-xl dark:text-gray-400">
             écouvrez des fonctionnalités conçues exclusivement pour répondre aux besoins de
             l'investisseur particulier. De la gestion de portefeuille intuitive aux analyses
             personnalisées, notre application offre une expérience transparente, éducative et
@@ -66,7 +66,7 @@ export const Features = () => {
 
 const Item = ({ title, description, icon }) => (
   <div>
-    <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900 lg:h-12 lg:w-12">
+    <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 lg:h-12 lg:w-12 dark:bg-primary-900">
       <Icon kind={icon} />
     </div>
     <h3 className="mb-2 text-xl font-bold dark:text-white">{title}</h3>

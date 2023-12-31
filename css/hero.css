@@ -2,10 +2,9 @@
   display: none;
 }
 
-.autocomplite:hover+.options {
+.autocomplite:hover + .options {
   display: block;
 }
-
 
 .crypto-block {
   position: relative;

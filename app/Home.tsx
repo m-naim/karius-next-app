@@ -13,7 +13,7 @@ const Home = () => (
     <section>
       <h6 className="pt-8 text-center text-xl font-light "> Rejoignez la communauté</h6>
       <div className="mx-auto max-w-screen-xl px-4 py-8 text-center lg:px-6 lg:py-16">
-        <dl className="mx-auto grid max-w-screen-md gap-8 text-gray-900 dark:text-white sm:grid-cols-3">
+        <dl className="mx-auto grid max-w-screen-md gap-8 text-gray-900 sm:grid-cols-3 dark:text-white">
           <div className="flex flex-col items-center justify-center">
             <dt className="mb-2 text-3xl font-extrabold md:text-4xl">+ de 10</dt>
             <dd className="font-light text-primary-500 dark:text-primary-400">

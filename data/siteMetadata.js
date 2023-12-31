@@ -18,8 +18,10 @@ const siteMetadata = {
   locale: 'fr-FR',
   analytics: {
     plausibleDataDomain: 'https://BourseHorus.com', // e.g. tailwind-nextjs-starter-blog.vercel.app
-    simpleAnalytics: {src:""}, // true or false
-    umamiWebsiteId: 'c2756f1a-e293-4054-8093-263e21da1be0', // e.g. 123e4567-e89b-12d3-a456-426614174000
+    simpleAnalytics: { src: '' }, // true or false
+    umamianalytics: {
+      umamiWebsiteId: 'c2756f1a-e293-4054-8093-263e21da1be0', // e.g. 123e4567-e89b-12d3-a456-426614174000
+    },
     googleAnalyticsId: '', // e.g. UA-000000-2 or G-XXXXXXX
     posthogAnalyticsId: '', // posthog.init e.g. phc_5yXvArzvRdqtZIsHkEm3Fkkhm3d0bEYUXCaFISzqPSQ
   },
@@ -34,8 +36,8 @@ const siteMetadata = {
     // Select a provider and use the environment variables associated to it
     // https://vercel.com/docs/environment-variables
 
-    // provider: 'giscus', 
-    
+    // provider: 'giscus',
+
     // supported providers: giscus, utterances, disqus
     giscusConfig: {
       // Visit the link below, and follow the steps in the 'configuration' section
