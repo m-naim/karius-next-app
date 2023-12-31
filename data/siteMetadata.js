@@ -19,7 +19,7 @@ const siteMetadata = {
   analytics: {
     plausibleDataDomain: 'https://BourseHorus.com', // e.g. tailwind-nextjs-starter-blog.vercel.app
     simpleAnalytics: {src:""}, // true or false
-    umamiWebsiteId: '', // e.g. 123e4567-e89b-12d3-a456-426614174000
+    umamiWebsiteId: 'c2756f1a-e293-4054-8093-263e21da1be0', // e.g. 123e4567-e89b-12d3-a456-426614174000
     googleAnalyticsId: '', // e.g. UA-000000-2 or G-XXXXXXX
     posthogAnalyticsId: '', // posthog.init e.g. phc_5yXvArzvRdqtZIsHkEm3Fkkhm3d0bEYUXCaFISzqPSQ
   },
