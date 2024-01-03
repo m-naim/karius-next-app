@@ -12,7 +12,6 @@ import ScrollTopAndComment from '@/components/ScrollTopAndComment'
 import TOCInline from '@/components/TOCInline'
 import { Toc } from 'pliny/mdx-plugins'
 
-const editUrl = (path) => `${siteMetadata.siteRepo}/blob/main/data/${path}`
 const discussUrl = (path) =>
   `https://mobile.twitter.com/search?q=${encodeURIComponent(`${siteMetadata.siteUrl}/${path}`)}`
 

@@ -3,7 +3,7 @@ import 'pliny/search/algolia.css'
 
 import { Analytics } from '@vercel/analytics/react'
 import { Space_Grotesk } from 'next/font/google'
-import { Analytics as An, AnalyticsConfig } from 'pliny/analytics'
+import { Analytics as An, AnalyticsConfig, Umami } from 'pliny/analytics'
 import { SearchProvider, SearchConfig } from 'pliny/search'
 import Header from '@/components/Header'
 import SectionContainer from '@/components/SectionContainer'
@@ -78,7 +78,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-white text-black antialiased dark:bg-gray-950 dark:text-white">
         <ThemeProviders>
           <Analytics />
-          <An analyticsConfig={siteMetadata.analytics as AnalyticsConfig} />
+          <Umami
+            umamiWebsiteId="c2756f1a-e293-4054-8093-263e21da1be0"
+            src="https://eu.umami.is/script.js"
+          />
+
           <SectionContainer>
             <div className="flex h-screen flex-col justify-between font-sans">
               <SearchProvider searchConfig={siteMetadata.search as SearchConfig}>
@@ -89,11 +93,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </SectionContainer>
         </ThemeProviders>
-        <Script
-          strategy="beforeInteractive"
-          src="https://eu.umami.is/script.js"
-          data-website-id="c2756f1a-e293-4054-8093-263e21da1be0"
-        />
       </body>
     </html>
   )
