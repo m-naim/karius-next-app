@@ -6,7 +6,7 @@
     "start": "next dev",
     "dev": "cross-env next dev",
     "build": "cross-env INIT_CWD=$PWD next build && cross-env NODE_OPTIONS='--experimental-json-modules' node ./scripts/postbuild.mjs",
-    "localbuild": "cross-env INIT_CWD='file://c/Users/Naim/Desktop/workspace/karius-project/boursehorus-next-client' next build && cross-env NODE_OPTIONS='--experimental-json-modules' node ./scripts/postbuild.mjs",
+    "localbuild": "next build && cross-env NODE_OPTIONS='--experimental-json-modules' node ./scripts/postbuild.mjs",
     "serve": "next start",
     "analyze": "cross-env ANALYZE=true next build",
     "lint": "next lint --fix --dir pages --dir app --dir components --dir lib --dir layouts --dir scripts",
