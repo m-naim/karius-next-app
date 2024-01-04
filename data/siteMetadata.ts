@@ -27,6 +27,9 @@ const siteMetadata = {
   },
   search: {
     provider: '',
+    kbarConfig: {
+      searchDocumentsPath: 'search.json', // path to load documents to search
+    },
   },
   newsletter: {
     // supports mailchimp, buttondown, convertkit, klaviyo, revue, emailoctopus
