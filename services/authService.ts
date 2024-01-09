@@ -1,3 +1,4 @@
+import { getLocalStorageItem } from '@/lib/utils'
 import config from './config'
 import http from './http'
 
@@ -28,8 +29,9 @@ const login = (email, password) => {
 const logout = () => {
   if (typeof window !== 'undefined') localStorage.removeItem('user')
 }
+
 const getCurrentUser = () => {
-  if (typeof window !== 'undefined') return JSON.parse(localStorage.getItem('user'))
+  if (typeof window !== 'undefined') return JSON.parse(getLocalStorageItem('user'))
   return
 }
 

@@ -16,3 +16,8 @@ export const comparator = (a, b) => {
   if (typeof a === 'number') return a - b
   return 0
 }
+
+export const getLocalStorageItem = (key): string => {
+  const item = localStorage.getItem(key)
+  return item ? JSON.parse(item) : ''
+}

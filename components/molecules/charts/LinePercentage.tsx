@@ -11,6 +11,7 @@ import {
   LineElement,
   PointElement,
   Filler,
+  ChartDataset,
 } from 'chart.js'
 
 ChartJS.register(
@@ -25,7 +26,7 @@ ChartJS.register(
   Filler
 )
 
-export const dataSetItem1 = {
+export const dataSetItem1: ChartDataset<'line', number[]> = {
   label: 'Performance',
   backgroundColor: 'rgba(37,99,235,0.2)',
   borderColor: 'rgb(37,99,235)',
@@ -34,7 +35,7 @@ export const dataSetItem1 = {
   cubicInterpolationMode: 'monotone',
   tension: 0.4,
 }
-export const dataSetItem2 = {
+export const dataSetItem2: ChartDataset<'line', number[]> = {
   label: 'Performance',
   backgroundColor: 'rgba(137,99,35,0.2)',
   borderColor: 'rgb(137,99,35)',

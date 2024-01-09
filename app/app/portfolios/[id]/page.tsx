@@ -17,9 +17,7 @@ import {
 import { columns } from './columns'
 import SimpleDataTable from '@/components/molecules/table/SimpleDataTable'
 
-// const columns=['symbol','weight','qty','last','bep']
-
-function PortfolioView() {
+export default function PortfolioView() {
   const id = usePathname().split('/')[3]
   const [data, setData] = React.useState([])
   const [portfolio, setPortfolio] = useState({ _id: '', allocation: [], transactions: [] })
@@ -97,5 +95,3 @@ function PortfolioView() {
     </PortfolioLayout>
   )
 }
-
-export default PortfolioView

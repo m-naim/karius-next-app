@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { format } from 'date-fns'
 import MultiSelect from '@/components/molecules/layouts/MultiSelect'
-import Autocomplite from '@/components/molecules/layouts/Autocomplite'
 import portfolioService from '@/services/portfolioService'
 
 function AddTransaction({ hide, addClick, symbol }) {
@@ -55,7 +54,7 @@ function AddTransaction({ hide, addClick, symbol }) {
           <h3 role="main" className="text-lg font-semibold leading-7 lg:leading-9 ">
             Action
           </h3>
-          <Autocomplite value={ticker} setValue={setTicker} fetchData={fetchData} />
+          {/* <Autocomplite value={ticker} setValue={setTicker} fetchData={fetchData} /> */}
         </div>
 
         <div>
