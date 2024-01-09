@@ -1,4 +1,5 @@
 import 'css/tailwind.css'
+import 'css/globals.css'
 import 'pliny/search/algolia.css'
 
 import { Analytics } from '@vercel/analytics/react'
@@ -11,7 +12,6 @@ import Footer from '@/components/Footer'
 import siteMetadata from '@/data/siteMetadata'
 import { ThemeProviders } from './theme-providers'
 import { Metadata } from 'next'
-import Script from 'next/script'
 
 const space_grotesk = Space_Grotesk({
   subsets: ['latin'],

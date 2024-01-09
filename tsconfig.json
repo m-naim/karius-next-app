@@ -18,9 +18,11 @@
     "baseUrl": ".",
     "paths": {
       "@/components/*": ["components/*"],
+      "@/services/*": ["services/*"],
       "@/data/*": ["data/*"],
       "@/layouts/*": ["layouts/*"],
       "@/css/*": ["css/*"],
+      "@/lib/*": ["lib/*"],
       "@/assets/*": ["assets/*"],
       "contentlayer/generated": ["./.contentlayer/generated"]
     },
