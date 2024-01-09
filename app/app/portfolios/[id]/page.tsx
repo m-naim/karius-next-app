@@ -3,16 +3,12 @@
 import { usePathname } from 'next/navigation'
 import PortfolioLayout from 'app/app/portfolios/[id]/PortfolioLayout'
 import React, { useState, useEffect } from 'react'
-// import Table from '@/components/data/Table';
 import portfolioService from '@/services/portfolioService'
-import authService from '@/services/authService'
-// import Table from '@/components/molecules/table/Table';
 
 import {
   ColumnFiltersState,
   SortingState,
   VisibilityState,
-  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
@@ -20,11 +16,10 @@ import {
 } from '@tanstack/react-table'
 import { columns } from './columns'
 import SimpleDataTable from '@/components/molecules/table/SimpleDataTable'
-import PerformanceMock from './PerformanceMock'
 
 // const columns=['symbol','weight','qty','last','bep']
 
-function PortfolioView({ children, to, ...props }) {
+function PortfolioView({ children, to }) {
   const id = usePathname().split('/')[3]
   const [data, setData] = React.useState([])
   const [portfolio, setPortfolio] = useState({ _id: '', allocation: [], transactions: [] })
