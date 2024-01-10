@@ -8,9 +8,7 @@ export default function Footer(props) {
         <div className="md:flex md:justify-between">
           <div className="mb-6 md:mb-0">
             <a href="https://BourseHorus.com" className="flex items-center">
-              <span className="self-center whitespace-nowrap text-2xl font-bold text-primary-700 dark:text-white">
-                BourseHorus
-              </span>
+              <span className="self-center whitespace-nowrap text-2xl font-bold ">BourseHorus</span>
             </a>
           </div>
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 sm:gap-6">

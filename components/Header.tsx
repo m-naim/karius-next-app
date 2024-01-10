@@ -8,15 +8,13 @@ import SearchButton from './SearchButton'
 
 const Header = () => {
   return (
-    <header className="flex items-center justify-between py-10">
+    <header className="flex items-center justify-between pb-5">
       <div>
         <Link href="/" aria-label={siteMetadata.headerTitle}>
           <div className="flex items-center justify-between">
-            <div className="mr-3">
-              <Logo />
-            </div>
+            <Logo className="h-20 w-20" />
             {typeof siteMetadata.headerTitle === 'string' ? (
-              <div className="hidden h-6 text-2xl font-semibold text-primary-700 sm:block">
+              <div className="hidden text-2xl font-semibold sm:block">
                 {siteMetadata.headerTitle}
               </div>
             ) : (
