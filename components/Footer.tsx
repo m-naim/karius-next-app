@@ -19,7 +19,13 @@ export default function Footer(props) {
               <ul className="text-gray-600 dark:text-gray-400">
                 <li className="mb-4"></li>
                 <li>
-                  <Link href="/blog">Blog</Link>
+                  <Link href="/fr/analyse">Analyses</Link>
+                </li>
+                <li>
+                  <Link href="/fr/guide">Guides</Link>
+                </li>
+                <li>
+                  <Link href="/fr/blog">Blog</Link>
                 </li>
               </ul>
             </div>
