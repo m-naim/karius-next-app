@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next'
-import { allBlogs,allGuides,allAnalyses } from 'contentlayer/generated'
+import { allBlogs, allGuides, allAnalyses } from 'contentlayer/generated'
 import siteMetadata from '@/data/siteMetadata'
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -11,15 +11,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${siteUrl}/${post.path}`,
       lastModified: post.lastmod || post.date,
     }))
-  
-    const guideRoutes = allGuides
+
+  const guideRoutes = allGuides
     .filter((post) => !post.draft)
     .map((post) => ({
       url: `${siteUrl}/${post.path}`,
       lastModified: post.lastmod || post.date,
     }))
 
-    const analyseRoutes = allAnalyses
+  const analyseRoutes = allAnalyses
     .filter((post) => !post.draft)
     .map((post) => ({
       url: `${siteUrl}/${post.path}`,
@@ -31,5 +31,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: new Date().toISOString().split('T')[0],
   }))
 
-  return [...routes, ...blogRoutes,...analyseRoutes,...guideRoutes]
+  return [...routes, ...blogRoutes, ...analyseRoutes, ...guideRoutes]
 }
