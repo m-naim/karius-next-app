@@ -8,25 +8,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const blogRoutes = allBlogs
     .filter((post) => !post.draft)
     .map((post) => ({
-      url: `${siteUrl}/${post.path}`,
+      url: `${siteUrl}/fr/${post.path}`,
       lastModified: post.lastmod || post.date,
     }))
 
   const guideRoutes = allGuides
     .filter((post) => !post.draft)
     .map((post) => ({
-      url: `${siteUrl}/${post.path}`,
+      url: `${siteUrl}/fr/${post.path}`,
       lastModified: post.lastmod || post.date,
     }))
 
   const analyseRoutes = allAnalyses
     .filter((post) => !post.draft)
     .map((post) => ({
-      url: `${siteUrl}/${post.path}`,
+      url: `${siteUrl}/fr/${post.path}`,
       lastModified: post.lastmod || post.date,
     }))
 
-  const routes = ['', 'blog'].map((route) => ({
+  const routes = ['', 'fr/blog', 'fr/analyse', 'fr/guide'].map((route) => ({
     url: `${siteUrl}/${route}`,
     lastModified: new Date().toISOString().split('T')[0],
   }))

@@ -74,10 +74,10 @@ export default function PostLayout({
             </div>
           </header>
           <div
-            className=" divide-y divide-gray-200 pb-8 xl:grid xl:grid-cols-5 xl:gap-x-6 xl:divide-y-0 dark:divide-gray-700"
+            className=" divide-y divide-gray-200 pb-8 xl:grid xl:grid-cols-5 xl:grid-rows-2 xl:gap-x-6 xl:divide-y-0 dark:divide-gray-700"
             style={{ gridTemplateRows: 'auto 1fr' }}
           >
-            <div className="divide-y divide-gray-200 xl:order-2 xl:col-span-3 xl:pb-0 dark:divide-gray-700">
+            <div className="divide-y divide-gray-200 xl:order-2 xl:col-span-4 xl:pb-0 dark:divide-gray-700">
               <div className="prose h-full max-w-none overflow-scroll pb-8 pt-10 dark:prose-dark">
                 {children}
               </div>
@@ -93,55 +93,44 @@ export default function PostLayout({
               <TOCInline toc={toc} toHeading={3} />
             </dl>
 
-            <footer className="pb-10 pt-6 xl:order-1 xl:col-span-1 xl:h-full">
-              <div className="xl:sticky xl:top-4">
-                <div className=" divide-gray-200 text-sm font-medium leading-5 xl:col-start-1 xl:row-start-2 xl:divide-y dark:divide-gray-700">
-                  {tags && (
-                    <div className="py-4 xl:py-8">
-                      <h2 className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                        Tags
-                      </h2>
-                      <div className="flex flex-wrap">
-                        {tags.map((tag) => (
-                          <Tag key={tag} text={tag} />
-                        ))}
+            <footer className="order-3 row-span-2 pb-10 pt-6">
+              <div className=" divide-gray-200 text-sm font-medium leading-5 xl:col-start-1 xl:row-start-2 xl:divide-y dark:divide-gray-700">
+                {tags && (
+                  <div className="py-4 xl:py-8">
+                    <h2 className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                      Tags
+                    </h2>
+                    <div className="flex flex-wrap">
+                      {tags.map((tag) => (
+                        <Tag key={tag} text={tag} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {(next || prev) && (
+                  <div className="flex justify-between py-4 xl:block xl:space-y-8 xl:py-8">
+                    {prev && (
+                      <div>
+                        <h2 className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                          Article précédent
+                        </h2>
+                        <div className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400">
+                          <Link href={`/fr/${prev.path}`}>{prev.title}</Link>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  {(next || prev) && (
-                    <div className="flex justify-between py-4 xl:block xl:space-y-8 xl:py-8">
-                      {prev && (
-                        <div>
-                          <h2 className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                            Article précédent
-                          </h2>
-                          <div className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400">
-                            <Link href={`/fr/${prev.path}`}>{prev.title}</Link>
-                          </div>
+                    )}
+                    {next && (
+                      <div>
+                        <h2 className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                          Article suivant
+                        </h2>
+                        <div className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400">
+                          <Link href={`/fr/${next.path}`}>{next.title}</Link>
                         </div>
-                      )}
-                      {next && (
-                        <div>
-                          <h2 className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                            Article suivant
-                          </h2>
-                          <div className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400">
-                            <Link href={`/fr/${next.path}`}>{next.title}</Link>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <div className="pt-4 xl:pt-8">
-                  <Link
-                    href="/blog"
-                    className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400"
-                  >
-                    &larr; Retourner au Blog
-                  </Link>
-                </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </footer>
           </div>

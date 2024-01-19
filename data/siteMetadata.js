@@ -5,7 +5,7 @@ const siteMetadata = {
   description: 'Application Pour un investissement intelligent',
   language: 'fr-FR',
   theme: 'system', // system, dark or light
-  siteUrl: 'https://BourseHorus.com',
+  siteUrl: 'https://www.BourseHorus.com',
   siteLogo: '/static/images/logo.png',
   image: '/static/images/avatar.png',
   socialBanner: '/static/images/twitter-card.png',
