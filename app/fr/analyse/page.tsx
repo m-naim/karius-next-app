@@ -30,12 +30,17 @@ export const generateStaticParams = async () => {
   return paths
 }
 
-export default function TagPage({ params }: { params: { tag: string } }) {
-  const tag = 'analyses'
+export default function TagPage({ params, searchParams }) {
+  const tag = searchParams.tag
+  // const title = tag.toUpperCase()
 
-  const title = tag.toUpperCase()
+  const filteredPosts = allCoreContent(
+    sortPosts(
+      allAnalyses.filter(
+        (post) => !(tag && post.tags && !post.tags.map((t) => slug(t)).includes(tag))
+      )
+    )
+  )
 
-  const filteredPosts = allCoreContent(sortPosts(allAnalyses))
-
-  return <ListLayout posts={filteredPosts} title={title} />
+  return <ListLayout posts={filteredPosts} title={'Analyse fondamental des Actions boursières'} />
 }

@@ -1,5 +1,5 @@
 import { slug } from 'github-slugger'
-import { allCoreContent, sortPosts } from 'pliny/utils/contentlayer'
+import { allCoreContent, dateSortDesc, sortPosts } from 'pliny/utils/contentlayer'
 import siteMetadata from '@/data/siteMetadata'
 import ListLayout from '@/layouts/ListLayoutWithTags'
 import { allGuides } from 'contentlayer/generated'
@@ -31,11 +31,11 @@ export const generateStaticParams = async () => {
 }
 
 export default function TagPage({ params }: { params: { tag: string } }) {
-  const tag = 'guides debutant'
+  const tag = 'Guide Simple pour commencer à investir'
+  const dateKey = 'lastmod'
+  const filteredPosts = allCoreContent(
+    allGuides.sort((a, b) => -1 * dateSortDesc(a[dateKey], b[dateKey]))
+  )
 
-  const title = tag.toUpperCase()
-
-  const filteredPosts = allCoreContent(sortPosts(allGuides))
-
-  return <ListLayout posts={filteredPosts} title={title} />
+  return <ListLayout posts={filteredPosts} title={tag} />
 }
