@@ -28,6 +28,7 @@ function PortfoliosList(props) {
     pftArray = await portfolioService.getMyPortfolios()
     selectView('p')
   }
+
   useLayoutEffect(() => {
     fetchData()
   }, [])

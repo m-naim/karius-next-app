@@ -25,7 +25,7 @@ const FilterButton = ({ column }: FiltrProps) => (
     <DropdownMenuTrigger asChild>
       <Button variant="ghost" className="mx-1 p-0">
         <ListFilterIcon
-          className={cn(' h-4 w-4', column?.getFilterValue() != null ? 'text-primary-600' : '')}
+          className={cn(' h-4 w-4', column?.getFilterValue() != null ? 'text-primary' : '')}
         />
       </Button>
     </DropdownMenuTrigger>

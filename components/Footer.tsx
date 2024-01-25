@@ -22,7 +22,7 @@ export default function Footer(props) {
                   <Link href="/fr/analyse">Analyses</Link>
                 </li>
                 <li>
-                  <Link href="/fr/guide">Guides</Link>
+                  <Link href="/fr/guide">Apprendre</Link>
                 </li>
                 <li>
                   <Link href="/fr/blog">Blog</Link>

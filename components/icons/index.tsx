@@ -21,7 +21,7 @@ const Icon = ({ kind, size = 6 }) => {
   if (!kind) return null
   const SvgIcon = components[kind]
 
-  return <SvgIcon className={`fill-primary-700 h-${size} w-${size} dark:fill-slate-50`}></SvgIcon>
+  return <SvgIcon className={`h-${size} w-${size} fill-primary`}></SvgIcon>
 }
 
 export default Icon

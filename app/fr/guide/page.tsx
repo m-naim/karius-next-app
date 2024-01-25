@@ -6,6 +6,7 @@ import { allGuides } from 'contentlayer/generated'
 import tagData from 'app/tag-data.json'
 import { genPageMetadata } from 'app/seo'
 import { Metadata } from 'next'
+import ListLayoutWithTags from '@/layouts/ListLayoutWithTags'
 
 export async function generateMetadata({ params }: { params: { tag: string } }): Promise<Metadata> {
   const tag = decodeURI(params.tag)
@@ -37,5 +38,5 @@ export default function TagPage({ params }: { params: { tag: string } }) {
     allGuides.sort((a, b) => -1 * dateSortDesc(a[dateKey], b[dateKey]))
   )
 
-  return <ListLayout posts={filteredPosts} title={tag} />
+  return <ListLayoutWithTags posts={filteredPosts} title={tag} />
 }

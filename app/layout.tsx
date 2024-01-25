@@ -1,6 +1,5 @@
 import 'css/tailwind.css'
 import 'css/globals.css'
-import 'pliny/search/algolia.css'
 
 import { Analytics } from '@vercel/analytics/react'
 import { Space_Grotesk } from 'next/font/google'

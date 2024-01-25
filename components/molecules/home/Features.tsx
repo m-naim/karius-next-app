@@ -1,5 +1,6 @@
 import React from 'react'
 import Icon from '@/components/icons'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 const features = [
   {
@@ -16,7 +17,8 @@ const features = [
   {
     icon: 'lightblub',
     title: 'Inspirez vous',
-    description: 'Recherche simple de portefeuilles Plein de statistiques sur les portefeuilles',
+    description:
+      'Inspirer vous avec les portfeilles de la communauté. Avec plein de statistiques pour les analyser. ',
   },
   {
     icon: 'sharenode',
@@ -33,7 +35,7 @@ const features = [
     icon: 'bell',
     title: 'Alertes intelligentes',
     description:
-      'Soyez informés en temps réel des transactions des portefeuilles que vos Suivez Notifications programmées.',
+      'Suivre en temps réel des transactions des portefeuilles que vos Suivez Notifications programmées.',
   },
 ]
 
@@ -46,11 +48,8 @@ export const Features = () => {
             Fonctionnalités sur Mesure pour un Investissement Personnel Optimal.
           </h2>
           <p className="text-gray-500 sm:text-xl dark:text-gray-400">
-            écouvrez des fonctionnalités conçues exclusivement pour répondre aux besoins de
-            l'investisseur particulier. De la gestion de portefeuille intuitive aux analyses
-            personnalisées, notre application offre une expérience transparente, éducative et
-            centrée sur vous. Plongez dans une nouvelle ère d'investissement, façonnée pour faire
-            évoluer vos stratégies vers de nouveaux sommets.
+            De la gestion de portefeuille intuitive aux analyses personnalisées, notre application
+            offre une expérience transparente, éducative et centrée sur vous.
           </p>
         </div>
 
@@ -65,11 +64,13 @@ export const Features = () => {
 }
 
 const Item = ({ title, description, icon }) => (
-  <div>
-    <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 lg:h-12 lg:w-12 dark:bg-primary-900">
+  <Card>
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
+      <CardTitle className="mb-2 text-xl font-bold dark:text-white">{title}</CardTitle>
       <Icon kind={icon} />
-    </div>
-    <h3 className="mb-2 text-xl font-bold dark:text-white">{title}</h3>
-    <p className="text-gray-500 dark:text-gray-400">{description}</p>
-  </div>
+    </CardHeader>
+    <CardContent>
+      <p className="text-gray-500 dark:text-gray-400">{description}</p>
+    </CardContent>
+  </Card>
 )
