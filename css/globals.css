@@ -76,4 +76,16 @@
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
   }
+  h1 {
+    @apply py-3 text-3xl font-bold tracking-tight;
+  }
+  h2 {
+    @apply py-2 text-2xl font-bold tracking-tight;
+  }
+  h3 {
+    @apply py-1 text-lg font-bold tracking-tight;
+  }
+  p {
+    @apply text-muted-foreground;
+  }
 }

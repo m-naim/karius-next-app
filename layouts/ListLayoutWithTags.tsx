@@ -26,14 +26,11 @@ export default function ListLayoutWithTags({ posts, initialDisplayPosts = [] }: 
 
   return (
     <div>
-      <div className="pb-6 pt-6"></div>
       <div className="flex sm:space-x-24">
         <div>
           {Object.entries(groupByTag).map(([tag, posts]: [string, Guide[]]) => (
             <div key={tag}>
-              <p className="text-xl font-semibold capitalize leading-8 tracking-tight text-primary">
-                {tag}
-              </p>
+              <h2 className="capitalize leading-8 text-primary">{tag}</h2>
               <ul className="flex flex-wrap gap-4">
                 {posts.map((post) => (
                   <li className="py-2" key={post._id}>
@@ -51,8 +48,6 @@ export default function ListLayoutWithTags({ posts, initialDisplayPosts = [] }: 
             </div>
           ))}
         </div>
-
-        <div></div>
       </div>
     </div>
   )

@@ -8,19 +8,11 @@ import { genPageMetadata } from 'app/seo'
 import { Metadata } from 'next'
 import ListLayoutWithTags from '@/layouts/ListLayoutWithTags'
 
-export async function generateMetadata({ params }: { params: { tag: string } }): Promise<Metadata> {
-  const tag = decodeURI(params.tag)
-  return genPageMetadata({
-    title: tag,
-    description: `${siteMetadata.title} ${tag} tagged content`,
-    alternates: {
-      canonical: './',
-      types: {
-        'application/rss+xml': `${siteMetadata.siteUrl}/tags/${tag}/feed.xml`,
-      },
-    },
-  })
-}
+export const metadata = genPageMetadata({
+  title: 'Apprendre à invertir en bourse',
+  description:
+    " Découvrez les fondamentaux de l'investissement en bourse avec ma série d'articles. Pour Débuter votre parcours avec la confiance et les connaissances nécessaires  pour optimiser vos rendements.",
+})
 
 export const generateStaticParams = async () => {
   const tagCounts = tagData as Record<string, number>
@@ -38,5 +30,21 @@ export default function TagPage({ params }: { params: { tag: string } }) {
     allGuides.sort((a, b) => -1 * dateSortDesc(a[dateKey], b[dateKey]))
   )
 
-  return <ListLayoutWithTags posts={filteredPosts} title={tag} />
+  return (
+    <div>
+      <div className="py-10">
+        <h1>Apprendre à invistir en bourse</h1>
+        <p>Découvrez les fondamentaux de l'investissement en bourse avec ma série d'articles.</p>
+        <p>
+          Pour Débuter votre parcours avec la confiance et les connaissances nécessaires pour
+          optimiser vos rendements.
+        </p>
+        <p>
+          J'aborde toutes les bases essentielles, des stratégies d'investissement aux concepts clés
+          tels que la diversification.
+        </p>
+      </div>
+      <ListLayoutWithTags posts={filteredPosts} title={tag} />
+    </div>
+  )
 }
