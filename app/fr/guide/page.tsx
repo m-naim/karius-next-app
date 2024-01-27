@@ -1,11 +1,7 @@
-import { slug } from 'github-slugger'
 import { allCoreContent, dateSortDesc, sortPosts } from 'pliny/utils/contentlayer'
-import siteMetadata from '@/data/siteMetadata'
-import ListLayout from '@/layouts/ListLayoutWithTags'
 import { allGuides } from 'contentlayer/generated'
 import tagData from 'app/tag-data.json'
 import { genPageMetadata } from 'app/seo'
-import { Metadata } from 'next'
 import ListLayoutWithTags from '@/layouts/ListLayoutWithTags'
 
 export const metadata = genPageMetadata({
@@ -34,12 +30,14 @@ export default function TagPage({ params }: { params: { tag: string } }) {
     <div>
       <div className="py-10">
         <h1>Apprendre à invistir en bourse</h1>
-        <p>Découvrez les fondamentaux de l'investissement en bourse avec ma série d'articles.</p>
-        <p>
+        <p className="text-muted-foreground">
+          Découvrez les fondamentaux de l'investissement en bourse avec ma série d'articles.
+        </p>
+        <p className="text-muted-foreground">
           Pour Débuter votre parcours avec la confiance et les connaissances nécessaires pour
           optimiser vos rendements.
         </p>
-        <p>
+        <p className="text-muted-foreground">
           J'aborde toutes les bases essentielles, des stratégies d'investissement aux concepts clés
           tels que la diversification.
         </p>

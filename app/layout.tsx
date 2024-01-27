@@ -1,4 +1,3 @@
-import 'css/tailwind.css'
 import 'css/globals.css'
 
 import { Analytics } from '@vercel/analytics/react'

@@ -1,7 +1,3 @@
-import 'css/prism.css'
-import 'katex/dist/katex.css'
-
-import PageTitle from '@/components/PageTitle'
 import { components } from '@/components/MDXComponents'
 import { MDXLayoutRenderer } from 'pliny/mdx-components'
 import { sortPosts, coreContent, allCoreContent } from 'pliny/utils/contentlayer'
@@ -13,6 +9,7 @@ import PostBanner from '@/layouts/PostBanner'
 import { Metadata } from 'next'
 import siteMetadata from '@/data/siteMetadata'
 import { notFound } from 'next/navigation'
+import { round10 } from '@/lib/decimalAjustement'
 
 const defaultLayout = 'PostLayout'
 const layouts = {
@@ -120,6 +117,7 @@ export default async function Page({ params }: { params: { slug: string[] } }) {
         next={next}
         prev={prev}
         toc={post.toc}
+        readingTime={round10(post.readingTime.minutes, 0)}
       >
         <MDXLayoutRenderer code={post.body.code} components={components} toc={post.toc} />
       </Layout>
