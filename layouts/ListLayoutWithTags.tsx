@@ -35,7 +35,7 @@ export default function ListLayoutWithTags({ posts, initialDisplayPosts = [] }: 
                 {posts.map((post) => (
                   <li className="py-2" key={post._id}>
                     <Link href={`/fr/${post.path}`}>
-                      <Card className="h-[10rem] w-[20rem] flex-grow p-6 transition-all hover:bg-accent">
+                      <Card className="h-[12rem] w-[24rem] flex-grow p-6 transition-all hover:bg-accent">
                         <CardTitle className="text-md font-semibold capitalize leading-8 tracking-tight">
                           {post.title}
                         </CardTitle>
