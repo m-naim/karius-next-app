@@ -4246,10 +4246,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vercel/speed-insights@npm:^1.0.2":
-  version: 1.0.2
-  resolution: "@vercel/speed-insights@npm:1.0.2"
-  checksum: 074213d71684d618eb1e755df192d4a8bffa4921d1ff3314796d4fb883aad73672d7ce68ae059426def308cf3a4cd176f870803e880e31eb4d633759eb6a6ed4
+"@vercel/speed-insights@npm:^1.0.8":
+  version: 1.0.8
+  resolution: "@vercel/speed-insights@npm:1.0.8"
+  peerDependencies:
+    "@sveltejs/kit": ^1 || ^2
+    next: ">= 13"
+    react: ^18 || ^19
+    svelte: ^4
+    vue: ^3
+    vue-router: ^4
+  peerDependenciesMeta:
+    "@sveltejs/kit":
+      optional: true
+    next:
+      optional: true
+    react:
+      optional: true
+    svelte:
+      optional: true
+    vue:
+      optional: true
+    vue-router:
+      optional: true
+  checksum: f857a1f856197389f3429d1c318e1a8cae469a5d31c8e7c0b473bb8f6cfd52185a2fd4e202bed01826bfbf49c35fe943c1285546fa05be44a4514f76821960b4
   languageName: node
   linkType: hard
 
@@ -11889,7 +11909,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ^6.1.0
     "@typescript-eslint/parser": ^6.1.0
     "@vercel/analytics": latest
-    "@vercel/speed-insights": ^1.0.2
+    "@vercel/speed-insights": ^1.0.8
     autoprefixer: ^10.4.13
     chart.js: ^4.4.1
     class-variance-authority: ^0.7.0

@@ -10,6 +10,7 @@ import Footer from '@/components/Footer'
 import siteMetadata from '@/data/siteMetadata'
 import { ThemeProviders } from './theme-providers'
 import { Metadata } from 'next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 const space_grotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -76,6 +77,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-white text-black antialiased dark:bg-gray-950 dark:text-white">
         <ThemeProviders>
           <Analytics />
+          <SpeedInsights />
           <Umami
             umamiWebsiteId="c2756f1a-e293-4054-8093-263e21da1be0"
             src="https://eu.umami.is/script.js"

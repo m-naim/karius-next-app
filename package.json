@@ -24,7 +24,7 @@
     "@tailwindcss/typography": "^0.5.9",
     "@tanstack/react-table": "^8.11.2",
     "@vercel/analytics": "latest",
-    "@vercel/speed-insights": "^1.0.2",
+    "@vercel/speed-insights": "^1.0.8",
     "autoprefixer": "^10.4.13",
     "chart.js": "^4.4.1",
     "class-variance-authority": "^0.7.0",
