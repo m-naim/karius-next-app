@@ -11,7 +11,21 @@ export default function Footer(props) {
               <span className="self-center whitespace-nowrap text-2xl font-bold ">BourseHorus</span>
             </a>
           </div>
+
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 sm:gap-6">
+            <div>
+              <h2 className="mb-6 text-sm font-semibold uppercase text-gray-900 dark:text-white">
+                🐳
+              </h2>
+              <div>
+                <ul className="text-gray-600 dark:text-gray-400">
+                  <li>
+                    <Link href="/fr/blog/a-propos">à propos</Link>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
             <div>
               <h2 className="mb-6 text-sm font-semibold uppercase text-gray-900 dark:text-white">
                 Resources
