@@ -1,0 +1,9 @@
+RewriteEngine on
+RewriteCond %{HTTP_HOST} ^website.com$
+RewriteRule ^robots\.txt$ nobots.txt
+
+User-Agent: *
+Allow: /
+
+Host: https://www.BourseHorus.com
+Sitemap: https://www.BourseHorus.com/sitemap.xml

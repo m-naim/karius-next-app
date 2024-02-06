@@ -31,8 +31,7 @@ const Home = () => (
         </dl>
       </div>
     </section>
-
-    {/* <BlogNewsletterForm title="Vous voulais etre informé lors de l'overture de l'application?"></BlogNewsletterForm> */}
+    
   </>
 )
 

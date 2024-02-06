@@ -5,7 +5,6 @@ import btc from '@/assets/img/crypto.btc.svg'
 import Eth from '@/components/icons/crypto.eth.svg'
 import Googl from '@/components/icons/google.svg'
 import Msft from '@/components/icons/crypto.btc.svg'
-import processorImg from '@/assets/img/processor.png'
 
 import 'css/hero.css'
 
@@ -36,7 +35,7 @@ export default function Hero() {
             <Googl alt="crypto" className="crypto-wrap-3 animate-bounce" />
             <Msft alt="crypto" className="crypto-wrap-4 animate-bounce" />
             <Image
-              src={processorImg}
+              src='/static/images/processor.png'
               alt="processor"
               className="crypto-wrap-5"
               width={300}

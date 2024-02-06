@@ -10,3 +10,9 @@ export const addEmail = async (prevState, formData) => {
   // store the post in the database directly
   return { error: null, success: true }
 }
+
+
+export const findStockBySymbol = async (symbol) => {
+  const client = await clientPromise
+  return await client.db('investing').collection('stocks').findOne({'_id':symbol})
+}

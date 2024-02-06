@@ -15,6 +15,7 @@ import { notFound } from 'next/navigation'
 import { round10 } from '@/lib/decimalAjustement'
 
 const defaultLayout = 'PostLayout'
+
 const layouts = {
   PostSimple,
   PostLayout,
