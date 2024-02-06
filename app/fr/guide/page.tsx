@@ -21,7 +21,7 @@ export const generateStaticParams = async () => {
 
 export default function TagPage({ params }: { params: { tag: string } }) {
   const tag = 'Guide Simple pour commencer à investir'
-  const dateKey: string = 'lastmod'
+  const dateKey: string = 'date'
   const filteredPosts = allCoreContent(
     allGuides.sort((a, b) => -1 * dateSortDesc(a[dateKey], b[dateKey]))
   )
