@@ -11,8 +11,7 @@ export const addEmail = async (prevState, formData) => {
   return { error: null, success: true }
 }
 
-
 export const findStockBySymbol = async (symbol) => {
   const client = await clientPromise
-  return await client.db('investing').collection('stocks').findOne({'_id':symbol})
+  return await client.db('investing').collection('stocks').findOne({ _id: symbol })
 }

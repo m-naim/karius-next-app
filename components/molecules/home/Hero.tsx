@@ -35,7 +35,7 @@ export default function Hero() {
             <Googl alt="crypto" className="crypto-wrap-3 animate-bounce" />
             <Msft alt="crypto" className="crypto-wrap-4 animate-bounce" />
             <Image
-              src='/static/images/processor.png'
+              src="/static/images/processor.png"
               alt="processor"
               className="crypto-wrap-5"
               width={300}

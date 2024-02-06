@@ -78,10 +78,10 @@ export const columns: ColumnDef<unknown>[] = [
     cell: ({ row }) => <div className="lowercase">{row.getValue('score')}</div>,
   },
   {
-    accessorKey: 'prix',
+    accessorKey: 'regularMarketPrice',
     header: SortingButton('prix'),
     cell: ({ row }) => {
-      const prix = parseFloat(row.getValue('prix'))
+      const prix = parseFloat(row.getValue('regularMarketPrice'))
 
       // Format the prix as a dollar prix
       const formatted = new Intl.NumberFormat('en-US', {
@@ -93,10 +93,10 @@ export const columns: ColumnDef<unknown>[] = [
     },
   },
   {
-    accessorKey: 'chg',
+    accessorKey: 'regularMarketChange',
     header: SortingButton('chg'),
     cell: ({ row }) => {
-      const chg = parseFloat(row.getValue('chg'))
+      const chg = parseFloat(row.getValue('regularMarketChange'))
       const formatted = new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'EUR',

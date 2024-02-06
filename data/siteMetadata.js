@@ -26,7 +26,7 @@ const siteMetadata = {
     posthogAnalyticsId: '', // posthog.init e.g. phc_5yXvArzvRdqtZIsHkEm3Fkkhm3d0bEYUXCaFISzqPSQ
   },
   search: {
-    provider: '',
+    provider: 'kbar',
     kbarConfig: {
       searchDocumentsPath: 'search.json', // path to load documents to search
     },

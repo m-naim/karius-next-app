@@ -52,8 +52,8 @@ export function WatchlistTable() {
 
   const fetchData = async () => {
     const initData = await watchListService.get('6209837d1dac3662c006190a')
-    console.log(initData);
-    
+    console.log(initData)
+
     setData(initData?.securities)
     return initData
   }

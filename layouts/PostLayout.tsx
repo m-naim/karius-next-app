@@ -55,6 +55,26 @@ export default function PostLayout({
   const basePath = path.split('/')[0]
   const displayImage =
     images && images.length > 0 ? images[0] : 'https://picsum.photos/seed/picsum/800/400'
+
+  const fromHeading = 1
+  const toHeading = 3
+
+  const filteredToc = toc.filter(
+    (heading) => heading.depth >= fromHeading && heading.depth <= toHeading
+  )
+
+  const tocList = (
+    <ul className="sticky top-0 mt-12 border-l-4 p-4 py-12 ">
+      {filteredToc.map((heading) => (
+        <li key={heading.value} className={`${'ml-6'}`}>
+          <a href={heading.url} className="h target:text-blue-600 hover:text-blue-600">
+            {heading.value}
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+
   return (
     <SectionContainer>
       <ScrollTopAndComment />
@@ -106,7 +126,18 @@ export default function PostLayout({
             </div>
 
             <dl className="hidden divide-y divide-gray-200 pb-10 pt-6 xl:order-3 xl:col-span-1 xl:block xl:border-b xl:border-gray-200 xl:pt-11 xl:dark:border-gray-700">
-              <TOCInline toc={toc} toHeading={3} />
+              <details open className="sticky top-0 mt-12 border-l-4 p-4 py-12 ">
+                <summary className="pb-2 pt-2 text-lg font-bold">Table du Contenu</summary>
+                <ul className="ml-6">
+                  {filteredToc.map((heading) => (
+                    <li key={heading.value} className={'mx-2 my-2 list-decimal'}>
+                      <a href={heading.url} className="h target:text-blue-600 hover:text-blue-600">
+                        {heading.value}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </details>
             </dl>
 
             <footer className="order-3 row-span-2 pb-10 pt-6">
