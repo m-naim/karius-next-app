@@ -1,6 +1,7 @@
 import { Input } from '@/components/ui/input'
 import siteMetadata from '@/data/siteMetadata'
 import { findStockBySymbol } from '@/services/actions'
+import NotFound from 'app/not-found'
 import { Metadata } from 'next'
 
 export async function generateMetadata({
@@ -9,8 +10,10 @@ export async function generateMetadata({
   params: { symbol: string }
 }): Promise<Metadata | undefined> {
   const { symbol } = params
+
   const stock = await findStockBySymbol(symbol.toUpperCase())
-  console.log(stock)
+
+  if (stock == null) return {}
 
   const title = `${symbol}| Cours Action ${stock.longname}, Cotation Bourse ${symbol}`
   const summary = `${symbol} Cours Action ${symbol}, Cotation Bourse ${symbol}, graphique, analyses et informations boursières'`
@@ -49,7 +52,7 @@ export async function generateMetadata({
 
 async function page({ params }: { params: { symbol: string } }) {
   const stock = await findStockBySymbol(params.symbol.toUpperCase())
-
+  if (stock == null) return <NotFound />
   return (
     <div>
       <Input></Input>
