@@ -17,7 +17,7 @@ const siteMetadata = {
   linkedin: 'https://www.linkedin.com',
   locale: 'fr-FR',
   analytics: {
-    plausibleDataDomain: 'https://BourseHorus.com', // e.g. tailwind-nextjs-starter-blog.vercel.app
+    plausibleDataDomain: 'https://www.bourseHorus.com', // e.g. tailwind-nextjs-starter-blog.vercel.app
     simpleAnalytics: { src: '' }, // true or false
     umamianalytics: {
       umamiWebsiteId: 'c2756f1a-e293-4054-8093-263e21da1be0',

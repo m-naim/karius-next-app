@@ -7,7 +7,7 @@ export default function Footer(props) {
       <div className="mx-auto max-w-screen-xl">
         <div className="md:flex md:justify-between">
           <div className="mb-6 md:mb-0">
-            <a href="https://BourseHorus.com" className="flex items-center">
+            <a href="https://www.bourseHorus.com" className="flex items-center">
               <span className="self-center whitespace-nowrap text-2xl font-bold ">BourseHorus</span>
             </a>
           </div>
@@ -63,10 +63,7 @@ export default function Footer(props) {
         <div className="sm:flex sm:items-center sm:justify-between">
           <span className="text-sm text-gray-500 sm:text-center dark:text-gray-400">
             © {new Date().getFullYear() + ' '}
-            <a href="https://BourseHorus.com" className="hover:underline">
-              BourseHorus™
-            </a>
-            . All Rights Reserved.
+            BourseHorus™ . All Rights Reserved.
           </span>
 
           <div className="mt-4 flex space-x-6 sm:mt-0 sm:justify-center">

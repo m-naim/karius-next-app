@@ -129,13 +129,20 @@ export default function PostLayout({
               <details open className="sticky top-0 mt-12 border-l-4 p-4 py-12 ">
                 <summary className="pb-2 pt-2 text-lg font-bold">Table du Contenu</summary>
                 <ul className="ml-6">
-                  {filteredToc.map((heading) => (
-                    <li key={heading.value} className={'mx-2 my-2 list-decimal'}>
-                      <a href={heading.url} className="h target:text-blue-600 hover:text-blue-600">
-                        {heading.value}
-                      </a>
-                    </li>
-                  ))}
+                  {filteredToc
+                    .filter((heading) => heading.depth == 2)
+                    .map((heading) => (
+                      <li
+                        key={heading.value}
+                        className={`mx-2 my-3 list-disc leading-tight ${
+                          heading.depth >= 3 && 'ml-6'
+                        }`}
+                      >
+                        <a href={heading.url} className=" target:text-blue-600 hover:text-blue-600">
+                          {heading.value}
+                        </a>
+                      </li>
+                    ))}
                 </ul>
               </details>
             </dl>
