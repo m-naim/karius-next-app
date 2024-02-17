@@ -31,15 +31,10 @@ export default function TagPage({ params }: { params: { tag: string } }) {
       <div className="py-10">
         <h1>Apprendre à invistir en bourse</h1>
         <p className="text-muted-foreground">
-          Découvrez les fondamentaux de l'investissement en bourse avec ma série d'articles.
-        </p>
-        <p className="text-muted-foreground">
-          Pour Débuter votre parcours avec la confiance et les connaissances nécessaires pour
-          optimiser vos rendements.
-        </p>
-        <p className="text-muted-foreground">
-          J'aborde toutes les bases essentielles, des stratégies d'investissement aux concepts clés
-          tels que la diversification.
+          Découvrez les fondamentaux de l'investissement en bourse avec ma série d'articles. Pour
+          Débuter votre parcours avec la confiance et les connaissances nécessaires pour optimiser
+          vos rendements. J'aborde ici toutes les bases essentielles, des stratégies
+          d'investissement aux concepts clés tels que la diversification.
         </p>
       </div>
       <ListLayoutWithTags posts={filteredPosts} title={tag} />
