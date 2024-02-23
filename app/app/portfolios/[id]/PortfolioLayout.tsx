@@ -79,7 +79,7 @@ const PortfolioLayout = ({ pftData, children }) => {
                 strokeWidth={0}
               />
               <span className="mr-2 w-10">{followed ? 'Suivis' : 'Suivre'}</span>
-              <p className=" text-gray-500"> {pftData.followers?.length} 0</p>
+              <span className=" text-gray-500"> {pftData.followers?.length} 0</span>
             </Button>
 
             {true && (
@@ -98,34 +98,34 @@ const PortfolioLayout = ({ pftData, children }) => {
         </div>
       </div>
 
-      <div className="flex w-full gap-2">
-        <div className="w-3xl flex flex-col gap-2">
+      <div className="flex w-full gap-2 p-6">
+        <div className="flex w-2/3 flex-col gap-2">
           <div className="flex max-h-fit w-full flex-grow content-between gap-2 ">
             <StatsCard
               title={'Valeur Total'}
-              amount={100}
-              variation={0.5}
+              amount={12000}
+              variation={20}
               Icon={<BanknoteIcon />}
             />
             <StatsCard
               title={'Variation du jour'}
-              amount={variation}
-              variation={variationPct}
+              amount={360}
+              variation={3}
               Icon={<TrendingUp />}
             />
             <StatsCard
               Icon={<GemIcon />}
               title={'Rendement'}
-              amount={getPctRandement()}
-              variation={camputeRandement()}
+              amount={190}
+              variation={round10(190 / 120, -2)}
             />
           </div>
+          <Performance id={pftData.id} />
 
           <div className="bg-dark w-full flex-grow  rounded-md">{children}</div>
         </div>
 
-        <div className="flex w-1/2 flex-col gap-2">
-          <Performance id={pftData.id} />
+        <div className="flex w-1/3 flex-col gap-2">
           <DividendsView id={pftData.id} />
         </div>
       </div>

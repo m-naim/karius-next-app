@@ -4,6 +4,8 @@ import portfolioService from '@/services/portfolioService'
 import { format } from 'date-fns'
 import { Chart, CategoryScale, LinearScale, LineElement } from 'chart.js'
 import { LineValue } from '@/components/molecules/charts/LineValue'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import MultiSelect from '@/components/molecules/layouts/MultiSelect'
 
 Chart.register(CategoryScale, LinearScale, LineElement)
 
@@ -219,9 +221,12 @@ function Performance({ id }) {
   return loading ? (
     <div className="bg-dark">Calcule de performances en cours ...</div>
   ) : (
-    <div className="bg-dark flex max-w-6xl flex-col lg:flex-row">
-      <div className=" mt-2 flex w-full flex-wrap items-center justify-between">
-        {/* <MultiSelect className='w-full md:max-w-[300px]' list={['Valeur', 'Profits/Pertes', '%Variation']} active={graphType} select={handleTypeSelect} /> */}
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
+        <CardTitle className="text-md font-semibold capitalize">Performance</CardTitle>
+        {/* <MultiSelect className='w-full md:max-w-xs order-3 md:order-2' list={['1M', '6M', '1Y', 'ALL']} active={period} select={handlePeriodClick} /> */}
+      </CardHeader>
+      <CardContent>
         {dates.length > 0 ? (
           <LineValue
             data={{
@@ -240,10 +245,9 @@ function Performance({ id }) {
         ) : (
           <LineValue />
         )}
-
-        {/* <MultiSelect className='w-full md:max-w-xs order-3 md:order-2' list={['1M', '6M', '1Y', 'ALL']} active={period} select={handlePeriodClick} /> */}
-      </div>
-    </div>
+      </CardContent>
+      {/* <MultiSelect className='w-full md:max-w-[300px]' list={['Valeur', 'Profits/Pertes', '%Variation']} active={graphType} /> */}
+    </Card>
   )
 }
 

@@ -41,7 +41,7 @@ export type security = {
 
 const periods = ['1j', '1s', '1m', '3m', '1y', '5y']
 
-export function WatchlistTable() {
+export function WatchlistTable({ id }) {
   const [data, setData] = React.useState([])
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -51,8 +51,7 @@ export function WatchlistTable() {
   let watchlistData
 
   const fetchData = async () => {
-    const initData = await watchListService.get('6209837d1dac3662c006190a')
-    console.log(initData)
+    const initData = await watchListService.get(id)
 
     setData(initData?.securities)
     return initData

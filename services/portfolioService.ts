@@ -21,7 +21,6 @@ function getStocksContains(name) {
 }
 
 function get(portfolioID = 'curent') {
-  console.log(portfolioID)
   return http.get(`${host}/api/v1/portfolios/${portfolioID}`)
 }
 

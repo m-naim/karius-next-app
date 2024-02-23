@@ -32,7 +32,7 @@ export const dataSetItem1: ChartDataset<'line', number[]> = {
   backgroundColor: 'rgba(37,99,235,0.2)',
   borderColor: 'rgb(37,99,235)',
   fill: true,
-  data: [0, 1, 3, 5, 4, 6, 7],
+  data: [1900, 1750, 2500, 2575, 2400, 2600, 2700, 2868],
   cubicInterpolationMode: 'monotone',
   tension: 0.4,
 }
@@ -45,9 +45,9 @@ export const dataSetItem2: ChartDataset<'line', number[]> = {
   cubicInterpolationMode: 'monotone',
   tension: 0.4,
 }
-const initdata: ChartData<'line', number[], number> = {
-  labels: [0, 1, 2, 3, 4, 5, 6, 7],
-  datasets: [dataSetItem1, dataSetItem2],
+const initdata: ChartData<'line', number[], string> = {
+  labels: ['07/2023', '08/2023', '09/2023', '10/2023', '11/2023', '12/2023', '01/2024', '02/2024'],
+  datasets: [dataSetItem1],
 }
 
 const options = {
@@ -63,7 +63,7 @@ const options = {
 
 export function LineValue({ data = initdata }) {
   return (
-    <div className="bg-dark-primary order-3  m-2 w-full rounded-md p-2 shadow">
+    <div className="bg-dark-primary order-3 w-full rounded-md ">
       <Line
         data={data}
         options={{

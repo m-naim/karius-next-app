@@ -5,17 +5,18 @@ import { format } from 'date-fns'
 import MultiSelect from '@/components/molecules/layouts/MultiSelect'
 
 import { Chart, CategoryScale, LinearScale, BarElement } from 'chart.js'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
 Chart.register(CategoryScale, LinearScale, BarElement)
 
 const chartDataInit = {
-  labels: [2010, 2020, 2030],
+  labels: [2022, 2023, 2024],
   datasets: [
     {
       label: 'Performance',
       backgroundColor: 'rgb(109, 99, 255)',
       borderColor: 'rgb(132, 149, 243)',
-      data: [30, 10, 50],
+      data: [0, 70, 190],
     },
   ],
 }
@@ -41,7 +42,7 @@ const chartOptions = {
     },
     y: {
       ticks: {
-        display: false,
+        display: true,
       },
       grid: {
         display: false,
@@ -117,8 +118,12 @@ function DividendsView({ id }) {
   return loading ? (
     <div>Loading ...</div>
   ) : (
-    <div className="bg-dark-primary flex flex-col rounded-md lg:flex-row">
-      <div className="m-2 flex w-full flex-col  items-center">
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
+        <CardTitle className="text-md font-semibold capitalize">Dividendes</CardTitle>
+        <MultiSelect list={['Mensuel', 'Annuel']} active={period} select={handlePeriodClick} />
+      </CardHeader>
+      <CardContent>
         <div className="m-2 w-full ">
           {dates.length > 0 ? (
             <Bar
@@ -138,9 +143,8 @@ function DividendsView({ id }) {
             />
           ) : null}
         </div>
-        <MultiSelect list={['Mensuel', 'Annuel']} active={period} select={handlePeriodClick} />
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }
 
