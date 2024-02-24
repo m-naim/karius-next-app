@@ -20,7 +20,18 @@ const AccordionItem = ({ className, title, content, ...props }) => {
   )
 }
 
-const AccordionTrigger = ({ isActive, setIsActive, className, children, ...props }) => (
+const AccordionTrigger = ({
+  isActive,
+  setIsActive,
+  className,
+  children,
+  ...props
+}: {
+  isActive?
+  setIsActive?
+  className?
+  children: React.ReactElement
+}) => (
   <button className="flex w-full" onClick={() => setIsActive(!isActive)}>
     <div
       className={cn(
@@ -40,7 +51,16 @@ const AccordionTrigger = ({ isActive, setIsActive, className, children, ...props
   </button>
 )
 
-const AccordionContent = ({ isActive, className, children, ...props }) => (
+const AccordionContent = ({
+  isActive,
+  className,
+  children,
+  ...props
+}: {
+  isActive?
+  className?
+  children?
+}) => (
   <div
     className="overflow-hidden text-sm transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
     {...props}
