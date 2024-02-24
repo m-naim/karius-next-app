@@ -2,7 +2,8 @@ const siteMetadata = {
   title: 'BourseHorus',
   author: 'BourseHorus',
   headerTitle: 'BourseHorus',
-  description: 'Application Pour un investissement intelligent',
+  description:
+    'BourseHorus est une application boursière permettant de gérer vos portefeuilles boursiers, d’établir des bilans annuels, de tracer l’évolution de vos portefeuilles depuis leur création, et de comparer vos performances avec celle du CAC 40 et d’autres investisseurs.',
   language: 'fr-FR',
   theme: 'system', // system, dark or light
   siteUrl: 'https://www.BourseHorus.com',

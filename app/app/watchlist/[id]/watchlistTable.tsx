@@ -90,7 +90,6 @@ export function WatchlistTable({ id }) {
 
 const TableContextHeader = ({ table, setData }) => {
   const addRow = (newRow) => {
-    console.log(newRow)
     const setFunc = (old) => [...old, newRow]
     setData(setFunc)
     watchListService.addStock('6209837d1dac3662c006190a', {
