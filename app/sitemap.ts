@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next'
 import { allBlogs, allGuides, allAnalyses } from 'contentlayer/generated'
 import siteMetadata from '@/data/siteMetadata'
+import { routesData } from '@/data/Routes'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const siteUrl = siteMetadata.siteUrl
@@ -26,9 +27,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: post.lastmod || post.date,
     }))
 
-  const routes = ['', 'fr/blog', 'fr/analyse', 'fr/guide'].map((route) => ({
-    url: `${siteUrl}/${route}`,
-    lastModified: new Date(2024, 1, 7).toISOString().split('T')[0],
+  const routes = routesData.map((route) => ({
+    url: `${siteUrl}/${route.href}`,
+    lastModified: route.lastMod,
   }))
 
   return [...routes, ...blogRoutes, ...analyseRoutes, ...guideRoutes]

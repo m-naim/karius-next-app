@@ -1,3 +1,4 @@
+import { footerRoutes } from '@/data/Routes'
 import Link from 'next/link'
 import React from 'react'
 
@@ -13,50 +14,23 @@ export default function Footer(props) {
           </div>
 
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 sm:gap-6">
-            <div>
-              <p className="mb-6 text-sm font-semibold uppercase text-gray-900 dark:text-white">
-                🐳
-              </p>
-              <div>
-                <ul className="text-gray-600 dark:text-gray-400">
-                  <li>
-                    <Link href="/fr/blog/a-propos">à propos</Link>
-                  </li>
-                </ul>
+            {footerRoutes.map((f) => (
+              <div key={f.key}>
+                <p className="mb-6 text-sm font-semibold uppercase text-gray-900 dark:text-white">
+                  {f.category}
+                </p>
+
+                <div>
+                  <ul className="text-gray-600 dark:text-gray-400">
+                    {f.routes.map((route) => (
+                      <li key={route.title}>
+                        <Link href={route.href}>{route.title}</Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-            </div>
-
-            <div>
-              <p className="mb-6 text-sm font-semibold uppercase text-gray-900 dark:text-white">
-                Resources
-              </p>
-              <ul className="text-gray-600 dark:text-gray-400">
-                <li className="mb-4"></li>
-                <li>
-                  <Link href="/fr/analyse">Analyses</Link>
-                </li>
-                <li>
-                  <Link href="/fr/guide">Apprendre</Link>
-                </li>
-                <li>
-                  <Link href="/fr/blog">Blog</Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <p className="mb-6 text-sm font-semibold uppercase text-gray-900 dark:text-white">
-                Legal
-              </p>
-              <ul className="text-gray-600 dark:text-gray-400">
-                <li className="mb-4">
-                  <a className="hover:underline">Privacy Policy</a>
-                </li>
-                <li>
-                  <a className="hover:underline">Terms &amp; Conditions</a>
-                </li>
-              </ul>
-            </div>
+            ))}
           </div>
         </div>
         <hr className="my-6 border-gray-200 sm:mx-auto lg:my-8 dark:border-gray-700" />
