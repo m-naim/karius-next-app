@@ -65,12 +65,18 @@ const chartOptions = {
   //     mode: 'index',
   // },
 }
-let dividendsData
+
+interface yearRecord {
+  totalAmount: string
+}
+interface DividendesChart {
+  yearlyDividends: Map<string, yearRecord>
+}
 
 function DividendsView({ id }) {
   const [loading, setLoading] = useState(false)
-  const [dates, setDates] = useState<unknown>(chartDataInit.labels)
-  const [perfs, setPerfs] = useState(chartDataInit.datasets[0].data)
+  const [dates, setDates] = useState<string[]>([])
+  const [perfs, setPerfs] = useState<number[]>([])
 
   const [period, setPeriod] = useState('Annuel')
 
@@ -82,11 +88,9 @@ function DividendsView({ id }) {
   }
   const fetchData = async () => {
     try {
-      const dividends = await portfolioService.getDividends(id)
-      console.log(dividends)
-      setDates(Object.keys(dividends.yearlyDividends))
-      console.log(Object.values(dividends.yearlyDividends).map((v) => v.totalAmount))
+      const dividends: DividendesChart = await portfolioService.getDividends(id)
 
+      setDates(Object.keys(dividends.yearlyDividends))
       setPerfs(Object.values(dividends.yearlyDividends).map((v) => v.totalAmount))
     } catch (e) {
       console.log('error api', e)
