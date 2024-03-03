@@ -5,7 +5,7 @@ import { format } from 'date-fns'
 import MultiSelect from '@/components/molecules/layouts/MultiSelect'
 
 import { Chart, CategoryScale, LinearScale, BarElement } from 'chart.js'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 Chart.register(CategoryScale, LinearScale, BarElement)
 
@@ -69,8 +69,7 @@ let dividendsData
 
 function DividendsView({ id }) {
   const [loading, setLoading] = useState(false)
-  const [name, setName] = useState('')
-  const [dates, setDates] = useState(chartDataInit.labels)
+  const [dates, setDates] = useState<unknown>(chartDataInit.labels)
   const [perfs, setPerfs] = useState(chartDataInit.datasets[0].data)
 
   const [period, setPeriod] = useState('Annuel')
@@ -83,20 +82,20 @@ function DividendsView({ id }) {
   }
   const fetchData = async () => {
     try {
-      portfolioService.getDividends(id)
-      const data = await portfolioService.get(id as string)
-      dividendsData = data.dividends
-      setName(data.name)
-      setDates(get_years(dividendsData.yearly.Date))
-      setPerfs(dividendsData.yearly.values)
-    } catch {
-      console.log('error api')
+      const dividends = await portfolioService.getDividends(id)
+      console.log(dividends)
+      setDates(Object.keys(dividends.yearlyDividends))
+      console.log(Object.values(dividends.yearlyDividends).map((v) => v.totalAmount))
+
+      setPerfs(Object.values(dividends.yearlyDividends).map((v) => v.totalAmount))
+    } catch (e) {
+      console.log('error api', e)
     }
   }
 
   useEffect(() => {
-    // fetchData();
-    // setLoading(false)
+    fetchData()
+    setLoading(false)
   }, [])
 
   const handlePeriodClick = (period) => {

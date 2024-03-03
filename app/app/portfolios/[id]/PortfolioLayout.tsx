@@ -16,7 +16,7 @@ type Props = {
   title?: string
 }
 
-const PortfolioLayout = ({ pftData, children }) => {
+const PortfolioLayout = ({ pftData, id, children }) => {
   const router = useRouter()
 
   const [followed, setFollowed] = useState(false)
@@ -126,7 +126,7 @@ const PortfolioLayout = ({ pftData, children }) => {
         </div>
 
         <div className="flex w-1/3 flex-col gap-2">
-          <DividendsView id={pftData.id} />
+          <DividendsView id={id} />
         </div>
       </div>
     </div>

@@ -90,7 +90,7 @@ export default function PortfolioView() {
   })
 
   return (
-    <PortfolioLayout pftData={portfolio}>
+    <PortfolioLayout id={id} pftData={portfolio}>
       <SimpleDataTable table={table} colSpan={columns.length} />
     </PortfolioLayout>
   )

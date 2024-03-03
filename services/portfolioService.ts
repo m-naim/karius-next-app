@@ -69,18 +69,18 @@ function AddTransaction(idPft, sense, ticker, prix, qty, date) {
 }
 
 function deletePortfolio(id) {
-  return http.deleteReq(`${host}/api/v1/portfolio/${id}`)
+  return http.deleteReq(`${host}/api/v1/portfolios/${id}`)
 }
 
 function getPerformances(id) {
-  return http.get(`${host}/api/v1/portfolio/${id}/performance`)
+  return http.get(`${host}/api/v1/portfolios/${id}/performance`)
 }
 function getDividends(id) {
-  return http.get(`${qwantHost}/api/v1/portfolio/${id}/dividends`)
+  return http.get(`${qwantHost}/api/v1/portfolios/${id}/dividends`)
 }
 
 function getMetrics(id) {
-  return http.get(`${qwantHost}/api/v1/portfolio/${id}/stats`)
+  return http.get(`${qwantHost}/api/v1/portfolios/${id}/stats`)
 }
 
 const portfolioService = {

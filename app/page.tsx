@@ -17,10 +17,10 @@ export default async function Page() {
       <section className="flex w-full max-w-screen-xl flex-col place-items-center px-4 py-8 lg:gap-8 lg:py-8 xl:gap-0">
         <div className=" text-center lg:col-span-7">
           <h1 className="mb-4 max-w-2xl text-4xl font-extrabold leading-none tracking-tight md:text-5xl xl:text-6xl dark:text-white">
-            L'application de gestion de portefeuilles boursiers
+            Le logiciel de gestion de portefeuilles boursiers
           </h1>
           <p className="mb-6 max-w-2xl font-light text-gray-500 md:text-lg lg:mb-8 lg:text-xl dark:text-gray-400">
-            Analyse et suivis de Portefeuille Boursier Comme Jamais Auparavant.
+            Analyse et suivis de votre Portefeuille Boursier Comme Jamais Auparavant.
           </p>
         </div>
         <Card className="bg-white p-1">
