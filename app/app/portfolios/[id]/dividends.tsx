@@ -102,21 +102,21 @@ function DividendsView({ id }) {
     setLoading(false)
   }, [])
 
-  const handlePeriodClick = (period) => {
-    setPeriod(period)
-    switch (period) {
-      case 'Annuel':
-        setDates(get_years(dividendsData.yearly.Date))
-        setPerfs(dividendsData.yearly.values)
-        break
-      case 'Mensuel':
-        setDates(get_months(dividendsData.monthy.Date))
-        setPerfs(dividendsData.monthy.values)
-        break
-      default:
-        break
-    }
-  }
+  // const handlePeriodClick = (period) => {
+  //   setPeriod(period)
+  //   switch (period) {
+  //     case 'Annuel':
+  //       setDates(dividendsData.yearly.Date)
+  //       setPerfs(dividendsData.yearly.values)
+  //       break
+  //     case 'Mensuel':
+  //       setDates(dividendsData.monthy.Date)
+  //       setPerfs(dividendsData.monthy.values)
+  //       break
+  //     default:
+  //       break
+  //   }
+  // }
 
   return loading ? (
     <div>Loading ...</div>
@@ -124,7 +124,7 @@ function DividendsView({ id }) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
         <CardTitle className="text-md font-semibold capitalize">Dividendes</CardTitle>
-        <MultiSelect list={['Mensuel', 'Annuel']} active={period} select={handlePeriodClick} />
+        {/* <MultiSelect list={['Mensuel', 'Annuel']} active={period} select={handlePeriodClick} /> */}
       </CardHeader>
       <CardContent>
         <div className="m-2 w-full ">
