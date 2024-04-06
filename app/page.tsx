@@ -28,7 +28,9 @@ export default async function Page() {
         </div>
 
         <Button className="m-6 w-fit self-center px-6">
-          <Link href={'/login'}>Essayer Gratuitement</Link>
+          <Link data-umami-event="landing-try-button" href={'/login'}>
+            Essayer Gratuitement
+          </Link>
         </Button>
         <Card className="halo w-fit self-center bg-white p-1">
           <CardContent className="p-1">

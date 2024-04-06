@@ -89,7 +89,11 @@ function Login() {
                 Rester connecter
               </Label>
             </div>
-            <Button variant="link" className="ml-auto text-sm text-primary hover:underline">
+            <Button
+              variant="link"
+              className="ml-auto text-sm text-primary hover:underline"
+              data-umami-event="login-forgot-button"
+            >
               Mot de passe oublié?
             </Button>
           </div>
@@ -109,7 +113,11 @@ function Login() {
 
           <div className="p-2 text-sm font-medium text-gray-500 dark:text-gray-300">
             Vous n'avez pas un compte?{' '}
-            <Link className="text-primary hover:underline" href="/signup">
+            <Link
+              data-umami-event="login-create-account-button"
+              className="text-primary hover:underline"
+              href="/signup"
+            >
               Crée un compte
             </Link>
           </div>

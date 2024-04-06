@@ -91,9 +91,6 @@ export default function PostLayout({
                   </div>
                 </dl>
               </div>
-              {/* <div className="relative aspect-[2/1] h-48">
-                <Image src={displayImage} alt={title} fill className="object-cover" />
-              </div> */}
             </div>
           </header>
           <div
@@ -104,12 +101,6 @@ export default function PostLayout({
               <div className="prose h-full max-w-none overflow-scroll pb-8 pt-10 dark:prose-dark">
                 {children}
               </div>
-              {/* <div className="pt-6 pb-6 text-sm text-gray-700 dark:text-gray-300">
-                <Link href={discussUrl(slug)} rel="nofollow">
-                  {'En Parler sur Twitter'}
-                </Link>
-                {` • `}
-              </div> */}
             </div>
 
             <dl className="hidden divide-y divide-gray-200 pb-10 pt-6 xl:order-3 xl:col-span-1 xl:block xl:border-b xl:border-gray-200 xl:pt-11 xl:dark:border-gray-700">
@@ -125,7 +116,11 @@ export default function PostLayout({
                           heading.depth >= 3 && 'ml-6'
                         }`}
                       >
-                        <a href={heading.url} className=" target:text-blue-600 hover:text-blue-600">
+                        <a
+                          data-umami-event={`post-toc-${heading.value}`}
+                          href={heading.url}
+                          className=" target:text-blue-600 hover:text-blue-600"
+                        >
                           {heading.value}
                         </a>
                       </li>
@@ -156,7 +151,9 @@ export default function PostLayout({
                           Article précédent
                         </h2>
                         <div className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400">
-                          <Link href={`/fr/${prev.path}`}>{prev.title}</Link>
+                          <Link data-umami-event={`post-prev-${title}`} href={`/fr/${prev.path}`}>
+                            {prev.title}
+                          </Link>
                         </div>
                       </div>
                     )}
@@ -166,7 +163,9 @@ export default function PostLayout({
                           Article suivant
                         </h2>
                         <div className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400">
-                          <Link href={`/fr/${next.path}`}>{next.title}</Link>
+                          <Link data-umami-event={`post-next-${title}`} href={`/fr/${next.path}`}>
+                            {next.title}
+                          </Link>
                         </div>
                       </div>
                     )}

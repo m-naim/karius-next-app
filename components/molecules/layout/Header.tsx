@@ -25,7 +25,7 @@ const Header = () => {
     <header className="border-b py-2">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 sm:px-6 xl:max-w-7xl xl:px-0">
         <div>
-          <Link href="/" aria-label={siteMetadata.headerTitle}>
+          <Link data-umami-event={'header-home'} href="/" aria-label={siteMetadata.headerTitle}>
             <div className=" font-mono text-2xl font-semibold italic text-primary ">
               {siteMetadata.headerTitle}
             </div>
@@ -37,6 +37,7 @@ const Header = () => {
             .filter((link) => !link.draft)
             .map((link) => (
               <Link
+                data-umami-event={`header-${link.title}`}
                 key={link.title}
                 href={link.href}
                 className="hidden font-medium text-gray-900 sm:block dark:text-gray-100"
@@ -67,8 +68,8 @@ const Header = () => {
               <Button variant={'link'} size={'sm'}>Se connecter</Button>
             </Link> */}
 
-              <Link href="/signup" data-umami-event="Signup button">
-                <Button className="h-7" size={'sm'} data-umami-event="Signup button">
+              <Link href="/signup" data-umami-event="header-Signup-button">
+                <Button className="h-7" size={'sm'} data-umami-event="header-Signup-button">
                   Crée un compte gratuit
                 </Button>
               </Link>

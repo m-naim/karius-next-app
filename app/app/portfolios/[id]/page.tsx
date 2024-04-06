@@ -85,7 +85,7 @@ export default function PortfolioView() {
               <TransactionDialogue id={id} />
               {/* <Button variant='outline'  size='sm'> visualiser</Button>
           <Button variant='outline'  size='sm'> all transactions</Button> */}
-              <Link href={`${id}/import`}>
+              <Link data-umami-event="portfolio-import-button" href={`${id}/import`}>
                 <Button variant="outline" className="gap-2" size="sm">
                   <FileScan />
                   Importer

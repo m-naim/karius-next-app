@@ -74,11 +74,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <link rel="alternate" type="application/rss+xml" href="/feed.xml" />
 
       <body className="antialiased">
+        {/* <script defer 
+        src="/static/script/miam.js"
+        data-host-url="https://eu.umami.is"
+        data-website-id="45c32163-91bd-4876-acf0-917964180452">
+        </script> */}
+
         <script
           defer
           src="/static/script/miam.js"
+          data-host-url="https://eu.umami.is"
           data-website-id="c2756f1a-e293-4054-8093-263e21da1be0"
         ></script>
+
         <ThemeProviders>
           <Analytics />
           <SpeedInsights />

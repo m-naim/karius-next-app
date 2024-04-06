@@ -48,8 +48,8 @@ const Portfolios = () => {
           items={data?.ownPortfolios}
           title={'Mes portefeuilles'}
           ActionButton={() => (
-            <Link href={'portfolios/new'}>
-              <Button variant={'outline'} size={'sm'}>
+            <Link data-umami-event="portfolios-new-button" href={'portfolios/new'}>
+              <Button data-umami-event="portfolios-new-button" variant={'outline'} size={'sm'}>
                 + Nouveau Portefeuille
               </Button>
             </Link>

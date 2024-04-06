@@ -24,7 +24,9 @@ export default function Footer(props) {
                   <ul className="text-gray-600 dark:text-gray-400">
                     {f.routes.map((route) => (
                       <li key={route.title}>
-                        <Link href={route.href}>{route.title}</Link>
+                        <Link data-umami-event={`footer-${route.href}`} href={route.href}>
+                          {route.title}
+                        </Link>
                       </li>
                     ))}
                   </ul>
