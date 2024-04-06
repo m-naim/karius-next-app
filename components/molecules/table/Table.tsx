@@ -1,24 +1,17 @@
 import { format } from 'date-fns'
-import AddTransaction from '../portfolio/AddTransaction'
 import React, { useEffect, useState } from 'react'
 import { comparator } from '@/lib/utils'
 import data from '@/data/mock/data'
 import { round10 } from '@/lib/decimalAjustement'
-import Modal from '../layouts/Modal'
-import useModal from 'hooks/UseModal'
 
 const toPrecentille = (val) => round10(val * 100, -2) + '%'
 
 function Table({
   propRows = data.rows,
   columns = data.columns,
-  addtransaction,
   type = 'allocation',
   editable = false,
 }) {
-  console.log(propRows)
-
-  const { isShowing, toggle } = useModal()
   const [ticker, setTicker] = useState('')
 
   const [columnSorting, setColumnSorting] = useState('')
@@ -28,7 +21,6 @@ function Table({
 
   const addclick = (value) => {
     setTicker(value)
-    toggle()
   }
 
   const sortby = (column) => {
@@ -47,15 +39,8 @@ function Table({
       <div className="flex place-content-between py-4">
         <p className="text-lg">{rows.length} éléments</p>
         <div className="flex gap-8">
-          {editable && (
-            <button className="btn-primary" onClick={toggle}>
-              + Ajouter
-            </button>
-          )}
+          {editable && <button className="btn-primary">+ Ajouter</button>}
         </div>
-        <Modal isShowing={isShowing} hide={() => toggle()}>
-          <AddTransaction hide={toggle} addClick={addtransaction} symbol={ticker} />
-        </Modal>
       </div>
       <table className="w-full divide-y border-gray-200 ">
         <thead>
