@@ -1,4 +1,4 @@
-import { components } from '@/components/MDXComponents'
+import { components } from '@/components/molecules/article/MDXComponents'
 import { MDXLayoutRenderer } from 'pliny/mdx-components'
 import { sortPosts, coreContent, allCoreContent } from 'pliny/utils/contentlayer'
 import { allAuthors, allAnalyses } from 'contentlayer/generated'

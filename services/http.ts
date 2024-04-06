@@ -11,10 +11,10 @@ async function CheckError(response) {
 }
 
 function authHeader() {
-  if (typeof window !== 'undefined' && getLocalStorageItem('user') !== '') {
-    const user = JSON.parse(getLocalStorageItem('user'))
-    if (user && user.token) {
-      return { 'x-auth-token': user.token }
+  if (typeof window !== 'undefined' && localStorage.getItem('accessToken') !== null) {
+    const accessToken = localStorage.getItem('accessToken')
+    if (accessToken) {
+      return { Authorization: `Bearer ${accessToken}` }
     }
   }
   return

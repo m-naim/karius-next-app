@@ -2,5 +2,8 @@
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "cSpell.enableFiletypes": ["mdx"],
-  "cSpell.words": ["Accordion"]
+  "cSpell.words": ["Accordion"],
+  "search.exclude": {
+    "**/*.code-search": false
+  }
 }

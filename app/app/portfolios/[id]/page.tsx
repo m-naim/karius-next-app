@@ -16,12 +16,19 @@ import {
 } from '@tanstack/react-table'
 import { columns } from './columns'
 import SimpleDataTable from '@/components/molecules/table/SimpleDataTable'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+import { FileScan } from 'lucide-react'
+import TransactionDialogue from './transactionDialogue'
+import Link from 'next/link'
+import useAuth from 'hooks/UseAuth'
 
 export default function PortfolioView() {
   const id = usePathname().split('/')[3]
   const [data, setData] = React.useState([])
   const [portfolio, setPortfolio] = useState({ _id: '', allocation: [], transactions: [] })
-  const [editable, setEditable] = useState(false)
+  const [own, setOwn] = React.useState(false)
 
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -32,20 +39,14 @@ export default function PortfolioView() {
     try {
       console.log(id)
       const res = await portfolioService.get(id as string)
-      // const userId= authService.getCurrentUser().user.id;
 
-      res.allocation = res.allocation.map((item, i) => {
-        item.id = i + 1
-        return item
-      })
-
-      res.transactions.forEach((item, i) => {
+      res.data.transactions.forEach((item, i) => {
         item.id = i + 1
       })
-      // if(data.owner===userId) setEditable(true);
-      console.log(res)
-      setPortfolio(res)
-      setData(res.allocation)
+
+      setOwn(res.own)
+      setPortfolio(res.data)
+      setData(res.data.allocation)
     } catch (e) {
       console.log('error api:' + e)
       setPortfolio({ _id: '', allocation: [], transactions: [] })
@@ -55,21 +56,6 @@ export default function PortfolioView() {
   useEffect(() => {
     fetchData(id)
   }, [])
-
-  const addtransaction = async (sense, ticker, prix, qty, date) => {
-    const res = await portfolioService.AddTransaction(portfolio._id, sense, ticker, prix, qty, date)
-    console.log(res)
-    res.allocation = res.allocation.map((item, i) => {
-      item.id = i + 1
-      return item
-    })
-
-    res.transactions.forEach((item, i) => {
-      item.id = i + 1
-    })
-
-    setPortfolio(res)
-  }
 
   const table = useReactTable({
     data,
@@ -90,8 +76,28 @@ export default function PortfolioView() {
   })
 
   return (
-    <PortfolioLayout id={id} pftData={portfolio}>
-      <SimpleDataTable table={table} colSpan={columns.length} />
+    <PortfolioLayout id={id} pftData={portfolio} isOwn={own}>
+      <Card>
+        <CardHeader>
+          <CardTitle>Investissements</CardTitle>
+          {own && (
+            <div className="flex gap-2 p-2">
+              <TransactionDialogue id={id} />
+              {/* <Button variant='outline'  size='sm'> visualiser</Button>
+          <Button variant='outline'  size='sm'> all transactions</Button> */}
+              <Link href={`${id}/import`}>
+                <Button variant="outline" className="gap-2" size="sm">
+                  <FileScan />
+                  Importer
+                </Button>
+              </Link>
+            </div>
+          )}
+        </CardHeader>
+        <CardContent>
+          <SimpleDataTable table={table} colSpan={columns.length} />
+        </CardContent>
+      </Card>
     </PortfolioLayout>
   )
 }

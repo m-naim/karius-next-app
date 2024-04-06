@@ -2,11 +2,9 @@ import 'css/globals.css'
 
 import { Analytics } from '@vercel/analytics/react'
 import { Space_Grotesk } from 'next/font/google'
-import { Analytics as An, AnalyticsConfig, Umami } from 'pliny/analytics'
 import { SearchProvider, SearchConfig } from 'pliny/search'
-import Header from '@/components/Header'
-import SectionContainer from '@/components/SectionContainer'
-import Footer from '@/components/Footer'
+import Header from '@/components/molecules/layout/Header'
+import Footer from '@/components/molecules/layout/Footer'
 import siteMetadata from '@/data/siteMetadata'
 import { ThemeProviders } from './theme-providers'
 import { Metadata } from 'next'
@@ -74,24 +72,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fff" />
       <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000" />
       <link rel="alternate" type="application/rss+xml" href="/feed.xml" />
-      <body className="bg-white text-black antialiased dark:bg-gray-950 dark:text-white">
+
+      <body className="antialiased">
+        <script
+          defer
+          src="/static/script/miam.js"
+          data-website-id="c2756f1a-e293-4054-8093-263e21da1be0"
+        ></script>
         <ThemeProviders>
           <Analytics />
           <SpeedInsights />
-          <Umami
-            umamiWebsiteId="c2756f1a-e293-4054-8093-263e21da1be0"
-            src="https://eu.umami.is/script.js"
-          />
 
-          <SectionContainer>
-            <div className="flex h-screen flex-col justify-between font-sans">
-              <SearchProvider searchConfig={siteMetadata.search as SearchConfig}>
-                <Header />
-                <main className="mb-auto">{children}</main>
-              </SearchProvider>
-              <Footer />
-            </div>
-          </SectionContainer>
+          <div className="flex h-screen flex-col justify-between font-sans">
+            <SearchProvider searchConfig={siteMetadata.search as SearchConfig}>
+              <Header />
+              <main className="mb-auto">{children}</main>
+            </SearchProvider>
+            <Footer />
+          </div>
         </ThemeProviders>
       </body>
     </html>

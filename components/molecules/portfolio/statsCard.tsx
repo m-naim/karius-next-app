@@ -9,7 +9,7 @@ const StatsCard = ({ title, amount, variation, Icon }) => (
     <CardContent className="pb-1">
       <div className="flex gap-2">
         <div className="text-xl font-bold">{amount}€ </div>
-        <span className="text-sm">+{variation}%</span>
+        <span className="text-sm">{variation}%</span>
       </div>
     </CardContent>
   </Card>

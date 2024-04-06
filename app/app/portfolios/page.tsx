@@ -1,36 +1,86 @@
-import PortfoliosList from '@/components/molecules/portfolio/PortfoliosList'
+'use client'
+
+import SectionContainer from '@/components/molecules/layout/SectionContainer'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { getPublicPortfolios } from '@/services/actions'
+import { round10 } from '@/lib/decimalAjustement'
+import portfolioService from '@/services/portfolioService'
+import useAuth from 'hooks/UseAuth'
 import { Star, TrendingUpIcon } from 'lucide-react'
 import Link from 'next/link'
+import React, { useEffect } from 'react'
 
-const Portfolios = async () => {
-  const publicPortfolios = await getPublicPortfolios()
+interface PortfolioSummery {
+  id: string
+  name: string
+  followersSize: number
+  dayChangePercent: number
+  allocation: string[]
+}
+interface PortfoliosPresentation {
+  ownPortfolios: PortfolioSummery[]
+  bestPerformingPortfolios: PortfolioSummery[]
+  mostFollowedPortfolios: PortfolioSummery[]
+}
+
+const Portfolios = () => {
+  const [data, setData] = React.useState<PortfoliosPresentation>()
+
+  const [authData, isAuthentificated] = useAuth()
+
+  const fetchData = async () => {
+    try {
+      const res = await portfolioService.getAll()
+      setData(res)
+    } catch (e) {
+      console.log('error api:', e)
+    }
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
+
   return (
-    <div className="divide-y divide-gray-200 dark:divide-gray-700">
-      <div>
-        <h1>Titre</h1>
-        <p>description</p>
-      </div>
+    <div>
+      {isAuthentificated && (
+        <PortfoliosSection
+          items={data?.ownPortfolios}
+          title={'Mes portefeuilles'}
+          ActionButton={() => (
+            <Link href={'portfolios/new'}>
+              <Button variant={'outline'} size={'sm'}>
+                + Nouveau Portefeuille
+              </Button>
+            </Link>
+          )}
+        />
+      )}
 
-      <div className="-m-4 flex w-full flex-wrap place-content-center gap-6 p-6">
-        {publicPortfolios.map((w) => PortfolioCard(w))}
-      </div>
+      <PortfoliosSection
+        items={data?.bestPerformingPortfolios}
+        title={'Les portefeuilles les plus performants'}
+      />
+
+      <PortfoliosSection
+        items={data?.mostFollowedPortfolios}
+        title={'Les portefeuilles les plus suivis'}
+      />
     </div>
   )
 }
 
 export default Portfolios
 
-function PortfolioCard(p): React.JSX.Element {
+function PortfolioCard(p: PortfolioSummery): React.JSX.Element {
   return (
-    <Link key={p._id} href={`portfolios/${p._id}`}>
-      <Card className="flex h-44 w-[20rem] flex-col place-content-between overflow-hidden">
+    <Link key={p.id} href={`portfolios/${p.id}`}>
+      <Card className="flex h-44 w-full flex-col place-content-between overflow-hidden ">
         <CardHeader className="flex flex-row items-center justify-between gap-1 space-y-0 pb-1">
           <CardTitle className="text-md text-ellipsis font-medium capitalize">{p.name}</CardTitle>
-          <div className="flex place-items-center gap-1 rounded-md bg-gray-100 p-1">
-            <Star size={16} />
-            <span className="xs px-1">0</span>
+          <div className="flex place-items-center p-1">
+            <Star size={14} />
+            <span className="xs px-1">{p.followersSize}</span>
           </div>
         </CardHeader>
         <CardContent className="min-h-26 h-16">
@@ -40,10 +90,10 @@ function PortfolioCard(p): React.JSX.Element {
               ?.filter((element, index) => index < 10)
               .map((s) => (
                 <span
-                  key={s.symbol}
+                  key={s}
                   className="m-0.5 rounded-sm bg-primary p-0.5 text-xs uppercase text-white"
                 >
-                  {s.symbol}
+                  {s}
                 </span>
               ))}
             {p?.allocation.length < 10 || (
@@ -57,7 +107,7 @@ function PortfolioCard(p): React.JSX.Element {
           <div className="flex gap-2">
             <span className="capitalize">performances annualisées</span>
             <TrendingUpIcon></TrendingUpIcon>
-            <span>30%</span>
+            <span>{round10(p.dayChangePercent, -2)}%</span>
           </div>
         </CardFooter>
       </Card>
@@ -65,6 +115,18 @@ function PortfolioCard(p): React.JSX.Element {
   )
 }
 
-{
-  /* <PortfoliosList /> */
+function PortfoliosSection({ items, title, ActionButton = () => <></> }) {
+  return (
+    <SectionContainer>
+      <div className="flex w-full place-content-between py-6">
+        <h2 className="border-b-2 border-primary">{title}</h2>
+
+        {ActionButton && <ActionButton />}
+      </div>
+
+      <div className="grid grid-cols-1 place-content-start gap-6  md:grid-cols-2 xl:grid-cols-4 ">
+        {items?.map((w) => PortfolioCard(w))}
+      </div>
+    </SectionContainer>
+  )
 }

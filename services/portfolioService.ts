@@ -1,15 +1,13 @@
 import http from './http'
 import config from './config'
+import { format } from 'date-fns/format'
+import { fr } from 'date-fns/locale'
 
 const host = config.API_URL
 const qwantHost = config.QWANTAPI_URL
 
 function getAll() {
-  return http.get(`${host}/api/v1/portfolios/public`)
-}
-
-function getMyPortfolios() {
-  return http.get(`${host}/api/v1/portfolios/`)
+  return http.get(`${host}/api/v1/portfolios`)
 }
 
 function getStocksNameByName(name) {
@@ -25,11 +23,15 @@ function get(portfolioID = 'curent') {
 }
 
 function getData(portfolioName = 'curent') {
-  return http.get(`${host}/api/v1/portfolio/${portfolioName}`)
+  return http.get(`${host}/api/v1/portfolios/${portfolioName}`)
 }
 
 function follow(id) {
-  return http.put(`${host}/api/v1/portfolio/follow/${id}`, {})
+  return http.post(`${host}/api/v1/portfolios/${id}/follow`, {})
+}
+
+function unfollow(id) {
+  return http.post(`${host}/api/v1/portfolios/${id}/unfollow`, {})
 }
 
 function post(state) {
@@ -39,33 +41,22 @@ function post(state) {
 function add(payload) {
   const body = {
     name: payload.name,
-    public: payload.visibility === 'public' ? true : false,
-    transactions: [],
-    cash_flow: [
-      {
-        action: 'deposit',
-        amount: payload.value,
-        date: new Date(),
-      },
-    ],
-    allocatio: [],
-    last_perfs_update: new Date(),
+    isPublic: payload.visibility,
   }
-  return http.post(`${host}/api/v1/portfolio/`, body)
+  return http.post(`${host}/api/v1/portfolios`, body)
 }
 
-function AddTransaction(idPft, sense, ticker, prix, qty, date) {
-  const coef = 'buy' === sense ? 1 : -1
-  const body = {
-    id: idPft,
-    transaction: {
-      symbol: ticker,
-      date: date,
-      price: prix,
-      qty: qty * coef,
-    },
+function AddTransaction(idPft, body) {
+  const { type, ticker, prix, quantity, date } = body
+  const coef = 'Acheter' === type ? 1 : -1
+
+  const apiBody = {
+    symbol: ticker,
+    date: format(date, 'yyyy-MM-dd', { locale: fr }),
+    price: prix,
+    qty: quantity * coef,
   }
-  return http.put(`${host}/api/v1/transaction/portfolio`, body)
+  return http.post(`${host}/api/v1/portfolios/${idPft}/transaction`, apiBody)
 }
 
 function deletePortfolio(id) {
@@ -73,7 +64,7 @@ function deletePortfolio(id) {
 }
 
 function getPerformances(id) {
-  return http.get(`${host}/api/v1/portfolios/${id}/performance`)
+  return http.get(`${host}/api/v1/portfolios/${id}/performance/`)
 }
 function getDividends(id) {
   return http.get(`${qwantHost}/api/v1/portfolios/${id}/dividends`)
@@ -92,8 +83,8 @@ const portfolioService = {
   getStocksContains,
   add,
   AddTransaction,
-  getMyPortfolios,
   follow,
+  unfollow,
   deletePortfolio,
   getPerformances,
   getMetrics,

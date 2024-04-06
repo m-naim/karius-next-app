@@ -1,6 +1,6 @@
 import 'katex/dist/katex.css'
 
-import { components } from '@/components/MDXComponents'
+import { components } from '@/components/molecules/article/MDXComponents'
 import { MDXLayoutRenderer } from 'pliny/mdx-components'
 import { sortPosts, coreContent, allCoreContent } from 'pliny/utils/contentlayer'
 import { allGuides, allAuthors } from 'contentlayer/generated'

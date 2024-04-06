@@ -1,17 +1,18 @@
-import { ReactNode } from 'react'
+import { ReactNode, useEffect } from 'react'
 import { CoreContent } from 'pliny/utils/contentlayer'
 import type { Blog, Authors } from 'contentlayer/generated'
-import Link from '@/components/Link'
-import PageTitle from '@/components/PageTitle'
-import SectionContainer from '@/components/SectionContainer'
+import Link from '@/components/atoms/Link'
+import PageTitle from '@/components/molecules/article/PageTitle'
+import SectionContainer from '@/components/molecules/layout/SectionContainer'
 import Image from '@/components/Image'
-import Tag from '@/components/Tag'
+import Tag from '@/components/molecules/article/Tag'
 import siteMetadata from '@/data/siteMetadata'
-import ScrollTopAndComment from '@/components/ScrollTopAndComment'
-import TOCInline from '@/components/TOCInline'
+import ScrollTopAndComment from '@/components/molecules/article/ScrollTopAndComment'
+import TOCInline from '@/components/molecules/article/TOCInline'
 import { Toc } from 'pliny/mdx-plugins'
 import { Calendar, ClockIcon } from 'lucide-react'
 import Bleed from 'pliny/ui/Bleed'
+import { PositionScrollDisplay } from '@/components/ui/positionScrollDisplay'
 
 const discussUrl = (path) =>
   `https://mobile.twitter.com/search?q=${encodeURIComponent(`${siteMetadata.siteUrl}/${path}`)}`
@@ -77,6 +78,7 @@ export default function PostLayout({
 
   return (
     <SectionContainer>
+      <PositionScrollDisplay />
       <ScrollTopAndComment />
       <article>
         <div className="divide-y divide-gray-200 pb-12 dark:divide-gray-700">

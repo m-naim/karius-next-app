@@ -1,8 +1,9 @@
 import { CoreContent } from 'pliny/utils/contentlayer'
 import type { Blog, Analyse, Guide } from 'contentlayer/generated'
-import Link from '@/components/Link'
+import Link from '@/components/atoms/Link'
 import { groupBy } from '@/lib/utils'
 import { Card, CardContent, CardDescription, CardFooter, CardTitle } from '@/components/ui/card'
+import SectionContainer from '@/components/molecules/layout/SectionContainer'
 
 type Content = Blog | Analyse | Guide
 
@@ -25,7 +26,7 @@ export default function ListLayoutWithTags({ posts, initialDisplayPosts = [] }: 
   })
 
   return (
-    <div>
+    <SectionContainer>
       <div className="flex sm:space-x-24">
         <div>
           {Object.entries(groupByTag).map(([tag, posts]: [string, Guide[]]) => (
@@ -49,6 +50,6 @@ export default function ListLayoutWithTags({ posts, initialDisplayPosts = [] }: 
           ))}
         </div>
       </div>
-    </div>
+    </SectionContainer>
   )
 }

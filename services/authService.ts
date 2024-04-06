@@ -5,40 +5,41 @@ import http from './http'
 const host = config.API_URL
 
 const register = (username, email, password) => {
-  return http.post(`${host}/register`, {
+  return http.post(`${host}/auth/register`, {
     displayName: username,
     email,
     password,
     passwordCheck: password,
   })
 }
+
 const login = (email, password) => {
   return http
-    .post(`${host}/login`, {
+    .post(`${host}/auth/login`, {
       email,
       password,
     })
     .then((response) => {
       console.log(response)
       if (response) {
-        if (typeof window !== 'undefined') localStorage.setItem('user', JSON.stringify(response))
+        if (typeof window !== 'undefined') localStorage.setItem('accessToken', response.accessToken)
       }
       return response
     })
 }
-const logout = () => {
-  if (typeof window !== 'undefined') localStorage.removeItem('user')
+const logOut = () => {
+  if (typeof window !== 'undefined') localStorage.removeItem('accessToken')
 }
 
 const getCurrentUser = () => {
-  if (typeof window !== 'undefined') return JSON.parse(getLocalStorageItem('user'))
+  if (typeof window !== 'undefined') return getLocalStorageItem('accessToken')
   return
 }
 
 const authService = {
   register,
   login,
-  logout,
+  logOut,
   getCurrentUser,
 }
 

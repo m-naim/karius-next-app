@@ -14,6 +14,7 @@ import {
   ChartData,
   ChartDataset,
 } from 'chart.js'
+import { gradientbg } from './utils/colors'
 
 ChartJS.register(
   ArcElement,
@@ -29,7 +30,8 @@ ChartJS.register(
 
 export const dataSetItem1: ChartDataset<'line', number[]> = {
   label: 'Performance',
-  backgroundColor: 'rgba(37,99,235,0.2)',
+  backgroundColor: gradientbg,
+
   borderColor: 'rgb(37,99,235)',
   fill: true,
   data: [1900, 1750, 2500, 2575, 2400, 2600, 2700, 2868],
@@ -50,17 +52,6 @@ const initdata: ChartData<'line', number[], string> = {
   datasets: [dataSetItem1],
 }
 
-const options = {
-  responsive: true,
-  elements: {
-    arc: {
-      weigth: 0.1,
-      borderWidth: 3,
-    },
-  },
-  cutout: 50,
-}
-
 export function LineValue({ data = initdata }) {
   return (
     <div className="bg-dark-primary order-3 w-full rounded-md ">
@@ -68,6 +59,12 @@ export function LineValue({ data = initdata }) {
         data={data}
         options={{
           responsive: true,
+          maintainAspectRatio: false,
+
+          interaction: {
+            intersect: false,
+            mode: 'index',
+          },
 
           elements: {
             line: {
@@ -81,8 +78,37 @@ export function LineValue({ data = initdata }) {
             },
           },
 
+          scales: {
+            x: {
+              display: false,
+              ticks: {
+                callback: function (val, index) {
+                  return (val as number) % 3 == 0 ? this.getLabelForValue(val as number) : ''
+                },
+              },
+              grid: {
+                display: false,
+                drawOnChartArea: false,
+                drawTicks: false,
+              },
+            },
+            y: {
+              ticks: {
+                callback: function (val, index) {
+                  return this.getLabelForValue(val as number) + '€'
+                },
+              },
+              grid: {
+                display: false,
+                drawOnChartArea: false,
+                drawTicks: false,
+              },
+            },
+          },
+
           plugins: {
             legend: {
+              display: false,
               position: 'bottom',
               labels: {
                 usePointStyle: true,

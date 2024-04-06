@@ -5,7 +5,7 @@ import { comparator } from '@/lib/utils'
 import data from '@/data/mock/data'
 import { round10 } from '@/lib/decimalAjustement'
 import Modal from '../layouts/Modal'
-import useModal from '@/components/hooks/UseModal'
+import useModal from 'hooks/UseModal'
 
 const toPrecentille = (val) => round10(val * 100, -2) + '%'
 

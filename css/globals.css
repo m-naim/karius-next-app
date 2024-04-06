@@ -4,16 +4,16 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 224 71.4% 4.1%;
+    --background: 210, 40%, 98.04%;
+    --foreground: 222.22, 47.37%, 11.18%;
 
     --card: 0 0% 100%;
     --card-foreground: 224 71.4% 4.1%;
 
-    --popover: 0 0% 100%;
+    --popover: 210 40% 98.04%;
     --popover-foreground: 224 71.4% 4.1%;
 
-    --primary: 211 100% 50%;
+    --primary: 264.42 69.35% 51.37%;
     --primary-foreground: 210 20% 98%;
 
     --secondary: 220 14.3% 95.9%;
@@ -36,17 +36,17 @@
   }
 
   .dark {
-    --background: 'colors.red.500';
-    --foreground: 210 20% 98%;
+    --background: 223.2, 47.17%, 10.39%;
+    --foreground: 210 40% 98.04%;
 
-    --card: 224 71.4% 4.1%;
+    --card: 217.24 32.58% 17.45%;
     --card-foreground: 210 20% 98%;
 
     --popover: 224 71.4% 4.1%;
     --popover-foreground: 210 20% 98%;
 
-    --primary: 211 100% 50%;
-    --primary-foreground: 220.9 39.3% 11%;
+    --primary: 264.42 69.35% 51.37%;
+    --primary-foreground: 210 40% 98.04%;
 
     --secondary: 215 27.9% 16.9%;
     --secondary-foreground: 210 20% 98%;
@@ -68,7 +68,7 @@
 
 @layer base {
   * {
-    /* @apply border-border; */
+    @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
@@ -262,4 +262,10 @@
 
 .katex-display {
   overflow: auto hidden;
+}
+
+.halo {
+  box-shadow: 0px 20px 120px 2px rgba(109, 99, 255, 0.8);
+  /* in order: x offset, y offset, blur size, spread size, color */
+  /* blur size and spread size are optional (they default to 0) */
 }

@@ -1,7 +1,6 @@
 import React, { ReactNode, useState } from 'react'
 import authService from '@/services/authService'
 import portfolioService from '@/services/portfolioService'
-import stockService from '@/services/stock.service'
 
 import { round10 } from '@/lib/decimalAjustement'
 import { useRouter } from 'next/navigation'
@@ -10,34 +9,25 @@ import { Button } from '@/components/ui/button'
 import { BanknoteIcon, GemIcon, Share2, StarIcon, Trash2, TrendingUp } from 'lucide-react'
 import Performance from './performance'
 import DividendsView from './dividends'
+import SectionContainer from '@/components/molecules/layout/SectionContainer'
 
 type Props = {
   children?: ReactNode
   title?: string
 }
 
-const PortfolioLayout = ({ pftData, id, children }) => {
+const PortfolioLayout = ({ pftData, id, children, isOwn }) => {
   const router = useRouter()
 
   const [followed, setFollowed] = useState(false)
-  const [editable, setEditable] = useState(false)
-  const [variation, setVariation] = useState(0)
-  const [variationPct, setVariationPct] = useState(0)
-
-  const getDayVariation = (total) => {
-    if (!total) {
-      console.error(total)
-      return
-    }
-    const last = total.length
-    setVariation(round10(total[last - 1] - total[last - 2], -2))
-    setVariationPct(round10(((total[last - 1] - total[last - 2]) / total[last - 2]) * 100, -2))
-  }
 
   const follow = async () => {
     try {
+      followed
+        ? await portfolioService.unfollow(pftData.id)
+        : await portfolioService.follow(pftData.id)
+
       setFollowed(!followed)
-      await portfolioService.follow(pftData.id)
     } catch {
       console.log('error')
     }
@@ -52,84 +42,80 @@ const PortfolioLayout = ({ pftData, id, children }) => {
     }
   }
 
-  const camputeRandement = () => {
-    if (pftData.dividends === undefined) return 0
-    const last = pftData.dividends.yearly.values.slice(-1)
-    return round10((last / pftData.total_value) * 100, -2)
-  }
-
-  const getPctRandement = () => {
-    if (pftData.dividends === undefined) return 0
-    return round10(pftData?.dividends.yearly.values.reduce((cum, e) => cum + e, 0), -2)
-  }
-
   return (
-    <div className=" bg-dark flex w-full max-w-7xl flex-col place-items-center overflow-hidden">
-      <div className="bg-dark-primary flex w-full flex-col items-center rounded-md py-2">
-        <div className="flex w-full items-start  justify-between">
-          <div className="flex flex-col items-start self-start">
-            <h2 className="text-3xl font-bold capitalize">{pftData.name}</h2>
-          </div>
+    <>
+      <div className="border-b py-4">
+        <SectionContainer>
+          <div className="flex w-full flex-col items-center">
+            <div className="flex w-full items-center justify-between">
+              <div className="flex flex-col items-start self-start">
+                <h2 className="text-2xl font-bold capitalize">{pftData.name}</h2>
+              </div>
 
-          <div className="m-1 flex items-center gap-4">
-            <Button onClick={follow} size="sm" variant="outline">
-              <StarIcon
-                className="mr-2 h-5 w-5"
-                fill={followed ? '#eac54f' : '#999'}
-                strokeWidth={0}
-              />
-              <span className="mr-2 w-10">{followed ? 'Suivis' : 'Suivre'}</span>
-              <span className=" text-gray-500"> {pftData.followers?.length} 0</span>
-            </Button>
+              <div className="flex items-center gap-4">
+                {isOwn ? (
+                  <>
+                    {/* <Button size="sm" variant="outline">
+                      <Share2 className="mr-1 h-4" />
+                      Partager
+                    </Button> */}
 
-            {true && (
-              <>
-                <Button size="sm" variant="outline">
-                  <Share2 className="mr-2 h-4 w-4" />
-                  Partager
-                </Button>
-                <Button onClick={deletePortfolio} size="sm" variant="outline">
-                  <Trash2 className="mr-2 h-4 w-4 text-red-600" strokeWidth={1} />
-                  Supprimer
-                </Button>
-              </>
-            )}
+                    {/* <Button onClick={deletePortfolio} size="sm" variant="outline" className="gap-1">
+                      <Trash2 className="h-4 text-red-600" strokeWidth={1} />
+                      Supprimer
+                    </Button> */}
+                  </>
+                ) : (
+                  <Button onClick={follow} size="sm" variant="outline" className="gap-1">
+                    <StarIcon
+                      className="h-5 w-5"
+                      fill={followed ? '#eac54f' : '#999'}
+                      strokeWidth={0}
+                    />
+                    <span className="w-10 text-foreground">{followed ? 'Suivis' : 'Suivre'}</span>
+                    <span className="text-foreground"> {pftData.followersSize}</span>
+                  </Button>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
+        </SectionContainer>
       </div>
 
-      <div className="flex w-full gap-2 p-6">
-        <div className="flex w-2/3 flex-col gap-2">
-          <div className="flex max-h-fit w-full flex-grow content-between gap-2 ">
-            <StatsCard
-              title={'Valeur Total'}
-              amount={12000}
-              variation={20}
-              Icon={<BanknoteIcon />}
-            />
-            <StatsCard
-              title={'Variation du jour'}
-              amount={360}
-              variation={3}
-              Icon={<TrendingUp />}
-            />
-            <StatsCard
-              Icon={<GemIcon />}
-              title={'Rendement'}
-              amount={190}
-              variation={round10(190 / 120, -2)}
-            />
+      <SectionContainer>
+        <div className="flex w-full content-between gap-6 py-2">
+          <StatsCard
+            title={'Valeur Total'}
+            amount={round10(pftData.totalValue, -2)}
+            variation={20}
+            Icon={<BanknoteIcon />}
+          />
+          <StatsCard
+            title={'Variation du jour'}
+            amount={round10(pftData.dayChangeValue, -2)}
+            variation={round10(pftData.dayChangePercent, -2)}
+            Icon={<TrendingUp />}
+          />
+          <StatsCard
+            Icon={<GemIcon />}
+            title={'Rendement'}
+            amount={190}
+            variation={round10(190 / 120, -2)}
+          />
+        </div>
+
+        <div className="flex w-full flex-wrap gap-2 py-2 md:flex-nowrap">
+          <div className="flex w-full flex-col gap-2 md:w-3/5">
+            <div className="bg-dark w-full flex-grow  rounded-md">{children}</div>
           </div>
-          <Performance id={pftData.id} />
 
-          <div className="bg-dark w-full flex-grow  rounded-md">{children}</div>
+          <div className="flex w-full  flex-col gap-2 md:w-2/5">
+            <Performance id={id} />
+            <DividendsView id={id} />
+          </div>
         </div>
-
-        <div className="flex w-1/3 flex-col gap-2">
-          <DividendsView id={id} />
-        </div>
-      </div>
-    </div>
+      </SectionContainer>
+    </>
   )
 }
 

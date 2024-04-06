@@ -1,3 +1,4 @@
+import SectionContainer from '@/components/molecules/layout/SectionContainer'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getPublicWatchlists } from '@/services/actions'
 import { Star, Watch } from 'lucide-react'
@@ -13,9 +14,9 @@ export default async function Projects() {
         <h1>Titre</h1>
         <p>description</p>
       </div>
-      <div className="container py-12">
+      <SectionContainer>
         <div className="-m-4 flex flex-wrap gap-1">{listWatch.map((w) => WatchCard(w))}</div>
-      </div>
+      </SectionContainer>
     </div>
   )
 

@@ -102,22 +102,6 @@ function DividendsView({ id }) {
     setLoading(false)
   }, [])
 
-  // const handlePeriodClick = (period) => {
-  //   setPeriod(period)
-  //   switch (period) {
-  //     case 'Annuel':
-  //       setDates(dividendsData.yearly.Date)
-  //       setPerfs(dividendsData.yearly.values)
-  //       break
-  //     case 'Mensuel':
-  //       setDates(dividendsData.monthy.Date)
-  //       setPerfs(dividendsData.monthy.values)
-  //       break
-  //     default:
-  //       break
-  //   }
-  // }
-
   return loading ? (
     <div>Loading ...</div>
   ) : (
@@ -136,7 +120,7 @@ function DividendsView({ id }) {
                 datasets: [
                   {
                     label: 'Dividends',
-                    backgroundColor: 'rgb(109, 99, 255)',
+                    backgroundColor: 'rgb(109, 99, 255,0.7)',
                     borderColor: 'rgb(109, 99, 255',
                     data: perfs,
                   },

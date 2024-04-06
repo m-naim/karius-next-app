@@ -28,7 +28,7 @@ export default function TagPage({ params }: { params: { tag: string } }) {
 
   return (
     <div>
-      <div className="py-10">
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 xl:max-w-7xl xl:px-0">
         <h1>Apprendre à invistir en bourse</h1>
         <p className="text-muted-foreground">
           Découvrez les fondamentaux de l'investissement en bourse avec ma série d'articles. Pour

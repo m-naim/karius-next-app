@@ -9,7 +9,7 @@ import {
 import { flexRender } from '@tanstack/react-table'
 
 const SimpleDataTable = ({ table, colSpan }) => (
-  <div className="rounded-md border">
+  <div className="rounded-md">
     <Table>
       <TableHeader>
         {table.getHeaderGroups().map((headerGroup) => (
