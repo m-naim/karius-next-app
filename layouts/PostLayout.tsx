@@ -1,21 +1,15 @@
-import { ReactNode, useEffect } from 'react'
+import { ReactNode } from 'react'
 import { CoreContent } from 'pliny/utils/contentlayer'
 import type { Blog, Authors } from 'contentlayer/generated'
 import Link from '@/components/atoms/Link'
 import PageTitle from '@/components/molecules/article/PageTitle'
 import SectionContainer from '@/components/molecules/layout/SectionContainer'
-import Image from '@/components/Image'
 import Tag from '@/components/molecules/article/Tag'
 import siteMetadata from '@/data/siteMetadata'
 import ScrollTopAndComment from '@/components/molecules/article/ScrollTopAndComment'
-import TOCInline from '@/components/molecules/article/TOCInline'
 import { Toc } from 'pliny/mdx-plugins'
 import { Calendar, ClockIcon } from 'lucide-react'
-import Bleed from 'pliny/ui/Bleed'
 import { PositionScrollDisplay } from '@/components/ui/positionScrollDisplay'
-
-const discussUrl = (path) =>
-  `https://mobile.twitter.com/search?q=${encodeURIComponent(`${siteMetadata.siteUrl}/${path}`)}`
 
 const postDateTemplate: Intl.DateTimeFormatOptions = {
   weekday: 'long',
@@ -23,15 +17,6 @@ const postDateTemplate: Intl.DateTimeFormatOptions = {
   month: 'long',
   day: 'numeric',
 }
-
-const Socials = () => (
-  <div className="pb-6 pt-6 text-sm text-gray-700 dark:text-gray-300">
-    <Link href="/" rel="nofollow">
-      Discuss on Twitter
-    </Link>
-    {` • `}
-  </div>
-)
 
 interface LayoutProps {
   content: CoreContent<Blog>

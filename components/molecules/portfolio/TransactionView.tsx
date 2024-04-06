@@ -31,25 +31,15 @@ function TransactionView({ id }) {
   }, [])
 
   const addtransaction = async (sense, ticker, prix, qty, date) => {
-    console.log([sense, prix, ticker, qty, date])
-    const data = await portfolioService.AddTransaction(
-      portfolio._id,
-      sense,
-      ticker,
-      prix,
-      qty,
-      date
-    )
-    data.allocation = data.allocation.map((item, i) => {
-      item.id = i + 1
-      return item
-    })
-
-    data.transactions.forEach((item, i) => {
-      item.id = i + 1
-    })
-
-    setPortfolio(data)
+    // console.log([sense, prix, ticker, qty, date])
+    // const data = await portfolioService.AddTransaction(
+    //   portfolio._id,
+    //   sense,
+    //   ticker,
+    //   prix,
+    //   qty,
+    //   date
+    // )
   }
 
   return (
