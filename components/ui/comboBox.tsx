@@ -16,15 +16,21 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import stockService from '@/services/stock.service'
 import { useDebouncedCallback } from 'use-debounce'
 
+interface Security {
+  quoteType: string
+  symbol: string
+  shortname: string
+  exchange: string
+}
+
 export function ComboboxPopover({ ticker, setTicker }) {
   const [open, setOpen] = React.useState(false)
-  const [data, setData] = React.useState([])
+  const [data, setData] = React.useState<Security[]>([])
 
   const fetchData = async (value) => {
     if (value.lenght < 1) return
     try {
-      const res = await stockService.search(value as string)
-      console.log(res)
+      const res: Security[] = await stockService.search(value as string)
       setData(res)
     } catch (e) {
       console.log('error api:' + e)
@@ -72,7 +78,7 @@ export function ComboboxPopover({ ticker, setTicker }) {
   )
 }
 
-const item = (security, setTicker, setOpen) => (
+const item = (security: Security, setTicker, setOpen) => (
   <CommandItem
     key={security.symbol}
     value={security.symbol}
