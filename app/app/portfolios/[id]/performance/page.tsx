@@ -61,15 +61,9 @@ const BenchMarkChois = {
 
 const listBenchMarks = ['CAC40', 'S&P500']
 
-const perfsData = {}
-const datesInit = []
-
-const AllTimePerfs = {}
-const benchMarks = []
-
 const palette = ['rgb(209, 99, 255)', 'rgb(109, 199, 55)']
 
-function Performance({ id }) {
+function Performance() {
   const [name, setName] = useState('')
   const [dates, setDates] = useState(chartDataInit.labels)
   const [perfs, setPerfs] = useState(chartDataInit.datasets[0].data)
@@ -83,19 +77,19 @@ function Performance({ id }) {
   const formatDateStr = (input) => {
     return input.map((s) => format(new Date(s * 24 * 60 * 60 * 1000), 'dd/MM/yyyy'))
   }
-  const fetchData = async () => {
-    try {
-      const data = await portfolioService.getPerformances(id as string)
-      console.log(data)
+  // const fetchData = async () => {
+  //   try {
+  //     const data = await portfolioService.getPerformances(id as string)
+  //     console.log(data)
 
-      // setName(data.name)
-      setDates(formatDateStr(data.timestamp))
-      setPerfs(data.value)
-      setLoading(false)
-    } catch (e) {
-      console.error('error api', e)
-    }
-  }
+  //     // setName(data.name)
+  //     setDates(formatDateStr(data.timestamp))
+  //     setPerfs(data.value)
+  //     setLoading(false)
+  //   } catch (e) {
+  //     console.error('error api', e)
+  //   }
+  // }
 
   //   const AddBenchMarck = async (data, label, color = 'rgb(109, 99, 255)') => {
   //     console.log('Add!!!')
@@ -142,9 +136,9 @@ function Performance({ id }) {
   //     return perfs
   //   }
 
-  useEffect(() => {
-    fetchData()
-  }, [])
+  // useEffect(() => {
+  //   fetchData()
+  // }, [])
 
   //   const handlePeriodClick = (period) => {
   //     setPeriod(period)
