@@ -1,6 +1,6 @@
 'use client'
 
-import SectionContainer from '@/components/molecules/layout/SectionContainer'
+import SectionContainer from '@/components/organismes/layout/SectionContainer'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { round10 } from '@/lib/decimalAjustement'

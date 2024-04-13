@@ -63,10 +63,12 @@ const Header = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div>
-              {/* <Link href="/login">
-              <Button variant={'link'} size={'sm'}>Se connecter</Button>
-            </Link> */}
+            <div className="hidden md:block">
+              <Link href="/login">
+                <Button variant={'link'} size={'sm'}>
+                  Se connecter
+                </Button>
+              </Link>
 
               <Link href="/signup" data-umami-event="header-Signup-button">
                 <Button className="h-7" size={'sm'} data-umami-event="header-Signup-button">

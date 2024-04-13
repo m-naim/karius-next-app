@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { BanknoteIcon, GemIcon, Share2, StarIcon, Trash2, TrendingUp } from 'lucide-react'
 import Performance from './performance'
 import DividendsView from './dividends'
-import SectionContainer from '@/components/molecules/layout/SectionContainer'
+import SectionContainer from '@/components/organismes/layout/SectionContainer'
 
 type Props = {
   children?: ReactNode
@@ -23,11 +23,10 @@ const PortfolioLayout = ({ pftData, id, children, isOwn }) => {
 
   const follow = async () => {
     try {
-      followed
-        ? await portfolioService.unfollow(pftData.id)
-        : await portfolioService.follow(pftData.id)
+      setFollowed(() => !followed)
 
-      setFollowed(!followed)
+      if (followed) await portfolioService.unfollow(pftData.id)
+      else await portfolioService.follow(pftData.id)
     } catch {
       console.log('error')
     }

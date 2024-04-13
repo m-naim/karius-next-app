@@ -3,7 +3,7 @@ import type { Blog, Analyse, Guide } from 'contentlayer/generated'
 import Link from '@/components/atoms/Link'
 import { groupBy } from '@/lib/utils'
 import { Card, CardContent, CardDescription, CardFooter, CardTitle } from '@/components/ui/card'
-import SectionContainer from '@/components/molecules/layout/SectionContainer'
+import SectionContainer from '@/components/organismes/layout/SectionContainer'
 
 type Content = Blog | Analyse | Guide
 

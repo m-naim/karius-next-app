@@ -5,7 +5,7 @@ import type { Blog } from 'contentlayer/generated'
 import Comments from '@/components/molecules/article/Comments'
 import Link from '@/components/atoms/Link'
 import PageTitle from '@/components/molecules/article/PageTitle'
-import SectionContainer from '@/components/molecules/layout/SectionContainer'
+import SectionContainer from '@/components/organismes/layout/SectionContainer'
 import siteMetadata from '@/data/siteMetadata'
 import ScrollTopAndComment from '@/components/molecules/article/ScrollTopAndComment'
 

@@ -8,7 +8,7 @@ import type { Analyse, Blog, Guide } from 'contentlayer/generated'
 import Link from '@/components/atoms/Link'
 import Tag from '@/components/molecules/article/Tag'
 import siteMetadata from '@/data/siteMetadata'
-import SectionContainer from '@/components/molecules/layout/SectionContainer'
+import SectionContainer from '@/components/organismes/layout/SectionContainer'
 
 type Content = Blog | Analyse | Guide
 interface PaginationProps {

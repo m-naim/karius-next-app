@@ -1,4 +1,4 @@
-import SectionContainer from '@/components/molecules/layout/SectionContainer'
+import SectionContainer from '@/components/organismes/layout/SectionContainer'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getPublicWatchlists } from '@/services/actions'
 import { Star, Watch } from 'lucide-react'

@@ -6,7 +6,7 @@ import { genPageMetadata } from 'app/seo'
 import { AccordionDemo } from '@/components/ui/AccordionDemo'
 import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
-import SectionContainer from '@/components/molecules/layout/SectionContainer'
+import SectionContainer from '@/components/organismes/layout/SectionContainer'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
@@ -28,7 +28,7 @@ export default async function Page() {
         </div>
 
         <Button className="m-6 w-fit self-center px-6">
-          <Link data-umami-event="landing-try-button" href={'/login'}>
+          <Link data-umami-event="landing-try-button" href={'/signup'}>
             Essayer Gratuitement
           </Link>
         </Button>

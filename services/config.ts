@@ -18,9 +18,9 @@ const config = {
     },
   },
   production: {
-    API_URL: 'https://kareus.vercel.app',
+    API_URL: 'https://api.boursehorus.com',
     amqpUrl: 'amqp://localhost:5672',
-    QWANTAPI_URL: 'https://qwantapi.herokuapp.com',
+    QWANTAPI_URL: 'https://api.boursehorus.com',
     features: {
       watchlist: true,
       portfolio: true,
