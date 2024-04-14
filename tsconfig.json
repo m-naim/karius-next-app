@@ -24,6 +24,7 @@
       "@/css/*": ["css/*"],
       "@/lib/*": ["lib/*"],
       "@/assets/*": ["assets/*"],
+      "@/hooks/*": ["hooks/*"],
       "contentlayer/generated": ["./.contentlayer/generated"]
     },
     "plugins": [

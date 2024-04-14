@@ -8,8 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { X } from 'lucide-react'
-import { useAuth } from 'hooks/useAuth'
-import { AuthContext } from 'hooks/authContext'
+import { useAuth } from '@/hooks/useAuth'
 
 function Signup() {
   const router = useRouter()
