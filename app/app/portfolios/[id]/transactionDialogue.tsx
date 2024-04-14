@@ -24,8 +24,6 @@ function TransactionDialogue({ id }) {
   const [prix, setPrix] = useState<number>(0)
 
   const clickh = async () => {
-    console.log('e')
-
     const res = await portfolioService.AddTransaction(id, {
       ticker,
       type,

@@ -21,7 +21,7 @@ function TransactionView({ id }) {
       })
       setPortfolio(data)
     } catch {
-      console.log('error api')
+      console.error('error api')
       setPortfolio({ _id: '', allocation: [], transactions: [] })
     }
   }
@@ -31,7 +31,6 @@ function TransactionView({ id }) {
   }, [])
 
   const addtransaction = async (sense, ticker, prix, qty, date) => {
-    // console.log([sense, prix, ticker, qty, date])
     // const data = await portfolioService.AddTransaction(
     //   portfolio._id,
     //   sense,

@@ -32,7 +32,7 @@ function Login() {
       login(response.accessToken)
       router.push('/app/portfolios')
     } catch (error) {
-      console.log(error)
+      console.error(error)
       const resMessage =
         (error.response && error.response.data && error.response.data.message) ||
         error.message ||

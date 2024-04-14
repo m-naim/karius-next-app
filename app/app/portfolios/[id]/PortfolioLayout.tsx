@@ -28,7 +28,7 @@ const PortfolioLayout = ({ pftData, id, children, isOwn }) => {
       if (followed) await portfolioService.unfollow(pftData.id)
       else await portfolioService.follow(pftData.id)
     } catch {
-      console.log('error')
+      console.error('error')
     }
   }
 
@@ -37,7 +37,7 @@ const PortfolioLayout = ({ pftData, id, children, isOwn }) => {
       await portfolioService.deletePortfolio(pftData.id)
       router.push('/portfolios')
     } catch {
-      console.log('error')
+      console.error('error')
     }
   }
 

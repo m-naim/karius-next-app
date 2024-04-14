@@ -7,11 +7,10 @@ function StatisticsView({ id }) {
   const fetchData = async () => {
     try {
       const data = await portfolioService.getMetrics(id as string)
-      console.log(data)
       setPortfolio(data[0])
       setLoading(false)
     } catch {
-      console.log('error api')
+      console.error('error api')
       setPortfolio(undefined)
     }
   }

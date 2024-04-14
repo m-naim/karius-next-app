@@ -37,9 +37,7 @@ export default function PortfolioView() {
 
   const fetchData = async (id) => {
     try {
-      console.log(id)
       const res = await portfolioService.get(id as string)
-
       res.data.transactions.forEach((item, i) => {
         item.id = i + 1
       })
@@ -48,7 +46,7 @@ export default function PortfolioView() {
       setPortfolio(res.data)
       setData(res.data.allocation)
     } catch (e) {
-      console.log('error api:' + e)
+      console.error('error api:' + e)
       setPortfolio({ _id: '', allocation: [], transactions: [] })
     }
   }

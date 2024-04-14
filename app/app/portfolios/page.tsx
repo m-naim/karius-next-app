@@ -33,7 +33,7 @@ const Portfolios = () => {
       const res = await portfolioService.getAll()
       setData(res)
     } catch (e) {
-      console.log('error api:', e)
+      console.error('error api:', e)
     }
   }
 

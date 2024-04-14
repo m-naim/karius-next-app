@@ -80,8 +80,6 @@ function Performance() {
   // const fetchData = async () => {
   //   try {
   //     const data = await portfolioService.getPerformances(id as string)
-  //     console.log(data)
-
   //     // setName(data.name)
   //     setDates(formatDateStr(data.timestamp))
   //     setPerfs(data.value)
@@ -92,7 +90,6 @@ function Performance() {
   // }
 
   //   const AddBenchMarck = async (data, label, color = 'rgb(109, 99, 255)') => {
-  //     console.log('Add!!!')
   //     const dataset = {
   //       label,
   //       data,
@@ -107,7 +104,6 @@ function Performance() {
 
   //     setBenchmarksPerfs((prev) => {
   //       const item = prev.filter((o) => o.label === label)
-  //       console.log(item)
   //       if (item.length > 0) return prev
   //       return [dataset, ...prev]
   //     })
@@ -115,7 +111,6 @@ function Performance() {
 
   //   const fetchIndex = async (idxName, length = datesInit.length) => {
   //     const data = await portfolioService.getStocksContains(idxName)
-  //     console.log(data)
   //     const values = data[0].history.slice(-length).map((h) => h.Close)
 
   //     let x = 1
@@ -205,7 +200,6 @@ function Performance() {
   //   }
 
   //   const deleteBenchItem = (label) => {
-  //     console.log('deleteBenchItem ' + label)
   //     setBenchmarksPerfs((prev) => {
   //       return prev.filter((o) => o.label !== label)
   //     })

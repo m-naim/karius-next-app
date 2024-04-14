@@ -26,7 +26,6 @@ function Table({
   const sortby = (column) => {
     setSortSens(sortSens * -1)
     setColumnSorting(column)
-    console.log(column)
     setRows(rows.sort((a, b) => comparator(a[column], b[column]) * sortSens))
   }
 
@@ -71,8 +70,6 @@ function Table({
 }
 
 const AllocationLine = (r, addclick, editable) => {
-  console.log(['r!! : ', r])
-
   return (
     <tr className="text-md border-separate border-spacing-4 border-b border-gray-200 font-medium dark:border-slate-600 ">
       {editable && (

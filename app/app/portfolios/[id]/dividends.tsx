@@ -93,7 +93,7 @@ function DividendsView({ id }) {
       setDates(Object.keys(dividends.yearlyDividends))
       setPerfs(Object.values(dividends.yearlyDividends).map((v) => v.totalAmount))
     } catch (e) {
-      console.log('error api', e)
+      console.error('error api', e)
     }
   }
 

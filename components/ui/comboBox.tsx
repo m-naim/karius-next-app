@@ -33,7 +33,7 @@ export function ComboboxPopover({ ticker, setTicker }) {
       const res: Security[] = await stockService.search(value as string)
       setData(res)
     } catch (e) {
-      console.log('error api:' + e)
+      console.error('error api:' + e)
     }
   }
 

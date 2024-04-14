@@ -11,9 +11,9 @@ interface AuthContext {
 export const AuthContext = createContext<AuthContext>({
   user: null,
   addUser: () => {
-    console.log('hello')
+    console.debug('hello')
   },
   removeUser: () => {
-    console.log('hello')
+    console.debug('hello')
   },
 })
