@@ -1,13 +1,11 @@
 'use client'
 
 import { useContext, useEffect } from 'react'
-import { useUser, User } from './useUser'
+import { User } from './useUser'
 import { useLocalStorage } from './useLocalStorage'
 import { AuthContext } from './authContext'
 
 export const useAuth = () => {
-  // we can re export the user methods or object from this hook
-
   const { getItem } = useLocalStorage()
 
   const { user, addUser, removeUser } = useContext(AuthContext)
