@@ -1,16 +1,24 @@
-import { getLocalStorageItem } from '@/lib/utils'
 import config from './config'
 import http from './http'
 
 const host = config.API_URL
 
 const register = (username, email, password) => {
-  return http.post(`${host}/auth/register`, {
-    displayName: username,
-    email,
-    password,
-    passwordCheck: password,
-  })
+  console.log(username, email, password)
+
+  return http
+    .post(`${host}/auth/register`, {
+      displayName: username,
+      email,
+      password,
+      passwordCheck: password,
+    })
+    .then((response) => {
+      if (response) {
+        if (typeof window !== 'undefined') localStorage.setItem('accessToken', response.accessToken)
+      }
+      return response
+    })
 }
 
 const login = (email, password) => {
@@ -20,7 +28,6 @@ const login = (email, password) => {
       password,
     })
     .then((response) => {
-      console.log(response)
       if (response) {
         if (typeof window !== 'undefined') localStorage.setItem('accessToken', response.accessToken)
       }
@@ -32,8 +39,24 @@ const logOut = () => {
 }
 
 const getCurrentUser = () => {
-  if (typeof window !== 'undefined') return getLocalStorageItem('accessToken')
-  return
+  if (typeof window !== 'undefined') {
+    let token = localStorage.getItem('accessToken')
+    console.log('token', token)
+
+    if (token != null && token.length > 2) {
+      const decodedJwt = JSON.parse(atob(token.split('.')[1]))
+      if (decodedJwt.exp * 1000 < Date.now()) {
+        authService.logOut()
+      }
+      return {
+        authentificated: true,
+        user: decodedJwt,
+      }
+    }
+  }
+  return {
+    authentificated: false,
+  }
 }
 
 const authService = {

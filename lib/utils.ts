@@ -19,6 +19,7 @@ export const comparator = (a, b) => {
 
 export const getLocalStorageItem = (key): string => {
   const item = localStorage.getItem(key)
+  console.log(item)
   return item ? JSON.parse(item) : ''
 }
 

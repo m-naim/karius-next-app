@@ -4,8 +4,8 @@ import SectionContainer from '@/components/organismes/layout/SectionContainer'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { round10 } from '@/lib/decimalAjustement'
+import authService from '@/services/authService'
 import portfolioService from '@/services/portfolioService'
-import useAuth from 'hooks/UseAuth'
 import { Star, TrendingUpIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { useEffect } from 'react'
@@ -26,7 +26,7 @@ interface PortfoliosPresentation {
 const Portfolios = () => {
   const [data, setData] = React.useState<PortfoliosPresentation>()
 
-  const [authData, isAuthentificated] = useAuth()
+  const { authentificated } = authService.getCurrentUser()
 
   const fetchData = async () => {
     try {
@@ -43,7 +43,7 @@ const Portfolios = () => {
 
   return (
     <div>
-      {isAuthentificated && (
+      {authentificated && (
         <PortfoliosSection
           items={data?.ownPortfolios}
           title={'Mes portefeuilles'}

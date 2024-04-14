@@ -14,12 +14,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../../ui/dropdown-menu'
-import useAuth from 'hooks/UseAuth'
 
 import authService from '@/services/authService'
+import { useAuth } from 'hooks/useAuth'
 
 const Header = () => {
-  const [authData, isAuthentificated] = useAuth()
+  const { user, logout } = useAuth()
+
+  const logOut = () => {
+    authService.logOut()
+    logout()
+  }
 
   return (
     <header className="border-b py-2">
@@ -47,19 +52,16 @@ const Header = () => {
             ))}
           <SearchButton />
           <ThemeSwitch />
-
-          {isAuthentificated ? (
+          {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Avatar>
-                  <AvatarFallback>{authData?.sub.substring(0, 2)}</AvatarFallback>
+                  <AvatarFallback>{user.sub.substring(0, 2)}</AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
 
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => authService.logOut()}>
-                  Se déconnecter
-                </DropdownMenuItem>
+                <DropdownMenuItem onClick={logOut}>Se déconnecter</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
@@ -77,7 +79,6 @@ const Header = () => {
               </Link>
             </div>
           )}
-
           <MobileNav />
         </div>
       </div>

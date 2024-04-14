@@ -22,10 +22,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FileScan } from 'lucide-react'
 import TransactionDialogue from './transactionDialogue'
 import Link from 'next/link'
-import useAuth from 'hooks/UseAuth'
 
 export default function PortfolioView() {
   const id = usePathname().split('/')[3]
+
   const [data, setData] = React.useState([])
   const [portfolio, setPortfolio] = useState({ _id: '', allocation: [], transactions: [] })
   const [own, setOwn] = React.useState(false)

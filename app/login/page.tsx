@@ -7,9 +7,11 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 import { Label } from '@/components/ui/label'
+import { useAuth } from 'hooks/useAuth'
 
 function Login() {
   const router = useRouter()
+  const { login } = useAuth()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -20,25 +22,23 @@ function Login() {
     setState(value)
   }
 
-  const logIn = (e) => {
+  const logIn = async (e) => {
     e.preventDefault()
     if (email == null || email.length <= 0) return setMessage("L'email est obligatoire")
     if (password == null || password.length <= 0)
       return setMessage('Le mot de passe est obligatoire')
-    authService.login(email, password).then(
-      () => {
-        router.push('/app/portfolios')
-      },
-      (error) => {
-        console.log(error)
-
-        const resMessage =
-          (error.response && error.response.data && error.response.data.message) ||
-          error.message ||
-          error.toString()
-        setMessage(resMessage)
-      }
-    )
+    try {
+      const response = await authService.login(email, password)
+      login(response.accessToken)
+      router.push('/app/portfolios')
+    } catch (error) {
+      console.log(error)
+      const resMessage =
+        (error.response && error.response.data && error.response.data.message) ||
+        error.message ||
+        error.toString()
+      setMessage(resMessage)
+    }
   }
   return (
     <section className="flex  w-full place-content-center items-center justify-center py-7">

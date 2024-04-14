@@ -9,6 +9,7 @@ import siteMetadata from '@/data/siteMetadata'
 import { ThemeProviders } from './theme-providers'
 import { Metadata } from 'next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import { Providers } from './providers'
 
 const space_grotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -87,18 +88,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           data-website-id="c2756f1a-e293-4054-8093-263e21da1be0"
         ></script>
 
-        <ThemeProviders>
-          <Analytics />
-          <SpeedInsights />
+        <Providers>
+          <ThemeProviders>
+            <Analytics />
+            <SpeedInsights />
 
-          <div className="flex h-screen flex-col justify-between font-sans">
-            <SearchProvider searchConfig={siteMetadata.search as SearchConfig}>
-              <Header />
-              <main className="mb-auto">{children}</main>
-            </SearchProvider>
-            <Footer />
-          </div>
-        </ThemeProviders>
+            <div className="flex h-screen flex-col justify-between font-sans">
+              <SearchProvider searchConfig={siteMetadata.search as SearchConfig}>
+                <Header />
+                <main className="mb-auto">{children}</main>
+              </SearchProvider>
+              <Footer />
+            </div>
+          </ThemeProviders>
+        </Providers>
       </body>
     </html>
   )

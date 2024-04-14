@@ -49,18 +49,20 @@ const MobileNav = () => {
               Crée un compte gratuit
             </Button>
           </Link>
-          {headerNavLinks.map((link) => (
-            <div key={link.title} className=" py-4">
-              <Link
-                data-umami-event={`header-${link.title}`}
-                href={link.href}
-                className="text-2xl font-bold tracking-widest text-gray-900 dark:text-gray-100"
-                onClick={onToggleNav}
-              >
-                {link.title}
-              </Link>
-            </div>
-          ))}
+          {headerNavLinks
+            .filter((link) => !link.draft)
+            .map((link) => (
+              <div key={link.title} className=" py-4">
+                <Link
+                  data-umami-event={`header-${link.title}`}
+                  href={link.href}
+                  className="text-2xl font-bold tracking-widest text-gray-900 dark:text-gray-100"
+                  onClick={onToggleNav}
+                >
+                  {link.title}
+                </Link>
+              </div>
+            ))}
         </nav>
       </div>
     </>

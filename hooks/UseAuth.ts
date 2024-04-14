@@ -1,35 +1,43 @@
-import { useEffect, useState } from 'react'
-import authService from '@/services/authService'
+'use client'
 
-export interface AuthData {
-  sub: string
-  iat: number
-  exp: number
-}
+import { useContext, useEffect } from 'react'
+import { useUser, User } from './useUser'
+import { useLocalStorage } from './useLocalStorage'
+import { AuthContext } from './authContext'
 
-const useAuth = (): [AuthData | null, Boolean] => {
-  const [authData, setAuthData] = useState<AuthData | null>(null)
-  const [isAuthentificated, setIsAuthentificated] = useState(false)
+export const useAuth = () => {
+  // we can re export the user methods or object from this hook
+
+  const { getItem } = useLocalStorage()
+
+  const { user, addUser, removeUser } = useContext(AuthContext)
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken')
+    const userItem = getItem('user')
+    if (userItem) {
+      const user = JSON.parse(userItem)
+      console.log(user)
 
-    if (token != null) {
-      const decodedJwt = JSON.parse(atob(token.split('.')[1]))
-      console.log(decodedJwt)
-      console.log(decodedJwt.exp * 1000 < Date.now())
-      if (decodedJwt.exp * 1000 < Date.now()) {
-        authService.logOut()
-        setAuthData(null)
-        setIsAuthentificated(false)
-        return
+      if (user.exp * 1000 < Date.now()) {
+        logout()
+      } else {
+        console.log(' useEffect add user', user)
+        addUser(user)
       }
-      setAuthData(decodedJwt)
-      setIsAuthentificated(true)
     }
   }, [])
 
-  return [authData, isAuthentificated]
-}
+  const login = (token: String) => {
+    if (token != null && token.length > 2) {
+      console.log('login')
+      const decodedJwt: User = JSON.parse(atob(token.split('.')[1]))
+      addUser(decodedJwt)
+    }
+  }
 
-export default useAuth
+  const logout = () => {
+    removeUser()
+  }
+
+  return { user, login, logout }
+}
