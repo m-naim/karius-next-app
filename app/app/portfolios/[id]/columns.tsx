@@ -76,8 +76,8 @@ export const columns: ColumnDef<unknown>[] = [
   },
   {
     accessorKey: 'total_value',
-    cell: (row) => <div> {round10(row.getValue('total_value'), -2)} </div>,
     header: 'Total',
+    cell: ({ row }) => <div> {round10(row.getValue('total_value'), -2)} </div>,
   },
   {
     accessorKey: 'last',
@@ -94,68 +94,4 @@ export const columns: ColumnDef<unknown>[] = [
       return <div className="font-medium">{formatted}</div>
     },
   },
-  // {
-  //   accessorKey: 'bep',
-  //   header: SortingButton('PRU'),
-  //   cell: ({ row }) => {
-  //     const bep = parseFloat(row.getValue('bep'))
-
-  //     // Format the prix as a dollar prix
-  //     const formatted = new Intl.NumberFormat('en-US', {
-  //       style: 'currency',
-  //       currency: 'EUR',
-  //     }).format(bep)
-
-  //     return <div className="font-medium">{formatted}</div>
-  //   },
-  // },
-  // {
-  //   accessorKey: 'chg',
-  //   header: SortingButton('chg'),
-  //   cell: ({ row }) => {
-  //     const chg = parseFloat(row.getValue('chg'))
-  //     const formatted = new Intl.NumberFormat('en-US', {
-  //       style: 'currency',
-  //       currency: 'EUR',
-  //     }).format(chg)
-
-  //     return <div className="font-medium">{formatted}</div>
-  //   },
-  // },
-  // {
-  //   accessorKey: 'sector',
-  //   header: SortingButton('secteur'),
-  //   cell: ({ row }) => <div className="lowercase">{row.getValue('sector')}</div>,
-  // },
-  // {
-  //   accessorKey: 'industry',
-  //   header: SortingButton('industrie'),
-  //   cell: ({ row }) => <div className="lowercase">{row.getValue('industry')}</div>,
-  // },
-
-  // {
-  //   id: 'actions',
-  //   enableHiding: false,
-  //   cell: ({ row }) => {
-  //     const payment = row.original
-
-  //     return (
-  //       <DropdownMenu>
-  //         <DropdownMenuTrigger asChild>
-  //           <Button variant="ghost" className="h-8 w-8 p-0">
-  //             <span className="sr-only">Open menu</span>
-  //             <MoreHorizontal className="h-4 w-4" />
-  //           </Button>
-  //         </DropdownMenuTrigger>
-  //         <DropdownMenuContent align="end">
-  //           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-  //           <DropdownMenuItem>Ajouter une Alerte</DropdownMenuItem>
-  //           {/* <DropdownMenuSeparator /> */}
-  //           <DropdownMenuItem>Tager Prochain achat</DropdownMenuItem>
-  //           <DropdownMenuItem>Retirer de la liste</DropdownMenuItem>
-  //         </DropdownMenuContent>
-  //       </DropdownMenu>
-  //     )
-  //   },
-  // },
 ]
