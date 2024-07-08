@@ -1,12 +1,9 @@
 'use client'
-import React, { useState, useEffect } from 'react'
-import { Line } from 'react-chartjs-2'
-import portfolioService from '@/services/portfolioService'
+import { useState } from 'react'
 import { format } from 'date-fns'
 import { Chart, CategoryScale, LinearScale, LineElement } from 'chart.js'
 import { LineValue } from '@/components/molecules/charts/LineValue'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import MultiSelect from '@/components/molecules/layouts/MultiSelect'
 
 Chart.register(CategoryScale, LinearScale, LineElement)
 
