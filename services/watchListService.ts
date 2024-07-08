@@ -18,11 +18,16 @@ function addStock(id, payload) {
   return http.put(`${host}/api/v1/watchlists/${id}`, payload)
 }
 
+function removeStock(id, symbol) {
+  return http.deleteReq(`${host}/api/v1/watchlists/${id}/security/${symbol}`)
+}
+
 const watchListService = {
   getAll,
   get,
   add,
   addStock,
+  removeStock,
 }
 
 export default watchListService

@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { Bar } from 'react-chartjs-2'
-import portfolioService from '@/services/portfolioService'
 import { format } from 'date-fns'
-import MultiSelect from '@/components/molecules/layouts/MultiSelect'
 
 import { Chart, CategoryScale, LinearScale, BarElement } from 'chart.js'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { getDividends } from '@/services/portfolioService'
 
 Chart.register(CategoryScale, LinearScale, BarElement)
 
@@ -88,7 +87,7 @@ function DividendsView({ id }) {
   }
   const fetchData = async () => {
     try {
-      const dividends: DividendesChart = await portfolioService.getDividends(id)
+      const dividends: DividendesChart = await getDividends(id)
 
       setDates(Object.keys(dividends.yearlyDividends))
       setPerfs(Object.values(dividends.yearlyDividends).map((v) => v.totalAmount))

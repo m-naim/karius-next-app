@@ -8,8 +8,6 @@ import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
@@ -64,24 +62,26 @@ const SortingButton = (title) => {
 export const columns: ColumnDef<unknown>[] = [
   {
     accessorKey: 'symbol',
-    header: SortingButton('symbol'),
+    header: SortingButton('Produit'),
     cell: ({ row }) => <div className="capitalize">{row.getValue('symbol')}</div>,
   },
   {
     accessorKey: 'weight',
-    header: SortingButton('weight'),
+    header: SortingButton('Poid'),
     cell: ({ row }) => (
-      <div className="lowercase">{round10((row.getValue('weight') as number) * 100, -1)}%</div>
+      <div>
+        <div className="lowercase">{round10((row.getValue('weight') as number) * 100, -1)}%</div>
+      </div>
     ),
   },
   {
-    accessorKey: 'qty',
-    header: SortingButton('qty'),
-    cell: ({ row }) => <div className="lowercase">{row.getValue('qty')}</div>,
+    accessorKey: 'total_value',
+    cell: (row) => <div> {round10(row.getValue('total_value'), -2)} </div>,
+    header: 'Total',
   },
   {
     accessorKey: 'last',
-    header: SortingButton('last'),
+    header: SortingButton('Cours'),
     cell: ({ row }) => {
       const last = parseFloat(row.getValue('last'))
 
@@ -94,21 +94,21 @@ export const columns: ColumnDef<unknown>[] = [
       return <div className="font-medium">{formatted}</div>
     },
   },
-  {
-    accessorKey: 'bep',
-    header: SortingButton('bep'),
-    cell: ({ row }) => {
-      const bep = parseFloat(row.getValue('bep'))
+  // {
+  //   accessorKey: 'bep',
+  //   header: SortingButton('PRU'),
+  //   cell: ({ row }) => {
+  //     const bep = parseFloat(row.getValue('bep'))
 
-      // Format the prix as a dollar prix
-      const formatted = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'EUR',
-      }).format(bep)
+  //     // Format the prix as a dollar prix
+  //     const formatted = new Intl.NumberFormat('en-US', {
+  //       style: 'currency',
+  //       currency: 'EUR',
+  //     }).format(bep)
 
-      return <div className="font-medium">{formatted}</div>
-    },
-  },
+  //     return <div className="font-medium">{formatted}</div>
+  //   },
+  // },
   // {
   //   accessorKey: 'chg',
   //   header: SortingButton('chg'),

@@ -1,0 +1,553 @@
+{
+  "transactions": [
+    {
+      "id": "8c8c5b4b-fe75-4cfb-bb84-ea4cb8570f1a",
+      "productName": "IDEXX LABORATORIES IN",
+      "type": "Acheter",
+      "date": "2024-04-11",
+      "qty": "1",
+      "price": 507.72,
+      "symbol": "IDXX"
+    },
+    {
+      "id": "b0eb8086-9978-4e32-a15d-a43b296e3f7c",
+      "productName": "FORTINET INC. - COMMO",
+      "type": "Acheter",
+      "date": "2024-01-10",
+      "qty": "8",
+      "price": 490.08,
+      "symbol": "FTNT"
+    },
+    {
+      "id": "cb89e33d-ab93-4cb1-b3c3-af938c34d0fe",
+      "productName": "MASTERCARD INCORPORATE",
+      "type": "Acheter",
+      "date": "2023-12-12",
+      "qty": "1",
+      "price": 418.89,
+      "symbol": "MA"
+    },
+    {
+      "id": "ced65933-d2f2-453b-82e0-77ed2fbc978d",
+      "productName": "S&P GLOBAL INC",
+      "type": "Acheter",
+      "date": "2023-10-03",
+      "qty": "1",
+      "price": 364.18,
+      "symbol": "SPGI"
+    },
+    {
+      "id": "196feb0d-3ada-4a17-bc98-d1f0a286c409",
+      "productName": "VISA INC.",
+      "type": "Acheter",
+      "date": "2023-08-30",
+      "qty": "2",
+      "price": 493.66,
+      "symbol": "V"
+    },
+    {
+      "id": "0adb879d-ece9-4529-846d-f3c2e8baa38f",
+      "productName": "AMUNDI EURO STOXX 50 II UCITS ETF ACC",
+      "type": "Acheter",
+      "date": "2023-07-25",
+      "qty": "-1",
+      "price": 45.99,
+      "symbol": "MSE.PA"
+    },
+    {
+      "id": "458b311f-c831-455c-b769-470ee80e0fd3",
+      "productName": "QUALCOMM INCORPORATED",
+      "type": "Acheter",
+      "date": "2023-07-24",
+      "qty": "4",
+      "price": 493.16,
+      "symbol": "QCOM"
+    },
+    {
+      "id": "ec438f52-9c76-42af-b61e-8df28b5af8d8",
+      "productName": "SWORD GROUP",
+      "type": "Acheter",
+      "date": "2023-07-24",
+      "qty": "-1",
+      "price": 41,
+      "symbol": "SWP.PA"
+    },
+    {
+      "id": "fda7d419-a3f0-4b69-9158-d77a12c014f4",
+      "productName": "UNITEDHEALTH GROUP INC",
+      "type": "Acheter",
+      "date": "2023-07-03",
+      "qty": "1",
+      "price": 478.1,
+      "symbol": "UNH"
+    },
+    {
+      "id": "d6dd7360-af20-4ab9-b54f-2d20536a4a79",
+      "productName": "STMICROELECTRONICS",
+      "type": "Acheter",
+      "date": "2023-06-29",
+      "qty": "-2",
+      "price": 88.4,
+      "symbol": "STMPA.PA"
+    },
+    {
+      "id": "ffc63bc0-b18e-4528-8b88-4674f0efe2c0",
+      "productName": "AIR LIQUIDE",
+      "type": "Acheter",
+      "date": "2023-06-29",
+      "qty": "-1",
+      "price": 162.7,
+      "symbol": "AI.PA"
+    },
+    {
+      "id": "baf4b4f3-269a-4d00-85be-ac395b4a9df4",
+      "productName": "STELLANTIS",
+      "type": "Acheter",
+      "date": "2023-06-29",
+      "qty": "-10",
+      "price": 155.7,
+      "symbol": "STLAM.MI"
+    },
+    {
+      "id": "be81f67d-7cce-4ea2-9eb1-8da76b1e4507",
+      "productName": "FLATEXDEGIRO AG",
+      "type": "Acheter",
+      "date": "2022-06-06",
+      "qty": "9",
+      "price": 125.33,
+      "symbol": "FTK.DE"
+    },
+    {
+      "id": "17509116-b335-4020-a1e5-dc9edaf7c5d7",
+      "productName": "STELLANTIS",
+      "type": "Acheter",
+      "date": "2022-06-06",
+      "qty": "10",
+      "price": 141.1,
+      "symbol": "STLAM.MI"
+    },
+    {
+      "id": "43dc2fdf-4bc2-4df6-90b4-5b803aa02710",
+      "productName": "AMAZON.COM INC. - COM",
+      "type": "Acheter",
+      "date": "2022-06-06",
+      "qty": "2",
+      "price": 256.42,
+      "symbol": "AMZN"
+    },
+    {
+      "id": "",
+      "productName": "AIR LIQUIDE",
+      "type": "Acheter",
+      "date": "2022-06-06",
+      "qty": "0",
+      "price": 0,
+      "symbol": "AI.PA"
+    },
+    {
+      "id": "80114fb0-bf3f-4ae9-8c94-19fd68c304bd",
+      "productName": "FREELANCE.COM",
+      "type": "Acheter",
+      "date": "2022-02-02",
+      "qty": "2",
+      "price": 15.26,
+      "symbol": "ALFRE.PA"
+    },
+    {
+      "id": "3f9b8b3f-68a9-47b1-8c2a-cc5710f179c0",
+      "productName": "STMICROELECTRONICS",
+      "type": "Acheter",
+      "date": "2022-02-02",
+      "qty": "1",
+      "price": 41.69,
+      "symbol": "STMPA.PA"
+    },
+    {
+      "id": "1cacb788-4ada-477a-affa-ce6dd2ff9928",
+      "productName": "ADOBE SYSTEMS INCORPOR",
+      "type": "Acheter",
+      "date": "2022-02-02",
+      "qty": "1",
+      "price": 534.64,
+      "symbol": "ADBE"
+    },
+    {
+      "id": "a49c0509-8113-44bc-b544-456545fc0e17",
+      "productName": "PAYPAL HOLDINGS INC.",
+      "type": "Acheter",
+      "date": "2022-02-02",
+      "qty": "1",
+      "price": 134.59,
+      "symbol": "PYPL"
+    },
+    {
+      "id": "76a7e78d-d0b2-4971-96a3-940b9954928b",
+      "productName": "SOITEC",
+      "type": "Acheter",
+      "date": "2022-02-02",
+      "qty": "1",
+      "price": 168.4,
+      "symbol": "SOI.PA"
+    },
+    {
+      "id": "6dc1e3cd-c6d3-4192-a561-b016bd3eff14",
+      "productName": "MICROSOFT CORPORATION",
+      "type": "Acheter",
+      "date": "2022-01-28",
+      "qty": "1",
+      "price": 304.66,
+      "symbol": "MSFT"
+    },
+    {
+      "id": "38c0f0db-76e5-483d-9762-830a36c13402",
+      "productName": "DERICHEBOURG",
+      "type": "Acheter",
+      "date": "2021-11-12",
+      "qty": "1",
+      "price": 10.39,
+      "symbol": "DBG.PA"
+    },
+    {
+      "id": "1362be4a-8843-461a-876a-98236fb99d1b",
+      "productName": "AMUNDI EURO STOXX 50 II UCITS ETF ACC",
+      "type": "Acheter",
+      "date": "2021-11-12",
+      "qty": "1",
+      "price": 43.27,
+      "symbol": "MSE.PA"
+    },
+    {
+      "id": "d4950ee0-66ee-4e4c-a564-1025637e8d09",
+      "productName": "BIGBEN INTERACTIVE",
+      "type": "Acheter",
+      "date": "2021-11-12",
+      "qty": "-1",
+      "price": 17.32,
+      "symbol": "BIG.PA"
+    },
+    {
+      "id": "d19ec156-99f7-417b-8eb2-1f2421471cb0",
+      "productName": "ADR ON ALIBABA GROUP HOLDING",
+      "type": "Acheter",
+      "date": "2021-11-12",
+      "qty": "1",
+      "price": 165.03,
+      "symbol": "BABA"
+    },
+    {
+      "id": "071eb0a9-366e-404b-90d9-828ba95f680d",
+      "productName": "VUSIONGROUP",
+      "type": "Acheter",
+      "date": "2021-11-12",
+      "qty": "-1",
+      "price": 65.1,
+      "symbol": "VU.PA"
+    },
+    {
+      "id": "8eefbde4-1760-4f1f-8d48-490a61ef63c3",
+      "productName": "PAYPAL HOLDINGS INC.",
+      "type": "Acheter",
+      "date": "2021-11-12",
+      "qty": "1",
+      "price": 204.14,
+      "symbol": "PYPL"
+    },
+    {
+      "id": "79d6fa7a-e45c-4f66-979b-0dc3d093a951",
+      "productName": "BERKSHIRE HATHAWAY INC",
+      "type": "Acheter",
+      "date": "2021-11-12",
+      "qty": "-1",
+      "price": 284.05,
+      "symbol": "BRK-B"
+    },
+    {
+      "id": "ab148195-1003-44af-8a80-261d67ff0ecf",
+      "productName": "BERKSHIRE HATHAWAY INC",
+      "type": "Acheter",
+      "date": "2021-11-03",
+      "qty": "1",
+      "price": 287.3,
+      "symbol": "BRK-B"
+    },
+    {
+      "id": "867ba0bd-2538-4930-8f89-f563935255cd",
+      "productName": "ISHARES S&P 500",
+      "type": "Acheter",
+      "date": "2021-11-03",
+      "qty": "-5",
+      "price": 199.01,
+      "symbol": "IHPCF"
+    },
+    {
+      "id": "250d811b-ffe2-413f-9cd4-07c06b32d93a",
+      "productName": "VUSIONGROUP",
+      "type": "Acheter",
+      "date": "2021-10-27",
+      "qty": "1",
+      "price": 58.2,
+      "symbol": "VU.PA"
+    },
+    {
+      "id": "50cd29ea-783e-4714-a95a-e05e253fc33a",
+      "productName": "AIR LIQUIDE",
+      "type": "Acheter",
+      "date": "2021-10-27",
+      "qty": "1",
+      "price": 143.68,
+      "symbol": "AI.PA"
+    },
+    {
+      "id": "491b7efe-9cd2-48e2-ab61-42465183c34a",
+      "productName": "SWORD GROUP",
+      "type": "Acheter",
+      "date": "2021-10-11",
+      "qty": "1",
+      "price": 40.45,
+      "symbol": "SWP.PA"
+    },
+    {
+      "id": "beca8d8f-9fbb-4315-af56-03a3971e2643",
+      "productName": "DERICHEBOURG",
+      "type": "Acheter",
+      "date": "2021-10-11",
+      "qty": "2",
+      "price": 18.82,
+      "symbol": "DBG.PA"
+    },
+    {
+      "id": "3a9b2050-70be-49b7-974a-87c7583bc9fb",
+      "productName": "TOTAL",
+      "type": "Acheter",
+      "date": "2021-10-06",
+      "qty": "-1",
+      "price": 43.21,
+      "symbol": "TTE.PA"
+    },
+    {
+      "id": "3429628a-32e2-49e8-8e18-72be3763351c",
+      "productName": "BIGBEN INTERACTIVE",
+      "type": "Acheter",
+      "date": "2021-10-04",
+      "qty": "-1",
+      "price": 16.08,
+      "symbol": "BIG.PA"
+    },
+    {
+      "id": "70d56c2f-2814-4e09-98d3-3c4f17b0d0da",
+      "productName": "BIGBEN INTERACTIVE",
+      "type": "Acheter",
+      "date": "2021-08-30",
+      "qty": "2",
+      "price": 30.44,
+      "symbol": "BIG.PA"
+    },
+    {
+      "id": "f72064c5-5e9c-4a1c-b8df-3e8c13423661",
+      "productName": "ISHARES S&P 500",
+      "type": "Acheter",
+      "date": "2021-08-25",
+      "qty": "2",
+      "price": 76.19,
+      "symbol": "IHPCF"
+    },
+    {
+      "id": "b3c30264-2db8-46a0-ab28-9caee5ad83e7",
+      "productName": "ISHARES S&P 500",
+      "type": "Acheter",
+      "date": "2021-08-25",
+      "qty": "3",
+      "price": 114.26,
+      "symbol": "IHPCF"
+    },
+    {
+      "id": "4992ac73-9019-4b1c-ad4e-0ac91edd4837",
+      "productName": "SCHNEIDER ELECTRIC",
+      "type": "Acheter",
+      "date": "2021-08-18",
+      "qty": "-1",
+      "price": 153.96,
+      "symbol": "SU.PA"
+    },
+    {
+      "id": "a6ba9c66-d7ac-4e69-85e9-285526a85071",
+      "productName": "NEXITY",
+      "type": "Acheter",
+      "date": "2021-08-18",
+      "qty": "-1",
+      "price": 43.44,
+      "symbol": "NXI.PA"
+    },
+    {
+      "id": "46afa8de-3894-4fc4-93b3-9035dd61c85d",
+      "productName": "STMICROELECTRONICS",
+      "type": "Acheter",
+      "date": "2021-08-10",
+      "qty": "1",
+      "price": 36.71,
+      "symbol": "STMPA.PA"
+    },
+    {
+      "id": "71ea2c09-33e6-443a-bd13-10639e7f551b",
+      "productName": "VICAT",
+      "type": "Acheter",
+      "date": "2021-08-10",
+      "qty": "-1",
+      "price": 42.35,
+      "symbol": "VCT.PA"
+    },
+    {
+      "id": "c257342e-1157-49a4-a2ce-635fbcfc0569",
+      "productName": "TOTAL",
+      "type": "Acheter",
+      "date": "2021-08-04",
+      "qty": "1",
+      "price": 37.88,
+      "symbol": "TTE.PA"
+    },
+    {
+      "id": "826e9c44-76b8-4c63-8a1e-aba52524e176",
+      "productName": "MICROSOFT CORPORATION",
+      "type": "Acheter",
+      "date": "2021-07-22",
+      "qty": "1",
+      "price": 283.86,
+      "symbol": "MSFT"
+    },
+    {
+      "id": "f2bcb193-4d20-4309-b52c-622785333dee",
+      "productName": "AXA",
+      "type": "Acheter",
+      "date": "2021-07-22",
+      "qty": "-1",
+      "price": 21.82,
+      "symbol": "CS.PA"
+    },
+    {
+      "id": "ef241159-6bef-4247-aa38-4a08712b03a9",
+      "productName": "TOTAL",
+      "type": "Acheter",
+      "date": "2021-07-22",
+      "qty": "-1",
+      "price": 35.89,
+      "symbol": "TTE.PA"
+    },
+    {
+      "id": "b7678ae8-072d-4701-a6b3-11659a97efe5",
+      "productName": "THALES",
+      "type": "Acheter",
+      "date": "2021-07-22",
+      "qty": "-1",
+      "price": 88.86,
+      "symbol": "HO.PA"
+    },
+    {
+      "id": "614fe595-44fa-472d-a9ad-1c24f16c9da0",
+      "productName": "BOUYGUES",
+      "type": "Acheter",
+      "date": "2021-07-22",
+      "qty": "-1",
+      "price": 32.18,
+      "symbol": "EN.PA"
+    },
+    {
+      "id": "932ea535-4959-4d7b-9f97-602217b48ed4",
+      "productName": "IMERYS",
+      "type": "Acheter",
+      "date": "2021-07-22",
+      "qty": "-1",
+      "price": 37.88,
+      "symbol": "NK.PA"
+    },
+    {
+      "id": "2f5d993e-fdcb-4093-a37e-8a70fb399275",
+      "productName": "DANONE",
+      "type": "Acheter",
+      "date": "2021-07-13",
+      "qty": "-1",
+      "price": 59.61,
+      "symbol": "BN.PA"
+    },
+    {
+      "id": "29797a23-91bb-40a5-b3b5-ef1366909f7d",
+      "productName": "VICAT",
+      "type": "Acheter",
+      "date": "2021-06-04",
+      "qty": "1",
+      "price": 43.9,
+      "symbol": "VCT.PA"
+    },
+    {
+      "id": "d19c79e5-fd1b-4400-a3ca-563d9d342835",
+      "productName": "SCHNEIDER ELECTRIC",
+      "type": "Acheter",
+      "date": "2021-05-20",
+      "qty": "1",
+      "price": 127,
+      "symbol": "SU.PA"
+    },
+    {
+      "id": "3f140009-6385-40d8-92a2-d23e466933dd",
+      "productName": "DANONE",
+      "type": "Acheter",
+      "date": "2021-05-14",
+      "qty": "1",
+      "price": 57.19,
+      "symbol": "BN.PA"
+    },
+    {
+      "id": "b2ca3da6-57ae-4d07-8dc3-8bb6b41ff83f",
+      "productName": "THALES",
+      "type": "Acheter",
+      "date": "2021-05-12",
+      "qty": "1",
+      "price": 85.02,
+      "symbol": "HO.PA"
+    },
+    {
+      "id": "275e7789-6ca2-4c3f-bb2d-943d5ce64076",
+      "productName": "IMERYS",
+      "type": "Acheter",
+      "date": "2021-03-01",
+      "qty": "1",
+      "price": 43.5,
+      "symbol": "NK.PA"
+    },
+    {
+      "id": "48d728aa-f9c0-4c56-91b5-13b954a11fca",
+      "productName": "BOUYGUES",
+      "type": "Acheter",
+      "date": "2021-03-01",
+      "qty": "1",
+      "price": 33.9,
+      "symbol": "EN.PA"
+    },
+    {
+      "id": "6ae17b6e-2e78-4f58-8b5a-6f86c3a09eed",
+      "productName": "NEXITY",
+      "type": "Acheter",
+      "date": "2020-11-24",
+      "qty": "1",
+      "price": 31.64,
+      "symbol": "NXI.PA"
+    },
+    {
+      "id": "fa1b9434-22f6-4a2c-aaa3-70b3ee43f2af",
+      "productName": "AXA",
+      "type": "Acheter",
+      "date": "2020-11-24",
+      "qty": "1",
+      "price": 19.2,
+      "symbol": "CS.PA"
+    },
+    {
+      "id": "44802a5e-4515-4e59-a693-d7107110c4d3",
+      "productName": "TOTAL",
+      "type": "Acheter",
+      "date": "2020-11-24",
+      "qty": "1",
+      "price": 37.17,
+      "symbol": "TTE.PA"
+    }
+  ]
+}

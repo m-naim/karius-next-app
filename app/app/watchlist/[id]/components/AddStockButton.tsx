@@ -13,7 +13,7 @@ import {
   CommandItem,
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import stockService from 'services/stock.service'
+import { search } from 'services/stock.service'
 
 type securityInfos = {
   symbol: string
@@ -27,7 +27,7 @@ export function AddStockButton({ addRow }) {
 
   const fetchValues = async (value) => {
     if (value.length > 2) {
-      const res = await stockService.search(value)
+      const res = await search(value)
       setOptions(res)
     }
   }
@@ -35,15 +35,21 @@ export function AddStockButton({ addRow }) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" role="combobox" aria-expanded={open} className=" justify-between">
-          <PlusIcon className="h-4 w-4 shrink-0 opacity-50" />
+        <Button
+          variant="outline"
+          size={'sm'}
+          role="combobox"
+          aria-expanded={open}
+          className=" justify-between"
+        >
+          <PlusIcon className="h-4 w-4 shrink-0 opacity-50" /> Ajouter une valeur
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="ml-16 w-[200px] p-0">
+      <PopoverContent className="ml-16 w-[300px] p-0">
         <Command>
           <CommandInput
-            placeholder="Ajouter une valeur..."
+            placeholder="Checher par symbol ou nom (AAPL,MSFT)..."
             className="h-9"
             onValueChange={fetchValues}
           />

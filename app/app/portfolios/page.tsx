@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { round10 } from '@/lib/decimalAjustement'
 import authService from '@/services/authService'
-import portfolioService from '@/services/portfolioService'
+import { getAll } from '@/services/portfolioService'
 import { Star, TrendingUpIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { useEffect } from 'react'
@@ -15,6 +15,7 @@ interface PortfolioSummery {
   name: string
   followersSize: number
   dayChangePercent: number
+  cumulativePerformance: number
   allocation: string[]
 }
 interface PortfoliosPresentation {
@@ -30,7 +31,7 @@ const Portfolios = () => {
 
   const fetchData = async () => {
     try {
-      const res = await portfolioService.getAll()
+      const res = await getAll()
       setData(res)
     } catch (e) {
       console.error('error api:', e)
@@ -107,7 +108,7 @@ function PortfolioCard(p: PortfolioSummery): React.JSX.Element {
           <div className="flex gap-2">
             <span className="capitalize">performances annualisées</span>
             <TrendingUpIcon></TrendingUpIcon>
-            <span>{round10(p.dayChangePercent, -2)}%</span>
+            <span>{round10((p.cumulativePerformance - 1) * 100, -2)}%</span>
           </div>
         </CardFooter>
       </Card>

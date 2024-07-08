@@ -203,6 +203,11 @@ module.exports = {
           },
         },
       }),
+
+      gridTemplateColumns: {
+        14: 'repeat(14, minmax(0, 1fr))',
+        footer: '200px minmax(900px, 1fr) 100px',
+      },
     },
   },
   plugins: [

@@ -1,15 +1,22 @@
 import React, { ReactNode, useState } from 'react'
-import authService from '@/services/authService'
-import portfolioService from '@/services/portfolioService'
 
 import { round10 } from '@/lib/decimalAjustement'
 import { useRouter } from 'next/navigation'
 import StatsCard from '../../../../components/molecules/portfolio/statsCard'
 import { Button } from '@/components/ui/button'
-import { BanknoteIcon, GemIcon, Share2, StarIcon, Trash2, TrendingUp } from 'lucide-react'
+import { BanknoteIcon, EllipsisVertical, GemIcon, StarIcon, Trash2, TrendingUp } from 'lucide-react'
 import Performance from './performance'
 import DividendsView from './dividends'
 import SectionContainer from '@/components/organismes/layout/SectionContainer'
+import { deletePortfolio, follow, unfollow } from '@/services/portfolioService'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 type Props = {
   children?: ReactNode
@@ -21,23 +28,23 @@ const PortfolioLayout = ({ pftData, id, children, isOwn }) => {
 
   const [followed, setFollowed] = useState(false)
 
-  const follow = async () => {
+  const handleFollowClick = async () => {
     try {
       setFollowed(() => !followed)
 
-      if (followed) await portfolioService.unfollow(pftData.id)
-      else await portfolioService.follow(pftData.id)
+      if (followed) await unfollow(pftData.id)
+      else await follow(pftData.id)
     } catch {
       console.error('error')
     }
   }
 
-  const deletePortfolio = async () => {
+  const handleDeletePortfolio = async () => {
     try {
-      await portfolioService.deletePortfolio(pftData.id)
-      router.push('/portfolios')
-    } catch {
-      console.error('error')
+      await deletePortfolio(pftData.id)
+      router.push('/app/portfolios')
+    } catch (e) {
+      console.error('error', e)
     }
   }
 
@@ -59,13 +66,25 @@ const PortfolioLayout = ({ pftData, id, children, isOwn }) => {
                       Partager
                     </Button> */}
 
-                    {/* <Button onClick={deletePortfolio} size="sm" variant="outline" className="gap-1">
-                      <Trash2 className="h-4 text-red-600" strokeWidth={1} />
-                      Supprimer
-                    </Button> */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size={'sm'} variant="ghost">
+                          <EllipsisVertical size={16} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56">
+                        <DropdownMenuGroup>
+                          <DropdownMenuItem onClick={handleDeletePortfolio}>
+                            <Trash2 className="h-4 text-red-600" strokeWidth={1} />
+                            <span>Supprimer</span>
+                            <DropdownMenuShortcut>ctrl + d</DropdownMenuShortcut>
+                          </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </>
                 ) : (
-                  <Button onClick={follow} size="sm" variant="outline" className="gap-1">
+                  <Button onClick={handleFollowClick} size="sm" variant="outline" className="gap-1">
                     <StarIcon
                       className="h-5 w-5"
                       fill={followed ? '#eac54f' : '#999'}
@@ -86,7 +105,7 @@ const PortfolioLayout = ({ pftData, id, children, isOwn }) => {
           <StatsCard
             title={'Valeur Total'}
             amount={round10(pftData.totalValue, -2)}
-            variation={20}
+            variation={round10(pftData.cumulativePerformance, -2)}
             Icon={<BanknoteIcon />}
           />
           <StatsCard

@@ -13,7 +13,7 @@ import {
   CommandSeparator,
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import stockService from '@/services/stock.service'
+import { search } from '@/services/stock.service'
 import { useDebouncedCallback } from 'use-debounce'
 
 interface Security {
@@ -30,7 +30,7 @@ export function ComboboxPopover({ ticker, setTicker }) {
   const fetchData = async (value) => {
     if (value.lenght < 1) return
     try {
-      const res: Security[] = await stockService.search(value as string)
+      const res: Security[] = await search(value as string)
       setData(res)
     } catch (e) {
       console.error('error api:' + e)

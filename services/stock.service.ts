@@ -4,22 +4,18 @@ import config from './config'
 const host = config.API_URL
 const qwantHost = config.QWANTAPI_URL
 
-function update(id) {
+export function update(id) {
   return http.get(`${qwantHost}/api/v1/update/stocks/${id}/`)
 }
 
-function getAll(id) {
+export function getAll(id) {
   return http.get(`${host}/api/v1/stocks/`)
 }
 
-function search(query) {
+export function search(query) {
   return http.get(`${host}/api/v1/stocks/search?query=${query}`)
 }
 
-const stockService = {
-  update,
-  getAll,
-  search,
+export function getProductsSymbols(products) {
+  return http.post(`${host}/api/v1/stocks/search`, products)
 }
-
-export default stockService

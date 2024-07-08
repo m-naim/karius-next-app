@@ -12,13 +12,11 @@ export const useUser = () => {
   const { setItem } = useLocalStorage()
 
   const addUser = (user: User) => {
-    console.log('addUser setUser', user)
     setUser(user)
     setItem('user', JSON.stringify(user))
   }
 
   const removeUser = () => {
-    console.log('removeUser setUser', user)
     setUser(null)
     setItem('user', '')
   }

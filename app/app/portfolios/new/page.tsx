@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import portfolioService from '@/services/portfolioService'
+import { add } from '@/services/portfolioService'
 import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
 
@@ -15,11 +15,13 @@ function AddPortfolio() {
   const router = useRouter()
 
   const addClick = async () => {
-    const res = await portfolioService.add({
+    const res = await add({
       name,
       visibility,
     })
-    router.push(`/app/portfolios/${res.id}`, { scroll: false })
+    console.log(res)
+
+    router.push(`/app/portfolios/${res.data.id}`, { scroll: false })
   }
 
   return (

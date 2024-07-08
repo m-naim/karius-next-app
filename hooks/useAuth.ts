@@ -6,22 +6,23 @@ import { useLocalStorage } from './useLocalStorage'
 import { AuthContext } from './authContext'
 
 export const useAuth = () => {
-  const { getItem } = useLocalStorage()
+  const { getItem, removeItem } = useLocalStorage()
 
   const { user, addUser, removeUser } = useContext(AuthContext)
 
   useEffect(() => {
     const userItem = getItem('user')
+
     if (userItem) {
       const user = JSON.parse(userItem)
-      console.log(user)
 
       if (user.exp * 1000 < Date.now()) {
         logout()
       } else {
-        console.log(' useEffect add user', user)
         addUser(user)
       }
+    } else {
+      logout()
     }
   }, [])
 
@@ -34,7 +35,10 @@ export const useAuth = () => {
   }
 
   const logout = () => {
+    console.log(' useEffect logout')
     removeUser()
+    removeItem('accessToken')
+    removeItem('user')
   }
 
   return { user, login, logout }

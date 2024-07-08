@@ -9,15 +9,17 @@ export default async function Projects() {
   const listWatch = await getPublicWatchlists()
 
   return (
-    <div className="divide-y divide-gray-200 dark:divide-gray-700">
-      <div>
-        <h1>Titre</h1>
-        <p>description</p>
-      </div>
+    <>
+      <SectionContainer>
+        <div>
+          <h1>Titre</h1>
+          <p>description</p>
+        </div>
+      </SectionContainer>
       <SectionContainer>
         <div className="-m-4 flex flex-wrap gap-1">{listWatch.map((w) => WatchCard(w))}</div>
       </SectionContainer>
-    </div>
+    </>
   )
 
   function WatchCard(w): React.JSX.Element {

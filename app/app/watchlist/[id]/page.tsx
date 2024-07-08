@@ -1,24 +1,43 @@
 'use client'
 
-import React from 'react'
-import { WatchlistTable } from './watchlistTable'
+import React, { useLayoutEffect } from 'react'
+import { WatchlistTable } from './components/watchlistTable'
 import { usePathname } from 'next/navigation'
+import SectionContainer from '@/components/organismes/layout/SectionContainer'
+import watchListService from '@/services/watchListService'
+import { security } from './data/security'
 
+interface watchList {
+  name: string
+  securities: security[]
+}
 export default function Watchlist() {
   const id = usePathname().split('/')[3]
-  return (
+  const [data, setData] = React.useState<watchList>()
+  const [loading, setloading] = React.useState(true)
+  const fetchData = async () => {
+    setData(await watchListService.get(id))
+    setloading(false)
+  }
+
+  useLayoutEffect(() => {
+    fetchData()
+  }, [])
+
+  return loading ? (
+    <div>loading ...</div>
+  ) : (
     <>
-      <div className="divide-y divide-gray-200 dark:divide-gray-700">
+      <SectionContainer>
         <div>
-          <h1>Titre</h1>
-          <p>description</p>
+          <h1>{data?.name}</h1>
         </div>
-        <div className="container py-12">
-          <div className="-m-4 flex flex-wrap">
-            <WatchlistTable id={id} />
-          </div>
+      </SectionContainer>
+      <SectionContainer>
+        <div className="-m-4 flex flex-wrap">
+          {!loading && data && <WatchlistTable securities={data.securities} id={id} />}
         </div>
-      </div>
+      </SectionContainer>
     </>
   )
 }

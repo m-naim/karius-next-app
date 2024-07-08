@@ -3,10 +3,12 @@ import { getLocalStorageItem } from '@/lib/utils'
 async function CheckError(response) {
   const data = await response.json()
 
+  console.log(data)
+
   if (response.status >= 200 && response.status <= 299) {
     return data
   }
-  console.log(data.msg)
+  console.log('error', data)
   throw Error(data.msg)
 }
 
@@ -71,7 +73,7 @@ function deleteReq(path) {
     },
     method: 'DELETE',
     mode: 'cors',
-  }).then(CheckError)
+  })
 }
 const http = {
   post,
