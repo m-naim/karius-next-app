@@ -1,6 +1,6 @@
 import { useRouter } from 'next/navigation'
 import React, { useState, useLayoutEffect } from 'react'
-import portfolioService from '@/services/portfolioService'
+import { get } from '@/services/portfolioService'
 
 const columns = ['symbol', 'date', 'qty', 'price']
 function TransactionView({ id }) {
@@ -9,7 +9,7 @@ function TransactionView({ id }) {
 
   const fetchData = async () => {
     try {
-      const data = await portfolioService.get(id as string)
+      const data = await get(id as string)
 
       data.allocation = data.allocation.map((item, i) => {
         item.id = i + 1

@@ -1,12 +1,12 @@
 import React, { useState, useLayoutEffect } from 'react'
-import portfolioService from '@/services/portfolioService'
+import { getMetrics } from '@/services/portfolioService'
 
 function StatisticsView({ id }) {
   const [portfolio, setPortfolio] = useState()
   const [loading, setLoading] = useState(true)
   const fetchData = async () => {
     try {
-      const data = await portfolioService.getMetrics(id as string)
+      const data = await getMetrics(id as string)
       setPortfolio(data[0])
       setLoading(false)
     } catch {
