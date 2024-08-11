@@ -114,7 +114,7 @@ export const columns = [
   {
     id: 'retour',
     header: 'Retour',
-    cell: (row) => (
+    cell: ({ row }) => (
       <div>
         <VariationContainer
           value={row!.original.dailyVariation}
