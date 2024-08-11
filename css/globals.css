@@ -75,6 +75,19 @@
     /* font-feature-settings: "rlig" 1, "calt" 1; */
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
+    font-family:
+      inter,
+      -apple-system,
+      BlinkMacSystemFont,
+      Segoe UI,
+      Roboto,
+      Oxygen,
+      Ubuntu,
+      Cantarell,
+      Fira Sans,
+      Droid Sans,
+      Helvetica Neue,
+      sans-serif;
   }
   h1 {
     @apply py-3 text-3xl font-bold tracking-tight;

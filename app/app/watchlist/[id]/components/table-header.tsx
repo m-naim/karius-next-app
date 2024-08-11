@@ -1,3 +1,4 @@
+'use client'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -13,7 +14,9 @@ import { industries, sectors } from '../data/data'
 
 const periods = ['1j', '1s', '1m', '3m', '1y', '5y']
 
-export const TableContextHeader = ({ table, id }) => {
+export const TableContextHeader = ({ table, id, owned }) => {
+  console.log(owned)
+
   const addRow = (newRow) => {
     const setFunc = (old) => [...old, newRow]
     watchListService.addStock(id, {
@@ -27,7 +30,7 @@ export const TableContextHeader = ({ table, id }) => {
   return (
     <div className="flex w-full justify-between gap-10 py-4">
       <div className="flex gap-2">
-        <AddStockButton addRow={addRow} />
+        {owned && <AddStockButton addRow={addRow} />}
         {table.getColumn('sector') && (
           <DataTableFacetedFilter
             column={table.getColumn('sector')}

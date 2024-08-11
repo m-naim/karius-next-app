@@ -69,8 +69,8 @@ module.exports = {
 
       fontFamily: {
         sans: ['InterVariable', ...defaultTheme.fontFamily.sans],
-        // sans: ["var(--font-geist-sans)", ...fontFamily.sans],
-        // mono: ["var(--font-mono)", ...fontFamily.mono],
+        // sans: [ ...fontFamily.sans],
+        // mono: [ ...fontFamily.mono],
       },
 
       keyframes: {

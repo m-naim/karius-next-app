@@ -14,14 +14,6 @@ function PagePerformance() {
   return (
     <div>
       <SectionContainer>
-        <div className="flex items-center gap-2">
-          <Link href={`/app/portfolios/${id}`} className="h-fit">
-            <Button variant={'ghost'}>
-              <ArrowLeft />
-            </Button>
-          </Link>
-          <h1>Details des Performances </h1>
-        </div>
         <PerformanceBox id={id} />
       </SectionContainer>
 

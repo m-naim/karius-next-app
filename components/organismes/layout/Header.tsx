@@ -41,14 +41,15 @@ const Header = () => {
             .filter((link) => link.href !== '/')
             .filter((link) => !link.draft)
             .map((link) => (
-              <Link
-                data-umami-event={`header-${link.title}`}
-                key={link.title}
-                href={link.href}
-                className="hidden font-medium text-gray-900 sm:block dark:text-gray-100"
-              >
-                {link.title}
-              </Link>
+              <Button variant="ghost" asChild key={link.title}>
+                <Link
+                  data-umami-event={`header-${link.title}`}
+                  href={link.href}
+                  className="hidden font-medium text-gray-900 sm:block dark:text-gray-100"
+                >
+                  {link.title}
+                </Link>
+              </Button>
             ))}
           <SearchButton />
           <ThemeSwitch />

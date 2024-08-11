@@ -38,23 +38,29 @@ const MobileNav = () => {
         </div>
 
         <nav className="fixed mt-8 flex h-full w-full flex-col items-center gap-4 px-12">
-          <Link href="/login">
-            <Button variant={'link'} size={'sm'} data-umami-event="header-Signup-login">
+          <Button
+            asChild
+            variant={'link'}
+            data-umami-event="header-Signup-login"
+            onClick={onToggleNav}
+          >
+            <Link href="/login" data-umami-event={`mobile-header-login`}>
               Se connecter
-            </Button>
-          </Link>
+            </Link>
+          </Button>
 
-          <Link href="/signup" data-umami-event="header-Signup-button">
-            <Button className="h-7" size={'sm'} data-umami-event="header-Signup-button">
+          <Button data-umami-event="header-Signup-button" onClick={onToggleNav}>
+            <Link href="/signup" data-umami-event="header-Signup-button">
               Crée un compte gratuit
-            </Button>
-          </Link>
+            </Link>
+          </Button>
+
           {headerNavLinks
             .filter((link) => !link.draft)
             .map((link) => (
               <div key={link.title} className=" py-4">
                 <Link
-                  data-umami-event={`header-${link.title}`}
+                  data-umami-event={`mobile-header-${link.title}`}
                   href={link.href}
                   className="text-2xl font-bold tracking-widest text-gray-900 dark:text-gray-100"
                   onClick={onToggleNav}

@@ -18,22 +18,7 @@ export const findStockBySymbol = async (symbol) => {
 
 export const getPublicWatchlists = async () => {
   const client = await clientPromise
-  let res = await client
-    .db('investing')
-    .collection('watchlists')
-    .find({ is_public: true })
-    .toArray()
-  if (res == null) return []
-  return res
-}
-
-export const getPublicPortfolios = async () => {
-  const client = await clientPromise
-  let res = await client
-    .db('investing')
-    .collection('portfolios')
-    .find({ public: true }, { projection: { _id: 1, name: 1, allocation: { symbol: 1 } } })
-    .toArray()
+  let res = await client.db('investing').collection('watchlists').find({ public: true }).toArray()
   if (res == null) return []
   return res
 }

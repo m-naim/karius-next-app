@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Column } from '@tanstack/react-table'
+import { Column, ColumnDef } from '@tanstack/react-table'
 import { ChevronUp, ArrowUpDown, ChevronDown, MoreHorizontal, ListFilterIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -12,8 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import { round10 } from '@/lib/decimalAjustement'
-import VariationContainer from '@/components/molecules/portfolio/variationContainer'
+import { format } from 'date-fns/format'
 
 type FiltrProps = {
   column: Column<unknown>
@@ -39,7 +38,7 @@ const FilterButton = ({ column }: FiltrProps) => (
   </DropdownMenu>
 )
 
-const SortingButton = (title) => {
+const SortingButton = (title, activateFilter = true) => {
   return function GhostButton({ column }: FiltrProps) {
     return (
       <div className="flex">
@@ -54,33 +53,34 @@ const SortingButton = (title) => {
           {!column.getIsSorted() ? <ArrowUpDown className="ml-2 h-4 w-4" /> : null}
         </Button>
 
-        <FilterButton column={column}></FilterButton>
+        {activateFilter && <FilterButton column={column}></FilterButton>}
       </div>
     )
   }
 }
 
-export const columns = [
+export const columns: ColumnDef<unknown>[] = [
   {
-    accessorKey: 'symbol',
-    header: SortingButton('Produit'),
-    cell: ({ row }) => <div className="font-medium ">{row.getValue('symbol')}</div>,
-  },
-  {
-    accessorKey: 'weight',
-    header: SortingButton('Poid'),
+    accessorKey: 'date',
+    header: SortingButton('date', false),
     cell: ({ row }) => (
-      <div>
-        <div className="font-medium ">{round10((row.getValue('weight') as number) * 100, -1)}%</div>
+      <div className="">
+        {format(new Date((row.getValue('date') as number) * 1000), 'yyyy-MM-dd')}
       </div>
     ),
   },
 
   {
-    accessorKey: 'last',
-    header: SortingButton('Cours'),
+    accessorKey: 'symbol',
+    header: SortingButton('Produit'),
+    cell: ({ row }) => <div className="capitalize">{row.getValue('symbol')}</div>,
+  },
+
+  {
+    accessorKey: 'amountByShare',
+    header: SortingButton('montant par actif', false),
     cell: ({ row }) => {
-      const last = parseFloat(row.getValue('last'))
+      const last = parseFloat(row.getValue('amountByShare'))
 
       // Format the prix as a dollar prix
       const formatted = new Intl.NumberFormat('en-US', {
@@ -93,41 +93,18 @@ export const columns = [
   },
 
   {
-    accessorKey: 'qty',
-    header: 'Quantité',
-    cell: ({ row }) => <div className="font-medium "> {row.getValue('qty')} </div>,
-  },
-  {
-    accessorKey: 'bep',
-    header: 'bep',
-    cell: ({ row }) => <div className="font-medium "> {round10(row.getValue('bep'), -2)} </div>,
-  },
+    accessorKey: 'totalAmount',
+    header: SortingButton('Total', false),
+    cell: ({ row }) => {
+      const qty = parseFloat(row.getValue('totalAmount'))
 
-  {
-    accessorKey: 'total_value',
-    header: 'Total',
-    cell: ({ row }) => (
-      <div className="font-medium "> {round10(row.getValue('total_value'), -2)} </div>
-    ),
-  },
+      // Format the prix as a dollar prix
+      const formatted = new Intl.NumberFormat('en-US', {
+        style: 'decimal',
+        signDisplay: 'always',
+      }).format(qty)
 
-  {
-    id: 'retour',
-    header: 'Retour',
-    cell: (row) => (
-      <div>
-        <VariationContainer
-          value={row!.original.dailyVariation}
-          background={false}
-          entity="€"
-          className="m-0 p-0"
-        />
-        <VariationContainer
-          value={row!.original.dailyVariationPercent}
-          background={false}
-          className="m-0 p-0"
-        />
-      </div>
-    ),
+      return <div className="font-medium ">{formatted}</div>
+    },
   },
 ]

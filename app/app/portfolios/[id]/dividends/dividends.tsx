@@ -65,41 +65,14 @@ const chartOptions = {
   // },
 }
 
-interface yearRecord {
-  totalAmount: string
-}
-interface DividendesChart {
-  yearlyDividends: Map<string, yearRecord>
-}
-
-function DividendsView({ id }) {
-  const [loading, setLoading] = useState(false)
-  const [dates, setDates] = useState<string[]>([])
-  const [perfs, setPerfs] = useState<number[]>([])
-
+function DividendsView({ id, loading, dates, values }) {
   const [period, setPeriod] = useState('Annuel')
-
   const get_years = (input) => {
     return input.map((s) => format(new Date(s), 'yyyy'))
   }
   const get_months = (input) => {
     return input.map((s) => format(new Date(s), 'MMMM yy'))
   }
-  const fetchData = async () => {
-    try {
-      const dividends: DividendesChart = await getDividends(id)
-
-      setDates(Object.keys(dividends.yearlyDividends))
-      setPerfs(Object.values(dividends.yearlyDividends).map((v) => v.totalAmount))
-    } catch (e) {
-      console.error('error api', e)
-    }
-  }
-
-  useEffect(() => {
-    fetchData()
-    setLoading(false)
-  }, [])
 
   return loading ? (
     <div>Loading ...</div>
@@ -121,7 +94,7 @@ function DividendsView({ id }) {
                     label: 'Dividends',
                     backgroundColor: 'rgb(109, 99, 255,0.7)',
                     borderColor: 'rgb(109, 99, 255',
-                    data: perfs,
+                    data: values,
                   },
                 ],
               }}

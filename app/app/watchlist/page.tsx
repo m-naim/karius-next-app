@@ -1,4 +1,5 @@
 import SectionContainer from '@/components/organismes/layout/SectionContainer'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getPublicWatchlists } from '@/services/actions'
 import { Star, Watch } from 'lucide-react'
@@ -11,9 +12,14 @@ export default async function Projects() {
   return (
     <>
       <SectionContainer>
-        <div>
-          <h1>Titre</h1>
-          <p>description</p>
+        <div className="flex w-full place-content-between py-6">
+          <h2 className="border-b-2 border-primary">Mes watchlists</h2>
+
+          <Link data-umami-event="portfolios-new-button" href={'watchlist/new'}>
+            <Button data-umami-event="portfolios-new-button" variant={'outline'} size={'sm'}>
+              + Ajouter une watchlist
+            </Button>
+          </Link>
         </div>
       </SectionContainer>
       <SectionContainer>

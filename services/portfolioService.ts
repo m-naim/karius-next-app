@@ -47,10 +47,11 @@ export function add(payload) {
 }
 
 export function AddTransaction(idPft, body) {
-  const { type, ticker, prix, quantity, date } = body
+  const { id, type, ticker, prix, quantity, date } = body
   const coef = 'Acheter' === type ? 1 : -1
 
   const apiBody = {
+    id,
     symbol: ticker,
     date: format(date, 'yyyy-MM-dd', { locale: fr }),
     price: prix,

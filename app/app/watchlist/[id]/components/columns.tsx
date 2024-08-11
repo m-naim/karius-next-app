@@ -30,7 +30,7 @@ const SortingButton = (title) => {
   }
 }
 
-export const columns = (id): ColumnDef<security, string>[] => {
+export const columns = (id, owned): ColumnDef<security, string>[] => {
   return [
     {
       accessorKey: 'symbol',
@@ -106,7 +106,7 @@ export const columns = (id): ColumnDef<security, string>[] => {
             <a target="_blank" href={`https://www.gurufocus.com/stock/${ticker}`}>
               guru
             </a>
-            <Actions id={id} symbol={row.original.symbol}></Actions>
+            {owned && <Actions id={id} symbol={row.original.symbol}></Actions>}
           </div>
         )
       },

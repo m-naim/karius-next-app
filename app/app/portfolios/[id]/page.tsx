@@ -1,7 +1,6 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import PortfolioLayout from 'app/app/portfolios/[id]/PortfolioLayout'
 import React, { useState, useEffect } from 'react'
 
 import {
@@ -21,7 +20,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FileScan } from 'lucide-react'
 import TransactionDialogue from './transactionDialogue'
 import Link from 'next/link'
-import { get } from '@/services/portfolioService'
+import { AddTransaction, get } from '@/services/portfolioService'
+import { v4 as uuidv4 } from 'uuid'
+import StatsCard from './statsCard'
 
 export default function PortfolioView() {
   const id = usePathname().split('/')[3]
@@ -74,16 +75,28 @@ export default function PortfolioView() {
     },
   })
 
+  const addTransaction = async (transactionData) => {
+    transactionData.id = uuidv4()
+    const res = await AddTransaction(id, transactionData)
+    console.log(res)
+    setOwn(res.own)
+    setPortfolio(res.data)
+    setData(res.data.allocation)
+  }
+
   return (
-    <PortfolioLayout id={id} pftData={portfolio} isOwn={own}>
-      <Card>
+    <div className="mb-20 flex flex-wrap-reverse gap-1">
+      <Card className="w-full md:w-8/12">
         <CardHeader>
           <CardTitle>Investissements</CardTitle>
           {own && (
             <div className="flex gap-2 p-2">
-              <TransactionDialogue idPortfolio={id} />
-              {/* <Button variant='outline'  size='sm'> visualiser</Button>
-          <Button variant='outline'  size='sm'> all transactions</Button> */}
+              <TransactionDialogue
+                data-umami-event="portfolio-import-button"
+                idPortfolio={id}
+                submitHandler={addTransaction}
+              />
+
               <Link data-umami-event="portfolio-import-button" href={`${id}/import`}>
                 <Button variant="outline" className="gap-2" size="sm">
                   <FileScan />
@@ -101,6 +114,9 @@ export default function PortfolioView() {
           </div>
         </CardContent>
       </Card>
-    </PortfolioLayout>
+      <div className="flex w-full  flex-col gap-2 md:w-3/12">
+        <StatsCard pftData={portfolio} />
+      </div>
+    </div>
   )
 }
