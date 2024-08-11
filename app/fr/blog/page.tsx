@@ -4,7 +4,7 @@ import { allBlogs } from 'contentlayer/generated'
 import { genPageMetadata } from 'app/seo'
 import { slug } from 'github-slugger'
 
-const POSTS_PER_PAGE = 5
+const POSTS_PER_PAGE = 10
 
 export const metadata = genPageMetadata({ title: 'Blog' })
 
