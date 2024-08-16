@@ -49,7 +49,6 @@ const PortfolioLayout = ({ pftData, setPftData, id, children, isOwn, followed, s
   }
 
   const isLinkActive = (path: string) => {
-    console.log(pathname, path)
     return pathname === path ? 'bg-primary/20' : ''
   }
 

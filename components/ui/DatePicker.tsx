@@ -11,7 +11,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { fr } from 'date-fns/locale'
 
 export function DatePicker({ date, setDate }) {
-  console.log(date)
 
   return (
     <Popover>

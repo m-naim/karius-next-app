@@ -35,8 +35,6 @@ function TransactionDialogue({
     const res = await AddTransaction(idPortfolio, transactionData)
   },
 }) {
-  // console.log(initialData);
-
   const [type, setType] = useState(initialData.type)
   const [ticker, setTicker] = useState<string>(initialData.ticker)
   const [date, setDate] = React.useState<Date>(initialData.date)

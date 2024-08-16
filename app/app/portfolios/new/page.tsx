@@ -21,7 +21,6 @@ function AddPortfolio() {
       name,
       visibility,
     })
-    console.log(res)
 
     router.push(`/app/portfolios/${res.data.id}`, { scroll: false })
   }

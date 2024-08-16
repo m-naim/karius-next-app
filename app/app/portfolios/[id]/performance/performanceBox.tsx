@@ -53,8 +53,6 @@ function PerformanceBox({ id }) {
 
     const allValues = data[type]
 
-    console.log(data, allValues)
-
     if (period === 'ALL') {
       setDates(allDates)
       setChartValues(allValues)
@@ -88,7 +86,6 @@ function PerformanceBox({ id }) {
   }
 
   const handleChartTypeClick = (type) => {
-    console.log('type', 'handleChartTypeClick', type)
     setChartType(type)
     handlePeriodClick(period, type)
   }

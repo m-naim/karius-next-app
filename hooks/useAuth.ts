@@ -28,14 +28,12 @@ export const useAuth = () => {
 
   const login = (token: String) => {
     if (token != null && token.length > 2) {
-      console.log('login')
       const decodedJwt: User = JSON.parse(atob(token.split('.')[1]))
       addUser(decodedJwt)
     }
   }
 
   const logout = () => {
-    console.log(' useEffect logout')
     removeUser()
     removeItem('accessToken')
     removeItem('user')

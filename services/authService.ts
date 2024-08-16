@@ -4,8 +4,6 @@ import http from './http'
 const host = config.API_URL
 
 const register = (username, email, password) => {
-  console.log(username, email, password)
-
   return http
     .post(`${host}/auth/register`, {
       displayName: username,
@@ -41,7 +39,6 @@ const logOut = () => {
 const getCurrentUser = () => {
   if (typeof window !== 'undefined') {
     let token = localStorage.getItem('accessToken')
-    console.log('token', token)
 
     if (token != null && token.length > 2) {
       const decodedJwt = JSON.parse(atob(token.split('.')[1]))

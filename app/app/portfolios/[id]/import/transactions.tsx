@@ -46,7 +46,6 @@ export const Transactions = ({ id, transactionState }) => {
                       return t
                     }
                   })
-                  console.log('submitHandler', newTransactionsValues, newArray)
 
                   setTransactions(newArray)
                 }}

@@ -77,7 +77,6 @@ export default function PortfolioView() {
   const addTransaction = async (transactionData) => {
     transactionData.id = uuidv4()
     const res = await AddTransaction(id, transactionData)
-    console.log(res)
     setOwn(res.own)
     setPortfolio(res.data)
     setData(res.data.allocation)

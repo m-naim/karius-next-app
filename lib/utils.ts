@@ -11,7 +11,6 @@ export const isDefined = (variable) => {
 }
 
 export const comparator = (a, b) => {
-  console.log(typeof a, a)
   if (typeof a === 'string') return a.localeCompare(b)
   if (typeof a === 'number') return a - b
   return 0
@@ -19,6 +18,5 @@ export const comparator = (a, b) => {
 
 export const getLocalStorageItem = (key): string => {
   const item = localStorage.getItem(key)
-  console.log(item)
   return item ? JSON.parse(item) : ''
 }

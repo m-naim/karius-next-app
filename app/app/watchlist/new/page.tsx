@@ -19,8 +19,6 @@ function AddWatchList() {
       visibility,
     })
 
-    console.log(res)
-
     router.push(`/app/watchlist/${res.id}`, { scroll: false })
   }
 

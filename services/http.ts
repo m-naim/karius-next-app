@@ -2,13 +2,10 @@ import { getLocalStorageItem } from '@/lib/utils'
 
 async function CheckError(response) {
   const data = await response.json()
-
-  console.log(data)
-
   if (response.status >= 200 && response.status <= 299) {
     return data
   }
-  console.log('error', data)
+  console.error('error', data)
   throw Error(data.msg)
 }
 

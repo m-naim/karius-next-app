@@ -67,8 +67,6 @@ export default function PortfolioView() {
     const distinctProducts = distinct(products, 'isin')
     const symbols = await getProductsSymbols({ stockNames: distinctProducts })
 
-    console.log(contentFile)
-
     const extractedTransactions = contentFile.map((line) => ({
       id: line['ID Ordre'],
       productName: line.Produit,
@@ -79,7 +77,6 @@ export default function PortfolioView() {
       symbol: symbols.find((s) => s.isin === line['Code ISIN']).symbol,
     }))
     setTransactions(extractedTransactions)
-    console.log('extractedTransactions', extractedTransactions)
     setFileLoaded(true)
   }
 
@@ -89,13 +86,12 @@ export default function PortfolioView() {
 
   const dumpTransactions = async () => {
     try {
-      console.log('dumping ...')
       setLoading(true)
       await addTransactions(id, transactions)
       router.back()
       setLoading(false)
     } catch (e) {
-      console.log('error dumping ...', e)
+      console.error('error dumping ...', e)
     }
   }
 
