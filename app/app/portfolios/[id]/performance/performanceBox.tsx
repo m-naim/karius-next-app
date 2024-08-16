@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { Line } from 'react-chartjs-2'
 import { format } from 'date-fns'
 import { Chart, CategoryScale, LinearScale, LineElement } from 'chart.js'
 import { LineValue } from '@/components/molecules/charts/LineValue'
@@ -12,15 +11,15 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
 
 Chart.register(CategoryScale, LinearScale, LineElement)
 
+const defaultChartType = 'value'
 function PerformanceBox({ id }) {
-  const [chartType, setChartType] = useState('value')
+  const [chartType, setChartType] = useState(defaultChartType)
   const [dates, setDates] = useState([])
   const [chartValues, setChartValues] = useState([])
   const [loading, setLoading] = useState(false)
@@ -33,22 +32,21 @@ function PerformanceBox({ id }) {
     return input.map((s) => format(new Date(s * 24 * 60 * 60 * 1000), 'dd/MM/yyyy'))
   }
 
-  const fetchData = async () => {
-    try {
-      const res = await getPerformances(id as string)
-      setData(res)
-      setAllDates(formatDateStr(res.timestamp))
-      setDates(formatDateStr(res.timestamp).slice(-30))
-      setChartValues(res[chartType].slice(-30))
-      setLoading(false)
-    } catch (e) {
-      console.error('error api', e)
-    }
-  }
-
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await getPerformances(id as string)
+        setData(res)
+        setAllDates(formatDateStr(res.timestamp))
+        setDates(formatDateStr(res.timestamp).slice(-30))
+        setChartValues(res[defaultChartType].slice(-30))
+        setLoading(false)
+      } catch (e) {
+        console.error('error api', e)
+      }
+    }
     fetchData()
-  }, [])
+  }, [id])
 
   const handlePeriodClick = (period, type = chartType) => {
     setPeriod(period)
@@ -100,7 +98,6 @@ function PerformanceBox({ id }) {
   ) : (
     <Card>
       <CardHeader className="flex flex-col items-center justify-between space-y-0 pb-1">
-        <CardTitle className="text-md font-semibold capitalize">Évolution</CardTitle>
         <div className="flex w-full justify-between p-3">
           <Select onValueChange={handleChartTypeClick} defaultValue={chartType}>
             <SelectTrigger className="w-[200px]">
@@ -108,11 +105,11 @@ function PerformanceBox({ id }) {
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectItem value="dailyGains">dailyGains</SelectItem>
-                <SelectItem value="value">value</SelectItem>
-                <SelectItem value="cumulativeGains">cumulativeGains</SelectItem>
-                <SelectItem value="CumulativePerformance">CumulativePerformance</SelectItem>
-                <SelectItem value="cashValue">cashValue</SelectItem>
+                <SelectItem value="dailyGains">+/- par jour</SelectItem>
+                <SelectItem value="value">Évolution de la valeur</SelectItem>
+                <SelectItem value="cumulativeGains">Gains cumulés</SelectItem>
+                <SelectItem value="CumulativePerformance">Performance cumulée</SelectItem>
+                <SelectItem value="cashValue">Valeur des liquidités (cash)</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -128,6 +125,7 @@ function PerformanceBox({ id }) {
       <CardContent>
         {dates.length > 0 ? (
           <LineValue
+            unit={['CumulativePerformance'].includes(chartType) ? '%' : '€'}
             data={{
               labels: dates,
               datasets: [
@@ -141,7 +139,7 @@ function PerformanceBox({ id }) {
             }}
           />
         ) : (
-          <LineValue />
+          <div>Chargement de données ..</div>
         )}
       </CardContent>
       <CardFooter className="flex w-full justify-between"></CardFooter>

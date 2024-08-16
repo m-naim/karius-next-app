@@ -35,24 +35,21 @@ export default function PortfolioView({ children }) {
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
 
-  const fetchData = async (id) => {
-    try {
-      const res = await get(id as string)
-      setOwn(res.own)
-      setFollowed(res.followed)
-      setPortfolio(res.data)
-      console.log(res.data)
-
-      setData(res.data.allocation)
-    } catch (e) {
-      console.error('error api:' + e)
-      setPortfolio({ _id: '', allocation: [], transactions: [], cashValue: 0 })
-    }
-  }
-
   useEffect(() => {
+    const fetchData = async (id) => {
+      try {
+        const res = await get(id as string)
+        setOwn(res.own)
+        setFollowed(res.followed)
+        setPortfolio(res.data)
+        setData(res.data.allocation)
+      } catch (e) {
+        console.error('error api:' + e)
+        setPortfolio({ _id: '', allocation: [], transactions: [], cashValue: 0 })
+      }
+    }
     fetchData(id)
-  }, [])
+  }, [id])
 
   const table = useReactTable({
     data,

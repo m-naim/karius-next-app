@@ -12,12 +12,12 @@ function PagePerformance() {
   const id = usePathname().split('/')[3]
 
   return (
-    <div>
-      <SectionContainer>
+    <div className="flex flex-col gap-6">
+      <SectionContainer className="w-full">
         <PerformanceBox id={id} />
       </SectionContainer>
 
-      <SectionContainer>
+      <SectionContainer className="w-full">
         <YearlyOverview id={id} />
       </SectionContainer>
     </div>

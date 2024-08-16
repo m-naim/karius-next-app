@@ -1,12 +1,14 @@
 'use client'
 
+import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import SectionContainer from '@/components/organismes/layout/SectionContainer'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { round10 } from '@/lib/decimalAjustement'
 import authService from '@/services/authService'
 import { getAll } from '@/services/portfolioService'
-import { Star, TrendingUpIcon } from 'lucide-react'
+import { Flame, Star, StarIcon, TrendingUpIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { useEffect } from 'react'
 
@@ -17,6 +19,7 @@ interface PortfolioSummery {
   dayChangePercent: number
   cumulativePerformance: number
   allocation: string[]
+  annualizedReturn: number
 }
 interface PortfoliosPresentation {
   ownPortfolios: PortfolioSummery[]
@@ -45,28 +48,52 @@ const Portfolios = () => {
   return (
     <div>
       {authentificated && (
-        <PortfoliosSection
-          items={data?.ownPortfolios}
-          title={'Mes portefeuilles'}
-          ActionButton={() => (
+        <SectionContainer>
+          <div className="flex w-full place-content-between py-6">
+            <h2>Mes portefeuilles</h2>
+          </div>
+
+          <PortfoliosSection items={data?.ownPortfolios} />
+
+          <Button className="mt-4" asChild data-umami-event="portfolios-new-button" size={'sm'}>
             <Link data-umami-event="portfolios-new-button" href={'portfolios/new'}>
-              <Button data-umami-event="portfolios-new-button" variant={'outline'} size={'sm'}>
-                + Nouveau Portefeuille
-              </Button>
+              + Crée un nouveau Portefeuille
             </Link>
-          )}
-        />
+          </Button>
+        </SectionContainer>
       )}
 
-      <PortfoliosSection
-        items={data?.bestPerformingPortfolios}
-        title={'Les portefeuilles les plus performants'}
-      />
+      <div className="mt-12 flex w-full place-content-center text-center ">
+        <h1 className="text-3xl">Découvrez les meilleurs portefeuilles de la communauté</h1>
+      </div>
 
-      <PortfoliosSection
-        items={data?.mostFollowedPortfolios}
-        title={'Les portefeuilles les plus suivis'}
-      />
+      <SectionContainer>
+        <div className="flex w-full flex-col place-content-between gap-2 md:flex-row">
+          <Card className="w-full max-w-xl">
+            <CardHeader className="flex">
+              <CardTitle className="text-md flex gap-2">
+                <Flame fill="#ff0000" stroke="#ff0000" />
+                les plus performants
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PortfoliosSuggestSection items={data?.bestPerformingPortfolios} />
+            </CardContent>
+          </Card>
+
+          <Card className="w-full max-w-xl">
+            <CardHeader>
+              <CardTitle className="text-md flex gap-2">
+                <StarIcon size={24} fill="#eedd00" stroke="#eedd00" />
+                Les plus suivis
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PortfoliosSuggestSection items={data?.bestPerformingPortfolios} />
+            </CardContent>
+          </Card>
+        </div>
+      </SectionContainer>
     </div>
   )
 }
@@ -76,58 +103,72 @@ export default Portfolios
 function PortfolioCard(p: PortfolioSummery): React.JSX.Element {
   return (
     <Link key={p.id} href={`portfolios/${p.id}`}>
-      <Card className="flex h-44 w-full flex-col place-content-between overflow-hidden ">
+      <Card className="flex  w-full flex-col place-content-between overflow-hidden p-1">
         <CardHeader className="flex flex-row items-center justify-between gap-1 space-y-0 pb-1">
-          <CardTitle className="text-md text-ellipsis font-medium capitalize">{p.name}</CardTitle>
-          <div className="flex place-items-center p-1">
-            <Star size={14} />
-            <span className="xs px-1">{p.followersSize}</span>
+          <div className="text-md text-ellipsis p-1 font-medium capitalize">{p.name}</div>
+
+          <div className="grid max-w-[140px] grid-cols-2 gap-1">
+            <div className="flex place-items-center p-1">
+              <Star size={14} />
+              <span className="xs px-1">{p.followersSize || 0}</span>
+            </div>
+
+            <div className="flex gap-2 p-1">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <TrendingUpIcon className="h-4 w-4" size={14} />
+                  </TooltipTrigger>
+                  <TooltipContent>Performances annualisées</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <VariationContainer value={p.annualizedReturn} entity="%" background={false} />
+            </div>
           </div>
         </CardHeader>
-        <CardContent className="min-h-26 h-16">
-          <div className="text-xs font-light">{p.allocation?.length || 0} Actions</div>
-          <div className="flex w-full flex-wrap">
-            {p.allocation
-              ?.filter((element, index) => index < 10)
-              .map((s) => (
-                <span
-                  key={s}
-                  className="m-0.5 rounded-sm bg-primary p-0.5 text-xs uppercase text-white"
-                >
-                  {s}
-                </span>
-              ))}
-            {p?.allocation.length < 10 || (
-              <span className="m-0.5 rounded-sm bg-primary p-0.5 text-xs uppercase text-white">
-                + autres ...
-              </span>
-            )}
-          </div>
-        </CardContent>
-        <CardFooter>
-          <div className="flex gap-2">
-            <span className="capitalize">performances annualisées</span>
-            <TrendingUpIcon></TrendingUpIcon>
-            <span>{round10((p.cumulativePerformance - 1) * 100, -2)}%</span>
-          </div>
-        </CardFooter>
       </Card>
     </Link>
   )
 }
 
-function PortfoliosSection({ items, title, ActionButton = () => <></> }) {
+function PortfoliosSection({ items }) {
+  return <div className="flex max-w-md flex-col gap-6">{items?.map((w) => PortfolioCard(w))}</div>
+}
+
+function PortfoliosSuggestSection({ items }) {
   return (
-    <SectionContainer>
-      <div className="flex w-full place-content-between py-6">
-        <h2 className="border-b-2 border-primary">{title}</h2>
+    <div className="flex w-full flex-col gap-6">
+      {items?.map((p, index) => (
+        <Link
+          className="grid grid-cols-2 p-2 hover:bg-gray-500/10"
+          key={p.id}
+          href={`portfolios/${p.id}`}
+        >
+          <div className="text-md text-ellipsis p-1 font-medium capitalize">
+            <span className="mx-2">{index + 1}</span>
+            {p.name}
+          </div>
 
-        {ActionButton && <ActionButton />}
-      </div>
+          <div className="grid max-w-[140px] grid-cols-2 gap-1">
+            <div className="flex place-items-center p-1">
+              <Star fill="#eedd00" stroke="#eedd00" size={18} />
+              <span className="xs px-1">{p.followersSize || 0}</span>
+            </div>
 
-      <div className="grid grid-cols-1 place-content-start gap-6  md:grid-cols-2 xl:grid-cols-4 ">
-        {items?.map((w) => PortfolioCard(w))}
-      </div>
-    </SectionContainer>
+            <div className="flex gap-2 p-1">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <TrendingUpIcon className="h-4 w-4" size={18} />
+                  </TooltipTrigger>
+                  <TooltipContent>Performances annualisées</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <VariationContainer value={p.annualizedReturn} entity="%" background={false} />
+            </div>
+          </div>
+        </Link>
+      ))}
+    </div>
   )
 }

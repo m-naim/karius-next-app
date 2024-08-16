@@ -7,11 +7,13 @@ export default function variationContainer({
   entity = '%',
   background = true,
   className,
+  vaiationColor = true,
 }: {
   value: number
   entity?: string
   background?: boolean
   className?: string
+  vaiationColor?: boolean
 }) {
   const getVariation = (value) => {
     return round10(value, -2)
@@ -35,12 +37,13 @@ export default function variationContainer({
   return (
     <div
       className={cn(
-        getVariationColor(value),
-        'h-fit rounded-md  p-1 text-xs font-medium',
+        vaiationColor && getVariationColor(value),
+        'm-1 h-fit  rounded-md p-1 text-xs font-medium ',
         className
       )}
     >
-      {numberFormatter.format(getVariation(value))} {entity}
+      {numberFormatter.format(getVariation(value))}
+      {entity}
     </div>
   )
 }

@@ -8,26 +8,10 @@ import { getDividends } from '@/services/portfolioService'
 
 Chart.register(CategoryScale, LinearScale, BarElement)
 
-const chartDataInit = {
-  labels: [2022, 2023, 2024],
-  datasets: [
-    {
-      label: 'Performance',
-      backgroundColor: 'rgb(109, 99, 255)',
-      borderColor: 'rgb(132, 149, 243)',
-      data: [0, 70, 190],
-    },
-  ],
-}
-
 const chartOptions = {
   responsive: true,
   radius: 0,
-  // intersect: true,
   scales: {
-    // grid:{
-    //     display:false
-    // },
     x: {
       ticks: {
         color: 'blue',
@@ -41,7 +25,9 @@ const chartOptions = {
     },
     y: {
       ticks: {
-        display: true,
+        callback: function (val, index) {
+          return this.getLabelForValue(val as number) + '€'
+        },
       },
       grid: {
         display: false,
@@ -59,10 +45,6 @@ const chartOptions = {
       display: false,
     },
   },
-  // interaction: {
-  //     intersect: false,
-  //     mode: 'index',
-  // },
 }
 
 function DividendsView({ id, loading, dates, values }) {

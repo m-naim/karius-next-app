@@ -30,21 +30,18 @@ function PageTransactions() {
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
 
-  const fetchData = async (id) => {
-    try {
-      const res = await get(id as string)
-      console.log(res)
-
-      setOwn(res.own)
-      setData(res.data.transactions)
-    } catch (e) {
-      console.error('error api:' + e)
-    }
-  }
-
   useEffect(() => {
+    const fetchData = async (id) => {
+      try {
+        const res = await get(id as string)
+        setOwn(res.own)
+        setData(res.data.transactions)
+      } catch (e) {
+        console.error('error api:' + e)
+      }
+    }
     fetchData(id)
-  }, [])
+  }, [id])
 
   const table = useReactTable({
     data,

@@ -4,20 +4,21 @@ import { getMetrics } from '@/services/portfolioService'
 function StatisticsView({ id }) {
   const [portfolio, setPortfolio] = useState()
   const [loading, setLoading] = useState(true)
-  const fetchData = async () => {
-    try {
-      const data = await getMetrics(id as string)
-      setPortfolio(data[0])
-      setLoading(false)
-    } catch {
-      console.error('error api')
-      setPortfolio(undefined)
-    }
-  }
 
   useLayoutEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getMetrics(id as string)
+        setPortfolio(data[0])
+        setLoading(false)
+      } catch {
+        console.error('error api')
+        setPortfolio(undefined)
+      }
+    }
+
     fetchData()
-  }, [])
+  }, [portfolio, loading, id])
 
   return loading ? (
     <div>loading...</div>

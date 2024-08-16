@@ -4,6 +4,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { add } from '@/services/portfolioService'
+import { ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
 
@@ -27,8 +29,15 @@ function AddPortfolio() {
   return (
     <div className=" flex flex-col items-center justify-center  gap-6 px-12 py-12 ">
       <div className="flex flex-col gap-4 ">
-        <div className="flex items-center justify-between gap-8">
-          <p className="text-xl font-semibold leading-7 lg:leading-9">Créer un portefeuille</p>
+        <div className="flex items-center  gap-2">
+          <Link href={`/app/portfolios`} className="h-fit">
+            <Button variant={'ghost'}>
+              <ArrowLeft />
+            </Button>
+          </Link>
+          <span className="text-xl font-semibold leading-7 lg:leading-9 ">
+            Créer un nouveau portefeuille
+          </span>
         </div>
 
         <div className="grid min-w-96 gap-4 py-4">

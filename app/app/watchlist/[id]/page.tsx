@@ -55,16 +55,15 @@ export default function Watchlist() {
     },
   })
 
-  const fetchData = async () => {
-    const response = await watchListService.get(id)
-    setData(response.watchlist)
-    setOwned(response.owned)
-    setloading(false)
-  }
-
   useLayoutEffect(() => {
+    const fetchData = async () => {
+      const response = await watchListService.get(id)
+      setData(response.watchlist)
+      setOwned(response.owned)
+      setloading(false)
+    }
     fetchData()
-  }, [])
+  }, [id])
 
   return loading ? (
     <div>loading ...</div>

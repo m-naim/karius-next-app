@@ -94,11 +94,11 @@ export default function PostLayout({
             </div>
           </header>
           <div
-            className=" divide-y divide-gray-200 pb-8 xl:grid xl:grid-cols-5 xl:grid-rows-2 xl:gap-x-6 xl:divide-y-0 dark:divide-gray-700"
+            className=" divide-y divide-gray-200 pb-8 xl:grid xl:grid-cols-5 xl:grid-rows-2 xl:gap-x-12 xl:divide-y-0 dark:divide-gray-700"
             style={{ gridTemplateRows: 'auto 1fr' }}
           >
             <div className="divide-y divide-gray-200 xl:order-2 xl:col-span-4 xl:pb-0 dark:divide-gray-700">
-              <div className="prose h-full max-w-none overflow-scroll pb-8 pt-10 dark:prose-dark">
+              <div className="prose h-full max-w-none overflow-scroll  pb-8 pt-10 dark:prose-dark prose-h2:text-3xl prose-h3:text-primary prose-p:my-8">
                 {children}
               </div>
             </div>

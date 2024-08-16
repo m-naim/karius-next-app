@@ -100,6 +100,12 @@ module.exports = {
               code: { color: theme('colors.primary.400') },
             },
 
+            h3: {
+              color: theme('colors.primary'),
+              fontSize: '1.275rem',
+              lineHeight: '1.75rem',
+            },
+
             pre: {
               backgroundColor: theme('colors.gray.800'),
             },
@@ -203,9 +209,13 @@ module.exports = {
           },
         },
       }),
-
+      gridTemplateRows: {
+        14: 'repeat(14, minmax(0, 1fr))',
+        13: 'repeat(13, minmax(0, 1fr))',
+      },
       gridTemplateColumns: {
         14: 'repeat(14, minmax(0, 1fr))',
+        13: 'repeat(13, minmax(0, 1fr))',
         footer: '200px minmax(900px, 1fr) 100px',
       },
     },

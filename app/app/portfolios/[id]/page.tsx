@@ -41,21 +41,20 @@ export default function PortfolioView() {
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
 
-  const fetchData = async (id) => {
-    try {
-      const res = await get(id as string)
-      setOwn(res.own)
-      setPortfolio(res.data)
-      setData(res.data.allocation)
-    } catch (e) {
-      console.error('error api:' + e)
-      setPortfolio({ _id: '', allocation: [], transactions: [], cashValue: 0 })
-    }
-  }
-
   useEffect(() => {
+    const fetchData = async (id) => {
+      try {
+        const res = await get(id as string)
+        setOwn(res.own)
+        setPortfolio(res.data)
+        setData(res.data.allocation)
+      } catch (e) {
+        console.error('error api:' + e)
+        setPortfolio({ _id: '', allocation: [], transactions: [], cashValue: 0 })
+      }
+    }
     fetchData(id)
-  }, [])
+  }, [id])
 
   const table = useReactTable({
     data,
@@ -85,8 +84,8 @@ export default function PortfolioView() {
   }
 
   return (
-    <div className="mb-20 flex flex-wrap-reverse gap-1">
-      <Card className="w-full md:w-8/12">
+    <div className="mb-20 flex w-full flex-wrap-reverse gap-1">
+      <Card className="w-full lg:w-8/12">
         <CardHeader>
           <CardTitle>Investissements</CardTitle>
           {own && (
@@ -114,7 +113,7 @@ export default function PortfolioView() {
           </div>
         </CardContent>
       </Card>
-      <div className="flex w-full  flex-col gap-2 md:w-3/12">
+      <div className="w-fill flex flex-grow  flex-col gap-2 ">
         <StatsCard pftData={portfolio} />
       </div>
     </div>

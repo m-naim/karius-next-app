@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { Line } from 'react-chartjs-2'
 import { format } from 'date-fns'
 import { Chart, CategoryScale, LinearScale, LineElement } from 'chart.js'
 import { LineValue } from '@/components/molecules/charts/LineValue'
@@ -11,19 +10,7 @@ import { getPerformances } from '@/services/portfolioService'
 
 Chart.register(CategoryScale, LinearScale, LineElement)
 
-const dataSetItem = {
-  label: 'Performance',
-  backgroundColor: 'rgb(109, 99, 255)',
-  borderColor: 'rgb(132, 149, 243)',
-  data: [],
-}
-const chartDataInit = {
-  labels: [],
-  datasets: [dataSetItem],
-}
-
 function Performance({ id }) {
-  const [name, setName] = useState('')
   const [dates, setDates] = useState([])
   const [perfs, setPerfs] = useState([])
   const [loading, setLoading] = useState(false)
@@ -36,25 +23,22 @@ function Performance({ id }) {
     return input.map((s) => format(new Date(s * 24 * 60 * 60 * 1000), 'dd/MM/yyyy'))
   }
 
-  const fetchData = async () => {
-    try {
-      const data = await getPerformances(id as string)
-
-      setAllTimePerfs(data.value)
-      setAllDates(formatDateStr(data.timestamp))
-
-      setDates(formatDateStr(data.timestamp).slice(-30))
-      setPerfs(data.value.slice(-30))
-
-      setLoading(false)
-    } catch (e) {
-      console.error('error api', e)
-    }
-  }
-
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getPerformances(id as string)
+
+        setAllTimePerfs(data.value)
+        setAllDates(formatDateStr(data.timestamp))
+        setDates(formatDateStr(data.timestamp).slice(-30))
+        setPerfs(data.value.slice(-30))
+        setLoading(false)
+      } catch (e) {
+        console.error('error api', e)
+      }
+    }
     fetchData()
-  }, [])
+  }, [id])
 
   const handlePeriodClick = (period) => {
     setPeriod(period)

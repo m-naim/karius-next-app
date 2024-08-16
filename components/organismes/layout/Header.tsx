@@ -31,7 +31,7 @@ const Header = () => {
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 sm:px-6 xl:max-w-7xl xl:px-0">
         <div>
           <Link data-umami-event={'header-home'} href="/" aria-label={siteMetadata.headerTitle}>
-            <div className=" font-mono text-2xl font-semibold italic text-primary ">
+            <div className="text-2xl font-semibold italic text-primary ">
               {siteMetadata.headerTitle}
             </div>
           </Link>
@@ -55,9 +55,11 @@ const Header = () => {
           <ThemeSwitch />
           {user ? (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+              <DropdownMenuTrigger>
                 <Avatar>
-                  <AvatarFallback>{user.sub.substring(0, 2)}</AvatarFallback>
+                  <AvatarFallback className="bg-primary text-white">
+                    {user.sub.substring(0, 1)}
+                  </AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
 

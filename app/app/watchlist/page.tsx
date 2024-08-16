@@ -2,7 +2,7 @@ import SectionContainer from '@/components/organismes/layout/SectionContainer'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { getPublicWatchlists } from '@/services/actions'
-import { Star, Watch } from 'lucide-react'
+import { Star } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 

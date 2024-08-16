@@ -41,23 +41,20 @@ function PageDividends() {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
 
-  const fetchData = async () => {
-    try {
-      const dividends: DividendesChart = await getDividends(id)
-
-      setDates(Object.keys(dividends.yearlyDividends))
-      setPerfs(Object.values(dividends.yearlyDividends).map((v) => v.totalAmount))
-
-      setData(dividends.dividends)
-    } catch (e) {
-      console.error('error api', e)
-    }
-  }
-
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const dividends: DividendesChart = await getDividends(id)
+        setDates(Object.keys(dividends.yearlyDividends))
+        setPerfs(Object.values(dividends.yearlyDividends).map((v) => v.totalAmount))
+        setData(dividends.dividends)
+      } catch (e) {
+        console.error('error api', e)
+      }
+    }
     fetchData()
     setLoading(false)
-  }, [])
+  }, [id])
 
   const table = useReactTable({
     data,
@@ -78,12 +75,12 @@ function PageDividends() {
   })
 
   return (
-    <div>
-      <SectionContainer>
+    <div className="flex flex-col gap-6">
+      <SectionContainer className="w-full">
         <DividendsView id={id} loading={loading} dates={dates} values={perfs} />
       </SectionContainer>
 
-      <SectionContainer>
+      <SectionContainer className="w-full">
         <Card>
           <CardContent>
             <SimpleDataTable table={table} colSpan={columns.length} />
