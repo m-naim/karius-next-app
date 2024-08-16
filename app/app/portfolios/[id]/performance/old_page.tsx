@@ -227,7 +227,7 @@ function Performance() {
             }}
           />
         ) : (
-          <LineValue />
+          <div className="bg-dark">Aucune donnée</div>
         )}
       </CardContent>
       {/* <MultiSelect className='w-full md:max-w-[300px]' list={['Valeur', 'Profits/Pertes', '%Variation']} active={graphType} /> */}
