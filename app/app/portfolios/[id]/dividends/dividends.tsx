@@ -4,18 +4,15 @@ import { format } from 'date-fns'
 
 import { Chart, CategoryScale, LinearScale, BarElement } from 'chart.js'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { getDividends } from '@/services/portfolioService'
 
 Chart.register(CategoryScale, LinearScale, BarElement)
 
 const chartOptions = {
   responsive: true,
+  maintainAspectRatio: false,
   radius: 0,
   scales: {
     x: {
-      ticks: {
-        color: 'blue',
-      },
       grid: {
         display: true,
         drawBorder: true,
@@ -65,7 +62,7 @@ function DividendsView({ id, loading, dates, values }) {
         {/* <MultiSelect list={['Mensuel', 'Annuel']} active={period} select={handlePeriodClick} /> */}
       </CardHeader>
       <CardContent>
-        <div className="m-2 w-full ">
+        <div className="m-2  max-h-[32rem] ">
           {dates.length > 0 ? (
             <Bar
               id={'Dividends'}
@@ -77,6 +74,7 @@ function DividendsView({ id, loading, dates, values }) {
                     backgroundColor: 'rgb(109, 99, 255,0.7)',
                     borderColor: 'rgb(109, 99, 255',
                     data: values,
+                    maxBarThickness: 32 ,  
                   },
                 ],
               }}

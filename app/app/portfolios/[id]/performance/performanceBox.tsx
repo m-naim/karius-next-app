@@ -94,7 +94,7 @@ function PerformanceBox({ id }) {
     <div className="bg-dark">Calcule de performances en cours ...</div>
   ) : (
     <Card>
-      <CardHeader className="flex flex-col items-center justify-between space-y-0 pb-1">
+      <CardHeader className="flex flex-col items-center justify-between space-y-0 pb-2">
         <div className="flex w-full justify-between p-3">
           <Select onValueChange={handleChartTypeClick} defaultValue={chartType}>
             <SelectTrigger className="w-[200px]">
@@ -110,13 +110,6 @@ function PerformanceBox({ id }) {
               </SelectGroup>
             </SelectContent>
           </Select>
-
-          <MultiSelect
-            className="order-3 w-full md:order-2 md:max-w-xs"
-            list={['1W', '1M', '6M', '1Y', 'ALL']}
-            active={period}
-            select={handlePeriodClick}
-          />
         </div>
       </CardHeader>
       <CardContent>
@@ -139,7 +132,14 @@ function PerformanceBox({ id }) {
           <div>Chargement de données ..</div>
         )}
       </CardContent>
-      <CardFooter className="flex w-full justify-between"></CardFooter>
+      <CardFooter className="flex w-full justify-end py-2">
+          <MultiSelect
+                className="order-3 w-full md:order-2 md:max-w-xs"
+                list={['1W', '1M', '6M', '1Y', 'ALL']}
+                active={period}
+                select={handlePeriodClick}
+              />
+      </CardFooter>
     </Card>
   )
 }

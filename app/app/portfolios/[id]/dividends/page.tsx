@@ -75,8 +75,8 @@ function PageDividends() {
   })
 
   return (
-    <div className="flex flex-col gap-6">
-      <SectionContainer className="w-full">
+    <div className="flex flex-col gap-6 overflow-hidden">
+      <SectionContainer className="w-full overflow-hidden">
         <DividendsView id={id} loading={loading} dates={dates} values={perfs} />
       </SectionContainer>
 
