@@ -8,7 +8,7 @@ const StatsCard = ({ pftData }) => (
     <CardContent>
       <div className="grid grid-cols-2 pb-1">
         <div className="text-sm font-light">Valeur Total</div>
-        <div className=" text-sm">{round10(pftData.totalValue, -2)} € </div>
+        <div className=" mx-1 px-2 text-sm">{round10(pftData.totalValue, -2)} € </div>
       </div>
       <Separator />
       <div className="my-2 text-sm font-semibold">Performance</div>
@@ -36,10 +36,10 @@ const StatsCard = ({ pftData }) => (
         </div>
       </div>
 
-      <Separator />
+      <Separator className="" />
 
-      <div className="text-md my-2 text-sm  font-semibold ">Dividendes</div>
-      <div className="grid grid-cols-2 pb-1">
+      <div className="text-md my-2 hidden  text-sm font-semibold">Dividendes</div>
+      <div className="grid hidden grid-cols-2 pb-1">
         <div className="text-sm  font-extralight ">Rendument</div>{' '}
         <div className=" text-sm">x%</div>
         <div className="text-sm  font-light ">Total perçu</div> <div className=" text-sm">x€</div>
@@ -48,7 +48,7 @@ const StatsCard = ({ pftData }) => (
       <Separator />
       <div className="my-4 grid grid-cols-2 pb-1">
         <div className="text-sm font-light ">Dernier Màj</div>
-        <div className="text-xs font-light">{pftData.last_perfs_update}</div>
+        <div className="mx-1 px-1 text-xs font-light">{pftData.last_perfs_update}</div>
       </div>
     </CardContent>
   </Card>

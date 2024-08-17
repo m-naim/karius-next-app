@@ -133,12 +133,12 @@ function PerformanceBox({ id }) {
         )}
       </CardContent>
       <CardFooter className="flex w-full justify-end py-2">
-          <MultiSelect
-                className="order-3 w-full md:order-2 md:max-w-xs"
-                list={['1W', '1M', '6M', '1Y', 'ALL']}
-                active={period}
-                select={handlePeriodClick}
-              />
+        <MultiSelect
+          className="order-3 w-full md:order-2 md:max-w-xs"
+          list={['1W', '1M', '6M', '1Y', 'ALL']}
+          active={period}
+          select={handlePeriodClick}
+        />
       </CardFooter>
     </Card>
   )

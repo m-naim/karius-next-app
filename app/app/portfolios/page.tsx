@@ -155,7 +155,7 @@ function PortfoliosSuggestSection({ items }) {
               <span className="xs px-1">{p.followersSize || 0}</span>
             </div>
 
-            <div className="flex gap-2 p-1">
+            <div className="flex gap-1 p-1">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger>
@@ -164,7 +164,12 @@ function PortfoliosSuggestSection({ items }) {
                   <TooltipContent>Performances annualisées</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-              <VariationContainer value={p.annualizedReturn} entity="%" background={false} />
+              <VariationContainer
+                value={p.annualizedReturn}
+                entity="%"
+                background={false}
+                className="m-0 p-0 py-2"
+              />
             </div>
           </div>
         </Link>

@@ -74,7 +74,7 @@ function DividendsView({ id, loading, dates, values }) {
                     backgroundColor: 'rgb(109, 99, 255,0.7)',
                     borderColor: 'rgb(109, 99, 255',
                     data: values,
-                    maxBarThickness: 32 ,  
+                    maxBarThickness: 32,
                   },
                 ],
               }}

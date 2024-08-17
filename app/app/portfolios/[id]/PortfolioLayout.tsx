@@ -64,7 +64,7 @@ const PortfolioLayout = ({ pftData, setPftData, id, children, isOwn, followed, s
                     <ArrowLeft />
                   </Button>
                 </Link>
-                <h2 className="mx-4 text-2xl font-bold capitalize">{pftData.name}</h2>
+                <h1 className="mx-4 capitalize">{pftData.name}</h1>
               </div>
 
               <div className="flex items-center gap-4">

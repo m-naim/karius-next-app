@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useLayoutEffect } from 'react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import SectionContainer from '@/components/organismes/layout/SectionContainer'
-import watchListService from '@/services/watchListService'
+import watchListService, { removeList } from '@/services/watchListService'
 import { security } from './data/security'
 import { TableContextHeader } from './components/table-header'
 import SimpleDataTable from '@/components/molecules/table/SimpleDataTable'
@@ -17,6 +17,17 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { columns } from './components/columns'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { ArrowLeft, EllipsisVertical, StarIcon, Trash2 } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface watchList {
   name: string
@@ -25,6 +36,8 @@ interface watchList {
 
 export default function Watchlist() {
   const id = usePathname().split('/')[3]
+  const router = useRouter()
+
   const [data, setData] = React.useState<watchList>({
     name: '',
     securities: [],
@@ -65,13 +78,50 @@ export default function Watchlist() {
     fetchData()
   }, [id])
 
+  const handleDeleteClick = async () => {
+    try {
+      await removeList(id)
+      router.push('/app/watchlist')
+    } catch (e) {
+      console.error('error', e)
+    }
+  }
+
   return loading ? (
     <div>loading ...</div>
   ) : (
     <>
-      <SectionContainer>
-        <div>
+      <SectionContainer className="flex w-full items-center justify-between">
+        <div className="flex items-center self-start">
+          <Link href={`/app/watchlist`} className="h-fit">
+            <Button variant={'ghost'}>
+              <ArrowLeft />
+            </Button>
+          </Link>
           <h1>{data?.name}</h1>
+        </div>
+
+        <div className="flex items-center gap-4">
+          {owned && (
+            <>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size={'sm'} variant="ghost">
+                    <EllipsisVertical size={16} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem onClick={handleDeleteClick}>
+                      <Trash2 className="h-4 text-red-600" strokeWidth={1} />
+                      <span>Supprimer</span>
+                      <DropdownMenuShortcut>ctrl + d</DropdownMenuShortcut>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          )}
         </div>
       </SectionContainer>
       <SectionContainer>

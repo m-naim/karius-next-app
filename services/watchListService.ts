@@ -26,6 +26,10 @@ export function removeStock(id, symbol) {
   return http.deleteReq(`${host}/api/v1/watchlists/${id}/security/${symbol}`)
 }
 
+export function removeList(id) {
+  return http.deleteReq(`${host}/api/v1/watchlists/${id}`)
+}
+
 const watchListService = {
   getAll,
   get,

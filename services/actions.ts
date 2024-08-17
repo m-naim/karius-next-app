@@ -17,8 +17,13 @@ export const findStockBySymbol = async (symbol) => {
 }
 
 export const getPublicWatchlists = async () => {
-  const client = await clientPromise
-  let res = await client.db('investing').collection('watchlists').find({ public: true }).toArray()
-  if (res == null) return []
-  return res
+  try {
+    const client = await clientPromise
+    let res = await client.db('investing').collection('watchlists').find({ public: true }).toArray()
+    if (res == null) return []
+    return res
+  } catch (e) {
+    return []
+    console.error('error api:', e)
+  }
 }
