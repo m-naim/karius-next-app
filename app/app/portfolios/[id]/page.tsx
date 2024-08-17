@@ -84,7 +84,7 @@ export default function PortfolioView() {
 
   return (
     <div className="mb-20 flex w-full flex-wrap-reverse gap-1">
-      <Card className="w-full lg:w-8/12">
+      <Card className="w-full flex-grow  lg:w-8/12">
         <CardHeader>
           <CardTitle>Investissements</CardTitle>
           {own && (

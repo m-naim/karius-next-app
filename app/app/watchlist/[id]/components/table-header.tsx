@@ -15,7 +15,6 @@ import { industries, sectors } from '../data/data'
 const periods = ['1j', '1s', '1m', '3m', '1y', '5y']
 
 export const TableContextHeader = ({ table, id, owned }) => {
-
   const addRow = (newRow) => {
     const setFunc = (old) => [...old, newRow]
     watchListService.addStock(id, {

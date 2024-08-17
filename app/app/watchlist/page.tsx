@@ -22,15 +22,22 @@ export default async function Projects() {
           </Link>
         </div>
       </SectionContainer>
+
+      <div className="my-12 flex w-full place-content-center text-center ">
+        <h1 className="text-3xl">Découvrez les meilleurs portefeuilles de la communauté</h1>
+      </div>
+
       <SectionContainer>
-        <div className="-m-4 flex flex-wrap gap-1">{listWatch.map((w) => WatchCard(w))}</div>
+        <div className="grid w-full grid-cols-[repeat(auto-fill,20rem)] justify-center gap-6 overflow-auto">
+          {listWatch.map((w) => WatchCard(w))}
+        </div>
       </SectionContainer>
     </>
   )
 
   function WatchCard(w): React.JSX.Element {
     return (
-      <Link key={w._id} href={`watchlist/${w._id}`}>
+      <Link data-umami-event={`watchlist/${w._id}`} key={w._id} href={`watchlist/${w._id}`}>
         <Card className="h-32 w-[20rem] overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
             <CardTitle className="text-md font-medium capitalize">{w.name}</CardTitle>

@@ -24,6 +24,7 @@ class Singleton {
 
   public static get instance() {
     if (!this._instance) {
+      console.log('mongoDB Client new instance')
       this._instance = new Singleton()
     }
     return this._instance.clientPromise
