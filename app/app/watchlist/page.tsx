@@ -13,7 +13,7 @@ export interface WatchListInfos {
 }
 
 export default async function watchlistPage() {
-  const listWatch= await getPublicWatchlists()
+  const listWatch = await getPublicWatchlists()
 
   return (
     <>
@@ -24,7 +24,7 @@ export default async function watchlistPage() {
           <h1 className="text-3xl">Découvrez les meilleurs portefeuilles de la communauté</h1>
         </div>
         <div className="grid w-full grid-cols-[repeat(auto-fill,20rem)] justify-center gap-2 overflow-auto">
-          {listWatch.map((w ) => (
+          {listWatch.map((w) => (
             <WatchCard key={w._id.toString()} data={w} />
           ))}
         </div>
