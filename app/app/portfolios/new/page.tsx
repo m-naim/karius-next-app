@@ -50,17 +50,6 @@ function AddPortfolio() {
             />
           </div>
 
-          <div className="flex flex-col gap-4">
-            <Label htmlFor="prix">Valeur initial</Label>
-            <Input
-              id="prix"
-              value={value}
-              type="number"
-              className="col-span-3"
-              onChange={(e) => setValue(e.currentTarget.value)}
-            />
-          </div>
-
           <div className=" flex items-center space-x-4 rounded-md border p-4">
             <div className="flex-1 space-y-1">
               <p className="text-sm font-medium leading-none">Visibilité</p>
