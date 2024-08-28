@@ -4,6 +4,7 @@ import { format } from 'date-fns'
 
 import { Chart, CategoryScale, LinearScale, BarElement } from 'chart.js'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import Loader from '@/components/molecules/loader/loader'
 
 Chart.register(CategoryScale, LinearScale, BarElement)
 
@@ -54,7 +55,7 @@ function DividendsView({ id, loading, dates, values }) {
   }
 
   return loading ? (
-    <div>Loading ...</div>
+    <Loader />
   ) : (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">

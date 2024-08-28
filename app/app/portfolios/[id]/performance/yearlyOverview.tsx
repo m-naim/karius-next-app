@@ -1,3 +1,4 @@
+import Loader from '@/components/molecules/loader/loader'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { Card } from '@/components/ui/card'
 import {
@@ -82,7 +83,7 @@ export default function YearlyOverview({ id }) {
   }, [id])
 
   return loading ? (
-    <div></div>
+    <Loader />
   ) : (
     <Card className="p-2 text-center ">
       <div className="p-2">

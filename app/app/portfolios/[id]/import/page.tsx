@@ -17,6 +17,7 @@ import { format, parse } from 'date-fns'
 import { addTransactions } from '@/services/portfolioService'
 import { Transactions } from './transactions'
 import { ComboboxPopover } from '@/components/ui/comboBox'
+import Loader from '@/components/molecules/loader/loader'
 
 const exemple = []
 
@@ -114,7 +115,7 @@ export default function PortfolioView() {
   }
 
   return loading ? (
-    <SectionContainer>Chargement ...</SectionContainer>
+    <Loader />
   ) : (
     <SectionContainer>
       <div className="flex items-center gap-2">

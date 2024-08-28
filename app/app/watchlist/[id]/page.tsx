@@ -28,6 +28,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import Loader from '@/components/molecules/loader/loader'
 
 interface watchList {
   name: string
@@ -88,7 +89,7 @@ export default function Watchlist() {
   }
 
   return loading ? (
-    <div>loading ...</div>
+    <Loader />
   ) : (
     <>
       <SectionContainer className="flex w-full items-center justify-between">

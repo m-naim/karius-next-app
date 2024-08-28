@@ -7,6 +7,7 @@ import MultiSelect from '@/components/molecules/layouts/MultiSelect'
 import { gradientbg } from '@/components/molecules/charts/utils/colors'
 import Link from 'next/link'
 import { getPerformances } from '@/services/portfolioService'
+import Loader from '@/components/molecules/loader/loader'
 
 Chart.register(CategoryScale, LinearScale, LineElement)
 
@@ -75,7 +76,7 @@ function Performance({ id }) {
   }
 
   return loading ? (
-    <div className="bg-dark">Calcule de performances en cours ...</div>
+    <Loader />
   ) : (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">

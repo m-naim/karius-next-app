@@ -24,11 +24,14 @@ import { AddTransaction, get, addMouvementService } from '@/services/portfolioSe
 import { v4 as uuidv4 } from 'uuid'
 import StatsCard from './statsCard'
 import AccountsMouvements from './accountsMouvements'
+import Loader from '@/components/molecules/loader/loader'
 
 export default function PortfolioView() {
   const id = usePathname().split('/')[3]
 
   const [data, setData] = React.useState([])
+  const [loading, setLoading] = React.useState(true)
+
   const [portfolio, setPortfolio] = useState({
     _id: '',
     allocation: [],
@@ -50,9 +53,11 @@ export default function PortfolioView() {
         setOwn(res.own)
         setPortfolio(res.data)
         setData(res.data.allocation)
+        setLoading(false)
       } catch (e) {
         console.error('error api:' + e)
         setPortfolio({ _id: '', allocation: [], transactions: [], cashValue: 0, totalValue: 0 })
+        setLoading(false)
       }
     }
     fetchData(id)
@@ -77,22 +82,28 @@ export default function PortfolioView() {
   })
 
   const addTransaction = async (transactionData) => {
+    setLoading(true)
     transactionData.id = uuidv4()
     const res = await AddTransaction(id, transactionData)
     setOwn(res.own)
     setPortfolio(res.data)
     setData(res.data.allocation)
+    setLoading(false)
   }
 
   const addMouvement = async (data) => {
+    setLoading(true)
     data.id = uuidv4()
     const res = await addMouvementService(id, data)
     setOwn(res.own)
     setPortfolio(res.data)
     setData(res.data.allocation)
+    setLoading(false)
   }
 
-  return (
+  return loading ? (
+    <Loader />
+  ) : (
     <div className="mb-20 flex w-full flex-wrap-reverse gap-1">
       <Card className="w-full flex-grow  lg:w-8/12">
         <CardHeader>
@@ -101,7 +112,6 @@ export default function PortfolioView() {
             <div className="flex gap-2 p-2">
               <AccountsMouvements
                 data-umami-event="portfolio-accounts-mouvements-button"
-                idPortfolio={id}
                 Trigger={() => (
                   <Button variant="outline" size="sm">
                     Dépôt / retrait
@@ -112,7 +122,11 @@ export default function PortfolioView() {
 
               <TransactionDialogue
                 data-umami-event="portfolio-add-transaction-button"
-                idPortfolio={id}
+                Trigger={() => (
+                  <Button variant="outline" size="sm">
+                    + Acheter / Vendre
+                  </Button>
+                )}
                 totalPortfolioValue={portfolio.totalValue}
                 submitHandler={addTransaction}
               />
