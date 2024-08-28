@@ -19,3 +19,7 @@ export function search(query) {
 export function getProductsSymbols(products) {
   return http.post(`${host}/api/v1/stocks/search`, products)
 }
+
+export function getStockPrixForDate(symbol, date) {
+  return http.get(`${host}/api/v1/stocks/query/history?date=${date}&symbol=${symbol}`)
+}
