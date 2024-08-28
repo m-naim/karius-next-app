@@ -6,10 +6,9 @@ const host = config.API_URL
 const register = (username, email, password) => {
   return http
     .post(`${host}/auth/register`, {
-      displayName: username,
+      name: username,
       email,
       password,
-      passwordCheck: password,
     })
     .then((response) => {
       if (response) {
