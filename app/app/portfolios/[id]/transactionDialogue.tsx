@@ -22,8 +22,7 @@ import { fr } from 'date-fns/locale'
 
 const DefaultTransactionTrigger = () => (
   <Button variant="outline" size="sm">
-    {' '}
-    + Acheter/Vendre
+    + Acheter / Vendre
   </Button>
 )
 
@@ -65,7 +64,7 @@ function TransactionDialogue({
       </DialogTrigger>
       <DialogContent className=" dark:bg-black">
         <DialogHeader>
-          <DialogTitle>Acheter/Vendre</DialogTitle>
+          <DialogTitle>Acheter / Vendre</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <MultiSelect active={type} select={setType} list={['Acheter', 'Vendre']} />

@@ -10,7 +10,7 @@ import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { fr } from 'date-fns/locale'
 
-export function DatePicker({ date, setDate }) {
+export function DatePicker({ date, setDate, className }) {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -18,7 +18,8 @@ export function DatePicker({ date, setDate }) {
           variant={'outline'}
           className={cn(
             'w-[280px] justify-start text-left font-normal',
-            !date && 'text-muted-foreground'
+            !date && 'text-muted-foreground',
+            className
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />

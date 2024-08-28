@@ -20,9 +20,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FileScan } from 'lucide-react'
 import TransactionDialogue from './transactionDialogue'
 import Link from 'next/link'
-import { AddTransaction, get } from '@/services/portfolioService'
+import { AddTransaction, get, addMouvementService } from '@/services/portfolioService'
 import { v4 as uuidv4 } from 'uuid'
 import StatsCard from './statsCard'
+import AccountsMouvements from './accountsMouvements'
 
 export default function PortfolioView() {
   const id = usePathname().split('/')[3]
@@ -33,6 +34,7 @@ export default function PortfolioView() {
     allocation: [],
     transactions: [],
     cashValue: 0,
+    totalValue: 0,
   })
   const [own, setOwn] = React.useState(false)
 
@@ -50,7 +52,7 @@ export default function PortfolioView() {
         setData(res.data.allocation)
       } catch (e) {
         console.error('error api:' + e)
-        setPortfolio({ _id: '', allocation: [], transactions: [], cashValue: 0 })
+        setPortfolio({ _id: '', allocation: [], transactions: [], cashValue: 0, totalValue: 0 })
       }
     }
     fetchData(id)
@@ -82,6 +84,14 @@ export default function PortfolioView() {
     setData(res.data.allocation)
   }
 
+  const addMouvement = async (data) => {
+    data.id = uuidv4()
+    const res = await addMouvementService(id, data)
+    setOwn(res.own)
+    setPortfolio(res.data)
+    setData(res.data.allocation)
+  }
+
   return (
     <div className="mb-20 flex w-full flex-wrap-reverse gap-1">
       <Card className="w-full flex-grow  lg:w-8/12">
@@ -89,9 +99,21 @@ export default function PortfolioView() {
           <CardTitle>Investissements</CardTitle>
           {own && (
             <div className="flex gap-2 p-2">
-              <TransactionDialogue
-                data-umami-event="portfolio-import-button"
+              <AccountsMouvements
+                data-umami-event="portfolio-accounts-mouvements-button"
                 idPortfolio={id}
+                Trigger={() => (
+                  <Button variant="outline" size="sm">
+                    Dépôt / retrait
+                  </Button>
+                )}
+                submitHandler={addMouvement}
+              />
+
+              <TransactionDialogue
+                data-umami-event="portfolio-add-transaction-button"
+                idPortfolio={id}
+                totalPortfolioValue={portfolio.totalValue}
                 submitHandler={addTransaction}
               />
 

@@ -15,6 +15,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { search } from '@/services/stock.service'
 import { useDebouncedCallback } from 'use-debounce'
+import { cn } from '@/lib/utils'
 
 interface Security {
   quoteType: string
@@ -23,7 +24,7 @@ interface Security {
   exchange: string
 }
 
-export function ComboboxPopover({ ticker, setTicker }) {
+export function ComboboxPopover({ ticker, setTicker, className }) {
   const [open, setOpen] = React.useState(false)
   const [data, setData] = React.useState<Security[]>([])
 
@@ -40,41 +41,39 @@ export function ComboboxPopover({ ticker, setTicker }) {
   const handler = useDebouncedCallback(fetchData, 300)
 
   return (
-    <div className="flex items-center space-x-4">
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button variant="outline" className="w-[250px] justify-start">
-            {ticker ? <>{ticker}</> : <>+ chercher une valeur</>}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="p-0" side="bottom" align="center">
-          <Command shouldFilter={false}>
-            <CommandInput placeholder="Change status..." onValueChange={handler} />
-            <CommandList>
-              <CommandEmpty>No results found.</CommandEmpty>
-              <CommandGroup heading="Actions">
-                {data
-                  .filter((security) => security.quoteType === 'EQUITY')
-                  .map((security) => item(security, setTicker, setOpen))}
-              </CommandGroup>
-              <CommandSeparator />
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" className={cn('min-w-[250px] justify-start', className)}>
+          {ticker ? <>{ticker}</> : <>+ chercher une valeur</>}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className={cn('min-w-[330px] p-0', className)} side="bottom" align="center">
+        <Command shouldFilter={false}>
+          <CommandInput placeholder="Change status..." onValueChange={handler} />
+          <CommandList>
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandGroup heading="Actions">
+              {data
+                .filter((security) => security.quoteType === 'EQUITY')
+                .map((security) => item(security, setTicker, setOpen))}
+            </CommandGroup>
+            <CommandSeparator />
 
-              <CommandGroup heading="ETFs">
-                {data
-                  .filter((security) => security.quoteType === 'ETF')
-                  .map((security) => item(security, setTicker, setOpen))}
-              </CommandGroup>
+            <CommandGroup heading="ETFs">
+              {data
+                .filter((security) => security.quoteType === 'ETF')
+                .map((security) => item(security, setTicker, setOpen))}
+            </CommandGroup>
 
-              <CommandGroup heading="Crypto">
-                {data
-                  .filter((security) => security.quoteType === 'CRYPTOCURRENCY')
-                  .map((security) => item(security, setTicker, setOpen))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-    </div>
+            <CommandGroup heading="Crypto">
+              {data
+                .filter((security) => security.quoteType === 'CRYPTOCURRENCY')
+                .map((security) => item(security, setTicker, setOpen))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   )
 }
 

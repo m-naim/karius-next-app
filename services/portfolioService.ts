@@ -60,6 +60,19 @@ export function AddTransaction(idPft, body) {
   return http.post(`${host}/api/v1/portfolios/${idPft}/transaction`, apiBody)
 }
 
+export function addMouvementService(idPft, body) {
+  const { id, type, amount, date } = body
+  const coef = 'Acheter' === type ? 1 : -1
+
+  const apiBody = {
+    id,
+    date: format(date, 'yyyy-MM-dd', { locale: fr }),
+    amount: amount,
+    type: type,
+  }
+  return http.post(`${host}/api/v1/portfolios/${idPft}/movement`, apiBody)
+}
+
 export function addTransactions(idPft, transactions) {
   return http.post(`${host}/api/v1/portfolios/${idPft}/transaction/import`, {
     transactions: transactions,
