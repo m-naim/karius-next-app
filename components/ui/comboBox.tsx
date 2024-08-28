@@ -24,7 +24,15 @@ interface Security {
   exchange: string
 }
 
-export function ComboboxPopover({ ticker, setTicker, className }) {
+export function ComboboxPopover({
+  ticker,
+  setTicker,
+  className,
+}: {
+  ticker: string
+  setTicker: (ticker: string) => void
+  className?: string
+}) {
   const [open, setOpen] = React.useState(false)
   const [data, setData] = React.useState<Security[]>([])
 

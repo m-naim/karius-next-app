@@ -25,15 +25,7 @@ const defaultData = {
   prix: 0,
 }
 
-function AccountsMouvements({
-  idPortfolio,
-  initialData = defaultData,
-  Trigger,
-  submitHandler = async (transactionData) => {
-    transactionData.id = uuidv4()
-    const res = await AddTransaction(idPortfolio, transactionData)
-  },
-}) {
+function AccountsMouvements({ initialData = defaultData, Trigger, submitHandler }) {
   const [type, setType] = useState(initialData.type)
   const [date, setDate] = React.useState<Date>(initialData.date)
   const [amount, setAmount] = useState<number>(initialData.prix)

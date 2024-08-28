@@ -11,40 +11,34 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import MultiSelect from '@/components/molecules/layouts/MultiSelect'
 import { Button } from '@/components/ui/button'
-import { DatePicker } from '@/components/ui/DatePicker'
 import { DialogClose } from '@radix-ui/react-dialog'
 import { ComboboxPopover } from '@/components/ui/comboBox'
-import { v4 as uuidv4 } from 'uuid'
-import { AddTransaction } from '@/services/portfolioService'
 import { getStockPrixForDate } from '@/services/stock.service'
-import { format } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
-const DefaultTransactionTrigger = () => (
-  <Button variant="outline" size="sm">
-    + Acheter / Vendre
-  </Button>
-)
-
-const defaultData = { id: '', type: 'Acheter', ticker: '', date: new Date(), quantity: 1, prix: 0 }
+const defaultData = {
+  id: '',
+  type: 'Acheter',
+  ticker: '',
+  date: new Date().toISOString().split('T')[0],
+  quantity: 1,
+  prix: 0,
+}
 
 function TransactionDialogue({
-  idPortfolio,
   initialData = defaultData,
   totalPortfolioValue = 0,
-  Trigger = DefaultTransactionTrigger,
-  submitHandler = async (transactionData) => {
-    transactionData.id = uuidv4()
-    const res = await AddTransaction(idPortfolio, transactionData)
-  },
+  Trigger,
+  submitHandler,
 }) {
   const [type, setType] = useState(initialData.type)
   const [ticker, setTicker] = useState<string>(initialData.ticker)
-  const [date, setDate] = React.useState<Date>(initialData.date)
+  const [date, setDate] = React.useState<string>(initialData.date)
   const [quantity, setQuantity] = useState<number>(initialData.quantity)
   const [prix, setPrix] = useState<number>(initialData.prix)
 
-  if (Number.isNaN(date.valueOf())) {
+  if (date == null || Number.isNaN(date.valueOf())) {
     console.log(date, initialData.date)
   }
 
@@ -57,7 +51,13 @@ function TransactionDialogue({
     if (date && ticker) onDateChange(date, ticker)
   }, [date, ticker])
 
-  return (
+  const onDateChange = (e) => {
+    const date = e.target.value
+    console.log(date)
+    setDate(date)
+  }
+
+  return date ? (
     <Dialog>
       <DialogTrigger>
         <Trigger />
@@ -76,7 +76,15 @@ function TransactionDialogue({
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="date">Date</Label>
-            <DatePicker date={date} setDate={setDate} className="col-span-3" />
+            <div className="col-span-3 flex">
+              <Input
+                id="date"
+                type="date"
+                defaultValue={'01-01-2022'}
+                value={date}
+                onChange={onDateChange}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
@@ -109,7 +117,7 @@ function TransactionDialogue({
                   ...initialData,
                   ticker,
                   type,
-                  date,
+                  date: format(parseISO(date), 'yyyy-MM-dd', { locale: fr }),
                   quantity,
                   prix,
                 })
@@ -133,7 +141,7 @@ function TransactionDialogue({
         )}
       </DialogContent>
     </Dialog>
-  )
+  ) : null
 }
 
 export default TransactionDialogue
