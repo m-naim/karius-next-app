@@ -32,7 +32,6 @@ export const Transactions = ({ id, transactionState }) => {
             <div className="text-right"> {t['Frais de courtage']} </div>
             <div className="flex gap-2 py-1">
               <TransactionDialogue
-                idPortfolio={id}
                 initialData={t}
                 Trigger={() => <Pencil size={16} />}
                 submitHandler={async (newTransactionsValues) => {
