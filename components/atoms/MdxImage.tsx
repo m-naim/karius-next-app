@@ -2,5 +2,10 @@ import React from 'react'
 import Image, { ImageProps } from 'next/image'
 
 export function MdxImage(props: ImageProps) {
-  return <Image {...props} alt={props.alt} />
+  return (
+    <div>
+      <Image {...props} alt={props.alt} />
+      <p className="text-center">{props.alt}</p>
+    </div>
+  )
 }
