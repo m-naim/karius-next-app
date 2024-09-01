@@ -62,8 +62,6 @@ export function AddTransaction(idPft, body) {
 
 export function addMouvementService(idPft, body) {
   const { id, type, amount, date } = body
-  const coef = 'Acheter' === type ? 1 : -1
-
   const apiBody = {
     id,
     date: format(date, 'yyyy-MM-dd', { locale: fr }),
@@ -77,6 +75,24 @@ export function addTransactions(idPft, transactions) {
   return http.post(`${host}/api/v1/portfolios/${idPft}/transaction/import`, {
     transactions: transactions,
   })
+}
+
+export function modifyTransactionApi(idPft, body) {
+  const { id, type, ticker, prix, quantity, date } = body
+  const coef = 'Acheter' === type ? 1 : -1
+
+  const apiBody = {
+    id,
+    symbol: ticker,
+    date: format(date, 'yyyy-MM-dd', { locale: fr }),
+    price: prix,
+    qty: quantity * coef,
+  }
+  return http.put(`${host}/api/v1/portfolios/${idPft}/transaction`, apiBody)
+}
+
+export function deleteTransaction(id, idTransaction) {
+  return http.deleteReq(`${host}/api/v1/portfolios/${id}/transaction/${idTransaction}`)
 }
 
 export function deletePortfolio(id) {

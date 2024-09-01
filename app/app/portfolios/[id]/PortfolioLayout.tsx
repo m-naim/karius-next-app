@@ -70,11 +70,6 @@ const PortfolioLayout = ({ pftData, setPftData, id, children, isOwn, followed, s
               <div className="flex items-center gap-4">
                 {isOwn ? (
                   <>
-                    {/* <Button size="sm" variant="outline">
-                      <Share2 className="mr-1 h-4" />
-                      Partager
-                    </Button> */}
-
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button size={'sm'} variant="ghost">

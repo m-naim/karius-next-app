@@ -15,7 +15,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { get } from '@/services/portfolioService'
+import { deleteTransaction, get, modifyTransactionApi } from '@/services/portfolioService'
 import { columns } from './columns'
 import { MovementsColumns } from './movementsColumns'
 
@@ -28,10 +28,20 @@ function PageTransactions() {
 
   const [own, setOwn] = React.useState(false)
 
-  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [sorting, setSorting] = React.useState<SortingState>([{ id: 'date', desc: true }])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
+
+  const modifyTransactionHandler = async (data) => {
+    const res = await modifyTransactionApi(id, data)
+    setData(res.data.transactions)
+  }
+
+  const deleteTransactionHandler = async (idTransaction) => {
+    const res = await deleteTransaction(id, idTransaction)
+    setData(res.data.transactions)
+  }
 
   useEffect(() => {
     const fetchData = async (id) => {
@@ -49,7 +59,7 @@ function PageTransactions() {
 
   const trasactionsTable = useReactTable({
     data,
-    columns,
+    columns: columns(id, own, modifyTransactionHandler, deleteTransactionHandler),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),

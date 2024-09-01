@@ -8,12 +8,14 @@ export default function variationContainer({
   background = true,
   className,
   vaiationColor = true,
+  sign = true,
 }: {
   value: number
   entity?: string
   background?: boolean
   className?: string
   vaiationColor?: boolean
+  sign?: boolean
 }) {
   const getVariation = (value) => {
     return round10(value, -2)
@@ -30,7 +32,7 @@ export default function variationContainer({
 
   const numberFormatter = new Intl.NumberFormat('fr-FR', {
     style: 'decimal',
-    signDisplay: 'always',
+    signDisplay: sign ? 'always' : 'never',
     minimumFractionDigits: 2,
   })
 

@@ -89,6 +89,7 @@ export default function PortfolioView() {
     setPortfolio(res.data)
     setData(res.data.allocation)
     setLoading(false)
+    return res
   }
 
   const addMouvement = async (data) => {

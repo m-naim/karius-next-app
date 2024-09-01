@@ -40,8 +40,8 @@ const SimpleDataTable = ({ table, colSpan }) => {
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={colSpan} className="h-24 text-center">
-                No results.
+              <TableCell colSpan={colSpan} className="h-24 w-full text-center">
+                Pas de données
               </TableCell>
             </TableRow>
           )}

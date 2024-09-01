@@ -66,8 +66,7 @@ export const MovementsColumns: ColumnDef<unknown>[] = [
   },
 
   {
-    accessorKey: 'amount',
-    header: SortingButton('operation', false),
+    header: 'Opération',
     cell: ({ row }) => (
       <div className="capitalize">
         {parseFloat(row.getValue('amount')) > 0 ? 'Dépôt' : 'Retrait'}
@@ -77,7 +76,7 @@ export const MovementsColumns: ColumnDef<unknown>[] = [
 
   {
     accessorKey: 'amount',
-    header: SortingButton('amount', false),
+    header: SortingButton('Montant', false),
     cell: ({ row }) => {
       const last = parseFloat(row.getValue('amount'))
 

@@ -2,7 +2,16 @@
 
 import * as React from 'react'
 import { Column, ColumnDef } from '@tanstack/react-table'
-import { ChevronUp, ArrowUpDown, ChevronDown, MoreHorizontal, ListFilterIcon } from 'lucide-react'
+import {
+  ChevronUp,
+  ArrowUpDown,
+  ChevronDown,
+  MoreHorizontal,
+  ListFilterIcon,
+  Pencil,
+  Trash,
+  EllipsisVertical,
+} from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -12,9 +21,11 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
+import TransactionDialogue from '../transactionDialogue'
+import { deleteTransaction, modifyTransactionApi } from '@/services/portfolioService'
 
 type FiltrProps = {
-  column: Column<unknown>
+  column: Column<Transaction, string>
 }
 
 const FilterButton = ({ column }: FiltrProps) => (
@@ -58,7 +69,23 @@ const SortingButton = (title, activateFilter = true) => {
   }
 }
 
-export const columns: ColumnDef<unknown>[] = [
+interface Transaction {
+  date: string
+  symbol: string
+  price: number
+  qty: number
+  fees: string
+  total: string
+  type: string
+  id: string
+}
+
+export const columns = (
+  id,
+  owned,
+  modifyTransactionHandler,
+  deleteTransactionHandler
+): ColumnDef<Transaction, string>[] => [
   {
     accessorKey: 'date',
     header: SortingButton('date', false),
@@ -100,6 +127,35 @@ export const columns: ColumnDef<unknown>[] = [
       }).format(qty)
 
       return <div className="font-medium ">{formatted}</div>
+    },
+  },
+
+  {
+    id: 'actions',
+    header: '',
+    cell: ({ row }) => {
+      return (
+        owned && (
+          <div className="flex">
+            <TransactionDialogue
+              key={row!.original.id}
+              data-umami-event="portfolio-transaction-update"
+              Trigger={() => <EllipsisVertical size={16} />}
+              initialData={{
+                id: row!.original.id,
+                type: row!.original.price > 0 ? 'Acheter' : 'Vendre',
+                ticker: row!.original.symbol,
+                date: row!.original.date,
+                quantity: row!.original.qty,
+                prix: row!.original.price,
+              }}
+              totalPortfolioValue={0}
+              deleteHandler={deleteTransactionHandler}
+              modifyHandler={modifyTransactionHandler}
+            />
+          </div>
+        )
+      )
     },
   },
 ]

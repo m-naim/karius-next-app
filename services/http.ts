@@ -70,7 +70,7 @@ function deleteReq(path) {
     },
     method: 'DELETE',
     mode: 'cors',
-  })
+  }).then(CheckError)
 }
 const http = {
   post,
