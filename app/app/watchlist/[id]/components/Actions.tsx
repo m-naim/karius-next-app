@@ -10,7 +10,7 @@ import {
 import watchListService from '@/services/watchListService'
 import { MoreHorizontal } from 'lucide-react'
 
-export const Actions = ({ symbol, id }) => {
+export const Actions = ({ symbol, id, deleteRow }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -24,7 +24,12 @@ export const Actions = ({ symbol, id }) => {
         <DropdownMenuItem>Ajouter une Alerte</DropdownMenuItem>
         <DropdownMenuItem>Tager Prochain achat</DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => watchListService.removeStock(id, symbol)}>
+        <DropdownMenuItem
+          onClick={() => {
+            watchListService.removeStock(id, symbol)
+            deleteRow(symbol)
+          }}
+        >
           Retirer de la liste
         </DropdownMenuItem>
       </DropdownMenuContent>

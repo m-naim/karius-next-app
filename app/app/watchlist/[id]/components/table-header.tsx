@@ -14,12 +14,15 @@ import { industries, sectors } from '../data/data'
 
 const periods = ['1j', '1s', '1m', '3m', '1y', '5y']
 
-export const TableContextHeader = ({ table, id, owned }) => {
-  const addRow = (newRow) => {
-    const setFunc = (old) => [...old, newRow]
-    watchListService.addStock(id, {
-      symbol: newRow.symbol,
+export const TableContextHeader = ({ table, id, owned, setData }) => {
+  const addRow = async (symbol) => {
+    const response = await watchListService.addStock(id, {
+      symbol: symbol,
       date: new Date(),
+    })
+    setData({
+      name: response!.name,
+      securities: response!.securities,
     })
   }
 

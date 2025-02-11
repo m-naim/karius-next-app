@@ -64,7 +64,7 @@ const PortfolioLayout = ({ pftData, setPftData, id, children, isOwn, followed, s
                     <ArrowLeft />
                   </Button>
                 </Link>
-                <h1 className="mx-4 capitalize">{pftData.name}</h1>
+                <h1 className="mx-4 text-xl capitalize">{pftData.name}</h1>
               </div>
 
               <div className="flex items-center gap-4">
@@ -157,7 +157,7 @@ const PortfolioLayout = ({ pftData, setPftData, id, children, isOwn, followed, s
       <div className="fixed bottom-0 left-0 z-50 h-16 w-full border-t border-gray-200 bg-white md:hidden dark:border-gray-600 dark:bg-gray-700">
         <div className="mx-auto grid h-full max-w-lg grid-cols-4 font-medium">
           <Button
-            className={` ${isLinkActive(`/app/portfolios/${id}`)} flex h-12 flex-col p-1`}
+            className={` ${isLinkActive(`/app/portfolios/${id}`)} flex h-12 flex-col py-2`}
             variant="ghost"
             asChild
           >

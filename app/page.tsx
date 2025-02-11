@@ -1,5 +1,4 @@
 import { Features } from '@/components/molecules/home/Features'
-import Hero from '@/components/molecules/home/Hero'
 import { NewsletterForm } from '@/components/molecules/ui/NewsletterForm'
 
 import { genPageMetadata } from 'app/seo'
@@ -18,9 +17,10 @@ export default async function Page() {
   return (
     <div>
       <SectionContainer className="flex flex-col content-center">
-        <div className=" pt-12 text-center lg:col-span-7">
-          <h1 className="mb-4 text-4xl font-extrabold leading-none tracking-tight md:text-5xl xl:text-6xl dark:text-white">
-            Le logiciel de gestion de portefeuilles boursiers
+        <div className=" flex w-full flex-col items-center px-6 pt-12 text-center lg:col-span-7">
+          <h1 className="mb-4 flex max-w-3xl flex-col text-4xl font-extrabold leading-tight tracking-tight md:text-4xl dark:text-white">
+            <span> Le logiciel de gestion et de suivis </span>
+            <span> de portefeuilles boursiers </span>
           </h1>
           <p className="mb-6 font-light text-gray-500 md:text-lg lg:mb-8 lg:text-xl dark:text-gray-400">
             Analyse et suivis de votre Portefeuille Boursier Comme Jamais Auparavant.

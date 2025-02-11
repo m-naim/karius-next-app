@@ -29,6 +29,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import Loader from '@/components/molecules/loader/loader'
+import { set } from 'date-fns'
 
 interface watchList {
   name: string
@@ -51,9 +52,25 @@ export default function Watchlist() {
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
 
+  const deleteRow = (symbol) => {
+    console.log('delete id', symbol)
+
+    setData((prevData) => {
+      return {
+        name: prevData.name,
+        securities: prevData.securities.filter((row) => row.symbol !== symbol),
+      }
+    })
+
+    console.log('data', data)
+  }
+
+  // Pass deleteRow function into each row's original data
+  //  const tableData = data!.securities.map((row) => ({ ...row, deleteRow }));
+
   const table = useReactTable<security>({
     data: data!.securities,
-    columns: columns(id, owned),
+    columns: columns(id, owned, deleteRow),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
@@ -128,7 +145,7 @@ export default function Watchlist() {
       <SectionContainer>
         {!loading && data!.securities != null && (
           <div className="w-full">
-            <TableContextHeader table={table} id={id} owned={owned} />
+            <TableContextHeader table={table} id={id} owned={owned} setData={setData} />
             <SimpleDataTable table={table} colSpan={columns.length} />
           </div>
         )}

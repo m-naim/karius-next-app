@@ -1,12 +1,17 @@
 import { getLocalStorageItem } from '@/lib/utils'
 
 async function CheckError(response) {
-  const data = await response.json()
   if (response.status >= 200 && response.status <= 299) {
-    return data
+    try {
+      const data = await response.json()
+      return data
+    } catch (e) {
+      console.log(e)
+      return response
+    }
   }
-  console.error('error', data)
-  throw Error(data.msg)
+  console.error('error', response)
+  throw Error(response.status)
 }
 
 function authHeader() {

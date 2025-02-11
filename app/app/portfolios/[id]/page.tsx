@@ -25,6 +25,7 @@ import { v4 as uuidv4 } from 'uuid'
 import StatsCard from './statsCard'
 import AccountsMouvements from './accountsMouvements'
 import Loader from '@/components/molecules/loader/loader'
+import { round10 } from '@/lib/decimalAjustement'
 
 export default function PortfolioView() {
   const id = usePathname().split('/')[3]
@@ -145,7 +146,7 @@ export default function PortfolioView() {
           <SimpleDataTable table={table} colSpan={columns.length} />
           <div className="grid grid-cols-4 pl-2 pt-2">
             <div className="pl-2">Espèces</div>
-            <div className="pl-12">{portfolio.cashValue}</div>
+            <div className="pl-12">{round10(portfolio.cashValue, -2).toLocaleString()} €</div>
           </div>
         </CardContent>
       </Card>

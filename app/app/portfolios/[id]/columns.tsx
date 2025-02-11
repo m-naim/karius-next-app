@@ -83,12 +83,12 @@ export const columns = [
       const last = parseFloat(row.getValue('last'))
 
       // Format the prix as a dollar prix
-      const formatted = new Intl.NumberFormat('en-US', {
+      const formatted = new Intl.NumberFormat('fr-FR', {
         style: 'currency',
         currency: 'EUR',
       }).format(last)
 
-      return <div className="font-medium ">{formatted}</div>
+      return <div className="font-medium ">{formatted.toLocaleString()}</div>
     },
   },
 
@@ -100,14 +100,19 @@ export const columns = [
   {
     accessorKey: 'bep',
     header: 'bep',
-    cell: ({ row }) => <div className="font-medium "> {round10(row.getValue('bep'), -2)} </div>,
+    cell: ({ row }) => (
+      <div className="font-medium "> {round10(row.getValue('bep'), -2).toLocaleString()} </div>
+    ),
   },
 
   {
     accessorKey: 'total_value',
     header: 'Total',
     cell: ({ row }) => (
-      <div className="font-medium "> {round10(row.getValue('total_value'), -2)} </div>
+      <div className="font-medium ">
+        {' '}
+        {round10(row.getValue('total_value'), -2).toLocaleString()}{' '}
+      </div>
     ),
   },
 

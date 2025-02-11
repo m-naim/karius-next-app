@@ -85,11 +85,11 @@ export default function YearlyOverview({ id }) {
   return loading ? (
     <Loader />
   ) : (
-    <Card className="p-2 text-center ">
-      <div className="p-2">
-        <div className="py-4">
+    <Card className="text-center ">
+      <div className="">
+        <div className="flex w-full place-content-center py-4">
           <Select onValueChange={(e) => setSelectedYear(e)} defaultValue={selectedYear}>
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="w-[100px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -103,8 +103,8 @@ export default function YearlyOverview({ id }) {
             </SelectContent>
           </Select>
         </div>
-        <div className="grid grid-cols-7">
-          <div className="grid grid-rows-13">
+        <div className="grid w-full grid-cols-3">
+          <div className="grid w-full grid-rows-13">
             <div className="p-1 text-sm font-light">Années</div>
             {month.map((month) => (
               <div key={month.value} className="p-1 text-sm font-light">
@@ -117,18 +117,23 @@ export default function YearlyOverview({ id }) {
             perf
               .filter(({ year }) => year === selectedYear)
               .map(({ year, performance, monthlyPerformance }) => (
-                <div key={year} className="grid grid-rows-14">
+                <div key={year} className="grid w-full grid-rows-14">
                   <div className="text-sm">{year}</div>
                   {month.map((month) => (
-                    <div key={month.value} className="p-1">
-                      {monthlyPerformance[month.value] && (
-                        <VariationContainer value={monthlyPerformance[month.value]} />
+                    <div key={month.value} className="flex flex-col items-center">
+                      {monthlyPerformance[month.value] ? (
+                        <VariationContainer
+                          className="w-fit"
+                          value={monthlyPerformance[month.value]}
+                        />
+                      ) : (
+                        <span>-</span>
                       )}
                     </div>
                   ))}
 
-                  <div className="p-1">
-                    <VariationContainer value={performance} />
+                  <div className="flex flex-col items-center">
+                    <VariationContainer className="w-fit" value={performance} />
                   </div>
                 </div>
               ))}

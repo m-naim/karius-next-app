@@ -72,23 +72,14 @@
   }
   body {
     @apply bg-background text-foreground;
-    /* font-feature-settings: "rlig" 1, "calt" 1; */
-    text-rendering: optimizeLegibility;
-    font-family:
-      inter,
-      -apple-system,
-      BlinkMacSystemFont,
-      Segoe UI,
-      Roboto,
-      Oxygen,
-      Ubuntu,
-      Cantarell,
-      Fira Sans,
-      Droid Sans,
-      Helvetica Neue,
-      sans-serif;
 
-    /* font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol; */
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
+    text-rendering: optimizeLegibility;
+    font-family: ui-sans-serif, system-ui, '-apple-system', 'BlinkMacSystemFont', 'Segoe UI',
+      'Roboto', 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji',
+      'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   }
   h1 {
     @apply py-3 text-3xl font-bold tracking-tight;
@@ -108,9 +99,6 @@
 
   li {
     @apply text-lg leading-relaxed text-gray-900 dark:text-gray-100;
-  }
-  span {
-    @apply text-muted-foreground;
   }
 }
 
@@ -282,4 +270,14 @@
   box-shadow: 0px 20px 120px 2px rgba(109, 99, 255, 0.8);
   /* in order: x offset, y offset, blur size, spread size, color */
   /* blur size and spread size are optional (they default to 0) */
+}
+
+/* HTML: <div class="curved-edge"></div> */
+.curved-edge {
+  --c: 70px; /* control the curvature (works with percentage) */
+  height: 200px;
+  aspect-ratio: 3/2;
+  /* you can also update the 60%  */
+  mask: radial-gradient(60% var(--c) at bottom, #0000 calc(100% - 2px), #000);
+  background: #40c0cb;
 }

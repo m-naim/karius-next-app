@@ -8,7 +8,9 @@ const StatsCard = ({ pftData }) => (
     <CardContent>
       <div className="grid grid-cols-2 pb-1">
         <div className="text-sm font-light">Valeur Total</div>
-        <div className=" mx-1 px-2 text-sm">{round10(pftData.totalValue, -2)} € </div>
+        <div className=" mx-1 px-2 text-sm">
+          {round10(pftData.totalValue, -2).toLocaleString()} €{' '}
+        </div>
       </div>
       <Separator />
       <div className="my-2 text-sm font-semibold">Performance</div>

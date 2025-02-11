@@ -23,7 +23,7 @@ export const PositionScrollDisplay = () => {
 
   return (
     <div
-      className="relative sticky top-0 z-20 h-[12px] w-screen bg-primary"
+      className="fixed left-0 top-0 z-20 h-[12px] w-screen bg-primary"
       style={{ width: `${scrollWidth}%` }}
     ></div>
   )
