@@ -33,6 +33,7 @@ export const Transactions = ({ id, transactionState }) => {
             <div className="flex gap-2 py-1">
               <TransactionDialogue
                 initialData={t}
+                totalPortfolioValue={0}
                 Trigger={() => <Pencil size={16} />}
                 submitHandler={async (newTransactionsValues) => {
                   const newArray = transactions.map((t) => {
