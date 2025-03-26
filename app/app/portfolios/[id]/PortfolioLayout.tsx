@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import Link from 'next/link'
+import { NavBar } from '@/components/ui/tubelight-navbar'
 
 const PortfolioLayout = ({ pftData, setPftData, id, children, isOwn, followed, setFollowed }) => {
   const router = useRouter()
@@ -51,6 +52,13 @@ const PortfolioLayout = ({ pftData, setPftData, id, children, isOwn, followed, s
   const isLinkActive = (path: string) => {
     return pathname === path ? 'bg-primary/20' : ''
   }
+
+  const navItems = [
+    { name: 'Investissements', url: `/app/portfolios/${id}`, icon: WalletMinimal },
+    { name: 'Dividendes', url: `/app/portfolios/${id}/dividends`, icon: GemIcon },
+    { name: 'Performance', url: `/app/portfolios/${id}/performance`, icon: TrendingUp },
+    { name: 'Activité', url: `/app/portfolios/${id}/transactions`, icon: ArrowLeftRight },
+  ]
 
   return (
     <>
@@ -106,7 +114,7 @@ const PortfolioLayout = ({ pftData, setPftData, id, children, isOwn, followed, s
 
       <SectionContainer>
         <div className="flex w-full flex-wrap gap-2 py-2 md:flex-nowrap">
-          <div className="hidden flex-col gap-2  md:flex  ">
+          <div className="hidden flex-col gap-2 md:flex">
             <Button
               className={` ${isLinkActive(`/app/portfolios/${id}`)} `}
               variant="ghost"
@@ -149,61 +157,12 @@ const PortfolioLayout = ({ pftData, setPftData, id, children, isOwn, followed, s
           </div>
 
           <div className="flex w-full flex-col gap-2">
-            <div className="bg-dark w-full flex-grow  rounded-md">{children}</div>
+            <div className="bg-dark w-full flex-grow rounded-md">{children}</div>
           </div>
         </div>
       </SectionContainer>
 
-      <div className="fixed bottom-0 left-0 z-50 h-16 w-full border-t border-gray-200 bg-white md:hidden dark:border-gray-600 dark:bg-gray-700">
-        <div className="mx-auto grid h-full max-w-lg grid-cols-4 font-medium">
-          <Button
-            className={` ${isLinkActive(`/app/portfolios/${id}`)} flex h-12 flex-col py-2`}
-            variant="ghost"
-            asChild
-          >
-            <Link href={`/app/portfolios/${id}/`}>
-              <WalletMinimal className="mr-2 h-4 w-4" />
-              <span className="text-xs">Investissements</span>
-            </Link>
-          </Button>
-          <Button
-            className={` ${isLinkActive(
-              `/app/portfolios/${id}/dividends `
-            )} flex h-12 flex-col justify-start p-1`}
-            variant="ghost"
-            asChild
-          >
-            <Link href={`/app/portfolios/${id}/dividends`}>
-              <GemIcon className="mr-1 h-4 w-4" />
-              <span className="text-xs">Dividendes</span>{' '}
-            </Link>
-          </Button>
-          <Button
-            className={` ${isLinkActive(
-              `/app/portfolios/${id}/performance`
-            )} flex h-12 flex-col justify-start p-1`}
-            variant="ghost"
-            asChild
-          >
-            <Link href={`/app/portfolios/${id}/performance`}>
-              <TrendingUp className="mr-2 h-4 w-4" />
-              Performances
-            </Link>
-          </Button>
-          <Button
-            className={` ${isLinkActive(
-              `/app/portfolios/${id}/transactions`
-            )} flex h-12 flex-col justify-start p-1`}
-            variant="ghost"
-            asChild
-          >
-            <Link href={`/app/portfolios/${id}/transactions`}>
-              <ArrowLeftRight className="mr-2 h-4 w-4" />
-              Activité
-            </Link>
-          </Button>
-        </div>
-      </div>
+      <NavBar items={navItems} className="md:hidden" />
     </>
   )
 }

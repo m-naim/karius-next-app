@@ -15,6 +15,21 @@ import { cn } from '@/lib/utils'
 import { round10 } from '@/lib/decimalAjustement'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 
+// Fonction pour générer une couleur basée sur une chaîne
+export const stringToColor = (str: string) => {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  const hue = hash % 360
+  return `hsl(${hue}, 70%, 45%)`
+}
+
+// Fonction pour obtenir les initiales
+const getInitials = (str: string) => {
+  return str.split(/\W/).filter(Boolean).map(word => word[0]).join('').toUpperCase()
+}
+
 type FiltrProps = {
   column: Column<unknown>
 }
@@ -64,63 +79,78 @@ export const columns = [
   {
     accessorKey: 'symbol',
     header: SortingButton('Produit'),
-    cell: ({ row }) => <div className="font-medium ">{row.getValue('symbol')}</div>,
+    cell: ({ row }) => {
+      const symbol = row.getValue('symbol') as string
+      const color = stringToColor(symbol)
+      const initials = getInitials(symbol)
+      
+      return (
+        <div className="flex items-center gap-3">
+          <div 
+            className="flex h-10 w-10 items-center justify-center rounded-full text-white text-sm font-medium"
+            style={{ backgroundColor: color }}
+          >
+            {initials}
+          </div>
+          <div className="flex flex-col">
+            <div className="font-medium">{symbol}</div>
+            <div className="text-sm text-muted-foreground">x{row.getValue('qty')}</div>
+          </div>
+        </div>
+      )
+    },
+    enableHiding: false,
   },
   {
     accessorKey: 'weight',
     header: SortingButton('Poid'),
     cell: ({ row }) => (
-      <div>
-        <div className="font-medium ">{round10((row.getValue('weight') as number) * 100, -1)}%</div>
-      </div>
+      <div className="font-medium">{round10((row.getValue('weight') as number) * 100, -1)}%</div>
     ),
+    enableHiding: true,
   },
-
   {
     accessorKey: 'last',
     header: SortingButton('Cours'),
     cell: ({ row }) => {
       const last = parseFloat(row.getValue('last'))
-
-      // Format the prix as a dollar prix
       const formatted = new Intl.NumberFormat('fr-FR', {
         style: 'currency',
         currency: 'EUR',
       }).format(last)
-
-      return <div className="font-medium ">{formatted.toLocaleString()}</div>
+      return <div className="font-medium">{formatted}</div>
     },
+    enableHiding: true,
   },
-
   {
     accessorKey: 'qty',
     header: 'Quantité',
-    cell: ({ row }) => <div className="font-medium "> {row.getValue('qty')} </div>,
+    cell: ({ row }) => <div className="font-medium">{row.getValue('qty')}</div>,
+    enableHiding: true,
   },
   {
     accessorKey: 'bep',
-    header: 'bep',
+    header: 'BEP',
     cell: ({ row }) => (
-      <div className="font-medium "> {round10(row.getValue('bep'), -2).toLocaleString()} </div>
+      <div className="font-medium">{round10(row.getValue('bep'), -2).toLocaleString()} €</div>
     ),
+    enableHiding: true,
   },
-
   {
     accessorKey: 'total_value',
     header: 'Total',
     cell: ({ row }) => (
-      <div className="font-medium ">
-        {' '}
-        {round10(row.getValue('total_value'), -2).toLocaleString()}{' '}
+      <div className="font-medium">
+        {round10(row.getValue('total_value'), -2).toLocaleString()} €
       </div>
     ),
+    enableHiding: true,
   },
-
   {
     id: 'retour',
     header: 'Retour',
     cell: ({ row }) => (
-      <div>
+      <div className="flex flex-col gap-1">
         <VariationContainer
           value={row!.original.dailyVariation}
           background={false}
@@ -134,5 +164,6 @@ export const columns = [
         />
       </div>
     ),
+    enableHiding: true,
   },
 ]

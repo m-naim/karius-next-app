@@ -100,8 +100,10 @@ export function deletePortfolio(id) {
 }
 
 export function getPerformances(id, benchmarks, period) {
-  const encodedBenchmarks = encodeURIComponent(benchmarks.join(','));
-  return http.get(`${host}/api/v1/portfolios/${id}/performance/?benchmarks=${encodedBenchmarks}&period=${period}`)
+  const encodedBenchmarks = encodeURIComponent(benchmarks.join(','))
+  return http.get(
+    `${host}/api/v1/portfolios/${id}/performance/?benchmarks=${encodedBenchmarks}&period=${period}`
+  )
 }
 
 export function getPerformancesSummary(id: string) {
@@ -114,4 +116,8 @@ export function getDividends(id) {
 
 export function getMetrics(id) {
   return http.get(`${qwantHost}/api/v1/portfolios/${id}/stats`)
+}
+
+export function getStockInfo(symbol: string) {
+  return http.get(`${host}/api/v1/stocks/${symbol}/info`)
 }

@@ -64,9 +64,9 @@ function TransactionDialogue({
   const [prix, setPrix] = useState<number>(initialData.prix)
 
   const handleTickerChange = (newTicker) => {
-    setTicker(newTicker);
-  };
-  
+    setTicker(newTicker)
+  }
+
   if (date == null || Number.isNaN(date.valueOf())) {
     console.log('date problem', date, initialData.date)
   }
@@ -77,8 +77,8 @@ function TransactionDialogue({
   }, 300)
 
   const updatePriceOnChange = (setter) => {
-    console.log("updatePriceOnChange", date, ticker);
-    
+    console.log('updatePriceOnChange', date, ticker)
+
     if (date && ticker) {
       onDataChange(date, ticker)
     }
@@ -87,7 +87,7 @@ function TransactionDialogue({
 
   const onDateChange = (e) => {
     const date = e.target.value
-    console.log("onDateChange", date);
+    console.log('onDateChange', date)
     updatePriceOnChange(setDate)(date)
   }
 
@@ -105,136 +105,140 @@ function TransactionDialogue({
       <DialogTrigger>
         <Trigger />
       </DialogTrigger>
-      {open && (<DialogContent className=" dark:bg-black">
-        <DialogHeader>
-          <DialogTitle>Acheter / Vendre</DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <MultiSelect active={type} select={setType} list={['Acheter', 'Vendre']} />
+      {open && (
+        <DialogContent className=" dark:bg-black">
+          <DialogHeader>
+            <DialogTitle>Acheter / Vendre</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <MultiSelect active={type} select={setType} list={['Acheter', 'Vendre']} />
 
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name">Action</Label>
-            <ComboboxPopover
-              ticker={ticker}
-              setTicker={updatePriceOnChange(handleTickerChange)}
-              className="col-span-3 w-full"
-            />
-          </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name">Action</Label>
+              <ComboboxPopover
+                ticker={ticker}
+                setTicker={updatePriceOnChange(handleTickerChange)}
+                className="col-span-3 w-full"
+              />
+            </div>
 
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="date">Date</Label>
-            <div className="col-span-3 flex">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="date">Date</Label>
+              <div className="col-span-3 flex">
+                <Input
+                  id="date"
+                  type="date"
+                  defaultValue={'01-01-2022'}
+                  value={date}
+                  onChange={onDateChange}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="prix">Prix</Label>
               <Input
-                id="date"
-                type="date"
-                defaultValue={'01-01-2022'}
-                value={date}
-                onChange={onDateChange}
+                id="prix"
+                value={prix}
+                onChange={(e) => setPrix(parseFloat(e.target.value))}
+                className="col-span-3"
+              />
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="prix">Quantité</Label>
+              <Input
+                id="prix"
+                value={quantity}
+                onChange={(e) => setQuantity(parseFloat(e.target.value))}
+                type="number"
+                className="col-span-3"
+                step={0.01}
               />
             </div>
           </div>
-
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="prix">Prix</Label>
-            <Input
-              id="prix"
-              value={prix}
-              onChange={(e) => setPrix(parseFloat(e.target.value))}
-              className="col-span-3"
-            />
-          </div>
-
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="prix">Quantité</Label>
-            <Input
-              id="prix"
-              value={quantity}
-              onChange={(e) => setQuantity(parseFloat(e.target.value))}
-              type="number"
-              className="col-span-3"
-              step={0.01}
-            />
-          </div>
-        </div>
-        <DialogFooter className="flex justify-end gap-4">
-          {executing ? (
-            <div>
-              <RotateCcw className="mr-2 h-4 w-4 animate-spin" />
-              Execution en cours ...
-            </div>
-          ) : (
-            <>
-              {deleteHandler && (
-                <Button
-                  variant="outline"
-                  onClick={async (e) => await closingAction(e, () => deleteHandler(initialData.id))}
-                >
-                  Supprimer
-                </Button>
-              )}
-              {modifyHandler && (
-                <Button
-                  onClick={async (e) =>
-                    await closingAction(e, () =>
-                      modifyHandler({
-                        ...initialData,
-                        ticker,
-                        type,
-                        date: format(parseISO(date), 'yyyy-MM-dd', { locale: fr }),
-                        quantity,
-                        prix,
-                      })
-                    )
-                  }
-                >
-                  Modifier
-                </Button>
-              )}
-              {submitHandler && (
-                <Button
-                  onClick={async (e) =>
-                    await closingAction(e, () =>
-                      submitHandler({
-                        ...initialData,
-                        ticker,
-                        type,
-                        date: format(parseISO(date), 'yyyy-MM-dd', { locale: fr }),
-                        quantity,
-                        prix,
-                      })
-                    )
-                  }
-                >
-                  Exécuter
-                </Button>
-              )}
-            </>
-          )}
-        </DialogFooter>
-        <div className="max-w-xs">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <div className="col-span-3 text-xs font-medium">Total de l'opération</div>
-            <VariationContainer
-              value={prix * quantity}
-              background={false}
-              vaiationColor={false}
-              sign={false}
-              entity="€"
-            />
-          </div>
-          {totalPortfolioValue != null && totalPortfolioValue != 0 && (
+          <DialogFooter className="flex justify-end gap-4">
+            {executing ? (
+              <div>
+                <RotateCcw className="mr-2 h-4 w-4 animate-spin" />
+                Execution en cours ...
+              </div>
+            ) : (
+              <>
+                {deleteHandler && (
+                  <Button
+                    variant="outline"
+                    onClick={async (e) =>
+                      await closingAction(e, () => deleteHandler(initialData.id))
+                    }
+                  >
+                    Supprimer
+                  </Button>
+                )}
+                {modifyHandler && (
+                  <Button
+                    onClick={async (e) =>
+                      await closingAction(e, () =>
+                        modifyHandler({
+                          ...initialData,
+                          ticker,
+                          type,
+                          date: format(parseISO(date), 'yyyy-MM-dd', { locale: fr }),
+                          quantity,
+                          prix,
+                        })
+                      )
+                    }
+                  >
+                    Modifier
+                  </Button>
+                )}
+                {submitHandler && (
+                  <Button
+                    onClick={async (e) =>
+                      await closingAction(e, () =>
+                        submitHandler({
+                          ...initialData,
+                          ticker,
+                          type,
+                          date: format(parseISO(date), 'yyyy-MM-dd', { locale: fr }),
+                          quantity,
+                          prix,
+                        })
+                      )
+                    }
+                  >
+                    Exécuter
+                  </Button>
+                )}
+              </>
+            )}
+          </DialogFooter>
+          <div className="max-w-xs">
             <div className="grid grid-cols-4 items-center gap-4">
-              <div className="col-span-3 text-xs font-medium">Poids dans le portefeuille</div>
+              <div className="col-span-3 text-xs font-medium">Total de l'opération</div>
               <VariationContainer
-                value={(prix * quantity) / totalPortfolioValue}
+                value={prix * quantity}
                 background={false}
                 vaiationColor={false}
                 sign={false}
+                entity="€"
               />
             </div>
-          )}
-        </div>
-      </DialogContent>)}
+            {totalPortfolioValue != null && totalPortfolioValue != 0 && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <div className="col-span-3 text-xs font-medium">Poids dans le portefeuille</div>
+                <VariationContainer
+                  value={(prix * quantity) / totalPortfolioValue}
+                  background={false}
+                  vaiationColor={false}
+                  sign={false}
+                />
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      )}
     </Dialog>
   ) : null
 }

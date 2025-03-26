@@ -17,7 +17,6 @@ import {
 
 Chart.register(CategoryScale, LinearScale, LineElement)
 
-
 const periodsConvert = {
   '1M': 30,
   '3M': 90,
@@ -45,7 +44,7 @@ function PerformanceBox({ id }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await getPerformances(id as string, ['^GSPC'] ,periodsConvert[period])
+        const res = await getPerformances(id as string, ['^GSPC'], periodsConvert[period])
         setData(res)
         setAllDates(formatDateStr(res.timestamp))
         setDates(formatDateStr(res.timestamp).slice(-periodsConvert[period]))
@@ -57,7 +56,7 @@ function PerformanceBox({ id }) {
       }
     }
     fetchData()
-  }, [id,period])
+  }, [id, period])
 
   const handlePeriodClick = (period, type = chartType) => {
     setPeriod(period)
@@ -136,14 +135,16 @@ function PerformanceBox({ id }) {
                   borderColor: 'rgb(54, 162, 235)', // dark blue
                   data: chartValues,
                 },
-                ... [(chartType === 'CumulativePerformance')?
-                {
-                  label: 'BenchMark',
-                  backgroundColor: 'rgba(255, 99, 132, 0.5)', // light orange
-                  borderColor: 'rgb(255, 99, 132)', // dark orange
-                  data: benchValues,
-                }
-                :{}] 
+                ...[
+                  chartType === 'CumulativePerformance'
+                    ? {
+                        label: 'BenchMark',
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)', // light orange
+                        borderColor: 'rgb(255, 99, 132)', // dark orange
+                        data: benchValues,
+                      }
+                    : {},
+                ],
               ],
             }}
           />
