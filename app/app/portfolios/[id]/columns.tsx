@@ -27,7 +27,12 @@ export const stringToColor = (str: string) => {
 
 // Fonction pour obtenir les initiales
 const getInitials = (str: string) => {
-  return str.split(/\W/).filter(Boolean).map(word => word[0]).join('').toUpperCase()
+  return str
+    .split(/\W/)
+    .filter(Boolean)
+    .map((word) => word[0])
+    .join('')
+    .toUpperCase()
 }
 
 type FiltrProps = {
@@ -83,11 +88,11 @@ export const columns = [
       const symbol = row.getValue('symbol') as string
       const color = stringToColor(symbol)
       const initials = getInitials(symbol)
-      
+
       return (
         <div className="flex items-center gap-3">
-          <div 
-            className="flex h-10 w-10 items-center justify-center rounded-full text-white text-sm font-medium"
+          <div
+            className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium text-white"
             style={{ backgroundColor: color }}
           >
             {initials}

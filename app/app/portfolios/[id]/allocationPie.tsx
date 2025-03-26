@@ -17,6 +17,12 @@ interface AllocationPieProps {
 
 type ViewType = 'assets' | 'sectors' | 'industries'
 
+interface PieData {
+  name: string
+  value: number
+  weight: number
+}
+
 interface HoveredData {
   name: string
   value: number
@@ -36,26 +42,30 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
       }))
     }
 
-    const groupedData = data.reduce((acc, item) => {
-      const key = type === 'sectors' ? (item.sector || 'Non catégorisé') : (item.industry || 'Non catégorisé')
-      if (!acc[key]) {
-        acc[key] = {
-          name: key,
-          value: 0,
-          weight: 0,
+    const groupedData = data.reduce(
+      (acc, item) => {
+        const key =
+          type === 'sectors' ? item.sector || 'Non catégorisé' : item.industry || 'Non catégorisé'
+        if (!acc[key]) {
+          acc[key] = {
+            name: key,
+            value: 0,
+            weight: 0,
+          }
         }
-      }
-      acc[key].value += item.total_value
-      acc[key].weight += item.weight * 100
-      return acc
-    }, {} as Record<string, { name: string; value: number; weight: number }>)
+        acc[key].value += item.total_value
+        acc[key].weight += item.weight * 100
+        return acc
+      },
+      {} as Record<string, PieData>
+    )
 
     return Object.values(groupedData).sort((a, b) => b.value - a.value)
   }
 
   const pieData = aggregateData(view)
 
-  const handleMouseEnter = (entry: any) => {
+  const handleMouseEnter = (entry: PieData) => {
     setHoveredData({
       name: entry.name,
       value: entry.value,
@@ -70,28 +80,18 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
   const CenterDisplay = () => {
     if (hoveredData) {
       return (
-        <div className="flex flex-col items-center text-center animate-in fade-in zoom-in duration-200">
-          <div className="text-sm font-medium">
-            {hoveredData.name}
-          </div>
-          <div className="text-lg font-bold">
-            {hoveredData.value.toLocaleString()} €
-          </div>
-          <div className="text-xs text-muted-foreground">
-            {hoveredData.weight.toFixed(1)}%
-          </div>
+        <div className="flex flex-col items-center text-center duration-200 animate-in fade-in zoom-in">
+          <div className="text-sm font-medium">{hoveredData.name}</div>
+          <div className="text-lg font-bold">{hoveredData.value.toLocaleString()} €</div>
+          <div className="text-xs text-muted-foreground">{hoveredData.weight.toFixed(1)}%</div>
         </div>
       )
     }
 
     return (
-      <div className="flex flex-col items-center animate-in fade-in zoom-in duration-200">
-        <div className="text-lg font-bold">
-          {totalValue.toLocaleString()} €
-        </div>
-        <div className="text-xs text-muted-foreground">
-          Valeur Totale
-        </div>
+      <div className="flex flex-col items-center duration-200 animate-in fade-in zoom-in">
+        <div className="text-lg font-bold">{totalValue.toLocaleString()} €</div>
+        <div className="text-xs text-muted-foreground">Valeur Totale</div>
       </div>
     )
   }
@@ -132,8 +132,8 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
                 onMouseEnter={(_, index) => handleMouseEnter(pieData[index])}
               >
                 {pieData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
+                  <Cell
+                    key={`cell-${index}`}
                     fill={stringToColor(entry.name)}
                     style={{ cursor: 'pointer' }}
                   />
@@ -141,7 +141,7 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
               </Pie>
             </PieChart>
           </ResponsiveContainer>
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <CenterDisplay />
           </div>
         </div>
@@ -150,4 +150,4 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
   )
 }
 
-export default AllocationPie 
+export default AllocationPie

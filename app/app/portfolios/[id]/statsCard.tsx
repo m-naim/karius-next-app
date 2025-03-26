@@ -24,17 +24,13 @@ const StatsCard = ({ pftData }) => (
             <div className="text-xs text-muted-foreground">Valeur Totale</div>
           </div>
           <div className="flex flex-col items-end gap-0.5">
-            <VariationContainer 
-              value={pftData.dayChangeValue} 
-              entity="€" 
+            <VariationContainer
+              value={pftData.dayChangeValue}
+              entity="€"
               className="text-sm"
               background={false}
             />
-            <VariationContainer 
-              value={pftData.dayChangePercent} 
-              entity="%" 
-              className="text-xs"
-            />
+            <VariationContainer value={pftData.dayChangePercent} entity="%" className="text-xs" />
           </div>
         </div>
       </div>
@@ -47,20 +43,20 @@ const StatsCard = ({ pftData }) => (
           <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="text-xs font-medium">Performance Globale</span>
         </div>
-        
+
         <div className="mt-1 grid gap-1">
           <div className="grid grid-cols-2 items-center">
             <div className="text-xs text-muted-foreground">Gains Totaux</div>
             <div className="flex justify-end gap-1">
-              <VariationContainer 
-                value={pftData.cumulativeReturn} 
-                entity="€" 
+              <VariationContainer
+                value={pftData.cumulativeReturn}
+                entity="€"
                 background={false}
-                className="text-sm" 
+                className="text-sm"
               />
-              <VariationContainer 
-                value={pftData.cumulativePerformance} 
-                entity="%" 
+              <VariationContainer
+                value={pftData.cumulativePerformance}
+                entity="%"
                 className="text-xs"
               />
             </div>

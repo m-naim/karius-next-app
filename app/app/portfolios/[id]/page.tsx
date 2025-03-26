@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import React, { useState, useEffect, useMemo } from 'react'
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from '@/hooks/use-toast'
 import { debounce } from 'lodash'
 import {
   ColumnFiltersState,
@@ -91,7 +91,7 @@ export default function PortfolioView() {
         return [symbol, { sector: 'Non disponible', industry: 'Non disponible' }]
       }
     })
-    
+
     const results = await Promise.all(infoPromises)
     const newStockInfo = Object.fromEntries(results)
     setStockInfo(newStockInfo)
@@ -102,29 +102,29 @@ export default function PortfolioView() {
       const res = await get(id)
       setOwn(res.own)
       setPortfolio(res.data)
-      const allocationData = res.data.allocation.map(item => ({
+      const allocationData = res.data.allocation.map((item) => ({
         ...item,
         sector: stockInfo[item.symbol]?.sector || 'Chargement...',
-        industry: stockInfo[item.symbol]?.industry || 'Chargement...'
+        industry: stockInfo[item.symbol]?.industry || 'Chargement...',
       }))
       setData(allocationData)
-      
+
       // Fetch stock info if not already available
-      const symbols = res.data.allocation.map(item => item.symbol)
-      const missingSymbols = symbols.filter(symbol => !stockInfo[symbol])
+      const symbols = res.data.allocation.map((item) => item.symbol)
+      const missingSymbols = symbols.filter((symbol) => !stockInfo[symbol])
       if (missingSymbols.length > 0) {
         fetchStockInfo(missingSymbols)
       }
-      
+
       setLoading(false)
     } catch (e) {
       console.error('error api:', e)
       setPortfolio({ _id: '', allocation: [], transactions: [], cashValue: 0, totalValue: 0 })
       setLoading(false)
       toast({
-        title: "Erreur",
-        description: "Impossible de charger les données du portfolio",
-        variant: "destructive",
+        title: 'Erreur',
+        description: 'Impossible de charger les données du portfolio',
+        variant: 'destructive',
       })
     }
   }
@@ -189,10 +189,10 @@ export default function PortfolioView() {
 
   useEffect(() => {
     if (Object.keys(stockInfo).length > 0) {
-      const updatedData = data.map(item => ({
+      const updatedData = data.map((item) => ({
         ...item,
         sector: stockInfo[item.symbol]?.sector || 'Non disponible',
-        industry: stockInfo[item.symbol]?.industry || 'Non disponible'
+        industry: stockInfo[item.symbol]?.industry || 'Non disponible',
       }))
       setData(updatedData)
     }
@@ -225,15 +225,15 @@ export default function PortfolioView() {
       setPortfolio(res.data)
       setData(res.data.allocation)
       toast({
-        title: "Transaction ajoutée",
-        description: "Votre transaction a été enregistrée avec succès",
+        title: 'Transaction ajoutée',
+        description: 'Votre transaction a été enregistrée avec succès',
       })
       return res
     } catch (error) {
       toast({
-        title: "Erreur",
+        title: 'Erreur',
         description: "Une erreur est survenue lors de l'ajout de la transaction",
-        variant: "destructive",
+        variant: 'destructive',
       })
       throw error
     } finally {
@@ -250,14 +250,14 @@ export default function PortfolioView() {
       setPortfolio(res.data)
       setData(res.data.allocation)
       toast({
-        title: "Mouvement ajouté",
-        description: "Le mouvement a été enregistré avec succès",
+        title: 'Mouvement ajouté',
+        description: 'Le mouvement a été enregistré avec succès',
       })
     } catch (error) {
       toast({
-        title: "Erreur",
+        title: 'Erreur',
         description: "Une erreur est survenue lors de l'ajout du mouvement",
-        variant: "destructive",
+        variant: 'destructive',
       })
       throw error
     } finally {
@@ -275,9 +275,7 @@ export default function PortfolioView() {
             <CardTitle className="flex items-center gap-1">
               <span className="text-base">Investissements</span>
               {data.length === 0 && (
-                <span className="text-xs text-muted-foreground">
-                  Aucun investissement
-                </span>
+                <span className="text-xs text-muted-foreground">Aucun investissement</span>
               )}
             </CardTitle>
             <Button
@@ -296,7 +294,11 @@ export default function PortfolioView() {
                 <AccountsMouvements
                   data-umami-event="portfolio-accounts-mouvements-button"
                   Trigger={() => (
-                    <Button variant="outline" size="sm" className="flex-1 gap-1 min-w-[110px] h-7 text-xs bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 min-w-[110px] flex-1 gap-1 bg-background/60 text-xs backdrop-blur supports-[backdrop-filter]:bg-background/60"
+                    >
                       <span>Dépôt / retrait</span>
                     </Button>
                   )}
@@ -306,7 +308,11 @@ export default function PortfolioView() {
                 <TransactionDialogue
                   data-umami-event="portfolio-add-transaction-button"
                   Trigger={() => (
-                    <Button variant="outline" size="sm" className="flex-1 gap-1 min-w-[110px] h-7 text-xs bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 min-w-[110px] flex-1 gap-1 bg-background/60 text-xs backdrop-blur supports-[backdrop-filter]:bg-background/60"
+                    >
                       <PlusIcon className="h-3.5 w-3.5" />
                       <span>Acheter / Vendre</span>
                     </Button>
@@ -317,15 +323,15 @@ export default function PortfolioView() {
               </div>
 
               <div className="flex items-center gap-1">
-                <Link 
-                  data-umami-event="portfolio-import-button" 
-                  href={`${id}/import`} 
+                <Link
+                  data-umami-event="portfolio-import-button"
+                  href={`${id}/import`}
                   className="shrink-0"
                 >
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
-                    className="gap-1 h-7 text-xs bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+                    className="h-7 gap-1 bg-background/60 text-xs backdrop-blur supports-[backdrop-filter]:bg-background/60"
                   >
                     <FileScan className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">Importer</span>
@@ -371,9 +377,7 @@ export default function PortfolioView() {
       </Card>
       <div className="w-fill flex flex-grow flex-col gap-0.5">
         <StatsCard pftData={portfolio} />
-        {data.length > 0 && (
-          <AllocationPie data={data} totalValue={portfolio.totalValue} />
-        )}
+        {data.length > 0 && <AllocationPie data={data} totalValue={portfolio.totalValue} />}
       </div>
     </div>
   )

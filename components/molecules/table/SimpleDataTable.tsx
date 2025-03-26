@@ -7,15 +7,15 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { flexRender } from '@tanstack/react-table'
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
-import { MoreVertical } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
+import { MoreVertical } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { cn } from "@/lib/utils"
+} from '@/components/ui/dropdown-menu'
+import { cn } from '@/lib/utils'
 
 const SimpleDataTable = ({ table, colSpan }) => {
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false
@@ -33,13 +33,13 @@ const SimpleDataTable = ({ table, colSpan }) => {
                       return null
                     }
                     return (
-                      <TableHead 
-                        key={header.id} 
+                      <TableHead
+                        key={header.id}
                         className={cn(
-                          "whitespace-nowrap",
-                          isMobile && header.id === 'symbol' && "w-[45%]",
-                          isMobile && header.id === 'total_value' && "w-[30%]",
-                          isMobile && header.id === 'retour' && "w-[20%]"
+                          'whitespace-nowrap',
+                          isMobile && header.id === 'symbol' && 'w-[45%]',
+                          isMobile && header.id === 'total_value' && 'w-[30%]',
+                          isMobile && header.id === 'retour' && 'w-[20%]'
                         )}
                       >
                         {header.isPlaceholder
@@ -48,9 +48,7 @@ const SimpleDataTable = ({ table, colSpan }) => {
                       </TableHead>
                     )
                   })}
-                  {isMobile && (
-                    <TableHead className="w-[5%] p-0"></TableHead>
-                  )}
+                  {isMobile && <TableHead className="w-[5%] p-0"></TableHead>}
                 </TableRow>
               ))}
             </TableHeader>
@@ -59,17 +57,20 @@ const SimpleDataTable = ({ table, colSpan }) => {
                 table.getRowModel().rows.map((row) => (
                   <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                     {row.getVisibleCells().map((cell) => {
-                      if (isMobile && !['symbol', 'total_value', 'retour'].includes(cell.column.id)) {
+                      if (
+                        isMobile &&
+                        !['symbol', 'total_value', 'retour'].includes(cell.column.id)
+                      ) {
                         return null
                       }
                       return (
-                        <TableCell 
-                          key={cell.id} 
+                        <TableCell
+                          key={cell.id}
                           className={cn(
-                            "whitespace-nowrap",
-                            isMobile && cell.column.id === 'symbol' && "w-[45%]",
-                            isMobile && cell.column.id === 'total_value' && "w-[30%]",
-                            isMobile && cell.column.id === 'retour' && "w-[20%]"
+                            'whitespace-nowrap',
+                            isMobile && cell.column.id === 'symbol' && 'w-[45%]',
+                            isMobile && cell.column.id === 'total_value' && 'w-[30%]',
+                            isMobile && cell.column.id === 'retour' && 'w-[20%]'
                           )}
                         >
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -90,7 +91,10 @@ const SimpleDataTable = ({ table, colSpan }) => {
                                 return null
                               }
                               return (
-                                <div key={cell.id} className="flex items-center justify-between px-2 py-1.5">
+                                <div
+                                  key={cell.id}
+                                  className="flex items-center justify-between px-2 py-1.5"
+                                >
                                   <span className="text-xs font-medium">
                                     {cell.column.columnDef.header}
                                   </span>
