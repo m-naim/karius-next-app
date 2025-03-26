@@ -99,8 +99,9 @@ export function deletePortfolio(id) {
   return http.deleteReq(`${host}/api/v1/portfolios/${id}`)
 }
 
-export function getPerformances(id) {
-  return http.get(`${host}/api/v1/portfolios/${id}/performance/`)
+export function getPerformances(id, benchmarks, period) {
+  const encodedBenchmarks = encodeURIComponent(benchmarks.join(','));
+  return http.get(`${host}/api/v1/portfolios/${id}/performance/?benchmarks=${encodedBenchmarks}&period=${period}`)
 }
 
 export function getPerformancesSummary(id: string) {

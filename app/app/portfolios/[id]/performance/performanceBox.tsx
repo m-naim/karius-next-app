@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { format } from 'date-fns'
+import { format, set } from 'date-fns'
 import { Chart, CategoryScale, LinearScale, LineElement } from 'chart.js'
 import { LineValue } from '@/components/molecules/charts/LineValue'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,11 +17,21 @@ import {
 
 Chart.register(CategoryScale, LinearScale, LineElement)
 
+
+const periodsConvert = {
+  '1M': 30,
+  '3M': 90,
+  '6M': 180,
+  '1Y': 365,
+  '3Y': 1095,
+}
+
 const defaultChartType = 'value'
 function PerformanceBox({ id }) {
   const [chartType, setChartType] = useState(defaultChartType)
   const [dates, setDates] = useState([])
   const [chartValues, setChartValues] = useState([])
+  const [benchValues, setBenchValues] = useState([])
   const [loading, setLoading] = useState(false)
   const [period, setPeriod] = useState('1M')
 
@@ -35,18 +45,19 @@ function PerformanceBox({ id }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await getPerformances(id as string)
+        const res = await getPerformances(id as string, ['^GSPC'] ,periodsConvert[period])
         setData(res)
         setAllDates(formatDateStr(res.timestamp))
-        setDates(formatDateStr(res.timestamp).slice(-30))
-        setChartValues(res[defaultChartType].slice(-30))
+        setDates(formatDateStr(res.timestamp).slice(-periodsConvert[period]))
+        setChartValues(res[chartType].slice(-periodsConvert[period]))
+        setBenchValues(res.benchmarks['^GSPC'].slice(-periodsConvert[period]))
         setLoading(false)
       } catch (e) {
         console.error('error api', e)
       }
     }
     fetchData()
-  }, [id])
+  }, [id,period])
 
   const handlePeriodClick = (period, type = chartType) => {
     setPeriod(period)
@@ -121,10 +132,18 @@ function PerformanceBox({ id }) {
               datasets: [
                 {
                   label: 'Performance',
-                  backgroundColor: gradientbg,
-                  borderColor: 'rgb(109, 99, 255)',
+                  backgroundColor: 'rgba(54, 162, 235, 0.5)', // light blue
+                  borderColor: 'rgb(54, 162, 235)', // dark blue
                   data: chartValues,
                 },
+                ... [(chartType === 'CumulativePerformance')?
+                {
+                  label: 'BenchMark',
+                  backgroundColor: 'rgba(255, 99, 132, 0.5)', // light orange
+                  borderColor: 'rgb(255, 99, 132)', // dark orange
+                  data: benchValues,
+                }
+                :{}] 
               ],
             }}
           />
@@ -135,7 +154,7 @@ function PerformanceBox({ id }) {
       <CardFooter className="flex w-full justify-end py-2">
         <MultiSelect
           className="order-3 w-full md:order-2 md:max-w-xs"
-          list={['1W', '1M', '6M', '1Y', 'ALL']}
+          list={['1W', '1M', '6M', '1Y', '3Y']}
           active={period}
           select={handlePeriodClick}
         />

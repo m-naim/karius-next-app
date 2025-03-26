@@ -11,7 +11,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import MultiSelect from '@/components/molecules/layouts/MultiSelect'
 import { Button } from '@/components/ui/button'
-import { DialogClose } from '@radix-ui/react-dialog'
 import { ComboboxPopover } from '@/components/ui/comboBox'
 import { getStockPrixForDate, update } from '@/services/stock.service'
 import { format, parseISO } from 'date-fns'
@@ -64,6 +63,10 @@ function TransactionDialogue({
   const [quantity, setQuantity] = useState<number>(initialData.quantity)
   const [prix, setPrix] = useState<number>(initialData.prix)
 
+  const handleTickerChange = (newTicker) => {
+    setTicker(newTicker);
+  };
+  
   if (date == null || Number.isNaN(date.valueOf())) {
     console.log('date problem', date, initialData.date)
   }
@@ -74,6 +77,8 @@ function TransactionDialogue({
   }, 300)
 
   const updatePriceOnChange = (setter) => {
+    console.log("updatePriceOnChange", date, ticker);
+    
     if (date && ticker) {
       onDataChange(date, ticker)
     }
@@ -82,6 +87,7 @@ function TransactionDialogue({
 
   const onDateChange = (e) => {
     const date = e.target.value
+    console.log("onDateChange", date);
     updatePriceOnChange(setDate)(date)
   }
 
@@ -99,7 +105,7 @@ function TransactionDialogue({
       <DialogTrigger>
         <Trigger />
       </DialogTrigger>
-      <DialogContent className=" dark:bg-black">
+      {open && (<DialogContent className=" dark:bg-black">
         <DialogHeader>
           <DialogTitle>Acheter / Vendre</DialogTitle>
         </DialogHeader>
@@ -110,7 +116,7 @@ function TransactionDialogue({
             <Label htmlFor="name">Action</Label>
             <ComboboxPopover
               ticker={ticker}
-              setTicker={updatePriceOnChange(setTicker)}
+              setTicker={updatePriceOnChange(handleTickerChange)}
               className="col-span-3 w-full"
             />
           </div>
@@ -228,7 +234,7 @@ function TransactionDialogue({
             </div>
           )}
         </div>
-      </DialogContent>
+      </DialogContent>)}
     </Dialog>
   ) : null
 }
