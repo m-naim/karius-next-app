@@ -25,10 +25,13 @@ interface LineValueProps {
 export function LineValue({ data, unit = '€' }: LineValueProps) {
   const chartData = data.labels.map((label, index) => ({
     name: label,
-    ...data.datasets.reduce((acc, dataset) => ({
-      ...acc,
-      [dataset.label]: dataset.data[index]
-    }), {})
+    ...data.datasets.reduce(
+      (acc, dataset) => ({
+        ...acc,
+        [dataset.label]: dataset.data[index],
+      }),
+      {}
+    ),
   }))
 
   return (
@@ -36,14 +39,14 @@ export function LineValue({ data, unit = '€' }: LineValueProps) {
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-          <XAxis 
-            dataKey="name" 
+          <XAxis
+            dataKey="name"
             axisLine={false}
             tickLine={false}
             tick={{ fill: '#666', fontSize: 12 }}
             dy={10}
           />
-          <YAxis 
+          <YAxis
             axisLine={false}
             tickLine={false}
             tick={{ fill: '#666', fontSize: 12 }}
@@ -58,7 +61,7 @@ export function LineValue({ data, unit = '€' }: LineValueProps) {
               padding: '8px 12px',
             }}
           />
-          <Legend 
+          <Legend
             verticalAlign="top"
             height={36}
             iconType="circle"

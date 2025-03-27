@@ -46,19 +46,16 @@ export default function BenchmarkSelector({
 
   return (
     <div className="flex flex-col gap-4 sm:gap-3">
-      <div className="flex flex-col sm:flex-row gap-3">
-        <Select 
-          onValueChange={(value) => onAddBenchmark(value)}
-          value=""
-        >
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <Select onValueChange={(value) => onAddBenchmark(value)} value="">
           <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Ajouter un benchmark" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              {benchmarkOptions.map(option => (
-                <SelectItem 
-                  key={option.value} 
+              {benchmarkOptions.map((option) => (
+                <SelectItem
+                  key={option.value}
                   value={option.value}
                   disabled={selectedBenchmarks.includes(option.value)}
                 >
@@ -69,7 +66,7 @@ export default function BenchmarkSelector({
           </SelectContent>
         </Select>
 
-        <div className="flex w-full sm:w-auto gap-2">
+        <div className="flex w-full gap-2 sm:w-auto">
           <Input
             className="flex-1 sm:w-[120px] sm:flex-none"
             placeholder="Code personnalisé"
@@ -87,18 +84,16 @@ export default function BenchmarkSelector({
         </div>
       </div>
 
-      {error && (
-        <span className="text-sm text-red-500 order-last">{error}</span>
-      )}
+      {error && <span className="order-last text-sm text-red-500">{error}</span>}
 
       <div className="flex flex-wrap gap-2">
-        {selectedBenchmarks.map(benchmark => (
-          <div 
+        {selectedBenchmarks.map((benchmark) => (
+          <div
             key={benchmark}
             className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1.5 text-sm"
           >
             <span className="line-clamp-1">
-              {benchmarkOptions.find(b => b.value === benchmark)?.label || benchmark}
+              {benchmarkOptions.find((b) => b.value === benchmark)?.label || benchmark}
             </span>
             <button
               onClick={() => onRemoveBenchmark(benchmark)}
@@ -111,4 +106,4 @@ export default function BenchmarkSelector({
       </div>
     </div>
   )
-} 
+}

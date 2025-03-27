@@ -59,7 +59,7 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
 
   const pieData = aggregateData(view)
 
-  const handleMouseEnter = (entry: any) => {
+  const handleMouseEnter = (entry: { name: string; value: number; weight: number }) => {
     setHoveredData({
       name: entry.name,
       value: entry.value,

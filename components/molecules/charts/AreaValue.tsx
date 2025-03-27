@@ -37,21 +37,24 @@ export function AreaValue({ data, unit = '€' }: AreaValueProps) {
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-          <XAxis 
-            dataKey="name" 
+          <XAxis
+            dataKey="name"
             axisLine={false}
             tickLine={false}
             tick={{ fill: '#666', fontSize: 12 }}
             dy={10}
           />
-          <YAxis 
+          <YAxis
             axisLine={false}
             tickLine={false}
             tick={{ fill: '#666', fontSize: 12 }}
             tickFormatter={(value) => `${value.toLocaleString('fr-FR')}${unit}`}
           />
           <Tooltip
-            formatter={(value: number) => [`${value.toLocaleString('fr-FR')}${unit}`, data.datasets[0].label || '']}
+            formatter={(value: number) => [
+              `${value.toLocaleString('fr-FR')}${unit}`,
+              data.datasets[0].label || '',
+            ]}
             contentStyle={{
               backgroundColor: 'white',
               border: '1px solid #f0f0f0',
@@ -71,4 +74,4 @@ export function AreaValue({ data, unit = '€' }: AreaValueProps) {
       </ResponsiveContainer>
     </div>
   )
-} 
+}

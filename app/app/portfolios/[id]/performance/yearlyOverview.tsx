@@ -68,7 +68,9 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
       <div className="flex flex-col">
         <div className="flex flex-col gap-4 border-b border-gray-200 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5 md:p-6">
           <div className="space-y-1.5">
-            <h2 className="text-base font-semibold text-gray-900 sm:text-lg md:text-xl">Performance annuelle</h2>
+            <h2 className="text-base font-semibold text-gray-900 sm:text-lg md:text-xl">
+              Performance annuelle
+            </h2>
             <p className="text-xs text-gray-500 sm:text-sm">Vue mensuelle des performances</p>
           </div>
           <div className="flex items-center justify-between gap-4 sm:justify-end">
@@ -77,10 +79,9 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
               className="flex items-center gap-2 rounded-lg border border-gray-200 px-3.5 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 md:hidden"
             >
               {isExpanded ? 'Réduire' : 'Voir tout'}
-              <ChevronRight className={cn(
-                "h-4 w-4 transition-transform",
-                isExpanded && "rotate-90"
-              )} />
+              <ChevronRight
+                className={cn('h-4 w-4 transition-transform', isExpanded && 'rotate-90')}
+              />
             </button>
             <Select onValueChange={(e) => setSelectedYear(e)} defaultValue={selectedYear}>
               <SelectTrigger className="flex h-10 w-32 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium">
@@ -90,8 +91,8 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
               <SelectContent>
                 <SelectGroup>
                   {perf.map(({ year }) => (
-                    <SelectItem 
-                      key={year} 
+                    <SelectItem
+                      key={year}
                       value={year}
                       className="cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-700 data-[highlighted]:bg-gray-100"
                     >
@@ -105,21 +106,26 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
         </div>
 
         <ScrollArea className="max-h-[calc(100vh-16rem)]">
-          <div className={cn(
-            "grid w-full divide-x divide-gray-200",
-            "grid-cols-[90px_1fr] sm:grid-cols-[120px_1fr] lg:grid-cols-[160px_1fr]",
-            !isExpanded && "max-h-[360px] md:max-h-none overflow-hidden"
-          )}>
+          <div
+            className={cn(
+              'grid w-full divide-x divide-gray-200',
+              'grid-cols-[90px_1fr] sm:grid-cols-[120px_1fr] lg:grid-cols-[160px_1fr]',
+              !isExpanded && 'max-h-[360px] overflow-hidden md:max-h-none'
+            )}
+          >
             <div className="sticky left-0 z-10 space-y-0 bg-gray-50/80">
-              <div className="flex h-12 items-center border-b border-gray-200 px-3 text-[11px] font-medium uppercase tracking-wider text-gray-500 sm:h-14 sm:px-4 lg:px-5 sm:text-xs">
+              <div className="flex h-12 items-center border-b border-gray-200 px-3 text-[11px] font-medium uppercase tracking-wider text-gray-500 sm:h-14 sm:px-4 sm:text-xs lg:px-5">
                 Mois
               </div>
               {month.map((m) => (
-                <div key={m.value} className="flex h-10 items-center border-b border-gray-100/50 px-3 text-[11px] text-gray-600 sm:h-12 sm:px-4 lg:px-5 sm:text-xs">
+                <div
+                  key={m.value}
+                  className="flex h-10 items-center border-b border-gray-100/50 px-3 text-[11px] text-gray-600 sm:h-12 sm:px-4 sm:text-xs lg:px-5"
+                >
                   {m.display}
                 </div>
               ))}
-              <div className="flex h-12 items-center bg-gray-100/80 px-3 text-[11px] font-medium text-gray-900 sm:h-14 sm:px-4 lg:px-5 sm:text-xs">
+              <div className="flex h-12 items-center bg-gray-100/80 px-3 text-[11px] font-medium text-gray-900 sm:h-14 sm:px-4 sm:text-xs lg:px-5">
                 Total
               </div>
             </div>
@@ -130,15 +136,23 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
                   perf
                     .filter(({ year }) => year === selectedYear)
                     .map(({ year, performance, monthlyPerformance }) => (
-                      <div key={year} className="space-y-0 border-r border-gray-200 last:border-r-0">
-                        <div className={cn(
-                          "flex h-12 items-center justify-end border-b border-gray-200 px-3 text-[11px] font-medium sm:h-14 sm:px-4 lg:px-5 sm:text-xs",
-                          isCurrentYear(year) ? "text-blue-600" : "text-gray-900"
-                        )}>
+                      <div
+                        key={year}
+                        className="space-y-0 border-r border-gray-200 last:border-r-0"
+                      >
+                        <div
+                          className={cn(
+                            'flex h-12 items-center justify-end border-b border-gray-200 px-3 text-[11px] font-medium sm:h-14 sm:px-4 sm:text-xs lg:px-5',
+                            isCurrentYear(year) ? 'text-blue-600' : 'text-gray-900'
+                          )}
+                        >
                           {year}
                         </div>
                         {month.map((m) => (
-                          <div key={m.value} className="flex h-10 items-center justify-end border-b border-gray-100/50 px-3 hover:bg-gray-50/50 sm:h-12 sm:px-4 lg:px-5">
+                          <div
+                            key={m.value}
+                            className="flex h-10 items-center justify-end border-b border-gray-100/50 px-3 hover:bg-gray-50/50 sm:h-12 sm:px-4 lg:px-5"
+                          >
                             {monthlyPerformance[m.value] ? (
                               <VariationContainer
                                 value={monthlyPerformance[m.value]}
@@ -150,21 +164,27 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
                           </div>
                         ))}
                         <div className="flex h-12 items-center justify-end bg-gray-100/80 px-3 sm:h-14 sm:px-4 lg:px-5">
-                          <VariationContainer 
-                            value={performance} 
-                            className="text-[11px] font-medium sm:text-xs" 
+                          <VariationContainer
+                            value={performance}
+                            className="text-[11px] font-medium sm:text-xs"
                           />
                         </div>
                       </div>
                     ))}
 
                 {selectedBenchmarks.map((benchmark) => (
-                  <div key={benchmark} className="space-y-0 border-r border-gray-200 last:border-r-0">
-                    <div className="flex h-12 items-center justify-end border-b border-gray-200 px-3 text-[11px] font-medium text-gray-500 sm:h-14 sm:px-4 lg:px-5 sm:text-xs">
-                      {benchmarkOptions.find(b => b.value === benchmark)?.label || benchmark}
+                  <div
+                    key={benchmark}
+                    className="space-y-0 border-r border-gray-200 last:border-r-0"
+                  >
+                    <div className="flex h-12 items-center justify-end border-b border-gray-200 px-3 text-[11px] font-medium text-gray-500 sm:h-14 sm:px-4 sm:text-xs lg:px-5">
+                      {benchmarkOptions.find((b) => b.value === benchmark)?.label || benchmark}
                     </div>
                     {month.map((m) => (
-                      <div key={m.value} className="flex h-10 items-center justify-end border-b border-gray-100/50 px-3 hover:bg-gray-50/50 sm:h-12 sm:px-4 lg:px-5">
+                      <div
+                        key={m.value}
+                        className="flex h-10 items-center justify-end border-b border-gray-100/50 px-3 hover:bg-gray-50/50 sm:h-12 sm:px-4 lg:px-5"
+                      >
                         <span className="text-[11px] text-gray-400 sm:text-xs">—</span>
                       </div>
                     ))}

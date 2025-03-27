@@ -56,11 +56,7 @@ export function WatchlistTable({ securities }: WatchlistTableProps) {
                   ) : (
                     <ArrowDown className="h-4 w-4 text-red-500" />
                   )}
-                  <span
-                    className={cn(
-                      security.change >= 0 ? 'text-green-600' : 'text-red-600'
-                    )}
-                  >
+                  <span className={cn(security.change >= 0 ? 'text-green-600' : 'text-red-600')}>
                     {security.changePercent.toFixed(2)}%
                   </span>
                 </div>
@@ -77,4 +73,4 @@ export function WatchlistTable({ securities }: WatchlistTableProps) {
       </Table>
     </div>
   )
-} 
+}

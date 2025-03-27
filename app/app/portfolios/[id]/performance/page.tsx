@@ -27,7 +27,7 @@ function PagePerformance() {
   }
 
   const handleRemoveBenchmark = (benchmark: string) => {
-    setSelectedBenchmarks(selectedBenchmarks.filter(b => b !== benchmark))
+    setSelectedBenchmarks(selectedBenchmarks.filter((b) => b !== benchmark))
   }
 
   return (

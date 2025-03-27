@@ -38,14 +38,11 @@ export function WatchlistContent({ watchlistData }: WatchlistContentProps) {
           <div>
             <CardTitle className="text-xl font-bold">{watchlistData.name}</CardTitle>
             <p className="text-sm text-gray-500">
-              Mise à jour le{' '}
-              {formatDate(watchlistData.updatedAt)}
+              Mise à jour le {formatDate(watchlistData.updatedAt)}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">
-              {watchlistData.securities.length} titres
-            </span>
+            <span className="text-sm text-gray-500">{watchlistData.securities.length} titres</span>
           </div>
         </CardHeader>
         <CardContent>
@@ -54,4 +51,4 @@ export function WatchlistContent({ watchlistData }: WatchlistContentProps) {
       </Card>
     </div>
   )
-} 
+}
