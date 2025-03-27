@@ -1,3 +1,5 @@
+import watchListService from '@/services/watchListService'
+
 export const sectors = [
   {
     label: 'Technology',
@@ -85,3 +87,29 @@ export const industries = [
     value: 'Financial Data & Stock Exchanges',
   },
 ]
+
+export async function getWatchlistData(id: string) {
+  try {
+    const response = await watchListService.get(id)
+    const watchlist = response.watchlist
+
+    // Enrichir les données avec des informations de marché simulées
+    const enrichedSecurities = watchlist.securities.map((security) => ({
+      ...security,
+      name: security.name || security.symbol, // Fallback au symbole si pas de nom
+      price: Math.random() * 1000, // Prix simulé entre 0 et 1000
+      change: (Math.random() - 0.5) * 10, // Variation entre -5 et +5
+      changePercent: (Math.random() - 0.5) * 10, // Pourcentage de variation entre -5% et +5%
+      volume: Math.floor(Math.random() * 1000000), // Volume simulé
+      marketCap: Math.floor(Math.random() * 1000000000), // Capitalisation simulée
+    }))
+
+    return {
+      ...watchlist,
+      securities: enrichedSecurities,
+    }
+  } catch (error) {
+    console.error('Erreur lors de la récupération des données de la watchlist:', error)
+    throw error
+  }
+}

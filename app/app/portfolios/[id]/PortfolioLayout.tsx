@@ -156,7 +156,7 @@ const PortfolioLayout = ({ pftData, setPftData, id, children, isOwn, followed, s
             </Button>
           </div>
 
-          <div className="flex w-full flex-col gap-2">
+          <div className="flex w-full flex-col gap-2 mb-20">
             <div className="bg-dark w-full flex-grow rounded-md">{children}</div>
           </div>
         </div>

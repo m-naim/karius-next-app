@@ -1,40 +1,39 @@
 import React from 'react'
 import {
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from 'recharts'
 
-interface LineValueProps {
+interface BarValueProps {
   data: {
     labels: string[]
     datasets: {
-      label: string
       data: number[]
-      borderColor?: string
+      backgroundColor?: string | string[]
+      label?: string
     }[]
   }
   unit?: string
 }
 
-export function LineValue({ data, unit = '€' }: LineValueProps) {
+export function BarValue({ data, unit = '€' }: BarValueProps) {
   const chartData = data.labels.map((label, index) => ({
     name: label,
-    ...data.datasets.reduce((acc, dataset) => ({
-      ...acc,
-      [dataset.label]: dataset.data[index]
-    }), {})
+    value: data.datasets[0].data[index],
+    fill: Array.isArray(data.datasets[0].backgroundColor) 
+      ? data.datasets[0].backgroundColor[index] 
+      : data.datasets[0].backgroundColor || '#8884d8'
   }))
 
   return (
     <div className="h-full w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
+        <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
           <XAxis 
             dataKey="name" 
@@ -57,29 +56,16 @@ export function LineValue({ data, unit = '€' }: LineValueProps) {
               borderRadius: '6px',
               padding: '8px 12px',
             }}
+            cursor={{ fill: 'rgba(0, 0, 0, 0.04)' }}
           />
-          <Legend 
-            verticalAlign="top"
-            height={36}
-            iconType="circle"
-            iconSize={8}
-            wrapperStyle={{
-              paddingLeft: '10px',
-            }}
+          <Bar 
+            dataKey="value"
+            radius={[4, 4, 0, 0]}
+            fillOpacity={0.8}
+            fill="#8884d8"
           />
-          {data.datasets.map((dataset, index) => (
-            <Line
-              key={dataset.label}
-              type="monotone"
-              dataKey={dataset.label}
-              stroke={dataset.borderColor || `rgb(${59 + index * 40}, ${130 + index * 20}, 246)`}
-              strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 4, strokeWidth: 0 }}
-            />
-          ))}
-        </LineChart>
+        </BarChart>
       </ResponsiveContainer>
     </div>
   )
-}
+} 

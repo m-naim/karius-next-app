@@ -17,12 +17,6 @@ interface AllocationPieProps {
 
 type ViewType = 'assets' | 'sectors' | 'industries'
 
-interface PieData {
-  name: string
-  value: number
-  weight: number
-}
-
 interface HoveredData {
   name: string
   value: number
@@ -57,7 +51,7 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
         acc[key].weight += item.weight * 100
         return acc
       },
-      {} as Record<string, PieData>
+      {} as Record<string, { name: string; value: number; weight: number }>
     )
 
     return Object.values(groupedData).sort((a, b) => b.value - a.value)
@@ -65,7 +59,7 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
 
   const pieData = aggregateData(view)
 
-  const handleMouseEnter = (entry: PieData) => {
+  const handleMouseEnter = (entry: any) => {
     setHoveredData({
       name: entry.name,
       value: entry.value,

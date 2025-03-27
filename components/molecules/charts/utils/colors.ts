@@ -8,9 +8,9 @@ function getGradient(ctx, chartArea) {
     width = chartWidth
     height = chartHeight
     gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top)
-    gradient.addColorStop(0, 'rgb(109, 99, 255,0.1)')
-    gradient.addColorStop(0.5, 'rgb(109, 99, 255,0.4)')
-    gradient.addColorStop(1, 'rgb(109, 99, 255,0.8)')
+    gradient.addColorStop(0, 'rgb(109, 99, 255, 0.05)')
+    gradient.addColorStop(0.5, 'rgb(109, 99, 255, 0.1)')
+    gradient.addColorStop(1, 'rgb(109, 99, 255, 0.2)')
   }
 
   return gradient
