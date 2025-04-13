@@ -16,19 +16,24 @@ export default async function watchlistPage() {
   const listWatch = await getPublicWatchlists()
 
   return (
-    <>
+    <div className="space-y-6 p-4 md:p-6">
       <MyWatchLists />
 
-      <SectionContainer>
-        <div className="my-12 flex w-full place-content-center text-center ">
-          <h1 className="text-3xl">Découvrez les meilleurs portefeuilles de la communauté</h1>
+      <SectionContainer className="space-y-6">
+        <div className="flex w-full flex-col items-center px-4 text-center">
+          <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl md:text-3xl">
+            Découvrez les meilleurs portefeuilles de la communauté
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm text-gray-500 sm:text-base">
+            Explorez et suivez les portefeuilles qui vous inspirent
+          </p>
         </div>
-        <div className="grid w-full grid-cols-[repeat(auto-fill,20rem)] justify-center gap-2 overflow-auto">
+        <div className="grid w-full grid-cols-1 justify-items-center gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {listWatch.map((w) => (
             <WatchCard key={w._id.toString()} data={w} />
           ))}
         </div>
       </SectionContainer>
-    </>
+    </div>
   )
 }

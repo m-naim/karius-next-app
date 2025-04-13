@@ -74,44 +74,61 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
   const CenterDisplay = () => {
     if (hoveredData) {
       return (
-        <div className="flex flex-col items-center text-center duration-200 animate-in fade-in zoom-in">
-          <div className="text-sm font-medium">{hoveredData.name}</div>
-          <div className="text-lg font-bold">{hoveredData.value.toLocaleString()} €</div>
-          <div className="text-xs text-muted-foreground">{hoveredData.weight.toFixed(1)}%</div>
+        <div className="flex flex-col items-center justify-center p-2 text-center duration-200 animate-in fade-in zoom-in">
+          <div className="line-clamp-2 text-xs font-medium sm:text-sm">{hoveredData.name}</div>
+          <div className="text-base font-bold sm:text-lg">
+            {hoveredData.value.toLocaleString()} €
+          </div>
+          <div className="text-[10px] text-muted-foreground sm:text-xs">
+            {hoveredData.weight.toFixed(1)}%
+          </div>
         </div>
       )
     }
 
     return (
-      <div className="flex flex-col items-center duration-200 animate-in fade-in zoom-in">
-        <div className="text-lg font-bold">{totalValue.toLocaleString()} €</div>
-        <div className="text-xs text-muted-foreground">Valeur Totale</div>
+      <div className="flex flex-col items-center justify-center p-2 duration-200 animate-in fade-in zoom-in">
+        <div className="text-base font-bold sm:text-lg">{totalValue.toLocaleString()} €</div>
+        <div className="text-[10px] text-muted-foreground sm:text-xs">Valeur Totale</div>
       </div>
     )
   }
 
   return (
-    <Card className="flex flex-col p-2">
-      <CardHeader className="space-y-0 p-0">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-xs font-medium">Allocation</CardTitle>
-          <Tabs value={view} onValueChange={(v) => setView(v as ViewType)} className="h-6">
-            <TabsList className="h-6 p-0">
-              <TabsTrigger value="assets" className="h-6 px-2 text-[10px]">
+    <Card className="flex w-full flex-col p-2">
+      <CardHeader className="space-y-2 p-2 sm:space-y-0 sm:p-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle className="text-sm font-medium sm:text-base">Allocation</CardTitle>
+          <Tabs
+            value={view}
+            onValueChange={(v) => setView(v as ViewType)}
+            className="h-8 w-full sm:h-6 sm:w-auto"
+          >
+            <TabsList className="grid h-8 w-full grid-cols-3 gap-1 p-1 sm:h-6 sm:w-auto">
+              <TabsTrigger
+                value="assets"
+                className="h-6 px-2 text-[10px] data-[state=active]:font-medium sm:text-xs"
+              >
                 Actifs
               </TabsTrigger>
-              <TabsTrigger value="sectors" className="h-6 px-2 text-[10px]">
+              <TabsTrigger
+                value="sectors"
+                className="h-6 px-2 text-[10px] data-[state=active]:font-medium sm:text-xs"
+              >
                 Secteurs
               </TabsTrigger>
-              <TabsTrigger value="industries" className="h-6 px-2 text-[10px]">
+              <TabsTrigger
+                value="industries"
+                className="h-6 px-2 text-[10px] data-[state=active]:font-medium sm:text-xs"
+              >
                 Industries
               </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
       </CardHeader>
-      <CardContent className="p-0 pt-4">
-        <div className="relative h-[200px] w-full">
+      <CardContent className="p-0 pt-2 sm:pt-4">
+        <div className="relative h-[180px] w-full sm:h-[220px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart onMouseLeave={handleMouseLeave}>
               <Pie
@@ -120,8 +137,8 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
                 nameKey="name"
                 cx="50%"
                 cy="50%"
-                innerRadius="60%"
-                outerRadius="100%"
+                innerRadius="55%"
+                outerRadius="95%"
                 paddingAngle={1}
                 onMouseEnter={(_, index) => handleMouseEnter(pieData[index])}
               >

@@ -37,8 +37,10 @@ export const columns = (id, owned, deleteRow): ColumnDef<security, string>[] => 
       header: SortingButton('Action'),
       cell: ({ row }) => (
         <div className="flex flex-col">
-          <span className="text-md lowercase text-black">{row.original.longname}</span>
-          <span className="caspanitalize text-xs text-black">{row.original.symbol}</span>
+          <span className="max-w-[180px] truncate text-sm lowercase text-black">
+            {row.original.longname}
+          </span>
+          <span className="text-xs text-muted-foreground">{row.original.symbol}</span>
         </div>
       ),
     },

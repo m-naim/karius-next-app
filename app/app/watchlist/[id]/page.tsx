@@ -29,11 +29,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import Loader from '@/components/molecules/loader/loader'
-import { set } from 'date-fns'
+import { format } from 'date-fns'
+import { fr } from 'date-fns/locale'
 
 interface watchList {
   name: string
   securities: security[]
+  updatedAt?: string
 }
 
 export default function Watchlist() {
@@ -52,21 +54,12 @@ export default function Watchlist() {
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
 
-  const deleteRow = (symbol) => {
-    console.log('delete id', symbol)
-
-    setData((prevData) => {
-      return {
-        name: prevData.name,
-        securities: prevData.securities.filter((row) => row.symbol !== symbol),
-      }
-    })
-
-    console.log('data', data)
+  const deleteRow = (symbol: string) => {
+    setData((prevData) => ({
+      ...prevData,
+      securities: prevData.securities.filter((row) => row.symbol !== symbol),
+    }))
   }
-
-  // Pass deleteRow function into each row's original data
-  //  const tableData = data!.securities.map((row) => ({ ...row, deleteRow }));
 
   const table = useReactTable<security>({
     data: data!.securities,
@@ -108,48 +101,64 @@ export default function Watchlist() {
   return loading ? (
     <Loader />
   ) : (
-    <>
-      <SectionContainer className="flex w-full items-center justify-between">
-        <div className="flex items-center self-start">
-          <Link href={`/app/watchlist`} className="h-fit">
-            <Button variant={'ghost'}>
-              <ArrowLeft />
+    <div className="space-y-4 p-4 md:p-6">
+      <div className="flex items-center justify-between gap-4 rounded-lg border bg-white p-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <Link href="/app/watchlist" className="inline-flex shrink-0">
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <h1>{data?.name}</h1>
+          <div className="min-w-0 truncate">
+            <h1 className="truncate text-lg font-semibold text-gray-900">{data?.name}</h1>
+            {data?.updatedAt && (
+              <p className="truncate text-sm text-gray-500">
+                Mise à jour le{' '}
+                {format(new Date(data.updatedAt), 'dd MMMM yyyy à HH:mm', {
+                  locale: fr,
+                })}
+              </p>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          {owned && (
-            <>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button size={'sm'} variant="ghost">
-                    <EllipsisVertical size={16} />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56">
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem onClick={handleDeleteClick}>
-                      <Trash2 className="h-4 text-red-600" strokeWidth={1} />
-                      <span>Supprimer</span>
-                      <DropdownMenuShortcut>ctrl + d</DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </>
-          )}
-        </div>
-      </SectionContainer>
-      <SectionContainer>
+        {owned && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0 rounded-full hover:bg-gray-100"
+              >
+                <EllipsisVertical className="h-4 w-4" />
+                <span className="sr-only">Menu d'actions</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuGroup>
+                <DropdownMenuItem
+                  onClick={handleDeleteClick}
+                  className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" strokeWidth={1.5} />
+                  <span>Supprimer</span>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
+
+      <div className="rounded-lg border bg-white">
         {!loading && data!.securities != null && (
           <div className="w-full">
             <TableContextHeader table={table} id={id} owned={owned} setData={setData} />
-            <SimpleDataTable table={table} colSpan={columns.length} />
+            <div className="overflow-auto">
+              <SimpleDataTable table={table} colSpan={columns.length} />
+            </div>
           </div>
         )}
-      </SectionContainer>
-    </>
+      </div>
+    </div>
   )
 }

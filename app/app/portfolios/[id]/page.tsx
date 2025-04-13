@@ -30,6 +30,7 @@ import AccountsMouvements from './accountsMouvements'
 import Loader from '@/components/molecules/loader/loader'
 import { round10 } from '@/lib/decimalAjustement'
 import AllocationPie from './allocationPie'
+import PortfolioTable from '@/components/molecules/table/PortfolioTable'
 
 type ButtonVariantProps = VariantProps<typeof buttonVariants>
 
@@ -363,7 +364,7 @@ export default function PortfolioView() {
           ) : (
             <>
               <div className="w-full">
-                <SimpleDataTable table={table} colSpan={columns.length} />
+                <PortfolioTable table={table} colSpan={columns.length} />
               </div>
               <div className="mt-1 grid grid-cols-4 px-2 py-1">
                 <div className="text-sm">Espèces</div>

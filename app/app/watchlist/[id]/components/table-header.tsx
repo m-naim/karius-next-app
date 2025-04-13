@@ -14,8 +14,15 @@ import { industries, sectors } from '../data/data'
 
 const periods = ['1j', '1s', '1m', '3m', '1y', '5y']
 
-export const TableContextHeader = ({ table, id, owned, setData }) => {
-  const addRow = async (symbol) => {
+interface TableContextHeaderProps {
+  table: any
+  id: string
+  owned: boolean
+  setData: (data: { name: string; securities: any[] }) => void
+}
+
+export const TableContextHeader = ({ table, id, owned, setData }: TableContextHeaderProps) => {
+  const addRow = async (symbol: string) => {
     const response = await watchListService.addStock(id, {
       symbol: symbol,
       date: new Date(),
@@ -29,8 +36,8 @@ export const TableContextHeader = ({ table, id, owned, setData }) => {
   const isFiltered = table.getState().columnFilters.length > 0
 
   return (
-    <div className="flex w-full justify-between gap-10 py-4">
-      <div className="flex gap-2">
+    <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+      <div className="flex flex-wrap gap-2">
         {owned && <AddStockButton addRow={addRow} />}
         {table.getColumn('sector') && (
           <DataTableFacetedFilter
@@ -52,22 +59,22 @@ export const TableContextHeader = ({ table, id, owned, setData }) => {
           <Button
             variant="ghost"
             onClick={() => table.resetColumnFilters()}
-            className="h-8 px-2 lg:px-3"
+            className="h-8 px-2 text-sm lg:px-3"
           >
-            supprimer les filter
+            Supprimer les filtres
             <XCircleIcon className="ml-2 h-4 w-4" />
           </Button>
         )}
       </div>
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="sm" variant="outline" className="ml-1">
+            <Button size="sm" variant="outline" className="h-8 whitespace-nowrap">
               Colonnes <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="w-48">
             {table
               .getAllColumns()
               .filter((column) => column.getCanHide())
@@ -88,18 +95,14 @@ export const TableContextHeader = ({ table, id, owned, setData }) => {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button size="sm" variant="outline" className="ml-1">
-              Periods <ChevronDown className="ml-2 h-4 w-4" />
+            <Button size="sm" variant="outline" className="h-8 whitespace-nowrap">
+              Périodes <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="w-36">
             {periods.map((p) => {
               return (
-                <DropdownMenuCheckboxItem
-                  key={p}
-                  className="capitalize"
-                  // onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                >
+                <DropdownMenuCheckboxItem key={p} className="capitalize">
                   {p}
                 </DropdownMenuCheckboxItem>
               )
