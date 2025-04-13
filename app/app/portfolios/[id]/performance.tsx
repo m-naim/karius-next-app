@@ -30,7 +30,7 @@ function Performance({ id }) {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getPerformances(id as string)
+        const data = await getPerformances(id as string, period, 'performance')
 
         setAllTimePerfs(data.value)
         setAllDates(formatDateStr(data.timestamp))
@@ -94,7 +94,7 @@ function Performance({ id }) {
               datasets: [
                 {
                   label: 'Performance',
-                  backgroundColor: gradientbg,
+                  backgroundColor: gradientbg(null),
                   borderColor: 'rgb(109, 99, 255)',
                   data: perfs,
                 },

@@ -16,12 +16,15 @@ function getGradient(ctx, chartArea) {
   return gradient
 }
 
-export function gradientbg(context) {
+export function gradientbg(context: any): string {
+  if (!context) {
+    return ''
+  }
   const chart = context.chart
   const { ctx, chartArea } = chart
 
   if (!chartArea) {
-    return
+    return ''
   }
   return getGradient(ctx, chartArea)
 }
