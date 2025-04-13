@@ -35,8 +35,20 @@ const getInitials = (str: string) => {
     .toUpperCase()
 }
 
+export interface PortfolioSecurity {
+  symbol: string
+  weight: number
+  total_value: number
+  last: number
+  qty: number
+  bep: number
+  retour: number
+  sector?: string
+  industry?: string
+}
+
 type FiltrProps = {
-  column: Column<unknown>
+  column: Column<PortfolioSecurity>
 }
 
 const FilterButton = ({ column }: FiltrProps) => (
@@ -98,8 +110,10 @@ export const columns = [
             {initials}
           </div>
           <div className="flex flex-col">
-            <div className="font-medium">{symbol}</div>
-            <div className="text-sm text-muted-foreground">x{row.getValue('qty')}</div>
+            <span className="font-medium">{symbol}</span>
+            <span className="text-xs text-muted-foreground">
+              {row.original.sector || 'Non disponible'}
+            </span>
           </div>
         </div>
       )

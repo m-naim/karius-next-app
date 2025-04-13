@@ -13,7 +13,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { columns } from './columns'
+import { columns, PortfolioSecurity } from './columns'
 import SimpleDataTable from '@/components/molecules/table/SimpleDataTable'
 import { Button } from '@/components/ui/button'
 import type { ButtonProps } from '@/components/ui/button'
@@ -54,7 +54,7 @@ interface AllocationItem {
 export default function PortfolioView() {
   const id = usePathname().split('/')[3]
   const { toast } = useToast()
-  const [data, setData] = React.useState<AllocationItem[]>([])
+  const [data, setData] = React.useState<PortfolioSecurity[]>([])
   const [loading, setLoading] = React.useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [stockInfo, setStockInfo] = useState<Record<string, StockInfo>>({})
@@ -202,19 +202,19 @@ export default function PortfolioView() {
   const table = useReactTable({
     data,
     columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
     },
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
   })
 
   const addTransaction = async (transactionData) => {
