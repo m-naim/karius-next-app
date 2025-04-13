@@ -17,6 +17,7 @@ interface LineValueProps {
       label: string
       data: number[]
       borderColor?: string
+      backgroundColor?: string
     }[]
   }
   unit?: string

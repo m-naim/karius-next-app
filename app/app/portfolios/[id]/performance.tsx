@@ -21,7 +21,10 @@ function Performance({ id }) {
   const [allDates, setAllDates] = useState([])
 
   const formatDateStr = (input) => {
-    return input.map((s) => format(new Date(s * 24 * 60 * 60 * 1000), 'dd/MM/yyyy'))
+    return input.map((s) => {
+      const date = new Date(s * 24 * 60 * 60 * 1000)
+      return format(date, 'dd/MM/yyyy')
+    })
   }
 
   useEffect(() => {
