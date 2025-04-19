@@ -10,10 +10,9 @@ import { flexRender, Table as TableType } from '@tanstack/react-table'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
-import { PortfolioSecurity } from '@/app/app/portfolios/[id]/columns'
 
 interface PortfolioTableProps {
-  table: TableType<PortfolioSecurity>
+  table: TableType<any>
   colSpan: number
 }
 

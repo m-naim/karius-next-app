@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
-import { security } from '@/app/app/watchlist/[id]/data/security'
+import { security } from 'app/app/watchlist/[id]/data/security'
 
 interface WatchlistTableProps {
   table: TableType<security>
@@ -168,7 +168,10 @@ const WatchlistTable = ({ table, colSpan, onPeriodChange }: WatchlistTableProps)
                                   className="flex items-center justify-between border-b border-border py-2 last:border-0"
                                 >
                                   <span className="text-sm font-medium text-muted-foreground">
-                                    {cell.column.columnDef.header}
+                                    {flexRender<any>(
+                                      cell.column.columnDef.header,
+                                      cell.getContext()
+                                    )}
                                   </span>
                                   <span className="text-sm font-medium">
                                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -177,7 +180,7 @@ const WatchlistTable = ({ table, colSpan, onPeriodChange }: WatchlistTableProps)
                               )
                             })}
                             <div className="pt-2">
-                              {flexRender(
+                              {flexRender<any>(
                                 row.getVisibleCells().find((cell) => cell.column.id === 'actions')
                                   ?.column.columnDef.cell,
                                 row
