@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/table'
 import { flexRender } from '@tanstack/react-table'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { MoreVertical } from 'lucide-react'
+import { InfoIcon, MoreVertical } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
+import { he, vi } from 'date-fns/locale'
 
 interface SimpleDataTableProps {
   table: any
@@ -35,7 +36,18 @@ const SimpleDataTable = ({ table, colSpan }: SimpleDataTableProps) => {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  const visibleColumns = ['symbol', 'regularMarketPrice', 'regularMarketChangePercent']
+  const visibleColumns = [
+    'symbol',
+    'regularMarketPrice',
+    'variation',
+    'actions',
+    'amountByShare',
+    'totalAmount',
+    'date',
+    'amount',
+    'price',
+    'qty',
+  ]
 
   return (
     <div className="rounded-md">
@@ -99,51 +111,45 @@ const SimpleDataTable = ({ table, colSpan }: SimpleDataTableProps) => {
                         </TableCell>
                       )
                     })}
-                    {isMobile && (
-                      <TableCell className="w-[5%] p-1">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              className="h-6 w-6 p-0 hover:bg-muted"
-                              aria-label="Plus d'informations"
-                            >
-                              <MoreVertical className="h-3.5 w-3.5" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-72 space-y-2 p-3">
-                            {row.getVisibleCells().map((cell) => {
-                              if (visibleColumns.includes(cell.column.id)) {
-                                return null
-                              }
-                              return (
-                                <div
-                                  key={cell.id}
-                                  className="flex items-center justify-between border-b border-border py-2 last:border-0"
-                                >
-                                  <span className="text-sm font-medium text-muted-foreground">
-                                    {cell.column.columnDef.header}
-                                  </span>
-                                  <span className="text-sm font-medium">
-                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                  </span>
-                                </div>
-                              )
-                            })}
-                            <div className="pt-2">
-                              {flexRender(
-                                row.getVisibleCells().find((cell) => cell.column.id === 'actions')
-                                  ?.column.columnDef.cell,
-                                row
-                                  .getVisibleCells()
-                                  .find((cell) => cell.column.id === 'actions')
-                                  ?.getContext()
-                              )}
-                            </div>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    )}
+                    {isMobile &&
+                      table
+                        .getHeaderGroups()
+                        .flatMap((headerGroup) => headerGroup.headers.map((header) => header.id))
+                        .filter((header) => !visibleColumns.includes(header)).length > 0 && (
+                        <TableCell className="w-[5%] p-1">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                className="h-6 w-6 p-0 hover:bg-muted"
+                                aria-label="Plus d'informations"
+                              >
+                                <InfoIcon className="h-3.5 w-3.5" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-72 space-y-2 p-3">
+                              {row.getVisibleCells().map((cell) => {
+                                if (visibleColumns.includes(cell.column.id)) {
+                                  return null
+                                }
+                                return (
+                                  <div
+                                    key={cell.id}
+                                    className="flex items-center justify-between border-b border-border py-2 last:border-0"
+                                  >
+                                    <span className="text-sm font-medium text-muted-foreground">
+                                      {cell.column.columnDef.header}
+                                    </span>
+                                    <span className="text-sm font-medium">
+                                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                    </span>
+                                  </div>
+                                )
+                              })}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      )}
                   </TableRow>
                 ))
               ) : (

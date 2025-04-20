@@ -131,7 +131,7 @@ export const columns = (
   },
 
   {
-    id: 'actions',
+    accessorKey: 'actions',
     header: '',
     cell: ({ row }) => {
       return (
