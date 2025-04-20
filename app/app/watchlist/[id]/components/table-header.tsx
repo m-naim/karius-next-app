@@ -12,16 +12,32 @@ import watchListService from '@/services/watchListService'
 import { DataTableFacetedFilter } from './data-table-filter'
 import { industries, sectors } from '../data/data'
 
-const periods = ['1j', '1s', '1m', '3m', '1y', '5y']
+const periods = [
+  { label: '1 jour', value: '1d' },
+  { label: '1 semaine', value: '1w' },
+  { label: '1 mois', value: '1m' },
+  { label: '3 mois', value: '3m' },
+  { label: '1 an', value: '1y' },
+  { label: '5 ans', value: '5y' },
+]
 
 interface TableContextHeaderProps {
   table: any
   id: string
   owned: boolean
   setData: (data: { name: string; securities: any[] }) => void
+  selectedPeriod: string
+  setSelectedPeriod: (period: string) => void
 }
 
-export const TableContextHeader = ({ table, id, owned, setData }: TableContextHeaderProps) => {
+export const TableContextHeader = ({
+  table,
+  id,
+  owned,
+  setData,
+  selectedPeriod,
+  setSelectedPeriod,
+}: TableContextHeaderProps) => {
   const addRow = async (symbol: string) => {
     const response = await watchListService.addStock(id, {
       symbol: symbol,
@@ -96,17 +112,21 @@ export const TableContextHeader = ({ table, id, owned, setData }: TableContextHe
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button size="sm" variant="outline" className="h-8 whitespace-nowrap">
-              Périodes <ChevronDown className="ml-2 h-4 w-4" />
+              Période: {periods.find((p) => p.value === selectedPeriod)?.label || 'Sélectionner'}
+              <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-36">
-            {periods.map((p) => {
-              return (
-                <DropdownMenuCheckboxItem key={p} className="capitalize">
-                  {p}
-                </DropdownMenuCheckboxItem>
-              )
-            })}
+            {periods.map((p) => (
+              <DropdownMenuCheckboxItem
+                key={p.value}
+                className="capitalize"
+                checked={p.value === selectedPeriod}
+                onCheckedChange={() => setSelectedPeriod(p.value)}
+              >
+                {p.label}
+              </DropdownMenuCheckboxItem>
+            ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

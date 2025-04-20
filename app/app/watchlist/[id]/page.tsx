@@ -1,8 +1,7 @@
 'use client'
 
-import React, { useLayoutEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import SectionContainer from '@/components/organismes/layout/SectionContainer'
 import watchListService, { removeList } from '@/services/watchListService'
 import { security } from './data/security'
 import { TableContextHeader } from './components/table-header'
@@ -25,7 +24,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import Loader from '@/components/molecules/loader/loader'
@@ -53,6 +51,7 @@ export default function Watchlist() {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
+  const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
 
   const deleteRow = (symbol: string) => {
     setData((prevData) => ({
@@ -61,9 +60,24 @@ export default function Watchlist() {
     }))
   }
 
+  const useDynamicTableData = (securities: security[]) => {
+    return useMemo(() => {
+      // Recalculate data if needed based on selectedPeriod
+      return securities.map((security) => ({
+        ...security,
+        variation: security.variations?.[selectedPeriod] ?? security.regularMarketChangePercent,
+      }))
+    }, [data, selectedPeriod])
+  }
+
+  const useDynamicColumns = () =>
+    useMemo(() => {
+      return columns(id, owned, deleteRow, selectedPeriod)
+    }, [id, owned, deleteRow, selectedPeriod])
+
   const table = useReactTable<security>({
-    data: data!.securities,
-    columns: columns(id, owned, deleteRow),
+    data: useDynamicTableData(data!.securities),
+    columns: useDynamicColumns(),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
@@ -79,7 +93,7 @@ export default function Watchlist() {
     },
   })
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
       const response = await watchListService.get(id)
       setData(response.watchlist)
@@ -152,7 +166,14 @@ export default function Watchlist() {
       <div className="rounded-lg border bg-white">
         {!loading && data!.securities != null && (
           <div className="w-full">
-            <TableContextHeader table={table} id={id} owned={owned} setData={setData} />
+            <TableContextHeader
+              table={table}
+              id={id}
+              owned={owned}
+              setData={setData}
+              selectedPeriod={selectedPeriod}
+              setSelectedPeriod={setSelectedPeriod}
+            />
             <div className="overflow-auto">
               <SimpleDataTable table={table} colSpan={columns.length} />
             </div>

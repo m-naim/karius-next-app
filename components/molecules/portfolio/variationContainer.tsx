@@ -36,7 +36,9 @@ export default function variationContainer({
     minimumFractionDigits: 2,
   })
 
-  return (
+  return Number.isNaN(value) ? (
+    <div className={cn('m-1 h-fit  rounded-md p-1 text-xs font-medium ', className)}>{value}</div>
+  ) : (
     <div
       className={cn(
         vaiationColor && getVariationColor(value),

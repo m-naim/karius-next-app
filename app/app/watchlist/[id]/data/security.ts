@@ -20,6 +20,7 @@ export interface security {
   earningsTimestampStart: number
   marketCap: number
   score: score
+  variations: Record<string, number>
 }
 
 export interface score {

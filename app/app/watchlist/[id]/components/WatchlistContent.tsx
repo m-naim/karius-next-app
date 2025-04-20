@@ -6,6 +6,7 @@ import { format, isValid, parseISO } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { WatchlistTable } from './WatchlistTable'
 import { Security } from './WatchlistTable'
+import { TableContextHeader } from './table-header'
 
 interface WatchlistData {
   name: string
@@ -31,6 +32,8 @@ export function WatchlistContent({ watchlistData }: WatchlistContentProps) {
     }
   }
 
+  const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
+
   return (
     <div className="space-y-6 p-6">
       <Card>
@@ -46,7 +49,15 @@ export function WatchlistContent({ watchlistData }: WatchlistContentProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <WatchlistTable securities={watchlistData.securities} />
+          <TableContextHeader
+            table={null}
+            id={''}
+            owned={false}
+            setData={() => {}}
+            selectedPeriod={selectedPeriod}
+            setSelectedPeriod={setSelectedPeriod}
+          />
+          <WatchlistTable securities={watchlistData.securities} selectedPeriod={selectedPeriod} />
         </CardContent>
       </Card>
     </div>

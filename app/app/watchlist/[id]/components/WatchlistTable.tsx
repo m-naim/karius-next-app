@@ -18,13 +18,15 @@ export interface Security {
   changePercent: number
   volume: number
   marketCap: number
+  variations: Record<string, number>
 }
 
 interface WatchlistTableProps {
   securities: Security[]
+  selectedPeriod: string
 }
 
-export function WatchlistTable({ securities }: WatchlistTableProps) {
+export function WatchlistTable({ securities, selectedPeriod }: WatchlistTableProps) {
   return (
     <div className="rounded-lg border bg-white">
       <Table>
@@ -33,7 +35,7 @@ export function WatchlistTable({ securities }: WatchlistTableProps) {
             <TableHead>Symbole</TableHead>
             <TableHead>Nom</TableHead>
             <TableHead className="text-right">Prix</TableHead>
-            <TableHead className="text-right">Variation</TableHead>
+            <TableHead className="text-right">Variation ({selectedPeriod})</TableHead>
             <TableHead className="text-right">Volume</TableHead>
             <TableHead className="text-right">Cap. Marché</TableHead>
           </TableRow>
@@ -51,13 +53,17 @@ export function WatchlistTable({ securities }: WatchlistTableProps) {
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex items-center justify-end gap-1">
-                  {security.change >= 0 ? (
+                  {security.variations[selectedPeriod] >= 0 ? (
                     <ArrowUp className="h-4 w-4 text-green-500" />
                   ) : (
                     <ArrowDown className="h-4 w-4 text-red-500" />
                   )}
-                  <span className={cn(security.change >= 0 ? 'text-green-600' : 'text-red-600')}>
-                    {security.changePercent.toFixed(2)}%
+                  <span
+                    className={cn(
+                      security.variations[selectedPeriod] >= 0 ? 'text-green-600' : 'text-red-600'
+                    )}
+                  >
+                    {security.variations[selectedPeriod].toFixed(2)}%
                   </span>
                 </div>
               </TableCell>

@@ -6,6 +6,7 @@ import { ChevronUp, ArrowUpDown, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Actions } from './Actions'
 import { security } from '../data/security'
+import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 
 type FiltrProps = {
   column: Column<security, string>
@@ -30,14 +31,14 @@ const SortingButton = (title) => {
   }
 }
 
-export const columns = (id, owned, deleteRow): ColumnDef<security, string>[] => {
+export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<security, any>[] => {
   return [
     {
       accessorKey: 'symbol',
       header: SortingButton('Action'),
       cell: ({ row }) => (
         <div className="flex flex-col">
-          <span className="max-w-[180px] truncate text-sm lowercase text-black">
+          <span className="max-w-[100px] truncate text-sm lowercase text-black md:max-w-[180px]">
             {row.original.longname}
           </span>
           <span className="text-xs text-muted-foreground">{row.original.symbol}</span>
@@ -67,15 +68,32 @@ export const columns = (id, owned, deleteRow): ColumnDef<security, string>[] => 
       },
     },
     {
-      accessorKey: 'regularMarketChangePercent',
+      accessorFn: (row) => {
+        let chg = row.regularMarketChangePercent
+        if (selectedPeriod != '1d') {
+          const variations = row.variations as Record<string, number>
+          if (variations != null) {
+            chg = variations[selectedPeriod]
+          } else {
+            chg = -10000
+          }
+        }
+        console.log('chg', chg)
+        return chg
+      },
+      id: 'variation',
       header: SortingButton('Variation'),
       cell: ({ row }) => {
-        const chg = parseFloat(row.getValue('regularMarketChangePercent'))
-        const formatted = new Intl.NumberFormat('fr-FR', {
-          maximumSignificantDigits: 2,
-        }).format(chg)
+        let chg = row.original.regularMarketChangePercent
 
-        return <div className="font-medium">{formatted}%</div>
+        if (selectedPeriod != '1d') {
+          const variations = row.original?.variations as Record<string, number>
+          chg = variations != null ? variations[selectedPeriod] : NaN
+        }
+
+        return (
+          <VariationContainer value={chg} entity="%" background={false} className="m-0 p-0 py-2" />
+        )
       },
     },
     {
