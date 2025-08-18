@@ -88,7 +88,7 @@ const Portfolios = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <PortfoliosSuggestSection items={data?.bestPerformingPortfolios} />
+              <PortfoliosSuggestSection items={data?.mostFollowedPortfolios} />
             </CardContent>
           </Card>
         </div>

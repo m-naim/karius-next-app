@@ -35,6 +35,15 @@ export function LineValue({ data, unit = '€' }: LineValueProps) {
     ),
   }))
 
+  const allYValues = data.datasets.flatMap((set) => set.data).filter((v) => v != null)
+
+  const minValue = Math.min(...allYValues)
+  const maxValue = Math.max(...allYValues)
+
+  // Padding as % of range
+  const range = maxValue - minValue || 1 // avoid division by zero
+  const padding = range * 0.1
+
   return (
     <div className="h-full w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -52,6 +61,7 @@ export function LineValue({ data, unit = '€' }: LineValueProps) {
             tickLine={false}
             tick={{ fill: '#666', fontSize: 12 }}
             tickFormatter={(value) => `${value.toLocaleString('fr-FR')}${unit}`}
+            domain={[minValue - padding, maxValue + padding]}
           />
           <Tooltip
             formatter={(value: number) => [`${value.toLocaleString('fr-FR')}${unit}`, '']}

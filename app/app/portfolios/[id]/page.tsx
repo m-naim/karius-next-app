@@ -14,9 +14,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { columns, PortfolioSecurity } from './columns'
-import SimpleDataTable from '@/components/molecules/table/SimpleDataTable'
 import { Button } from '@/components/ui/button'
-import type { ButtonProps } from '@/components/ui/button'
 import type { VariantProps } from 'class-variance-authority'
 import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -81,23 +79,6 @@ export default function PortfolioView() {
   })
   const [rowSelection, setRowSelection] = React.useState({})
 
-  const fetchStockInfo = async (symbols: string[]) => {
-    const uniqueSymbols = [...new Set(symbols)]
-    const infoPromises = uniqueSymbols.map(async (symbol) => {
-      try {
-        const info = await getStockInfo(symbol)
-        return [symbol, info]
-      } catch (e) {
-        console.error(`Error fetching info for ${symbol}:`, e)
-        return [symbol, { sector: 'Non disponible', industry: 'Non disponible' }]
-      }
-    })
-
-    const results = await Promise.all(infoPromises)
-    const newStockInfo = Object.fromEntries(results)
-    setStockInfo(newStockInfo)
-  }
-
   const fetchData = async (id: string) => {
     try {
       const res = await get(id)
@@ -112,10 +93,6 @@ export default function PortfolioView() {
 
       // Fetch stock info if not already available
       const symbols = res.data.allocation.map((item) => item.symbol)
-      const missingSymbols = symbols.filter((symbol) => !stockInfo[symbol])
-      if (missingSymbols.length > 0) {
-        fetchStockInfo(missingSymbols)
-      }
 
       setLoading(false)
     } catch (e) {
@@ -135,41 +112,6 @@ export default function PortfolioView() {
   }, [id])
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (!isRefreshing) {
-        refreshData()
-      }
-    }, 30000) // Refresh every 30 seconds
-    return () => clearInterval(interval)
-  }, [id])
-
-  const refreshData = async () => {
-    if (isRefreshing) return
-    setIsRefreshing(true)
-    try {
-      await fetchData(id)
-    } finally {
-      setIsRefreshing(false)
-    }
-  }
-
-  const debouncedRefresh = useMemo(
-    () =>
-      debounce(() => {
-        refreshData()
-      }, 500),
-    [refreshData]
-  )
-
-  useEffect(() => {
-    window.addEventListener('focus', debouncedRefresh)
-    return () => {
-      window.removeEventListener('focus', debouncedRefresh)
-      debouncedRefresh.cancel()
-    }
-  }, [debouncedRefresh])
-
-  useEffect(() => {
     const handleResize = () => {
       const isMobile = window.innerWidth < 768
       setColumnVisibility({
@@ -187,17 +129,6 @@ export default function PortfolioView() {
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
-
-  useEffect(() => {
-    if (Object.keys(stockInfo).length > 0) {
-      const updatedData = data.map((item) => ({
-        ...item,
-        sector: stockInfo[item.symbol]?.sector || 'Non disponible',
-        industry: stockInfo[item.symbol]?.industry || 'Non disponible',
-      }))
-      setData(updatedData)
-    }
-  }, [stockInfo])
 
   const table = useReactTable({
     data,
@@ -279,7 +210,7 @@ export default function PortfolioView() {
                 <span className="text-xs text-muted-foreground">Aucun investissement</span>
               )}
             </CardTitle>
-            <Button
+            {/* <Button
               variant="ghost"
               size="icon"
               onClick={refreshData}
@@ -287,7 +218,7 @@ export default function PortfolioView() {
               className="h-6 w-6"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-            </Button>
+            </Button> */}
           </div>
           {own && (
             <div className="mt-1 flex flex-wrap items-center gap-1">

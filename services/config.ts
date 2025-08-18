@@ -1,6 +1,6 @@
 const config = {
   development: {
-    API_URL: 'http://192.168.1.107:8080',
+    API_URL: 'http://127.0.0.1:8080',
     QWANTAPI_URL: 'http://127.0.0.1:8080',
     features: {
       watchlist: true,

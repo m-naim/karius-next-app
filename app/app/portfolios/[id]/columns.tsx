@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { round10 } from '@/lib/decimalAjustement'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
+import { tr } from 'date-fns/locale'
 
 // Fonction pour générer une couleur basée sur une chaîne
 export const stringToColor = (str: string) => {
@@ -71,7 +72,7 @@ const FilterButton = ({ column }: FiltrProps) => (
   </DropdownMenu>
 )
 
-const SortingButton = (title) => {
+const SortingButton = (title, activateFilter = true) => {
   return function GhostButton({ column }: FiltrProps) {
     return (
       <div className="flex">
@@ -86,7 +87,7 @@ const SortingButton = (title) => {
           {!column.getIsSorted() ? <ArrowUpDown className="ml-2 h-4 w-4" /> : null}
         </Button>
 
-        <FilterButton column={column}></FilterButton>
+        {activateFilter ? <FilterButton column={column}></FilterButton> : null}
       </div>
     )
   }
@@ -156,28 +157,28 @@ export const columns = [
     enableHiding: true,
   },
   {
-    accessorKey: 'total_value',
+    accessorKey: 'totalValue',
     header: 'Total',
     cell: ({ row }) => (
       <div className="font-medium">
-        {round10(row.getValue('total_value'), -2).toLocaleString()} €
+        {round10(row.getValue('totalValue'), -2).toLocaleString()} €
       </div>
     ),
     enableHiding: true,
   },
   {
-    id: 'retour',
-    header: 'Retour',
+    accessorKey: 'variationPercent',
+    header: SortingButton('Retour', false),
     cell: ({ row }) => (
       <div className="flex flex-col gap-1">
         <VariationContainer
-          value={row!.original.dailyVariation}
+          value={row!.original.variation}
           background={false}
           entity="€"
           className="m-0 p-0"
         />
         <VariationContainer
-          value={row!.original.dailyVariationPercent}
+          value={row!.original.variationPercent}
           background={false}
           className="m-0 p-0"
         />
