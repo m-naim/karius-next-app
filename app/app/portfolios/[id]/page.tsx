@@ -55,7 +55,6 @@ export default function PortfolioView() {
   const [data, setData] = React.useState<PortfolioSecurity[]>([])
   const [loading, setLoading] = React.useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [stockInfo, setStockInfo] = useState<Record<string, StockInfo>>({})
 
   const [portfolio, setPortfolio] = useState({
     _id: '',
@@ -84,16 +83,7 @@ export default function PortfolioView() {
       const res = await get(id)
       setOwn(res.own)
       setPortfolio(res.data)
-      const allocationData = res.data.allocation.map((item) => ({
-        ...item,
-        sector: stockInfo[item.symbol]?.sector || 'Chargement...',
-        industry: stockInfo[item.symbol]?.industry || 'Chargement...',
-      }))
-      setData(allocationData)
-
-      // Fetch stock info if not already available
-      const symbols = res.data.allocation.map((item) => item.symbol)
-
+      setData(res.data.allocation)
       setLoading(false)
     } catch (e) {
       console.error('error api:', e)
@@ -108,27 +98,29 @@ export default function PortfolioView() {
   }
 
   useEffect(() => {
+    console.log('fetchData called from page', id)
     fetchData(id)
   }, [id])
 
-  useEffect(() => {
-    const handleResize = () => {
-      const isMobile = window.innerWidth < 768
-      setColumnVisibility({
-        symbol: true,
-        weight: true,
-        last: true,
-        qty: true,
-        bep: !isMobile,
-        total_value: true,
-        retour: true,
-      })
-    }
+  // useEffect(() => {
+  //   console.log("resize event");
+  //   const handleResize = () => {
+  //     const isMobile = window.innerWidth < 768
+  //     setColumnVisibility({
+  //       symbol: true,
+  //       weight: true,
+  //       last: true,
+  //       qty: true,
+  //       bep: !isMobile,
+  //       total_value: true,
+  //       retour: true,
+  //     })
+  //   }
 
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+  //   handleResize()
+  //   window.addEventListener('resize', handleResize)
+  //   return () => window.removeEventListener('resize', handleResize)
+  // }, [])
 
   const table = useReactTable({
     data,

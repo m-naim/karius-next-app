@@ -2,18 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import PortfolioLayout from 'app/app/portfolios/[id]/PortfolioLayout'
-import React, { useState, useEffect } from 'react'
-
-import {
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from '@tanstack/react-table'
-import { columns } from './columns'
+import React, { useState, useEffect, Children } from 'react'
 
 import { get } from '@/services/portfolioService'
 
@@ -30,12 +19,8 @@ export default function PortfolioView({ children }) {
   const [own, setOwn] = React.useState(false)
   const [followed, setFollowed] = React.useState(false)
 
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
-
   useEffect(() => {
+    console.log('fetch from layout', id)
     const fetchData = async (id) => {
       try {
         const res = await get(id as string)
@@ -50,24 +35,6 @@ export default function PortfolioView({ children }) {
     }
     fetchData(id)
   }, [id])
-
-  const table = useReactTable({
-    data,
-    columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-    },
-  })
 
   return (
     <div>

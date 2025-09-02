@@ -8,7 +8,7 @@ interface AllocationPieProps {
   data: Array<{
     symbol: string
     weight: number
-    total_value: number
+    totalValue: number
     sector?: string
     industry?: string
   }>
@@ -31,10 +31,12 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
     if (type === 'assets') {
       return data.map((item) => ({
         name: item.symbol,
-        value: item.total_value,
+        value: item.totalValue,
         weight: item.weight * 100,
       }))
     }
+
+    console.log(data)
 
     const groupedData = data.reduce(
       (acc, item) => {
@@ -47,12 +49,13 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
             weight: 0,
           }
         }
-        acc[key].value += item.total_value
+        acc[key].value += item.totalValue
         acc[key].weight += item.weight * 100
         return acc
       },
       {} as Record<string, { name: string; value: number; weight: number }>
     )
+    console.log('grouped', groupedData)
 
     return Object.values(groupedData).sort((a, b) => b.value - a.value)
   }

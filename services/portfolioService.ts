@@ -22,6 +22,10 @@ export function get(portfolioID = 'curent') {
   return http.get(`${host}/api/v1/portfolios/${portfolioID}`)
 }
 
+export function getTransactions(portfolioID = 'curent') {
+  return http.get(`${host}/api/v1/portfolios/${portfolioID}/transactions`)
+}
+
 export function getData(portfolioName = 'curent') {
   return http.get(`${host}/api/v1/portfolios/${portfolioName}`)
 }

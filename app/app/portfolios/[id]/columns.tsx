@@ -39,7 +39,7 @@ const getInitials = (str: string) => {
 export interface PortfolioSecurity {
   symbol: string
   weight: number
-  total_value: number
+  totalValue: number
   last: number
   qty: number
   bep: number
@@ -113,7 +113,7 @@ export const columns = [
           <div className="flex flex-col">
             <span className="font-medium">{symbol}</span>
             <span className="text-xs text-muted-foreground">
-              {row.original.sector || 'Non disponible'}
+              {row.original.shortname || 'Non disponible'}
             </span>
           </div>
         </div>
@@ -123,7 +123,7 @@ export const columns = [
   },
   {
     accessorKey: 'weight',
-    header: SortingButton('Poid'),
+    header: SortingButton('Poid', false),
     cell: ({ row }) => (
       <div className="font-medium">{round10((row.getValue('weight') as number) * 100, -1)}%</div>
     ),
@@ -131,7 +131,7 @@ export const columns = [
   },
   {
     accessorKey: 'last',
-    header: SortingButton('Cours'),
+    header: SortingButton('Cours', false),
     cell: ({ row }) => {
       const last = parseFloat(row.getValue('last'))
       const formatted = new Intl.NumberFormat('fr-FR', {
@@ -158,7 +158,7 @@ export const columns = [
   },
   {
     accessorKey: 'totalValue',
-    header: 'Total',
+    header: SortingButton('Total', false),
     cell: ({ row }) => (
       <div className="font-medium">
         {round10(row.getValue('totalValue'), -2).toLocaleString()} €

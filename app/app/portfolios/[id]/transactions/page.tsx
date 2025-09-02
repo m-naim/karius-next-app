@@ -15,7 +15,12 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { deleteTransaction, get, modifyTransactionApi } from '@/services/portfolioService'
+import {
+  deleteTransaction,
+  get,
+  getTransactions,
+  modifyTransactionApi,
+} from '@/services/portfolioService'
 import { columns } from './columns'
 import { MovementsColumns } from './movementsColumns'
 
@@ -46,10 +51,10 @@ function PageTransactions() {
   useEffect(() => {
     const fetchData = async (id) => {
       try {
-        const res = await get(id as string)
+        const res = await getTransactions(id as string)
         setOwn(res.own)
-        setData(res.data.transactions)
-        setMovements(res.data.cash_flow)
+        setData(res.transactions)
+        setMovements(res.cash_flow)
       } catch (e) {
         console.error('error api:' + e)
       }
