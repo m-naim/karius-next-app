@@ -5,7 +5,8 @@
   "scripts": {
     "start": "next dev",
     "dev": "cross-env next dev",
-    "build": "cross-env INIT_CWD=$PWD next build && cross-env NODE_OPTIONS='--experimental-json-modules' node ./scripts/postbuild.mjs",
+    "build": "cross-env INIT_CWD=$PWD next build",
+    "postbuild": "cross-env NODE_OPTIONS='--experimental-json-modules' node ./scripts/postbuild.mjs",
     "localbuild": "cross-env INIT_CWD=%CD% next build && cross-env NODE_OPTIONS='--experimental-json-modules' node ./scripts/postbuild.mjs",
     "build:content": "contentlayer2 build",
     "serve": "next start",
