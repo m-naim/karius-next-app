@@ -47,7 +47,7 @@
     "date-fns": "^3.5.0",
     "esbuild": "0.18.11",
     "framer-motion": "^12.6.2",
-    "github-slugger": "^1.4.0",
+    "github-slugger": "^2.0.0",
     "google-palette": "^1.1.1",
     "gray-matter": "^4.0.2",
     "image-size": "1.0.0",

@@ -5435,7 +5435,7 @@ __metadata:
     eslint-config-prettier: ^8.8.0
     eslint-plugin-prettier: ^5.0.0
     framer-motion: ^12.6.2
-    github-slugger: ^1.4.0
+    github-slugger: ^2.0.0
     google-palette: ^1.1.1
     gray-matter: ^4.0.2
     husky: ^8.0.0
