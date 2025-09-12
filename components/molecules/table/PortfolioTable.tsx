@@ -35,7 +35,7 @@ const PortfolioTable = ({ table, colSpan }: PortfolioTableProps) => {
       <ScrollArea className="w-full whitespace-nowrap rounded-md border">
         <div className="relative w-full overflow-auto">
           <Table>
-            <TableHeader className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <TableHeader className="z-100 sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
@@ -47,7 +47,7 @@ const PortfolioTable = ({ table, colSpan }: PortfolioTableProps) => {
                         key={header.id}
                         className={cn(
                           'whitespace-nowrap py-3',
-                          isMobile && header.id === 'symbol' && 'w-[35%]',
+                          isMobile && header.id === 'symbol' && 'w-[25%]',
                           isMobile && header.id === 'quantity' && 'w-[15%]',
                           isMobile && header.id === 'averagePrice' && 'w-[20%]',
                           isMobile && header.id === 'currentValue' && 'w-[20%]',

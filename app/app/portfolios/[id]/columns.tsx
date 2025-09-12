@@ -103,7 +103,7 @@ export const columns = [
       const initials = getInitials(symbol)
 
       return (
-        <div className="flex max-w-20 items-center gap-3 overflow-hidden md:max-w-full">
+        <div className="flex max-w-20 items-center gap-3 overflow-hidden md:max-w-40">
           <div
             className="hidden h-10 w-10 items-center justify-center rounded-full text-sm font-medium text-white md:flex"
             style={{ backgroundColor: color }}
@@ -112,8 +112,8 @@ export const columns = [
           </div>
           <div className="flex flex-col">
             <span className="font-medium">{symbol}</span>
-            <span className="text-xs text-muted-foreground">
-              {row.original.shortname || 'Non disponible'}
+            <span className="max-w-20 overflow-ellipsis text-xs text-muted-foreground">
+              {row.original.shortname || ''}
             </span>
           </div>
         </div>
@@ -150,11 +150,15 @@ export const columns = [
   },
   {
     accessorKey: 'bep',
-    header: 'BEP',
-    cell: ({ row }) => (
-      <div className="font-medium">{round10(row.getValue('bep'), -2).toLocaleString()} €</div>
-    ),
-    enableHiding: true,
+    header: 'PRU',
+    cell: ({ row }) => {
+      console.log(' row', row)
+      return (
+        // <div className="font-medium">hello €</div>
+        <div className="font-medium">{round10(row.getValue('bep'), -2).toLocaleString()} €</div>
+      )
+    },
+    enableHiding: false,
   },
   {
     accessorKey: 'totalValue',

@@ -18,7 +18,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FileScan, PlusIcon, WalletMinimal } from 'lucide-react'
 import TransactionDialogue from './transactionDialogue'
 import Link from 'next/link'
-import { AddTransaction, get, addMouvementService } from '@/services/portfolioService'
+import {
+  AddTransaction,
+  get,
+  addMouvementService,
+  initPortfolioSSE,
+} from '@/services/portfolioService'
 import { v4 as uuidv4 } from 'uuid'
 import StatsCard from './statsCard'
 import AccountsMouvements from './accountsMouvements'
@@ -60,7 +65,7 @@ export default function PortfolioView() {
     weight: true,
     last: true,
     qty: true,
-    bep: false,
+    bep: true,
     total_value: true,
     retour: true,
   })
@@ -93,37 +98,19 @@ export default function PortfolioView() {
 
   useEffect(() => {
     fetchData(id)
-    const es = initSSE()
+    const es = initPortfolioSSE(id)
     eventSource = es
-
-    return () => {
-      console.log('Closing SSE connection...')
-      eventSource?.close()
-    }
-  }, [id])
-
-  const initSSE = (url: string = 'http://localhost:8080/api/v1') => {
-    let fullUrl = `${url}/${id}/stream`
-    const eventSource = new EventSource(fullUrl, { withCredentials: false })
-    console.log(id)
-
-    eventSource.onerror = (error) => {
-      console.error('SSE error:', error)
-      eventSource?.close()
-    }
-
     eventSource.addEventListener('portfolio', (event) => {
       const eventData = JSON.parse(event.data)
       console.log('New message event:', eventData.last_perfs_update)
       setPortfolio(eventData)
       setData(eventData.allocation)
     })
-
-    eventSource.onopen = () => {
-      console.log('SSE connection opened.')
+    return () => {
+      console.log('Closing SSE connection...')
+      eventSource?.close()
     }
-    return eventSource
-  }
+  }, [id])
 
   const table = useReactTable({
     data,

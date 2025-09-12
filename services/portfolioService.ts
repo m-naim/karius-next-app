@@ -128,3 +128,19 @@ export function getMetrics(id) {
 export function getStockInfo(symbol: string) {
   return http.get(`${host}/api/v1/stocks/${symbol}/info`)
 }
+
+export function initPortfolioSSE(id: string) {
+  const fullUrl = `${host}/api/v1/${id}/stream`
+  const eventSource = new EventSource(fullUrl, { withCredentials: false })
+  console.log(id)
+
+  eventSource.onerror = (error) => {
+    console.error('SSE error:', error)
+    eventSource?.close()
+  }
+
+  eventSource.onopen = () => {
+    console.log('SSE connection opened.')
+  }
+  return eventSource
+}
