@@ -36,8 +36,6 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
       }))
     }
 
-    console.log(data)
-
     const groupedData = data.reduce(
       (acc, item) => {
         const key =
@@ -55,8 +53,6 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
       },
       {} as Record<string, { name: string; value: number; weight: number }>
     )
-    console.log('grouped', groupedData)
-
     return Object.values(groupedData).sort((a, b) => b.value - a.value)
   }
 

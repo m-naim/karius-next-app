@@ -28,6 +28,5 @@ const config = {
     },
   },
 }
-console.log(process.env.ENV || process.env.NODE_ENV || 'dev')
 export const env = process.env.ENV || process.env.NODE_ENV || 'dev'
 export default config[env]

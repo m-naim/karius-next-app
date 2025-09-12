@@ -4,7 +4,7 @@ async function CheckError(response) {
       const data = await response.json()
       return data
     } catch (e) {
-      console.log(e)
+      console.error(e)
       return response
     }
   }

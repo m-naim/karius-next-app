@@ -132,15 +132,14 @@ export function getStockInfo(symbol: string) {
 export function initPortfolioSSE(id: string) {
   const fullUrl = `${host}/api/v1/${id}/stream`
   const eventSource = new EventSource(fullUrl, { withCredentials: false })
-  console.log(id)
 
   eventSource.onerror = (error) => {
     console.error('SSE error:', error)
     eventSource?.close()
   }
 
-  eventSource.onopen = () => {
-    console.log('SSE connection opened.')
-  }
+  // eventSource.onopen = () => {
+  //   console.log('SSE connection opened.')
+  // }
   return eventSource
 }

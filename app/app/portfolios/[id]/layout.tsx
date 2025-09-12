@@ -14,7 +14,6 @@ export default function PortfolioView({ children }) {
   const [name, setName] = React.useState('Portefeuille')
 
   useEffect(() => {
-    console.log('fetch from layout', id)
     const fetchData = async (id) => {
       try {
         const res = await getMetadata(id as string)
