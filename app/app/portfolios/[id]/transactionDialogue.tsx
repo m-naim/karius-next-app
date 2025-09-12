@@ -77,8 +77,6 @@ function TransactionDialogue({
   }, 300)
 
   const updatePriceOnChange = (setter) => {
-    console.log('updatePriceOnChange', date, ticker)
-
     if (date && ticker) {
       onDataChange(date, ticker)
     }
@@ -87,7 +85,6 @@ function TransactionDialogue({
 
   const onDateChange = (e) => {
     const date = e.target.value
-    console.log('onDateChange', date)
     updatePriceOnChange(setDate)(date)
   }
 
@@ -95,7 +92,6 @@ function TransactionDialogue({
     e.preventDefault()
     setExecuting(true)
     const res = await callback()
-    console.log('res closingAction', res)
     setExecuting(false)
     setOpen(false)
   }

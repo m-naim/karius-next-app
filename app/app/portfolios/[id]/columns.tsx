@@ -152,9 +152,7 @@ export const columns = [
     accessorKey: 'bep',
     header: 'PRU',
     cell: ({ row }) => {
-      console.log(' row', row)
       return (
-        // <div className="font-medium">hello €</div>
         <div className="font-medium">{round10(row.getValue('bep'), -2).toLocaleString()} €</div>
       )
     },

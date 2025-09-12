@@ -90,7 +90,6 @@ const item = (security: Security, setTicker, setOpen) => (
     key={security.symbol}
     value={security.symbol}
     onSelect={(value) => {
-      console.log('onSelect item', value)
       setTicker(value.toUpperCase())
       setOpen(false)
     }}

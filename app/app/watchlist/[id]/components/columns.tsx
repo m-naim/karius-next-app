@@ -78,7 +78,6 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
             chg = -10000
           }
         }
-        console.log('chg', chg)
         return chg
       },
       id: 'variation',
