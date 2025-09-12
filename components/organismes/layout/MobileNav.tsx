@@ -37,7 +37,7 @@ const MobileNav = () => {
           </button>
         </div>
 
-        <nav className="fixed mt-8 flex h-full w-full flex-col items-center gap-4 px-12">
+        <nav className="fixed z-0 mt-8 flex h-full w-full flex-col items-center gap-4 px-12">
           <Button
             asChild
             variant={'link'}

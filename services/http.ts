@@ -1,5 +1,3 @@
-import { getLocalStorageItem } from '@/lib/utils'
-
 async function CheckError(response) {
   if (response.status >= 200 && response.status <= 299) {
     try {
@@ -38,7 +36,7 @@ function post(path, body) {
   }).then(CheckError)
 }
 
-function get(path) {
+function get(path, sse = false) {
   return fetch(`${path}`, {
     credentials: 'omit',
     headers: {

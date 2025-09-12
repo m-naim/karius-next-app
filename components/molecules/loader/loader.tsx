@@ -2,7 +2,7 @@ import React from 'react'
 import 'css/loader.css'
 function Loader() {
   return (
-    <div className="flex w-full justify-center">
+    <div className="flex min-h-screen w-full justify-center">
       <div className="content">
         <div className="planet">
           <div className="ring"></div>

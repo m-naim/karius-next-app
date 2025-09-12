@@ -109,14 +109,14 @@ function PageTransactions() {
         </Card>
       </SectionContainer>
 
-      <SectionContainer className="w-full">
-        <Card className="w-full  p-4">
-          <CardTitle>Transactions</CardTitle>
-          <CardContent>
+      <div className="m-0 w-full p-0">
+        <Card className="w-full  p-0">
+          <CardTitle className="p-1 text-base">Transactions</CardTitle>
+          <CardContent className="p-0">
             <SimpleDataTable table={trasactionsTable} colSpan={columns.length} />
           </CardContent>
         </Card>
-      </SectionContainer>
+      </div>
     </div>
   )
 }

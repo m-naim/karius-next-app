@@ -103,9 +103,9 @@ export const columns = [
       const initials = getInitials(symbol)
 
       return (
-        <div className="flex items-center gap-3">
+        <div className="flex max-w-20 items-center gap-3 overflow-hidden md:max-w-full">
           <div
-            className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium text-white"
+            className="hidden h-10 w-10 items-center justify-center rounded-full text-sm font-medium text-white md:flex"
             style={{ backgroundColor: color }}
           >
             {initials}
@@ -127,7 +127,7 @@ export const columns = [
     cell: ({ row }) => (
       <div className="font-medium">{round10((row.getValue('weight') as number) * 100, -1)}%</div>
     ),
-    enableHiding: true,
+    enableHiding: false,
   },
   {
     accessorKey: 'last',
@@ -184,6 +184,6 @@ export const columns = [
         />
       </div>
     ),
-    enableHiding: true,
+    enableHiding: false,
   },
 ]

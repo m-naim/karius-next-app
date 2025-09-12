@@ -19,21 +19,10 @@ interface NavBarProps {
 
 export function NavBar({ items, className }: NavBarProps) {
   const [activeTab, setActiveTab] = useState(items[0].name)
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
 
   return (
-    <div className={cn('fixed bottom-0 left-0 right-0 z-50 w-full', className)}>
-      <div className="flex w-full items-center justify-around border-t border-border bg-background/5 py-2 backdrop-blur-lg">
+    <div className={cn('z-70 fixed bottom-0 left-0 right-0 w-full', className)}>
+      <div className="flex w-full items-center justify-around border-t border-border bg-background py-2">
         {items.map((item) => {
           const Icon = item.icon
           const isActive = activeTab === item.name

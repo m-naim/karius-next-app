@@ -25,16 +25,24 @@ import {
 import Link from 'next/link'
 import { NavBar } from '@/components/ui/tubelight-navbar'
 
-const PortfolioLayout = ({ pftData, setPftData, id, children, isOwn, followed, setFollowed }) => {
+const PortfolioLayout = ({
+  id,
+  children,
+  isOwn,
+  followed,
+  setFollowed,
+  followersSize,
+  setFollowersSize,
+  name,
+}) => {
   const router = useRouter()
   const pathname = usePathname()
 
   const handleFollowClick = async () => {
     try {
-      const res = await follow(pftData.id)
+      const res = await follow(id)
       setFollowed(res.followed)
-      pftData.followersSize = res.followersSize
-      setPftData(pftData)
+      setFollowersSize(res.followersSize)
     } catch {
       console.error('error')
     }
@@ -42,7 +50,7 @@ const PortfolioLayout = ({ pftData, setPftData, id, children, isOwn, followed, s
 
   const handleDeletePortfolio = async () => {
     try {
-      await deletePortfolio(pftData.id)
+      await deletePortfolio(id)
       router.push('/app/portfolios')
     } catch (e) {
       console.error('error', e)
@@ -61,8 +69,8 @@ const PortfolioLayout = ({ pftData, setPftData, id, children, isOwn, followed, s
   ]
 
   return (
-    <>
-      <div className="border-b py-4">
+    <div>
+      <div className="border-b py-1 md:py-4">
         <SectionContainer>
           <div className="flex w-full flex-col items-center">
             <div className="flex w-full items-center justify-between">
@@ -72,7 +80,6 @@ const PortfolioLayout = ({ pftData, setPftData, id, children, isOwn, followed, s
                     <ArrowLeft />
                   </Button>
                 </Link>
-                <h1 className="mx-4 text-xl capitalize">{pftData.name}</h1>
               </div>
 
               <div className="flex items-center gap-4">
@@ -103,11 +110,12 @@ const PortfolioLayout = ({ pftData, setPftData, id, children, isOwn, followed, s
                       strokeWidth={0}
                     />
                     <span className="w-10 text-foreground">{followed ? 'Suivis' : 'Suivre'}</span>
-                    <span className="text-foreground"> {pftData.followersSize}</span>
+                    <span className="text-foreground"> {followersSize}</span>
                   </Button>
                 )}
               </div>
             </div>
+            <h1 className="pb-1 pt-0 text-xl capitalize md:mx-4">{name}</h1>
           </div>
         </SectionContainer>
       </div>
@@ -163,7 +171,7 @@ const PortfolioLayout = ({ pftData, setPftData, id, children, isOwn, followed, s
       </SectionContainer>
 
       <NavBar items={navItems} className="md:hidden" />
-    </>
+    </div>
   )
 }
 

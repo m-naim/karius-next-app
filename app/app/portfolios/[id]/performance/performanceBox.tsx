@@ -142,24 +142,50 @@ export default function PerformanceBox({ id, selectedBenchmarks }: PerformanceBo
             <h2 className="text-lg font-semibold text-gray-900">{selectedChart?.label}</h2>
             <p className="text-sm text-gray-500">{selectedChart?.description}</p>
           </div>
+        </div>
 
-          <div className="flex items-center gap-1 rounded-lg border bg-white p-1">
-            {Object.keys(periodsConvert).map((p) => (
-              <button
-                key={p}
-                onClick={() => handlePeriodChange(p)}
+        <Tabs value={chartType} onValueChange={setChartType} className="w-full">
+          <TabsList className="grid h-auto w-full grid-cols-2 bg-transparent p-0 sm:grid-cols-3 md:grid-cols-5">
+            {chartTypes.map((chart) => (
+              <TabsTrigger
+                key={chart.id}
+                value={chart.id}
                 className={cn(
-                  'rounded px-2.5 py-1.5 text-sm transition-colors',
-                  period === p
-                    ? 'bg-gray-100 font-medium text-gray-900'
-                    : 'text-gray-500 hover:text-gray-900'
+                  'relative flex items-center justify-start gap-2 border-b border-r bg-white last:border-r-0',
+                  'h-full min-h-[3rem] flex-row px-3 py-2',
+                  'sm:min-h-[3.5rem] md:min-h-[3.5rem] md:justify-center',
+                  'transition-all duration-200 hover:bg-gray-50/80',
+                  'data-[state=active]:bg-white data-[state=active]:font-medium',
+                  'data-[state=active]:before:absolute data-[state=active]:before:left-0 data-[state=active]:before:h-full data-[state=active]:before:w-0.5 data-[state=active]:before:bg-primary md:data-[state=active]:before:left-0 md:data-[state=active]:before:top-0 md:data-[state=active]:before:h-0.5 md:data-[state=active]:before:w-full',
+                  chart.primary ? 'font-medium' : 'font-normal'
                 )}
               >
-                {p}
-              </button>
+                <div className="flex w-full items-center gap-2">
+                  <chart.icon
+                    className={cn(
+                      'h-4 w-4 flex-shrink-0 md:h-5 md:w-5',
+                      'text-gray-500',
+                      'data-[state=active]:text-primary'
+                    )}
+                  />
+                  <span
+                    className={cn(
+                      'text-xs leading-tight md:text-sm',
+                      'text-gray-600 group-hover:text-gray-900',
+                      'data-[state=active]:text-gray-900',
+                      'line-clamp-2 md:line-clamp-1'
+                    )}
+                  >
+                    {chart.label}
+                  </span>
+                </div>
+                {chart.primary && (
+                  <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-primary md:-top-1 md:right-2 md:h-2 md:w-2" />
+                )}
+              </TabsTrigger>
             ))}
-          </div>
-        </div>
+          </TabsList>
+        </Tabs>
       </CardHeader>
 
       <CardContent>
@@ -225,48 +251,22 @@ export default function PerformanceBox({ id, selectedBenchmarks }: PerformanceBo
       </CardContent>
 
       <CardFooter className="border-t bg-gray-50/50 p-0">
-        <Tabs value={chartType} onValueChange={setChartType} className="w-full">
-          <TabsList className="grid h-auto w-full grid-cols-2 bg-transparent p-0 sm:grid-cols-3 md:grid-cols-5">
-            {chartTypes.map((chart) => (
-              <TabsTrigger
-                key={chart.id}
-                value={chart.id}
-                className={cn(
-                  'relative flex items-center justify-start gap-2 border-b border-r bg-white last:border-r-0',
-                  'h-full min-h-[3rem] flex-row px-3 py-2',
-                  'sm:min-h-[3.5rem] md:min-h-[3.5rem] md:justify-center',
-                  'transition-all duration-200 hover:bg-gray-50/80',
-                  'data-[state=active]:bg-white data-[state=active]:font-medium',
-                  'data-[state=active]:before:absolute data-[state=active]:before:left-0 data-[state=active]:before:h-full data-[state=active]:before:w-0.5 data-[state=active]:before:bg-primary md:data-[state=active]:before:left-0 md:data-[state=active]:before:top-0 md:data-[state=active]:before:h-0.5 md:data-[state=active]:before:w-full',
-                  chart.primary ? 'font-medium' : 'font-normal'
-                )}
-              >
-                <div className="flex w-full items-center gap-2">
-                  <chart.icon
-                    className={cn(
-                      'h-4 w-4 flex-shrink-0 md:h-5 md:w-5',
-                      'text-gray-500',
-                      'data-[state=active]:text-primary'
-                    )}
-                  />
-                  <span
-                    className={cn(
-                      'text-xs leading-tight md:text-sm',
-                      'text-gray-600 group-hover:text-gray-900',
-                      'data-[state=active]:text-gray-900',
-                      'line-clamp-2 md:line-clamp-1'
-                    )}
-                  >
-                    {chart.label}
-                  </span>
-                </div>
-                {chart.primary && (
-                  <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-primary md:-top-1 md:right-2 md:h-2 md:w-2" />
-                )}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        <div className="flex items-center gap-1 rounded-lg border bg-white p-1">
+          {Object.keys(periodsConvert).map((p) => (
+            <button
+              key={p}
+              onClick={() => handlePeriodChange(p)}
+              className={cn(
+                'rounded px-2.5 py-1.5 text-sm transition-colors',
+                period === p
+                  ? 'bg-gray-100 font-medium text-gray-900'
+                  : 'text-gray-500 hover:text-gray-900'
+              )}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
       </CardFooter>
     </Card>
   )

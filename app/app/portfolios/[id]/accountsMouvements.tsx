@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -13,8 +13,6 @@ import MultiSelect from '@/components/molecules/layouts/MultiSelect'
 import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/DatePicker'
 import { DialogClose } from '@radix-ui/react-dialog'
-import { v4 as uuidv4 } from 'uuid'
-import { AddTransaction } from '@/services/portfolioService'
 
 const defaultData = {
   id: '',

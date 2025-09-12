@@ -3,7 +3,6 @@
 import { usePathname } from 'next/navigation'
 import React, { useState, useEffect, useMemo } from 'react'
 import { useToast } from '@/hooks/use-toast'
-import { debounce } from 'lodash'
 import {
   ColumnFiltersState,
   SortingState,
@@ -15,13 +14,11 @@ import {
 } from '@tanstack/react-table'
 import { columns, PortfolioSecurity } from './columns'
 import { Button } from '@/components/ui/button'
-import type { VariantProps } from 'class-variance-authority'
-import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { FileScan, PlusIcon, WalletMinimal, RefreshCw } from 'lucide-react'
+import { FileScan, PlusIcon, WalletMinimal } from 'lucide-react'
 import TransactionDialogue from './transactionDialogue'
 import Link from 'next/link'
-import { AddTransaction, get, addMouvementService, getStockInfo } from '@/services/portfolioService'
+import { AddTransaction, get, addMouvementService } from '@/services/portfolioService'
 import { v4 as uuidv4 } from 'uuid'
 import StatsCard from './statsCard'
 import AccountsMouvements from './accountsMouvements'
@@ -29,13 +26,6 @@ import Loader from '@/components/molecules/loader/loader'
 import { round10 } from '@/lib/decimalAjustement'
 import AllocationPie from './allocationPie'
 import PortfolioTable from '@/components/molecules/table/PortfolioTable'
-
-type ButtonVariantProps = VariantProps<typeof buttonVariants>
-
-interface StockInfo {
-  sector: string
-  industry: string
-}
 
 interface AllocationItem {
   symbol: string
@@ -55,7 +45,6 @@ export default function PortfolioView() {
   const [data, setData] = React.useState<PortfolioSecurity[]>([])
   const [loading, setLoading] = React.useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
-
   const [portfolio, setPortfolio] = useState({
     _id: '',
     allocation: [],
@@ -64,7 +53,6 @@ export default function PortfolioView() {
     totalValue: 0,
   })
   const [own, setOwn] = React.useState(false)
-
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
@@ -77,6 +65,7 @@ export default function PortfolioView() {
     retour: true,
   })
   const [rowSelection, setRowSelection] = React.useState({})
+  let eventSource: EventSource | null = null
 
   const fetchData = async (id: string) => {
     try {
@@ -85,6 +74,11 @@ export default function PortfolioView() {
       setPortfolio(res.data)
       setData(res.data.allocation)
       setLoading(false)
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de charger les données du portfolio',
+        variant: 'destructive',
+      })
     } catch (e) {
       console.error('error api:', e)
       setPortfolio({ _id: '', allocation: [], transactions: [], cashValue: 0, totalValue: 0 })
@@ -98,29 +92,38 @@ export default function PortfolioView() {
   }
 
   useEffect(() => {
-    console.log('fetchData called from page', id)
     fetchData(id)
+    const es = initSSE()
+    eventSource = es
+
+    return () => {
+      console.log('Closing SSE connection...')
+      eventSource?.close()
+    }
   }, [id])
 
-  // useEffect(() => {
-  //   console.log("resize event");
-  //   const handleResize = () => {
-  //     const isMobile = window.innerWidth < 768
-  //     setColumnVisibility({
-  //       symbol: true,
-  //       weight: true,
-  //       last: true,
-  //       qty: true,
-  //       bep: !isMobile,
-  //       total_value: true,
-  //       retour: true,
-  //     })
-  //   }
+  const initSSE = (url: string = 'http://localhost:8080/api/v1') => {
+    let fullUrl = `${url}/${id}/stream`
+    const eventSource = new EventSource(fullUrl, { withCredentials: false })
+    console.log(id)
 
-  //   handleResize()
-  //   window.addEventListener('resize', handleResize)
-  //   return () => window.removeEventListener('resize', handleResize)
-  // }, [])
+    eventSource.onerror = (error) => {
+      console.error('SSE error:', error)
+      eventSource?.close()
+    }
+
+    eventSource.addEventListener('portfolio', (event) => {
+      const eventData = JSON.parse(event.data)
+      console.log('New message event:', eventData.last_perfs_update)
+      setPortfolio(eventData)
+      setData(eventData.allocation)
+    })
+
+    eventSource.onopen = () => {
+      console.log('SSE connection opened.')
+    }
+    return eventSource
+  }
 
   const table = useReactTable({
     data,
@@ -202,15 +205,6 @@ export default function PortfolioView() {
                 <span className="text-xs text-muted-foreground">Aucun investissement</span>
               )}
             </CardTitle>
-            {/* <Button
-              variant="ghost"
-              size="icon"
-              onClick={refreshData}
-              disabled={isRefreshing}
-              className="h-6 w-6"
-            >
-              <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-            </Button> */}
           </div>
           {own && (
             <div className="mt-1 flex flex-wrap items-center gap-1">
@@ -290,10 +284,10 @@ export default function PortfolioView() {
                 <PortfolioTable table={table} colSpan={columns.length} />
               </div>
               <div className="mt-1 grid grid-cols-4 px-2 py-1">
-                <div className="text-sm">Espèces</div>
-                <div className="pl-8 text-sm font-medium">
+                <div className="pl-4  text-sm">Espèces</div>
+                <span className="pl-8 text-sm font-medium">
                   {round10(portfolio.cashValue, -2).toLocaleString()} €
-                </div>
+                </span>
               </div>
             </>
           )}

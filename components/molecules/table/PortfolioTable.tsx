@@ -28,7 +28,7 @@ const PortfolioTable = ({ table, colSpan }: PortfolioTableProps) => {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  const visibleColumns = ['symbol', 'last', 'retour']
+  const visibleColumns = ['symbol', 'last', 'weight', 'variationPercent']
 
   return (
     <div className="rounded-md">

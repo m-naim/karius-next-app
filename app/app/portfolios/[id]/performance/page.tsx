@@ -33,6 +33,9 @@ function PagePerformance() {
   return (
     <div className="flex flex-col gap-6">
       <SectionContainer className="w-full">
+        <PerformanceBox id={id} selectedBenchmarks={selectedBenchmarks} />
+      </SectionContainer>
+      <SectionContainer className="w-full">
         <Card className="p-4">
           <BenchmarkSelector
             selectedBenchmarks={selectedBenchmarks}
@@ -41,10 +44,6 @@ function PagePerformance() {
             error={error}
           />
         </Card>
-      </SectionContainer>
-
-      <SectionContainer className="w-full">
-        <PerformanceBox id={id} selectedBenchmarks={selectedBenchmarks} />
       </SectionContainer>
 
       <SectionContainer className="w-full">
