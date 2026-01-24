@@ -46,7 +46,6 @@ const SimpleDataTable = ({ table, colSpan }: SimpleDataTableProps) => {
     'date',
     'amount',
     'price',
-    'qty',
   ]
 
   return (

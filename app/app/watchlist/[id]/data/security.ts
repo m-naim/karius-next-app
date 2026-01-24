@@ -21,6 +21,7 @@ export interface security {
   marketCap: number
   score: score
   variations: Record<string, number>
+  relativePerformances: Record<string, number>
 }
 
 export interface score {

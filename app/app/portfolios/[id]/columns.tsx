@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Column } from '@tanstack/react-table'
+import { Column, sortingFns } from '@tanstack/react-table'
 import { ChevronUp, ArrowUpDown, ChevronDown, MoreHorizontal, ListFilterIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -93,99 +93,140 @@ const SortingButton = (title, activateFilter = true) => {
   }
 }
 
-export const columns = [
-  {
-    accessorKey: 'symbol',
-    header: SortingButton('Produit'),
-    cell: ({ row }) => {
-      const symbol = row.getValue('symbol') as string
-      const color = stringToColor(symbol)
-      const initials = getInitials(symbol)
+export const columns = (selectedPeriod): any[] => {
+  return [
+    {
+      accessorKey: 'symbol',
+      header: SortingButton('Produit x Quantité'),
+      cell: ({ row }) => {
+        const symbol = row.getValue('symbol') as string
+        const color = stringToColor(symbol)
+        const initials = getInitials(symbol)
 
-      return (
-        <div className="flex max-w-20 items-center gap-3 overflow-hidden md:max-w-40">
-          <div
-            className="hidden h-10 w-10 items-center justify-center rounded-full text-sm font-medium text-white md:flex"
-            style={{ backgroundColor: color }}
-          >
-            {initials}
+        return (
+          <div className="flex max-w-20 items-center gap-3 overflow-hidden md:max-w-40">
+            <div
+              className="hidden h-10 w-10 items-center justify-center rounded-full text-sm font-medium text-white md:flex"
+              style={{ backgroundColor: color }}
+            >
+              {initials}
+            </div>
+            <div className="flex flex-col">
+              <span className="font-medium">
+                {symbol} x {row.original.qty}
+              </span>
+              <span className="max-w-20 overflow-ellipsis text-xs text-muted-foreground">
+                {row.original.shortname || ''}
+              </span>
+            </div>
           </div>
-          <div className="flex flex-col">
-            <span className="font-medium">{symbol}</span>
-            <span className="max-w-20 overflow-ellipsis text-xs text-muted-foreground">
-              {row.original.shortname || ''}
-            </span>
+        )
+      },
+      enableHiding: false,
+    },
+    {
+      accessorKey: 'weight',
+      header: SortingButton('Poid / total', false),
+      cell: ({ row }) => (
+        <div className="flex flex-col">
+          <div className="font-medium">
+            {round10((row.getValue('weight') as number) * 100, -1)}%
           </div>
+          <div>{round10(row.original.totalValue, -2).toLocaleString()} €</div>
         </div>
-      )
+      ),
+      enableHiding: false,
     },
-    enableHiding: false,
-  },
-  {
-    accessorKey: 'weight',
-    header: SortingButton('Poid', false),
-    cell: ({ row }) => (
-      <div className="font-medium">{round10((row.getValue('weight') as number) * 100, -1)}%</div>
-    ),
-    enableHiding: false,
-  },
-  {
-    accessorKey: 'last',
-    header: SortingButton('Cours', false),
-    cell: ({ row }) => {
-      const last = parseFloat(row.getValue('last'))
-      const formatted = new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: 'EUR',
-      }).format(last)
-      return <div className="font-medium">{formatted}</div>
+    {
+      accessorKey: 'last',
+      header: SortingButton('Cours', false),
+      cell: ({ row }) => {
+        const last = parseFloat(row.getValue('last'))
+        const formatted = new Intl.NumberFormat('fr-FR', {
+          style: 'currency',
+          currency: 'EUR',
+        }).format(last)
+        return <div className="font-medium">{formatted}</div>
+      },
+      enableHiding: true,
     },
-    enableHiding: true,
-  },
-  {
-    accessorKey: 'qty',
-    header: 'Quantité',
-    cell: ({ row }) => <div className="font-medium">{row.getValue('qty')}</div>,
-    enableHiding: true,
-  },
-  {
-    accessorKey: 'bep',
-    header: 'PRU',
-    cell: ({ row }) => {
-      return (
-        <div className="font-medium">{round10(row.getValue('bep'), -2).toLocaleString()} €</div>
-      )
+
+    {
+      accessorKey: 'bep',
+      header: 'PRU',
+      cell: ({ row }) => {
+        return (
+          <div className="font-medium">{round10(row.getValue('bep'), -2).toLocaleString()} €</div>
+        )
+      },
+      enableHiding: false,
     },
-    enableHiding: false,
-  },
-  {
-    accessorKey: 'totalValue',
-    header: SortingButton('Total', false),
-    cell: ({ row }) => (
-      <div className="font-medium">
-        {round10(row.getValue('totalValue'), -2).toLocaleString()} €
-      </div>
-    ),
-    enableHiding: true,
-  },
-  {
-    accessorKey: 'variationPercent',
-    header: SortingButton('Retour', false),
-    cell: ({ row }) => (
-      <div className="flex flex-col gap-1">
-        <VariationContainer
-          value={row!.original.variation}
-          background={false}
-          entity="€"
-          className="m-0 p-0"
-        />
-        <VariationContainer
-          value={row!.original.variationPercent}
-          background={false}
-          className="m-0 p-0"
-        />
-      </div>
-    ),
-    enableHiding: false,
-  },
-]
+
+    {
+      accessorKey: 'variationPercent',
+      header: SortingButton('Retour', false),
+      cell: ({ row }) => (
+        <div className="flex flex-col gap-1">
+          <VariationContainer
+            value={row!.original.variation}
+            background={false}
+            entity="€"
+            className="m-0 p-0"
+          />
+          <VariationContainer
+            value={row!.original.variationPercent}
+            background={false}
+            className="m-0 p-0"
+          />
+        </div>
+      ),
+      enableHiding: false,
+    },
+    {
+      accessorFn: (row) => {
+        let chg = row.regularMarketChangePercent
+        if (selectedPeriod != '1d') {
+          const variations = row.variations as Record<string, number>
+          if (variations != null) {
+            chg = variations[selectedPeriod]
+          } else {
+            chg = -10000
+          }
+        }
+        return chg
+      },
+      id: 'variation',
+      header: SortingButton('Variation', false),
+      cell: ({ row }) => {
+        let chg = row.original.dailyVariationPercent
+
+        if (selectedPeriod != '1d') {
+          const variations = row.original?.variations as Record<string, number>
+          chg = variations != null ? variations[selectedPeriod] : NaN
+        }
+
+        return (
+          <div className="flex flex-col">
+            <VariationContainer
+              value={chg}
+              entity="%"
+              background={false}
+              className="m-0 p-0 py-0"
+            />
+            <VariationContainer
+              value={chg * row.original.weight}
+              entity="%"
+              background={false}
+              className="m-0 p-0 py-0"
+            />
+          </div>
+        )
+      },
+      sortingFns: (rowA, rowB, columnId) => {
+        const a = rowA.variations[selectedPeriod] * rowA.original.weight
+        const b = rowB.variations[selectedPeriod] * rowB.original.weight
+        return a - b
+      },
+    },
+  ]
+}

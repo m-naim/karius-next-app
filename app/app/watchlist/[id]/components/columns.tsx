@@ -34,6 +34,27 @@ const SortingButton = (title) => {
 export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<security, any>[] => {
   return [
     {
+      accessorKey: 'actions',
+      enableHiding: false,
+      cell: ({ row }) => {
+        const t = row.original.symbol.split('.')
+        let ticker = t[0]
+
+        if (t[1] == 'PA') ticker = 'xpar:' + ticker
+
+        return (
+          <div className="flex">
+            <a target="_blank" href={`https://www.gurufocus.com/stock/${ticker}`}>
+              guru
+            </a>
+            {owned && (
+              <Actions id={id} symbol={row.original.symbol} deleteRow={deleteRow}></Actions>
+            )}
+          </div>
+        )
+      },
+    },
+    {
       accessorKey: 'symbol',
       header: SortingButton('Action'),
       cell: ({ row }) => (
@@ -96,6 +117,34 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
       },
     },
     {
+      accessorFn: (row) => {
+        let chg = row.regularMarketChangePercent
+        if (selectedPeriod != '1d') {
+          const variations = row.relativePerformances as Record<string, number>
+          if (variations != null) {
+            chg = variations[selectedPeriod]
+          } else {
+            chg = -10000
+          }
+        }
+        return chg
+      },
+      id: 'relativePerformances',
+      header: SortingButton('relativePerformances'),
+      cell: ({ row }) => {
+        let chg = row.original.regularMarketChangePercent
+
+        if (selectedPeriod != '1d') {
+          const variations = row.original?.relativePerformances as Record<string, number>
+          chg = variations != null ? variations[selectedPeriod] : NaN
+        }
+
+        return (
+          <VariationContainer value={chg} entity="%" background={false} className="m-0 p-0 py-2" />
+        )
+      },
+    },
+    {
       accessorKey: 'sector',
       header: SortingButton('secteur'),
       cell: ({ row }) => <div className="lowercase">{row.getValue('sector')}</div>,
@@ -109,27 +158,6 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
       cell: ({ row }) => <div className="lowercase">{row.getValue('industry')}</div>,
       filterFn: (row, id, value) => {
         return value.includes(row.getValue(id))
-      },
-    },
-    {
-      accessorKey: 'actions',
-      enableHiding: false,
-      cell: ({ row }) => {
-        const t = row.original.symbol.split('.')
-        let ticker = t[0]
-
-        if (t[1] == 'PA') ticker = 'xpar:' + ticker
-
-        return (
-          <div className="flex">
-            <a target="_blank" href={`https://www.gurufocus.com/stock/${ticker}`}>
-              guru
-            </a>
-            {owned && (
-              <Actions id={id} symbol={row.original.symbol} deleteRow={deleteRow}></Actions>
-            )}
-          </div>
-        )
       },
     },
   ]

@@ -48,7 +48,6 @@ const PortfolioTable = ({ table, colSpan }: PortfolioTableProps) => {
                         className={cn(
                           'whitespace-nowrap py-3',
                           isMobile && header.id === 'symbol' && 'w-[25%]',
-                          isMobile && header.id === 'quantity' && 'w-[15%]',
                           isMobile && header.id === 'averagePrice' && 'w-[20%]',
                           isMobile && header.id === 'currentValue' && 'w-[20%]',
                           isMobile && header.id === 'performance' && 'w-[10%]',

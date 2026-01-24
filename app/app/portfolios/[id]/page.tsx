@@ -31,18 +31,7 @@ import Loader from '@/components/molecules/loader/loader'
 import { round10 } from '@/lib/decimalAjustement'
 import AllocationPie from './allocationPie'
 import PortfolioTable from '@/components/molecules/table/PortfolioTable'
-
-interface AllocationItem {
-  symbol: string
-  weight: number
-  total_value: number
-  last: number
-  qty: number
-  bep: number
-  retour: number
-  sector?: string
-  industry?: string
-}
+import { cn } from '@/lib/utils'
 
 export default function PortfolioView() {
   const id = usePathname().split('/')[3]
@@ -64,13 +53,17 @@ export default function PortfolioView() {
     symbol: true,
     weight: true,
     last: true,
-    qty: true,
     bep: true,
-    total_value: true,
     retour: true,
   })
   const [rowSelection, setRowSelection] = React.useState({})
+  const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
   let eventSource: EventSource | null = null
+
+  const useDynamicColumns = () =>
+    useMemo(() => {
+      return columns(selectedPeriod)
+    }, [selectedPeriod])
 
   const fetchData = async (id: string) => {
     try {
@@ -114,7 +107,7 @@ export default function PortfolioView() {
 
   const table = useReactTable({
     data,
-    columns,
+    columns: useDynamicColumns(),
     state: {
       sorting,
       columnFilters,
@@ -245,6 +238,22 @@ export default function PortfolioView() {
               </div>
             </div>
           )}
+          <div className="flex items-center gap-1 rounded-lg border bg-white p-1">
+            {['1w', '1m', '1y', '5y'].map((p) => (
+              <button
+                key={p}
+                onClick={() => setSelectedPeriod(p)}
+                className={cn(
+                  'rounded px-2.5 py-1.5 text-sm transition-colors',
+                  selectedPeriod === p
+                    ? 'bg-gray-100 font-medium text-gray-900'
+                    : 'text-gray-500 hover:text-gray-900'
+                )}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           {data.length === 0 ? (
