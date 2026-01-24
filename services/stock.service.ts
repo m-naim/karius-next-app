@@ -23,3 +23,8 @@ export function getProductsSymbols(products) {
 export function getStockPrixForDate(symbol, date) {
   return http.get(`${host}/api/v1/stocks/query/history?date=${date}&symbol=${symbol}`)
 }
+
+export function getStockHistory(symbols: string[], period: string) {
+  const encodedSymbols = symbols.map((symbol) => encodeURIComponent(symbol)).join(',')
+  return http.get(`${host}/api/v1/stocks/history?symbols=${encodedSymbols}&period=${period}`)
+}

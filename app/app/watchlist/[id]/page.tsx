@@ -30,6 +30,10 @@ import Loader from '@/components/molecules/loader/loader'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
+import { TableView } from './components/TableView'
+import { GraphsView } from './components/GraphsView'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+
 interface watchList {
   name: string
   securities: security[]
@@ -165,19 +169,26 @@ export default function Watchlist() {
 
       <div className="rounded-lg border bg-white">
         {!loading && data!.securities != null && (
-          <div className="w-full">
-            <TableContextHeader
-              table={table}
-              id={id}
-              owned={owned}
-              setData={setData}
-              selectedPeriod={selectedPeriod}
-              setSelectedPeriod={setSelectedPeriod}
-            />
-            <div className="overflow-auto">
-              <SimpleDataTable table={table} colSpan={columns.length} />
-            </div>
-          </div>
+          <Tabs defaultValue="tableau" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="tableau">Tableau</TabsTrigger>
+              <TabsTrigger value="graphes">Graphes</TabsTrigger>
+            </TabsList>
+            <TabsContent value="tableau">
+              <TableView
+                table={table}
+                id={id}
+                owned={owned}
+                setData={setData}
+                selectedPeriod={selectedPeriod}
+                setSelectedPeriod={setSelectedPeriod}
+                columns={columns(id, owned, deleteRow, selectedPeriod)}
+              />
+            </TabsContent>
+            <TabsContent value="graphes">
+              <GraphsView securities={data.securities} />
+            </TabsContent>
+          </Tabs>
         )}
       </div>
     </div>

@@ -17,6 +17,7 @@ const periods = [
   { label: '1 semaine', value: '1w' },
   { label: '1 mois', value: '1m' },
   { label: '3 mois', value: '3m' },
+  { label: '6 mois', value: '6m' },
   { label: '1 an', value: '1y' },
   { label: '5 ans', value: '5y' },
 ]

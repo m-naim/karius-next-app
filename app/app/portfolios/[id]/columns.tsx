@@ -15,16 +15,9 @@ import { cn } from '@/lib/utils'
 import { round10 } from '@/lib/decimalAjustement'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { tr } from 'date-fns/locale'
+import { stringToColor } from '@/lib/colors'
 
 // Fonction pour générer une couleur basée sur une chaîne
-export const stringToColor = (str: string) => {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash)
-  }
-  const hue = hash % 360
-  return `hsl(${hue}, 70%, 45%)`
-}
 
 // Fonction pour obtenir les initiales
 const getInitials = (str: string) => {
