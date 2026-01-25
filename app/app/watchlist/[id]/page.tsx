@@ -34,7 +34,10 @@ import { TableView } from './components/TableView'
 import { GraphsView } from './components/GraphsView'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
+import { WatchlistSelector } from './components/WatchlistSelector'
+
 interface watchList {
+  _id: string
   name: string
   securities: security[]
   updatedAt?: string
@@ -45,9 +48,11 @@ export default function Watchlist() {
   const router = useRouter()
 
   const [data, setData] = React.useState<watchList>({
+    _id: '',
     name: '',
     securities: [],
   })
+  const [allWatchlists, setAllWatchlists] = React.useState<watchList[]>([])
   const [owned, setOwned] = React.useState(false)
   const [loading, setloading] = React.useState(true)
 
@@ -99,9 +104,14 @@ export default function Watchlist() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await watchListService.get(id)
-      setData(response.watchlist)
-      setOwned(response.owned)
+      setloading(true)
+      const [listResponse, allResponse] = await Promise.all([
+        watchListService.get(id),
+        watchListService.getAll(),
+      ])
+      setData(listResponse.watchlist)
+      setOwned(listResponse.owned)
+      setAllWatchlists(allResponse)
       setloading(false)
     }
     fetchData()
@@ -140,31 +150,34 @@ export default function Watchlist() {
           </div>
         </div>
 
-        {owned && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 shrink-0 rounded-full hover:bg-gray-100"
-              >
-                <EllipsisVertical className="h-4 w-4" />
-                <span className="sr-only">Menu d'actions</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuGroup>
-                <DropdownMenuItem
-                  onClick={handleDeleteClick}
-                  className="text-red-600 hover:bg-red-50 hover:text-red-700"
+        <div className="flex items-center gap-2">
+          <WatchlistSelector watchlists={allWatchlists} currentId={id} />
+          {owned && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 shrink-0 rounded-full hover:bg-gray-100"
                 >
-                  <Trash2 className="mr-2 h-4 w-4" strokeWidth={1.5} />
-                  <span>Supprimer</span>
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+                  <EllipsisVertical className="h-4 w-4" />
+                  <span className="sr-only">Menu d'actions</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    onClick={handleDeleteClick}
+                    className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" strokeWidth={1.5} />
+                    <span>Supprimer</span>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
       </div>
 
       <div className="rounded-lg border bg-white">
