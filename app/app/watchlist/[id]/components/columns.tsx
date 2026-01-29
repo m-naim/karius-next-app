@@ -58,21 +58,30 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
       accessorKey: 'symbol',
       header: SortingButton('Action'),
       cell: ({ row }) => (
-        <div className="flex flex-col">
-          <span className="max-w-[100px] truncate text-sm lowercase text-black md:max-w-[180px]">
-            {row.original.longname}
-          </span>
-          <span className="text-xs text-muted-foreground">{row.original.symbol}</span>
+        <div className="flex gap-6">
+          <img
+            className="h-6 w-6"
+            src={`https://financialmodelingprep.com/image-stock/${row.original.symbol.toLocaleUpperCase()}.png`}
+            alt=""
+          />
+
+          <div className="flex flex-col">
+            <span className="max-w-[100px] truncate text-sm lowercase md:max-w-[180px]">
+              {row.original.longname}
+            </span>
+
+            <span className="text-xs text-muted-foreground">{row.original.symbol}</span>
+          </div>
         </div>
       ),
     },
 
-    {
-      accessorKey: 'score.global',
-      id: 'scoreGlobal',
-      header: SortingButton('score'),
-      cell: ({ row }) => <div className="lowercase">{row.getValue('scoreGlobal')}</div>,
-    },
+    // {
+    //   accessorKey: 'score.global',
+    //   id: 'scoreGlobal',
+    //   header: SortingButton('score'),
+    //   cell: ({ row }) => <div className="lowercase">{row.getValue('scoreGlobal')}</div>,
+    // },
     {
       accessorKey: 'regularMarketPrice',
       header: SortingButton('prix'),

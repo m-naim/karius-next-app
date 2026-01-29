@@ -41,8 +41,10 @@ export const TableContextHeader = ({
 }: TableContextHeaderProps) => {
   const addRow = async (symbol: string) => {
     const response = await watchListService.addStock(id, {
-      symbol: symbol,
-      date: new Date(),
+      security: {
+        symbol: symbol,
+        date: new Date(),
+      },
     })
     setData({
       name: response!.name,

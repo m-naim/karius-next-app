@@ -151,11 +151,11 @@ export default function PerformanceBox({ id, selectedBenchmarks }: PerformanceBo
                 key={chart.id}
                 value={chart.id}
                 className={cn(
-                  'relative flex items-center justify-start gap-2 border-b border-r bg-white last:border-r-0',
+                  'bg-dark relative flex items-center justify-start gap-2 border-b border-r last:border-r-0',
                   'h-full min-h-[3rem] flex-row px-3 py-2',
                   'sm:min-h-[3.5rem] md:min-h-[3.5rem] md:justify-center',
                   'transition-all duration-200 hover:bg-gray-50/80',
-                  'data-[state=active]:bg-white data-[state=active]:font-medium',
+                  'data-[state=active]:bg-dark data-[state=active]:font-medium',
                   'data-[state=active]:before:absolute data-[state=active]:before:left-0 data-[state=active]:before:h-full data-[state=active]:before:w-0.5 data-[state=active]:before:bg-primary md:data-[state=active]:before:left-0 md:data-[state=active]:before:top-0 md:data-[state=active]:before:h-0.5 md:data-[state=active]:before:w-full',
                   chart.primary ? 'font-medium' : 'font-normal'
                 )}
@@ -191,7 +191,7 @@ export default function PerformanceBox({ id, selectedBenchmarks }: PerformanceBo
       <CardContent>
         <div className="relative h-[300px] sm:h-[400px]">
           {loading ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/80">
+            <div className="bg-dark/80 absolute inset-0 flex items-center justify-center">
               <div className="text-sm text-gray-500">Chargement des données...</div>
             </div>
           ) : (
@@ -251,7 +251,7 @@ export default function PerformanceBox({ id, selectedBenchmarks }: PerformanceBo
       </CardContent>
 
       <CardFooter className="border-t bg-gray-50/50 p-0">
-        <div className="flex items-center gap-1 rounded-lg border bg-white p-1">
+        <div className="bg-dark flex items-center gap-1 rounded-lg border p-1">
           {Object.keys(periodsConvert).map((p) => (
             <button
               key={p}

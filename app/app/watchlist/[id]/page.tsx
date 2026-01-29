@@ -130,7 +130,7 @@ export default function Watchlist() {
     <Loader />
   ) : (
     <div className="space-y-4 p-4 md:p-6">
-      <div className="flex items-center justify-between gap-4 rounded-lg border bg-white p-4">
+      <div className="bg-dark flex items-center justify-between gap-4 rounded-lg border p-4">
         <div className="flex min-w-0 items-center gap-3">
           <Link href="/app/watchlist" className="inline-flex shrink-0">
             <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -180,7 +180,7 @@ export default function Watchlist() {
         </div>
       </div>
 
-      <div className="rounded-lg border bg-white">
+      <div className="bg-dark rounded-lg border">
         {!loading && data!.securities != null && (
           <Tabs defaultValue="tableau" className="w-full">
             <TabsList className="grid w-full grid-cols-2">

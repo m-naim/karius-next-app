@@ -238,7 +238,7 @@ export default function PortfolioView() {
               </div>
             </div>
           )}
-          <div className="flex items-center gap-1 rounded-lg border bg-white p-1">
+          <div className="bg-dark flex items-center gap-1 rounded-lg border p-1">
             {['1w', '1m', '1y', '5y'].map((p) => (
               <button
                 key={p}

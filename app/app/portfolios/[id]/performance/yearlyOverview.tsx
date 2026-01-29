@@ -64,7 +64,7 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
   return loading ? (
     <Loader />
   ) : (
-    <Card className="w-full overflow-hidden border border-gray-200 bg-white">
+    <Card className="bg-dark w-full overflow-hidden border border-gray-200">
       <div className="flex flex-col">
         <div className="flex flex-col gap-4 border-b border-gray-200 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5 md:p-6">
           <div className="space-y-1.5">
@@ -84,7 +84,7 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
               />
             </button>
             <Select onValueChange={(e) => setSelectedYear(e)} defaultValue={selectedYear}>
-              <SelectTrigger className="flex h-10 w-32 items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-sm font-medium">
+              <SelectTrigger className="bg-dark flex h-10 w-32 items-center gap-2 rounded-lg border border-gray-200 px-3 text-sm font-medium">
                 <CalendarDays className="h-4 w-4 text-gray-500" />
                 <SelectValue />
               </SelectTrigger>

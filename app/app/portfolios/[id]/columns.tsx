@@ -98,12 +98,11 @@ export const columns = (selectedPeriod): any[] => {
 
         return (
           <div className="flex max-w-20 items-center gap-3 overflow-hidden md:max-w-40">
-            <div
-              className="hidden h-10 w-10 items-center justify-center rounded-full text-sm font-medium text-white md:flex"
-              style={{ backgroundColor: color }}
-            >
-              {initials}
-            </div>
+            <img
+              className="h-6 w-6"
+              src={`https://financialmodelingprep.com/image-stock/${row.original.symbol.toLocaleUpperCase()}.png`}
+              alt=""
+            />
             <div className="flex flex-col">
               <span className="font-medium">
                 {symbol} x {row.original.qty}
