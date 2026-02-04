@@ -22,6 +22,8 @@ export interface security {
   score: score
   variations: Record<string, number>
   relativePerformances: Record<string, number>
+  trailingPE: number
+  forwardPE: number
 }
 
 export interface score {

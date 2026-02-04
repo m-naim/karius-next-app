@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Actions } from './Actions'
 import { security } from '../data/security'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
+import { round10 } from '@/lib/decimalAjustement'
+import { ro } from 'date-fns/locale'
+import { percentVariation } from '@/lib/math'
 
 type FiltrProps = {
   column: Column<security, string>
@@ -153,6 +156,28 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
         )
       },
     },
+
+    {
+      accessorKey: 'trailingPE',
+      header: SortingButton('P/E'),
+      cell: ({ row }) => (
+        <div className="lowercase">{round10(row.getValue('trailingPE'), -2) || 'N/A'}</div>
+      ),
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id))
+      },
+    },
+    {
+      accessorKey: 'forwardPE',
+      header: SortingButton('P/E Forward'),
+      cell: ({ row }) => (
+        <div className="lowercase">{round10(row.getValue('forwardPE'), -2) || 'N/A'}</div>
+      ),
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id))
+      },
+    },
+
     {
       accessorKey: 'sector',
       header: SortingButton('secteur'),
@@ -165,6 +190,26 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
       accessorKey: 'industry',
       header: SortingButton('industrie'),
       cell: ({ row }) => <div className="lowercase">{row.getValue('industry')}</div>,
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id))
+      },
+    },
+
+    {
+      accessorFn: (row) => {
+        return percentVariation(row.forwardPE, row.trailingPE)
+      },
+      id: 'growth',
+      header: SortingButton('Estimated Growth'),
+      cell: ({ row }) => (
+        <VariationContainer
+          value={percentVariation(row.getValue('forwardPE'), row.getValue('trailingPE'))}
+          entity="%"
+          background={false}
+          className="m-0 p-0 py-2"
+        />
+      ),
+
       filterFn: (row, id, value) => {
         return value.includes(row.getValue(id))
       },

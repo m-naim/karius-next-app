@@ -13,8 +13,8 @@ export function GraphsView({ securities }: GraphsViewProps) {
   )
 
   return (
-    <div className="flex p-4">
-      <div className="flex max-w-sm flex-col flex-wrap gap-2">
+    <div className="flex h-1/2 overflow-hidden p-4">
+      <div className="flex h-1/2 max-w-sm flex-col flex-wrap gap-2">
         {securities.map((sec) => (
           <button
             key={sec.symbol}

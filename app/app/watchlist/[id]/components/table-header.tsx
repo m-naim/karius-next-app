@@ -11,6 +11,8 @@ import { ChevronDown, Cross, XCircleIcon } from 'lucide-react'
 import watchListService from '@/services/watchListService'
 import { DataTableFacetedFilter } from './data-table-filter'
 import { industries, sectors } from '../data/data'
+import { T } from 'framer-motion/dist/types.d-B50aGbjN'
+import { Table } from '@tanstack/react-table'
 
 const periods = [
   { label: '1 jour', value: '1d' },
@@ -23,7 +25,7 @@ const periods = [
 ]
 
 interface TableContextHeaderProps {
-  table: any
+  table: Table<any>
   id: string
   owned: boolean
   setData: (data: { name: string; securities: any[] }) => void
@@ -85,7 +87,7 @@ export const TableContextHeader = ({
           </Button>
         )}
       </div>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button size="sm" variant="outline" className="h-8 whitespace-nowrap">
@@ -132,6 +134,8 @@ export const TableContextHeader = ({
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <div className="text-sm">{table.getRowModel().rows.length} actions</div>
       </div>
     </div>
   )
