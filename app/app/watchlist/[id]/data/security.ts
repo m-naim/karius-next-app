@@ -24,6 +24,7 @@ export interface security {
   relativePerformances: Record<string, number>
   trailingPE: number
   forwardPE: number
+  currency: string
 }
 
 export interface score {

@@ -18,7 +18,7 @@ import {
 import { columns } from './components/columns'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, EllipsisVertical, StarIcon, Trash2 } from 'lucide-react'
+import { ArrowLeft, EllipsisVertical, LineChart, StarIcon, Trash2, X } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,9 +31,7 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 
 import { TableView } from './components/TableView'
-import { GraphsView } from './components/GraphsView'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-
+import { TickerChart } from './components/TickerChart'
 import { WatchlistSelector } from './components/WatchlistSelector'
 
 interface watchList {
@@ -55,6 +53,14 @@ export default function Watchlist() {
   const [allWatchlists, setAllWatchlists] = React.useState<watchList[]>([])
   const [owned, setOwned] = React.useState(false)
   const [loading, setloading] = React.useState(true)
+  const [selectedTicker, setSelectedTicker] = React.useState<string | null>(null)
+  const [showChart, setShowChart] = React.useState(false)
+
+  React.useEffect(() => {
+    if (window.innerWidth >= 768) {
+      setShowChart(true)
+    }
+  }, [])
 
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -110,6 +116,9 @@ export default function Watchlist() {
         watchListService.getAll(),
       ])
       setData(listResponse.watchlist)
+      if (listResponse.watchlist?.securities?.length > 0) {
+        setSelectedTicker(listResponse.watchlist.securities[0].symbol)
+      }
       setOwned(listResponse.owned)
       setAllWatchlists(allResponse)
       setloading(false)
@@ -129,8 +138,8 @@ export default function Watchlist() {
   return loading ? (
     <Loader />
   ) : (
-    <div className="space-y-4 p-4 md:p-6">
-      <div className="bg-dark flex items-center justify-between gap-4 rounded-lg border p-4">
+    <div className="flex h-[calc(100vh-100px)] flex-col space-y-4 p-4 md:p-6">
+      <div className="bg-dark flex shrink-0 items-center justify-between gap-4 rounded-lg border p-4">
         <div className="flex min-w-0 items-center gap-3">
           <Link href="/app/watchlist" className="inline-flex shrink-0">
             <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -151,6 +160,15 @@ export default function Watchlist() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`h-8 w-8 shrink-0 rounded-full ${showChart ? 'bg-gray-100' : ''}`}
+            onClick={() => setShowChart(!showChart)}
+          >
+            <LineChart className="h-4 w-4" />
+            <span className="sr-only">Afficher/Masquer le graphique</span>
+          </Button>
           <WatchlistSelector watchlists={allWatchlists} currentId={id} />
           {owned && (
             <DropdownMenu>
@@ -180,14 +198,10 @@ export default function Watchlist() {
         </div>
       </div>
 
-      <div className="bg-dark rounded-lg border">
-        {!loading && data!.securities != null && (
-          <Tabs defaultValue="tableau" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="tableau">Tableau</TabsTrigger>
-              <TabsTrigger value="graphes">Graphes</TabsTrigger>
-            </TabsList>
-            <TabsContent value="tableau">
+      <div className="flex min-h-0 flex-1 gap-4">
+        <div className="bg-dark flex-1 overflow-hidden rounded-lg border">
+          {!loading && data!.securities != null && (
+            <div className="flex h-full flex-col">
               <TableView
                 table={table}
                 id={id}
@@ -196,12 +210,43 @@ export default function Watchlist() {
                 selectedPeriod={selectedPeriod}
                 setSelectedPeriod={setSelectedPeriod}
                 columns={columns(id, owned, deleteRow, selectedPeriod)}
+                onRowClick={(row) => {
+                  setSelectedTicker(row.symbol)
+                  if (!showChart) setShowChart(true)
+                }}
+                selectedTicker={selectedTicker}
               />
-            </TabsContent>
-            <TabsContent value="graphes">
-              <GraphsView securities={data.securities} />
-            </TabsContent>
-          </Tabs>
+            </div>
+          )}
+        </div>
+        {showChart && (
+          <div className="md:bg-dark fixed inset-0 z-50 flex h-full w-full flex-col overflow-hidden bg-background p-4 md:relative md:h-auto md:w-[400px] md:rounded-lg md:border">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute left-2 top-2 z-10 md:hidden"
+              onClick={() => setShowChart(false)}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="sr-only">Retour</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 top-2 z-10 hidden h-6 w-6 text-gray-500 hover:bg-gray-100 md:flex"
+              onClick={() => setShowChart(false)}
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Fermer</span>
+            </Button>
+            {selectedTicker ? (
+              <TickerChart symbol={selectedTicker} />
+            ) : (
+              <div className="flex h-full items-center justify-center text-gray-500">
+                Select a security to view chart
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>

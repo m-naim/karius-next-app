@@ -22,9 +22,11 @@ import { he, vi } from 'date-fns/locale'
 interface SimpleDataTableProps {
   table: any
   colSpan: number
+  onRowClick?: (row: any) => void
+  selectedId?: string | null
 }
 
-const SimpleDataTable = ({ table, colSpan }: SimpleDataTableProps) => {
+const SimpleDataTable = ({ table, colSpan, onRowClick, selectedId }: SimpleDataTableProps) => {
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
@@ -64,11 +66,11 @@ const SimpleDataTable = ({ table, colSpan }: SimpleDataTableProps) => {
                       <TableHead
                         key={header.id}
                         className={cn(
-                          'whitespace-nowrap py-3',
+                          'whitespace-nowrap py-2 text-xs',
                           isMobile && header.id === 'symbol' && 'w-[50%]',
                           isMobile && header.id === 'regularMarketPrice' && 'w-[25%]',
                           isMobile && header.id === 'regularMarketChangePercent' && 'w-[20%]',
-                          !isMobile && 'px-4'
+                          !isMobile && 'px-2'
                         )}
                       >
                         {header.isPlaceholder
@@ -87,7 +89,12 @@ const SimpleDataTable = ({ table, colSpan }: SimpleDataTableProps) => {
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && 'selected'}
-                    className="hover:bg-muted/50"
+                    className={cn(
+                      'hover:bg-muted/50',
+                      onRowClick && 'cursor-pointer',
+                      selectedId === row.original.symbol && 'bg-muted'
+                    )}
+                    onClick={() => onRowClick && onRowClick(row.original)}
                   >
                     {row.getVisibleCells().map((cell) => {
                       if (isMobile && !visibleColumns.includes(cell.column.id)) {
@@ -97,13 +104,13 @@ const SimpleDataTable = ({ table, colSpan }: SimpleDataTableProps) => {
                         <TableCell
                           key={cell.id}
                           className={cn(
-                            'whitespace-nowrap py-3',
+                            'whitespace-nowrap py-2 text-xs',
                             isMobile && cell.column.id === 'symbol' && 'w-[50%]',
                             isMobile && cell.column.id === 'regularMarketPrice' && 'w-[25%]',
                             isMobile &&
                               cell.column.id === 'regularMarketChangePercent' &&
                               'w-[20%]',
-                            !isMobile && 'px-4'
+                            !isMobile && 'px-2'
                           )}
                         >
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}

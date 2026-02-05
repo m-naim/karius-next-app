@@ -61,19 +61,19 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
       accessorKey: 'symbol',
       header: SortingButton('Action'),
       cell: ({ row }) => (
-        <div className="flex gap-6">
+        <div className="flex gap-2">
           <img
-            className="h-6 w-6"
+            className="h-4 w-4"
             src={`https://financialmodelingprep.com/image-stock/${row.original.symbol.toLocaleUpperCase()}.png`}
             alt=""
           />
 
           <div className="flex flex-col">
-            <span className="max-w-[100px] truncate text-sm lowercase md:max-w-[180px]">
+            <span className="max-w-[80px] truncate text-[11px] lowercase md:max-w-[150px]">
               {row.original.longname}
             </span>
 
-            <span className="text-xs text-muted-foreground">{row.original.symbol}</span>
+            <span className="text-[10px] text-muted-foreground">{row.original.symbol}</span>
           </div>
         </div>
       ),
@@ -94,7 +94,7 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
         // Format the prix as a dollar prix
         const formatted = new Intl.NumberFormat('en-US', {
           style: 'currency',
-          currency: 'EUR',
+          currency: row.getValue('currency') || 'EUR',
         }).format(prix)
 
         return <div className="font-medium">{formatted}</div>
@@ -124,7 +124,12 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
         }
 
         return (
-          <VariationContainer value={chg} entity="%" background={false} className="m-0 p-0 py-2" />
+          <VariationContainer
+            value={chg}
+            entity="%"
+            background={false}
+            className="m-0 p-0 py-1 text-[11px]"
+          />
         )
       },
     },
@@ -152,7 +157,12 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
         }
 
         return (
-          <VariationContainer value={chg} entity="%" background={false} className="m-0 p-0 py-2" />
+          <VariationContainer
+            value={chg}
+            entity="%"
+            background={false}
+            className="m-0 p-0 py-1 text-[11px]"
+          />
         )
       },
     },
@@ -206,7 +216,7 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
           value={percentVariation(row.getValue('forwardPE'), row.getValue('trailingPE'))}
           entity="%"
           background={false}
-          className="m-0 p-0 py-2"
+          className="m-0 p-0 py-1 text-[11px]"
         />
       ),
 
