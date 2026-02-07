@@ -44,7 +44,7 @@ export function WatchlistSelector({ watchlists, currentId }: WatchlistSelectorPr
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="w-[200px] justify-between border-transparent text-xl"
         >
           {currentValue || 'Select a watchlist...'}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />

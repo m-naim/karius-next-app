@@ -92,10 +92,12 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
         const prix = parseFloat(row.getValue('regularMarketPrice'))
 
         // Format the prix as a dollar prix
-        const formatted = new Intl.NumberFormat('en-US', {
+        const formatted = new Intl.NumberFormat('fr-Fr', {
           style: 'currency',
-          currency: row.getValue('currency') || 'EUR',
+          currency: row.original.currency || 'EUR',
+          currencyDisplay: 'narrowSymbol',
         }).format(prix)
+        console.log(row)
 
         return <div className="font-medium">{formatted}</div>
       },
@@ -182,6 +184,23 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
       header: SortingButton('P/E Forward'),
       cell: ({ row }) => (
         <div className="lowercase">{round10(row.getValue('forwardPE'), -2) || 'N/A'}</div>
+      ),
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id))
+      },
+    },
+
+    {
+      accessorKey: 'dividendYield',
+      header: SortingButton('Dividend Yield'),
+      cell: ({ row }) => (
+        <VariationContainer
+          value={round10(row.getValue('dividendYield'), -2) || 0}
+          entity="%"
+          background={false}
+          vaiationColor={false}
+          className="m-0 p-0 py-1 text-[11px]"
+        />
       ),
       filterFn: (row, id, value) => {
         return value.includes(row.getValue(id))

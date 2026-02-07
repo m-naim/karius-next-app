@@ -16,7 +16,7 @@ export function WatchCard({
       href={`watchlist/${data._id}`}
       className="w-full"
     >
-      <Card className="h-auto min-h-[8rem] w-full transition-colors duration-200 hover:bg-gray-50/50">
+      <Card className="h-[12rem] min-h-[8rem] w-full transition-colors duration-200 hover:bg-gray-50/50">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-4">
           <div className="space-y-1">
             <CardTitle className="line-clamp-1 text-sm font-medium capitalize sm:text-base">

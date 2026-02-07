@@ -16,7 +16,7 @@ export default async function watchlistPage() {
   const listWatch = await getPublicWatchlists()
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
+    <div className="space-y-12 py-8">
       <MyWatchLists />
 
       <SectionContainer className="space-y-6">

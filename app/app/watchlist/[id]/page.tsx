@@ -58,7 +58,7 @@ export default function Watchlist() {
 
   React.useEffect(() => {
     if (window.innerWidth >= 768) {
-      setShowChart(true)
+      setShowChart(false)
     }
   }, [])
 
@@ -147,15 +147,7 @@ export default function Watchlist() {
             </Button>
           </Link>
           <div className="min-w-0 truncate">
-            <h1 className="truncate text-lg font-semibold text-gray-900">{data?.name}</h1>
-            {data?.updatedAt && (
-              <p className="truncate text-sm text-gray-500">
-                Mise à jour le{' '}
-                {format(new Date(data.updatedAt), 'dd MMMM yyyy à HH:mm', {
-                  locale: fr,
-                })}
-              </p>
-            )}
+            <WatchlistSelector watchlists={allWatchlists} currentId={id} />
           </div>
         </div>
 
@@ -169,7 +161,6 @@ export default function Watchlist() {
             <LineChart className="h-4 w-4" />
             <span className="sr-only">Afficher/Masquer le graphique</span>
           </Button>
-          <WatchlistSelector watchlists={allWatchlists} currentId={id} />
           {owned && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
