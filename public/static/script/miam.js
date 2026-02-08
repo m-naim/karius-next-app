@@ -86,12 +86,12 @@
       R = f !== s ? f : '',
       _ = c.title
     if (b && !E()) {
-      ;(() => {
+      ;((() => {
         const t = (t, e, a) => {
           const r = t[e]
           return (...e) => (a.apply(null, e), r.apply(t, e))
         }
-        ;(o.pushState = t(o, 'pushState', k)), (o.replaceState = t(o, 'replaceState', k))
+        ;((o.pushState = t(o, 'pushState', k)), (o.replaceState = t(o, 'replaceState', k)))
       })(),
         (() => {
           const t = new MutationObserver(([t]) => {
@@ -151,11 +151,11 @@
             }
           },
           !0
-        )
+        ))
       const t = () => {
         'complete' !== c.readyState || B || (I(), (B = !0))
       }
-      c.addEventListener('readystatechange', t, !0), t()
+      ;(c.addEventListener('readystatechange', t, !0), t())
     }
   })(window)
 })()

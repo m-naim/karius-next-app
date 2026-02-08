@@ -18,11 +18,11 @@ export default async function Page() {
     <div>
       <SectionContainer className="flex flex-col content-center">
         <div className=" flex w-full flex-col items-center px-6 pt-12 text-center lg:col-span-7">
-          <h1 className="mb-4 flex max-w-3xl flex-col text-4xl font-extrabold leading-tight tracking-tight md:text-4xl dark:text-white">
+          <h1 className="mb-4 flex max-w-3xl flex-col text-4xl font-extrabold leading-tight tracking-tight dark:text-white md:text-4xl">
             <span> Le logiciel de gestion et de suivis </span>
             <span> de portefeuilles boursiers </span>
           </h1>
-          <p className="mb-6 font-light text-gray-500 md:text-lg lg:mb-8 lg:text-xl dark:text-gray-400">
+          <p className="mb-6 font-light text-gray-500 dark:text-gray-400 md:text-lg lg:mb-8 lg:text-xl">
             Analyse et suivis de votre Portefeuille Boursier Comme Jamais Auparavant.
           </p>
         </div>
@@ -50,7 +50,7 @@ export default async function Page() {
       <section>
         <h6 className="pt-8 text-center text-xl font-light "> Rejoignez la communauté</h6>
         <div className="mx-auto max-w-screen-xl px-4 py-8 text-center lg:px-6 lg:py-16">
-          <dl className="mx-auto grid max-w-screen-md gap-8 text-gray-900 sm:grid-cols-3 dark:text-white">
+          <dl className="mx-auto grid max-w-screen-md gap-8 text-gray-900 dark:text-white sm:grid-cols-3">
             <div className="flex flex-col items-center justify-center">
               <dt className="mb-2 text-3xl font-extrabold md:text-4xl">+ de 10</dt>
               <dd className="font-light text-primary dark:text-primary">Utilisateurs inscrits</dd>

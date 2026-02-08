@@ -94,10 +94,10 @@ export default function PostLayout({
             </div>
           </header>
           <div
-            className=" divide-y divide-gray-200 pb-8 xl:grid xl:grid-cols-5 xl:grid-rows-2 xl:gap-x-12 xl:divide-y-0 dark:divide-gray-700"
+            className=" divide-y divide-gray-200 pb-8 dark:divide-gray-700 xl:grid xl:grid-cols-5 xl:grid-rows-2 xl:gap-x-12 xl:divide-y-0"
             style={{ gridTemplateRows: 'auto 1fr' }}
           >
-            <div className="divide-y divide-gray-200 xl:order-2 xl:col-span-4 xl:pb-0 dark:divide-gray-700">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700 xl:order-2 xl:col-span-4 xl:pb-0">
               <div className="prose h-full max-w-none overflow-scroll  pb-8 pt-10 dark:prose-dark prose-h2:text-3xl prose-h3:text-primary prose-p:my-8">
                 {children}
               </div>
@@ -130,7 +130,7 @@ export default function PostLayout({
             </dl>
 
             <footer className="order-3 row-span-2 pb-10 pt-6">
-              <div className=" divide-gray-200 text-sm font-medium leading-5 xl:col-start-1 xl:row-start-2 xl:divide-y dark:divide-gray-700">
+              <div className=" divide-gray-200 text-sm font-medium leading-5 dark:divide-gray-700 xl:col-start-1 xl:row-start-2 xl:divide-y">
                 {tags && (
                   <div className="py-4 xl:py-8">
                     <h2 className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">

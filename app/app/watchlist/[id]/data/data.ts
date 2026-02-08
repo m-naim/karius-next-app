@@ -38,10 +38,6 @@ export const sectors = [
     label: 'Consumer Defensive',
     value: 'Consumer Defensive',
   },
-  {
-    label: 'Consumer Cyclical',
-    value: 'Consumer Cyclical',
-  },
 ]
 
 export const industries = [

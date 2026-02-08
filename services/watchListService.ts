@@ -22,6 +22,10 @@ export function addStock(id, payload) {
   return http.put(`${host}/api/v1/watchlists/${id}`, payload)
 }
 
+export function updateList(id, payload) {
+  return http.put(`${host}/api/v1/watchlists/${id}`, payload)
+}
+
 export function removeStock(id, symbol) {
   return http.deleteReq(`${host}/api/v1/watchlists/${id}/security/${symbol}`)
 }
@@ -35,6 +39,7 @@ const watchListService = {
   get,
   add,
   addStock,
+  updateList,
   removeStock,
 }
 

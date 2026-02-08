@@ -47,7 +47,7 @@ export const Features = () => {
           <h2 className="mb-4 text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
             Fonctionnalités sur Mesure pour un Investissement Personnel Optimal.
           </h2>
-          <p className="text-gray-500 sm:text-xl dark:text-gray-400">
+          <p className="text-gray-500 dark:text-gray-400 sm:text-xl">
             De la gestion de portefeuille intuitive aux analyses personnalisées, notre application
             offre une expérience transparente, éducative et centrée sur vous.
           </p>

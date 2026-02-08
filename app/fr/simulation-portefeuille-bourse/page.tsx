@@ -17,7 +17,7 @@ export default async function Page() {
     <div>
       <SectionContainer className="flex flex-col content-center">
         <div className=" flex flex-col items-center p-6 text-center lg:col-span-7">
-          <h1 className="mb-4 max-w-2xl text-4xl font-extrabold leading-tight tracking-tight md:text-5xl xl:text-5xl dark:text-white">
+          <h1 className="mb-4 max-w-2xl text-4xl font-extrabold leading-tight tracking-tight dark:text-white md:text-5xl xl:text-5xl">
             L'application de simulation de portefeuilles boursiers
           </h1>
           <ul className="my-12 list-inside ">

@@ -2,6 +2,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -166,6 +167,31 @@ const SimpleDataTable = ({ table, colSpan, onRowClick, selectedId }: SimpleDataT
                 </TableRow>
               )}
             </TableBody>
+            <TableFooter className="sticky bottom-0 z-10 bg-muted/50 font-semibold">
+              {table.getFooterGroups().map((footerGroup) => (
+                <TableRow key={footerGroup.id}>
+                  {footerGroup.headers.map((header) => {
+                    if (isMobile && !visibleColumns.includes(header.id)) {
+                      return null
+                    }
+                    return (
+                      <TableHead
+                        key={header.id}
+                        className={cn(
+                          'whitespace-nowrap py-2 text-[11px] text-foreground',
+                          !isMobile && 'px-2'
+                        )}
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(header.column.columnDef.footer, header.getContext())}
+                      </TableHead>
+                    )
+                  })}
+                  {isMobile && <TableHead className="w-[5%] p-0"></TableHead>}
+                </TableRow>
+              ))}
+            </TableFooter>
           </Table>
         </div>
         <ScrollBar orientation="horizontal" />

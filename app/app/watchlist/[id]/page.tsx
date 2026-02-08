@@ -18,17 +18,8 @@ import {
 import { columns } from './components/columns'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, EllipsisVertical, LineChart, StarIcon, Trash2, X } from 'lucide-react'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { ArrowLeft, EllipsisVertical, LineChart, Settings, StarIcon, Trash2, X } from 'lucide-react'
 import Loader from '@/components/molecules/loader/loader'
-import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
 
 import { TableView } from './components/TableView'
 import { TickerChart } from './components/TickerChart'
@@ -126,15 +117,6 @@ export default function Watchlist() {
     fetchData()
   }, [id])
 
-  const handleDeleteClick = async () => {
-    try {
-      await removeList(id)
-      router.push('/app/watchlist')
-    } catch (e) {
-      console.error('error', e)
-    }
-  }
-
   return loading ? (
     <Loader />
   ) : (
@@ -162,29 +144,10 @@ export default function Watchlist() {
             <span className="sr-only">Afficher/Masquer le graphique</span>
           </Button>
           {owned && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 shrink-0 rounded-full hover:bg-gray-100"
-                >
-                  <EllipsisVertical className="h-4 w-4" />
-                  <span className="sr-only">Menu d'actions</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    onClick={handleDeleteClick}
-                    className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                  >
-                    <Trash2 className="mr-2 h-4 w-4" strokeWidth={1.5} />
-                    <span>Supprimer</span>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Link href={`/app/watchlist/${id}/settings`}>
+              <Settings className="mr-2 h-4 w-4" strokeWidth={1.5} />
+              <span className="sr-only">Paramètres</span>
+            </Link>
           )}
         </div>
       </div>

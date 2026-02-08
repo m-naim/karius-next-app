@@ -60,6 +60,9 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
     {
       accessorKey: 'symbol',
       header: SortingButton('Action'),
+      footer: (info) => (
+        <div className="text-[10px]">Total: {info.table.getFilteredRowModel().rows.length}</div>
+      ),
       cell: ({ row }) => (
         <div className="flex gap-2">
           <img
@@ -117,6 +120,22 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
       },
       id: 'variation',
       header: SortingButton('Variation'),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const avg =
+          rows.reduce((acc, row) => {
+            const val = row.getValue('variation') as number
+            return isNaN(val) || val === -10000 ? acc : acc + val
+          }, 0) / rows.filter((r) => !isNaN(r.getValue('variation') as number)).length
+        return (
+          <VariationContainer
+            value={avg}
+            entity="%"
+            background={false}
+            className="m-0 p-0 text-[10px]"
+          />
+        )
+      },
       cell: ({ row }) => {
         let chg = row.original.regularMarketChangePercent
 
@@ -150,6 +169,22 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
       },
       id: 'relativePerformances',
       header: SortingButton('relativePerformances'),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const avg =
+          rows.reduce((acc, row) => {
+            const val = row.getValue('relativePerformances') as number
+            return isNaN(val) || val === -10000 ? acc : acc + val
+          }, 0) / rows.filter((r) => !isNaN(r.getValue('relativePerformances') as number)).length
+        return (
+          <VariationContainer
+            value={avg}
+            entity="%"
+            background={false}
+            className="m-0 p-0 text-[10px]"
+          />
+        )
+      },
       cell: ({ row }) => {
         let chg = row.original.regularMarketChangePercent
 
@@ -172,6 +207,14 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
     {
       accessorKey: 'trailingPE',
       header: SortingButton('P/E'),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const validRows = rows.filter((r) => !!r.getValue('trailingPE'))
+        const avg =
+          rows.reduce((acc, row) => acc + ((row.getValue('trailingPE') as number) || 0), 0) /
+          validRows.length
+        return <div className="text-[10px]">{round10(avg, -2) || ''}</div>
+      },
       cell: ({ row }) => (
         <div className="lowercase">{round10(row.getValue('trailingPE'), -2) || 'N/A'}</div>
       ),
@@ -182,6 +225,14 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
     {
       accessorKey: 'forwardPE',
       header: SortingButton('P/E Forward'),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const validRows = rows.filter((r) => !!r.getValue('forwardPE'))
+        const avg =
+          rows.reduce((acc, row) => acc + ((row.getValue('forwardPE') as number) || 0), 0) /
+          validRows.length
+        return <div className="text-[10px]">{round10(avg, -2) || ''}</div>
+      },
       cell: ({ row }) => (
         <div className="lowercase">{round10(row.getValue('forwardPE'), -2) || 'N/A'}</div>
       ),
@@ -193,6 +244,22 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
     {
       accessorKey: 'dividendYield',
       header: SortingButton('Dividend Yield'),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const validRows = rows.filter((r) => !!r.getValue('dividendYield'))
+        const avg =
+          rows.reduce((acc, row) => acc + ((row.getValue('dividendYield') as number) || 0), 0) /
+          validRows.length
+        return (
+          <VariationContainer
+            value={round10(avg, -2) || 0}
+            entity="%"
+            background={false}
+            vaiationColor={false}
+            className="m-0 p-0 text-[10px]"
+          />
+        )
+      },
       cell: ({ row }) => (
         <VariationContainer
           value={round10(row.getValue('dividendYield'), -2) || 0}
