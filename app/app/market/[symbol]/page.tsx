@@ -1,0 +1,201 @@
+'use client'
+
+import React, { useEffect, useMemo } from 'react'
+import { usePathname } from 'next/navigation'
+import marketService from '@/services/marketService'
+import { security } from '../../watchlist/[id]/data/security'
+import {
+  ColumnFiltersState,
+  SortingState,
+  VisibilityState,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@tanstack/react-table'
+import { columns } from '../../watchlist/[id]/components/columns'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { ArrowLeft, LineChart, X } from 'lucide-react'
+import Loader from '@/components/molecules/loader/loader'
+
+import { TableView } from '../../watchlist/[id]/components/TableView'
+import { TickerChart } from '../../watchlist/[id]/components/TickerChart'
+
+interface IndexData {
+  symbol: string
+  name: string
+  constituents: string[]
+}
+
+export default function MarketPage() {
+  const rawSymbol = usePathname().split('/')[3]
+  const symbol = decodeURIComponent(rawSymbol)
+  
+  const [indexInfo, setIndexInfo] = React.useState<IndexData>({
+    symbol: '',
+    name: '',
+    constituents: [],
+  })
+  
+  const [securities, setSecurities] = React.useState<security[]>([])
+  const [loading, setLoading] = React.useState(true)
+  const [selectedTicker, setSelectedTicker] = React.useState<string | null>(null)
+  const [showChart, setShowChart] = React.useState(false)
+
+  React.useEffect(() => {
+    if (window.innerWidth >= 768) {
+      setShowChart(false)
+    }
+  }, [])
+
+  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = React.useState({})
+  const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
+
+
+  const useDynamicTableData = (securities: security[]) => {
+    return useMemo(() => {
+      // Recalculate data if needed based on selectedPeriod
+      return securities.map((security) => ({
+        ...security,
+        variation: security.variations?.[selectedPeriod] ?? security.regularMarketChangePercent,
+      }))
+    }, [securities, selectedPeriod])
+  }
+
+  const useDynamicColumns = () =>
+    useMemo(() => {
+      // owned = false to hide actions
+      return columns(symbol, false, null, selectedPeriod)
+    }, [symbol, selectedPeriod])
+
+  const table = useReactTable<security>({
+    data: useDynamicTableData(securities),
+    columns: useDynamicColumns(),
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+      rowSelection,
+    },
+  })
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const composition = await marketService.getIndexComposition(symbol)
+        setIndexInfo(composition)
+        
+        if (composition.constituents.length > 0) {
+          const quotes = await marketService.getIndexData(composition.constituents)
+          setSecurities(quotes)
+          if (quotes.length > 0) {
+            setSelectedTicker(quotes[0].symbol)
+          }
+        }
+      } catch (error) {
+        console.error('Error loading index data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [symbol])
+
+  return loading ? (
+    <Loader />
+  ) : (
+    <div className="flex h-[calc(100vh-100px)] flex-col space-y-4 p-4 md:p-6">
+      <div className="bg-dark flex shrink-0 items-center justify-between gap-4 rounded-lg border p-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <Link href="/app/dashboard" className="inline-flex shrink-0">
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div className="min-w-0 truncate">
+            <h1 className="truncate text-lg font-semibold text-gray-900">{indexInfo.name}</h1>
+            <p className="truncate text-sm text-gray-500">
+               {indexInfo.constituents.length} Composants
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`h-8 w-8 shrink-0 rounded-full ${showChart ? 'bg-gray-100' : ''}`}
+            onClick={() => setShowChart(!showChart)}
+          >
+            <LineChart className="h-4 w-4" />
+            <span className="sr-only">Afficher/Masquer le graphique</span>
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex min-h-0 flex-1 gap-4">
+        <div className="bg-dark flex-1 overflow-hidden rounded-lg border">
+          {!loading && (
+            <div className="flex h-full flex-col">
+              <TableView
+                table={table}
+                id={symbol}
+                owned={false}
+                setData={() => {}}
+                selectedPeriod={selectedPeriod}
+                setSelectedPeriod={setSelectedPeriod}
+                columns={columns(symbol, false,()=>{}, selectedPeriod)}
+                onRowClick={(row) => {
+                  setSelectedTicker(row.symbol)
+                  if (!showChart) setShowChart(true)
+                }}
+                selectedTicker={selectedTicker}
+              />
+            </div>
+          )}
+        </div>
+        {showChart && (
+          <div className="md:bg-dark fixed inset-0 z-50 flex h-full w-full flex-col overflow-hidden bg-background p-4 md:relative md:h-auto md:w-[400px] md:rounded-lg md:border">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute left-2 top-2 z-10 md:hidden"
+              onClick={() => setShowChart(false)}
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="sr-only">Retour</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 top-2 z-10 hidden h-6 w-6 text-gray-500 hover:bg-gray-100 md:flex"
+              onClick={() => setShowChart(false)}
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Fermer</span>
+            </Button>
+            {selectedTicker ? (
+              <TickerChart symbol={selectedTicker} />
+            ) : (
+              <div className="flex h-full items-center justify-center text-gray-500">
+                Select a security to view chart
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

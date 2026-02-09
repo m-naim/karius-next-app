@@ -35,28 +35,7 @@ const SortingButton = (title) => {
 }
 
 export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<security, any>[] => {
-  return [
-    {
-      accessorKey: 'actions',
-      enableHiding: false,
-      cell: ({ row }) => {
-        const t = row.original.symbol.split('.')
-        let ticker = t[0]
-
-        if (t[1] == 'PA') ticker = 'xpar:' + ticker
-
-        return (
-          <div className="flex">
-            <a target="_blank" href={`https://www.gurufocus.com/stock/${ticker}`}>
-              guru
-            </a>
-            {owned && (
-              <Actions id={id} symbol={row.original.symbol} deleteRow={deleteRow}></Actions>
-            )}
-          </div>
-        )
-      },
-    },
+  const cols: ColumnDef<security, any>[] = [
     {
       accessorKey: 'symbol',
       header: SortingButton('Action'),
@@ -311,4 +290,28 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
       },
     },
   ]
+
+  if (owned) {
+    cols.unshift({
+      accessorKey: 'actions',
+      enableHiding: false,
+      cell: ({ row }) => {
+        const t = row.original.symbol.split('.')
+        let ticker = t[0]
+
+        if (t[1] == 'PA') ticker = 'xpar:' + ticker
+
+        return (
+          <div className="flex">
+            <a target="_blank" href={`https://www.gurufocus.com/stock/${ticker}`}>
+              guru
+            </a>
+            <Actions id={id} symbol={row.original.symbol} deleteRow={deleteRow}></Actions>
+          </div>
+        )
+      },
+    })
+  }
+
+  return cols
 }

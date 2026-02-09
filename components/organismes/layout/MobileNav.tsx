@@ -57,18 +57,40 @@ const MobileNav = () => {
 
           {headerNavLinks
             .filter((link) => !link.draft)
-            .map((link) => (
-              <div key={link.title} className=" py-4">
-                <Link
-                  data-umami-event={`mobile-header-${link.title}`}
-                  href={link.href}
-                  className="text-2xl font-bold tracking-widest text-gray-900 dark:text-gray-100"
-                  onClick={onToggleNav}
-                >
-                  {link.title}
-                </Link>
-              </div>
-            ))}
+            .map((link) => {
+              if (link.children) {
+                return (
+                  <div key={link.title} className="flex flex-col items-center gap-2 py-4">
+                    <div className="text-2xl font-bold tracking-widest text-gray-900 dark:text-gray-100">
+                      {link.title}
+                    </div>
+                    {link.children.map((child) => (
+                      <Link
+                        key={child.title}
+                        data-umami-event={`mobile-header-${child.title}`}
+                        href={child.href}
+                        className="text-lg font-medium text-gray-600 dark:text-gray-400"
+                        onClick={onToggleNav}
+                      >
+                        {child.title}
+                      </Link>
+                    ))}
+                  </div>
+                )
+              }
+              return (
+                <div key={link.title} className=" py-4">
+                  <Link
+                    data-umami-event={`mobile-header-${link.title}`}
+                    href={link.href}
+                    className="text-2xl font-bold tracking-widest text-gray-900 dark:text-gray-100"
+                    onClick={onToggleNav}
+                  >
+                    {link.title}
+                  </Link>
+                </div>
+              )
+            })}
         </nav>
       </div>
     </>

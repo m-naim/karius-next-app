@@ -28,3 +28,9 @@ export function getStockHistory(symbols: string[], period: string) {
   const encodedSymbols = symbols.map((symbol) => encodeURIComponent(symbol)).join(',')
   return http.get(`${host}/api/v1/stocks/history?symbols=${encodedSymbols}&period=${period}`)
 }
+
+export function getQuotes(symbols: string[]) {
+    const encodedSymbols = symbols.map((symbol) => encodeURIComponent(symbol)).join(',')
+
+  return http.get(`${host}/api/v1/stocks/quotes?symbols=${encodedSymbols}`)
+}

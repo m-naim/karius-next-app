@@ -79,7 +79,7 @@ export function TickerChart({ symbol }: { symbol: string }) {
         const labels = (Object.values(results)[0] || []).map((item: StockHistoryItem) => {
           const millisecondsPerDay = 24 * 60 * 60 * 1000
           const date = new Date(item.day * millisecondsPerDay)
-          return format(date, 'dd/MM')
+          return format(date, 'dd/MM/yyyy')
         })
 
         setChartData({ labels, datasets: normalizedDatasets })

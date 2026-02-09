@@ -17,6 +17,7 @@ import {
 
 import authService from '@/services/authService'
 import { useAuth } from '@/hooks/useAuth'
+import { ChevronDown } from 'lucide-react'
 
 const Header = () => {
   const { user, logout } = useAuth()
@@ -40,17 +41,42 @@ const Header = () => {
           {headerNavLinks
             .filter((link) => link.href !== '/')
             .filter((link) => !link.draft)
-            .map((link) => (
-              <Button variant="ghost" asChild key={link.title}>
-                <Link
-                  data-umami-event={`header-${link.title}`}
-                  href={link.href}
-                  className="hidden font-medium text-gray-900 dark:text-gray-100 sm:block"
-                >
-                  {link.title}
-                </Link>
-              </Button>
-            ))}
+            .map((link) => {
+              if (link.children) {
+                return (
+                  <DropdownMenu key={link.title}>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="hidden items-center gap-1 font-medium text-gray-900 dark:text-gray-100 sm:flex"
+                      >
+                        {link.title} <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      {link.children.map((child) => (
+                        <DropdownMenuItem key={child.title} asChild>
+                          <Link href={child.href} className="w-full cursor-pointer">
+                            {child.title}
+                          </Link>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )
+              }
+              return (
+                <Button variant="ghost" asChild key={link.title}>
+                  <Link
+                    data-umami-event={`header-${link.title}`}
+                    href={link.href}
+                    className="hidden font-medium text-gray-900 dark:text-gray-100 sm:block"
+                  >
+                    {link.title}
+                  </Link>
+                </Button>
+              )
+            })}
           <SearchButton />
           <ThemeSwitch />
           {user ? (
