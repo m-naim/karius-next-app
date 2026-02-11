@@ -5,6 +5,7 @@ const headerNavLinks = [
   { draft: false, href: '/app/portfolios', title: 'Portefeuilles' },
   { draft: false, href: '/app/watchlist', title: 'Watchlists' },
   {
+    draft: true,
     title: 'Marchés',
     href: '#',
     children: [

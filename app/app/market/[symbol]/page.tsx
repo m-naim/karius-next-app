@@ -31,13 +31,13 @@ interface IndexData {
 export default function MarketPage() {
   const rawSymbol = usePathname().split('/')[3]
   const symbol = decodeURIComponent(rawSymbol)
-  
+
   const [indexInfo, setIndexInfo] = React.useState<IndexData>({
     symbol: '',
     name: '',
     constituents: [],
   })
-  
+
   const [securities, setSecurities] = React.useState<security[]>([])
   const [loading, setLoading] = React.useState(true)
   const [selectedTicker, setSelectedTicker] = React.useState<string | null>(null)
@@ -54,7 +54,6 @@ export default function MarketPage() {
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
-
 
   const useDynamicTableData = (securities: security[]) => {
     return useMemo(() => {
@@ -96,7 +95,7 @@ export default function MarketPage() {
         setLoading(true)
         const composition = await marketService.getIndexComposition(symbol)
         setIndexInfo(composition)
-        
+
         if (composition.constituents.length > 0) {
           const quotes = await marketService.getIndexData(composition.constituents)
           setSecurities(quotes)
@@ -127,7 +126,7 @@ export default function MarketPage() {
           <div className="min-w-0 truncate">
             <h1 className="truncate text-lg font-semibold text-gray-900">{indexInfo.name}</h1>
             <p className="truncate text-sm text-gray-500">
-               {indexInfo.constituents.length} Composants
+              {indexInfo.constituents.length} Composants
             </p>
           </div>
         </div>
@@ -156,7 +155,7 @@ export default function MarketPage() {
                 setData={() => {}}
                 selectedPeriod={selectedPeriod}
                 setSelectedPeriod={setSelectedPeriod}
-                columns={columns(symbol, false,()=>{}, selectedPeriod)}
+                columns={columns(symbol, false, () => {}, selectedPeriod)}
                 onRowClick={(row) => {
                   setSelectedTicker(row.symbol)
                   if (!showChart) setShowChart(true)
