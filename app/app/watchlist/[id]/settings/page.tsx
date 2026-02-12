@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { Loader2, ArrowLeft, Save, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 
-import watchListService from '@/services/watchListService'
+import watchListService, { removeList } from '@/services/watchListService'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
