@@ -174,7 +174,7 @@ export default function Watchlist() {
           )}
         </div>
         {showChart && (
-          <div className="md:bg-dark fixed inset-0 z-50 flex h-full w-full flex-col overflow-hidden bg-background p-4 md:relative md:h-auto md:w-[400px] md:rounded-lg md:border">
+          <div className="md:bg-dark fixed inset-0 z-50 flex h-full w-full flex-col overflow-hidden bg-background p-4 md:relative md:h-auto md:w-[600px] md:rounded-lg md:border">
             <Button
               variant="ghost"
               size="icon"
