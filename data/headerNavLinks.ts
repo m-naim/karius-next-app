@@ -5,12 +5,12 @@ const headerNavLinks = [
   { draft: false, href: '/app/portfolios', title: 'Portefeuilles' },
   { draft: false, href: '/app/watchlist', title: 'Watchlists' },
   {
-    draft: true,
+    draft: false,
     title: 'Marchés',
     href: '#',
     children: [
-      { href: '/app/market/%5ENDX', title: 'NASDAQ 100' },
       { href: '/app/market/%5EDJI', title: 'Dow Jones' },
+      { href: '/app/market/QQQ', title: 'Nasdaq 100' },
     ],
   },
   {

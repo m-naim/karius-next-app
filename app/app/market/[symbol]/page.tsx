@@ -25,7 +25,7 @@ import { TickerChart } from '../../watchlist/[id]/components/TickerChart'
 interface IndexData {
   symbol: string
   name: string
-  constituents: string[]
+  holdings: any[]
 }
 
 export default function MarketPage() {
@@ -35,7 +35,7 @@ export default function MarketPage() {
   const [indexInfo, setIndexInfo] = React.useState<IndexData>({
     symbol: '',
     name: '',
-    constituents: [],
+    holdings: [],
   })
 
   const [securities, setSecurities] = React.useState<security[]>([])
@@ -93,16 +93,10 @@ export default function MarketPage() {
     const fetchData = async () => {
       try {
         setLoading(true)
-        const composition = await marketService.getIndexComposition(symbol)
-        setIndexInfo(composition)
 
-        if (composition.constituents.length > 0) {
-          const quotes = await marketService.getIndexData(composition.constituents)
-          setSecurities(quotes)
-          if (quotes.length > 0) {
-            setSelectedTicker(quotes[0].symbol)
-          }
-        }
+        const infos = await marketService.get(symbol)
+        setIndexInfo(infos)
+        setSecurities(infos.holdings)
       } catch (error) {
         console.error('Error loading index data:', error)
       } finally {
@@ -125,9 +119,7 @@ export default function MarketPage() {
           </Link>
           <div className="min-w-0 truncate">
             <h1 className="truncate text-lg font-semibold text-gray-900">{indexInfo.name}</h1>
-            <p className="truncate text-sm text-gray-500">
-              {indexInfo.constituents.length} Composants
-            </p>
+            <p className="truncate text-sm text-gray-500">{indexInfo.holdings.length} Composants</p>
           </div>
         </div>
 

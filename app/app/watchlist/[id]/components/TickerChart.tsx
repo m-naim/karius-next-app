@@ -82,7 +82,10 @@ export function TickerChart({ symbol }: { symbol: string }) {
           return format(date, 'dd/MM/yyyy')
         })
 
-        setChartData({ labels, datasets: normalizedDatasets })
+        setChartData({
+          labels,
+          datasets: selectedBenchmarks.length > 0 ? normalizedDatasets : historyData,
+        })
 
         console.log(chartData)
         setLoading(false)
@@ -132,7 +135,11 @@ export function TickerChart({ symbol }: { symbol: string }) {
       </div>
 
       <div className="h-[300px] w-full">
-        {loading ? <div>Chargement...</div> : <LineValue data={chartData} unit="%" />}
+        {loading ? (
+          <div>Chargement...</div>
+        ) : (
+          <LineValue data={chartData} unit={selectedBenchmarks.length > 0 ? '%' : '€'} />
+        )}
       </div>
     </div>
   )
