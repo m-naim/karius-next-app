@@ -57,7 +57,6 @@ export default function MarketPage() {
 
   const useDynamicTableData = (securities: security[]) => {
     return useMemo(() => {
-      // Recalculate data if needed based on selectedPeriod
       return securities.map((security) => ({
         ...security,
         variation: security.variations?.[selectedPeriod] ?? security.regularMarketChangePercent,
@@ -67,8 +66,7 @@ export default function MarketPage() {
 
   const useDynamicColumns = () =>
     useMemo(() => {
-      // owned = false to hide actions
-      return columns(symbol, false, null, selectedPeriod)
+      return columns(symbol, false, null, null, selectedPeriod)
     }, [symbol, selectedPeriod])
 
   const table = useReactTable<security>({
@@ -93,7 +91,6 @@ export default function MarketPage() {
     const fetchData = async () => {
       try {
         setLoading(true)
-
         const infos = await marketService.get(symbol)
         setIndexInfo(infos)
         setSecurities(infos.holdings)
@@ -147,7 +144,7 @@ export default function MarketPage() {
                 setData={() => {}}
                 selectedPeriod={selectedPeriod}
                 setSelectedPeriod={setSelectedPeriod}
-                columns={columns(symbol, false, () => {}, selectedPeriod)}
+                columns={columns(symbol, false, null, () => {}, selectedPeriod)}
                 onRowClick={(row) => {
                   setSelectedTicker(row.symbol)
                   if (!showChart) setShowChart(true)
@@ -158,7 +155,7 @@ export default function MarketPage() {
           )}
         </div>
         {showChart && (
-          <div className="md:bg-dark fixed inset-0 z-50 flex h-full w-full flex-col overflow-hidden bg-background p-4 md:relative md:h-auto md:w-[400px] md:rounded-lg md:border">
+          <div className="md:bg-dark fixed inset-0 z-50 flex h-full w-full flex-col overflow-hidden bg-background p-4 md:relative md:h-auto md:w-[600px] md:rounded-lg md:border">
             <Button
               variant="ghost"
               size="icon"

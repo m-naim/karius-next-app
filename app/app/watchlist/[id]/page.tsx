@@ -1,11 +1,9 @@
 'use client'
 
 import React, { useEffect, useMemo } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
-import watchListService, { removeList } from '@/services/watchListService'
+import { usePathname } from 'next/navigation'
+import watchListService from '@/services/watchListService'
 import { security } from './data/security'
-import { TableContextHeader } from './components/table-header'
-import SimpleDataTable from '@/components/molecules/table/SimpleDataTable'
 import {
   ColumnFiltersState,
   SortingState,
@@ -18,7 +16,7 @@ import {
 import { columns } from './components/columns'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, EllipsisVertical, LineChart, Settings, StarIcon, Trash2, X } from 'lucide-react'
+import { ArrowLeft, LineChart, Settings, X } from 'lucide-react'
 import Loader from '@/components/molecules/loader/loader'
 
 import { TableView } from './components/TableView'
@@ -28,17 +26,21 @@ import { WatchlistSelector } from './components/WatchlistSelector'
 interface watchList {
   _id: string
   name: string
+  benchMark?: {
+    symbol: string
+    variations: Record<string, number>
+  } | null
   securities: security[]
   updatedAt?: string
 }
 
 export default function Watchlist() {
   const id = usePathname().split('/')[3]
-  const router = useRouter()
 
   const [data, setData] = React.useState<watchList>({
     _id: '',
     name: '',
+    benchMark: null,
     securities: [],
   })
   const [allWatchlists, setAllWatchlists] = React.useState<watchList[]>([])
@@ -78,7 +80,7 @@ export default function Watchlist() {
 
   const useDynamicColumns = () =>
     useMemo(() => {
-      return columns(id, owned, deleteRow, selectedPeriod)
+      return columns(id, owned, data.benchMark, deleteRow, selectedPeriod)
     }, [id, owned, deleteRow, selectedPeriod])
 
   const table = useReactTable<security>({
@@ -163,7 +165,7 @@ export default function Watchlist() {
                 setData={setData}
                 selectedPeriod={selectedPeriod}
                 setSelectedPeriod={setSelectedPeriod}
-                columns={columns(id, owned, deleteRow, selectedPeriod)}
+                columns={columns(id, owned, data.benchMark, deleteRow, selectedPeriod)}
                 onRowClick={(row) => {
                   setSelectedTicker(row.symbol)
                   if (!showChart) setShowChart(true)

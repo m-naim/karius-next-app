@@ -53,7 +53,7 @@ export function TickerChart({ symbol }: { symbol: string }) {
         // Normalize data to show percentage change
         const historyData = Object.entries(results).map(([seriesSymbol, history]) => {
           return {
-            label: seriesSymbol === symbol ? 'Actif' : seriesSymbol, // Use 'Actif' for the main symbol
+            label: seriesSymbol, // Use 'Actif' for the main symbol
             data: history.map((item) => item.close),
           }
         })

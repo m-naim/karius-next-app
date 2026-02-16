@@ -1,3 +1,4 @@
+import { tr } from 'date-fns/locale'
 import React from 'react'
 import {
   LineChart,
@@ -47,19 +48,38 @@ export function LineValue({ data, unit = '€' }: LineValueProps) {
   return (
     <div className="h-full w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+        <LineChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
+          <CartesianGrid vertical={true} stroke="#ddd" />
           <XAxis
             dataKey="name"
             axisLine={false}
             tickLine={false}
-            tick={{ fill: '#666', fontSize: 12 }}
+            tick={{ fill: '#777', fontSize: 11 }}
             dy={10}
+            interval={chartData.length > 20 ? Math.floor(chartData.length / 7) : 0}
+            tickFormatter={(value, index) => {
+              const parts = value.split('/')
+              if (parts.length === 3) {
+                const day = parts[0]
+                const month = parts[1]
+                const year = parts[2]
+
+                const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+                const monthName = date.toLocaleDateString('fr-FR', { month: 'short' })
+
+                if (chartData.length > 300)
+                  return monthName.charAt(0).toUpperCase() + monthName.slice(1) + ' ' + year
+                if (month === '01') return year
+                return monthName.charAt(0).toUpperCase() + monthName.slice(1)
+              }
+              return value
+            }}
           />
           <YAxis
+            orientation="right"
             axisLine={false}
             tickLine={false}
-            tick={{ fill: '#666', fontSize: 12 }}
+            tick={{ fill: '#999', fontSize: 11 }}
             tickFormatter={(value) => `${value.toLocaleString('fr-FR')}${unit}`}
             domain={[minValue - padding, maxValue + padding]}
           />

@@ -18,7 +18,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
-import { he, vi } from 'date-fns/locale'
 
 interface SimpleDataTableProps {
   table: any

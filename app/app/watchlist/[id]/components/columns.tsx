@@ -34,8 +34,36 @@ const SortingButton = (title) => {
   }
 }
 
-export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<security, any>[] => {
+export const columns = (
+  id,
+  owned,
+  benchmark,
+  deleteRow,
+  selectedPeriod
+): ColumnDef<security, any>[] => {
   const cols: ColumnDef<security, any>[] = [
+    {
+      accessorKey: 'actions',
+      enableHiding: false,
+      cell: ({ row }) => {
+        const t = row.original.symbol.split('.')
+        let ticker = t[0]
+
+        if (t[1] == 'PA') ticker = 'xpar:' + ticker
+
+        return (
+          <div className="flex">
+            <a target="_blank" href={`https://www.gurufocus.com/stock/${ticker}`}>
+              guru
+            </a>
+            {owned && (
+              <Actions id={id} symbol={row.original.symbol} deleteRow={deleteRow}></Actions>
+            )}
+          </div>
+        )
+      },
+    },
+
     {
       accessorKey: 'symbol',
       header: SortingButton('Action'),
@@ -61,12 +89,6 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
       ),
     },
 
-    // {
-    //   accessorKey: 'score.global',
-    //   id: 'scoreGlobal',
-    //   header: SortingButton('score'),
-    //   cell: ({ row }) => <div className="lowercase">{row.getValue('scoreGlobal')}</div>,
-    // },
     {
       accessorKey: 'regularMarketPrice',
       header: SortingButton('prix'),
@@ -79,7 +101,6 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
           currency: row.original.currency || 'EUR',
           currencyDisplay: 'narrowSymbol',
         }).format(prix)
-        console.log(row)
 
         return <div className="font-medium">{formatted}</div>
       },
@@ -133,55 +154,61 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
         )
       },
     },
-    {
-      accessorFn: (row) => {
-        let chg = row.regularMarketChangePercent
-        if (selectedPeriod != '1d') {
-          const variations = row.relativePerformances as Record<string, number>
-          if (variations != null) {
-            chg = variations[selectedPeriod]
-          } else {
-            chg = -10000
-          }
-        }
-        return chg
-      },
-      id: 'relativePerformances',
-      header: SortingButton('relativePerformances'),
-      footer: (info) => {
-        const rows = info.table.getFilteredRowModel().rows
-        const avg =
-          rows.reduce((acc, row) => {
-            const val = row.getValue('relativePerformances') as number
-            return isNaN(val) || val === -10000 ? acc : acc + val
-          }, 0) / rows.filter((r) => !isNaN(r.getValue('relativePerformances') as number)).length
-        return (
-          <VariationContainer
-            value={avg}
-            entity="%"
-            background={false}
-            className="m-0 p-0 text-[10px]"
-          />
-        )
-      },
-      cell: ({ row }) => {
-        let chg = row.original.regularMarketChangePercent
 
-        if (selectedPeriod != '1d') {
-          const variations = row.original?.relativePerformances as Record<string, number>
-          chg = variations != null ? variations[selectedPeriod] : NaN
-        }
+    ...(benchmark != null
+      ? [
+          {
+            accessorFn: (row) => {
+              let chg = row.regularMarketChangePercent
+              if (selectedPeriod != '1d') {
+                const variations = row.relativePerformances as Record<string, number>
+                if (variations != null) {
+                  chg = variations[selectedPeriod]
+                } else {
+                  chg = -10000
+                }
+              }
+              return chg
+            },
+            id: 'relativePerformances',
+            header: SortingButton('relativePerformances'),
+            footer: (info) => {
+              const rows = info.table.getFilteredRowModel().rows
+              const avg =
+                rows.reduce((acc, row) => {
+                  const val = row.getValue('relativePerformances') as number
+                  return isNaN(val) || val === -10000 ? acc : acc + val
+                }, 0) /
+                rows.filter((r) => !isNaN(r.getValue('relativePerformances') as number)).length
+              return (
+                <VariationContainer
+                  value={avg}
+                  entity="%"
+                  background={false}
+                  className="m-0 p-0 text-[10px]"
+                />
+              )
+            },
+            cell: ({ row }) => {
+              let chg = row.original.regularMarketChangePercent
 
-        return (
-          <VariationContainer
-            value={chg}
-            entity="%"
-            background={false}
-            className="m-0 p-0 py-1 text-[11px]"
-          />
-        )
-      },
-    },
+              if (selectedPeriod != '1d') {
+                const variations = row.original?.relativePerformances as Record<string, number>
+                chg = variations != null ? variations[selectedPeriod] : NaN
+              }
+
+              return (
+                <VariationContainer
+                  value={chg}
+                  entity="%"
+                  background={false}
+                  className="m-0 p-0 py-1 text-[11px]"
+                />
+              )
+            },
+          },
+        ]
+      : []),
 
     {
       accessorKey: 'trailingPE',
@@ -290,28 +317,6 @@ export const columns = (id, owned, deleteRow, selectedPeriod): ColumnDef<securit
       },
     },
   ]
-
-  if (owned) {
-    cols.unshift({
-      accessorKey: 'actions',
-      enableHiding: false,
-      cell: ({ row }) => {
-        const t = row.original.symbol.split('.')
-        let ticker = t[0]
-
-        if (t[1] == 'PA') ticker = 'xpar:' + ticker
-
-        return (
-          <div className="flex">
-            <a target="_blank" href={`https://www.gurufocus.com/stock/${ticker}`}>
-              guru
-            </a>
-            <Actions id={id} symbol={row.original.symbol} deleteRow={deleteRow}></Actions>
-          </div>
-        )
-      },
-    })
-  }
 
   return cols
 }

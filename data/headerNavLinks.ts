@@ -9,8 +9,12 @@ const headerNavLinks = [
     title: 'Marchés',
     href: '#',
     children: [
-      { href: '/app/market/%5EDJI', title: 'Dow Jones' },
+      { href: '/app/market/SPY', title: 'S&P 500' },
       { href: '/app/market/QQQ', title: 'Nasdaq 100' },
+      { href: '/app/market/FCHI', title: 'CAC 40' },
+      { href: '/app/market/QWLD', title: 'msci world quality' },
+      { href: '/app/market/SBF.PAR', title: 'SBF 120 Index' },
+      { href: '/app/market/EXSA.DEX', title: 'STOXX Europe 600 Index' },
     ],
   },
   {
