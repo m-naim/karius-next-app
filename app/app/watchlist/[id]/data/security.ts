@@ -25,6 +25,7 @@ export interface security {
   trailingPE: number
   forwardPE: number
   currency: string
+  weight?: number
 }
 
 export interface score {

@@ -13,7 +13,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { columns } from '../../watchlist/[id]/components/columns'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, LineChart, X } from 'lucide-react'
@@ -21,6 +20,7 @@ import Loader from '@/components/molecules/loader/loader'
 
 import { TableView } from '../../watchlist/[id]/components/TableView'
 import { TickerChart } from '../../watchlist/[id]/components/TickerChart'
+import { columns } from './columns'
 
 interface IndexData {
   symbol: string
@@ -66,7 +66,7 @@ export default function MarketPage() {
 
   const useDynamicColumns = () =>
     useMemo(() => {
-      return columns(symbol, false, null, null, selectedPeriod)
+      return columns(  selectedPeriod)
     }, [symbol, selectedPeriod])
 
   const table = useReactTable<security>({
@@ -144,7 +144,7 @@ export default function MarketPage() {
                 setData={() => {}}
                 selectedPeriod={selectedPeriod}
                 setSelectedPeriod={setSelectedPeriod}
-                columns={columns(symbol, false, null, () => {}, selectedPeriod)}
+                columns={columns(selectedPeriod)}
                 onRowClick={(row) => {
                   setSelectedTicker(row.symbol)
                   if (!showChart) setShowChart(true)
