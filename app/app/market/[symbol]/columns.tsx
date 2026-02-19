@@ -32,9 +32,7 @@ const SortingButton = (title) => {
   }
 }
 
-export const columns = (
-  selectedPeriod
-): ColumnDef<security, any>[] => {
+export const columns = (selectedPeriod): ColumnDef<security, any>[] => {
   const cols: ColumnDef<security, any>[] = [
     {
       accessorKey: 'actions',
@@ -83,7 +81,9 @@ export const columns = (
     {
       accessorKey: 'weight',
       header: SortingButton('poids'),
-      cell: ({ row }) => <div className="font-medium">{round10(row.getValue('weight') * 100, -4)}%</div>,
+      cell: ({ row }) => (
+        <div className="font-medium">{round10(row.getValue('weight') * 100, -4)}%</div>
+      ),
     },
     {
       accessorKey: 'regularMarketPrice',
@@ -220,19 +220,22 @@ export const columns = (
         return value.includes(row.getValue(id))
       },
     },
-  {
-
+    {
       accessorKey: 'marketCap',
       header: SortingButton('capitalisation'),
       cell: ({ row }) => {
         const cap = parseFloat(row.getValue('marketCap'))
-        return <div className="lowercase">{new Intl.NumberFormat('fr-Fr', {
-          style: 'decimal',
-          maximumFractionDigits: 0,
-          minimumFractionDigits: 0,
-          notation: 'compact',
-          compactDisplay: 'long',
-        }).format(cap)}</div>
+        return (
+          <div className="lowercase">
+            {new Intl.NumberFormat('fr-Fr', {
+              style: 'decimal',
+              maximumFractionDigits: 0,
+              minimumFractionDigits: 0,
+              notation: 'compact',
+              compactDisplay: 'long',
+            }).format(cap)}
+          </div>
+        )
       },
     },
 
@@ -253,7 +256,6 @@ export const columns = (
       },
     },
 
-  
     {
       accessorFn: (row) => {
         return percentVariation(row.forwardPE, row.trailingPE)

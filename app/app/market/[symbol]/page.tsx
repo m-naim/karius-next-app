@@ -66,7 +66,7 @@ export default function MarketPage() {
 
   const useDynamicColumns = () =>
     useMemo(() => {
-      return columns(  selectedPeriod)
+      return columns(selectedPeriod)
     }, [symbol, selectedPeriod])
 
   const table = useReactTable<security>({
