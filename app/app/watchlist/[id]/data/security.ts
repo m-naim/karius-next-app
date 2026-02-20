@@ -26,6 +26,10 @@ export interface security {
   forwardPE: number
   currency: string
   weight?: number
+  lastYearFundamental?: {
+    roa: number
+    roe: number
+  }
 }
 
 export interface score {

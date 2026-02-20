@@ -82,7 +82,7 @@ export const columns = (selectedPeriod): ColumnDef<security, any>[] => {
       accessorKey: 'weight',
       header: SortingButton('poids'),
       cell: ({ row }) => (
-        <div className="font-medium">{round10(row.getValue('weight') * 100, -4)}%</div>
+        <div className="font-medium">{round10((row.getValue('weight') as number) * 100, -4)}%</div>
       ),
     },
     {

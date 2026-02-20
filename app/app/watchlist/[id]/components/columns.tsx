@@ -296,6 +296,25 @@ export const columns = (
         return value.includes(row.getValue(id))
       },
     },
+    {
+      accessorFn: (row) => {
+        return row?.lastYearFundamental?.roa || 0
+      },
+      id: 'roa',
+      header: SortingButton('ROA'),
+      cell: ({ row }) => (
+        <VariationContainer
+          value={(row.original?.lastYearFundamental?.roa || 0) * 100}
+          entity="%"
+          background={false}
+          vaiationColor={false}
+          className="m-0 p-0 py-1 text-[11px]"
+        />
+      ),
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id))
+      },
+    },
 
     {
       accessorFn: (row) => {
