@@ -203,11 +203,11 @@ export default function PerformanceBox({ id, selectedBenchmarks }: PerformanceBo
                     datasets: [
                       {
                         data: chartValues,
-                        backgroundColor: chartValues.map((v) =>
-                          v >= 0
-                            ? selectedChart?.colors?.positive || '#22c55e'
-                            : selectedChart?.colors?.negative || '#ef4444'
-                        ),
+                        // backgroundColor: chartValues.map((v) =>
+                        //   v >= 0
+                        //     ? selectedChart?.colors?.positive || '#22c55e'
+                        //     : selectedChart?.colors?.negative || '#ef4444'
+                        // ),
                       },
                     ],
                   }}

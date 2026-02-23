@@ -8,6 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
+  Cell,
 } from 'recharts'
 
 interface BarValueProps {
@@ -37,6 +38,10 @@ export function BarValue({ data, unit = '' }: BarValueProps) {
     if (Math.abs(value) >= 1e6) return (value / 1e6).toFixed(2) + 'M'
     if (Math.abs(value) >= 1e3) return (value / 1e3).toFixed(2) + 'K'
     return value.toLocaleString('fr-FR')
+  }
+  // Function to determine the color based on the value
+  const getBarColor = (value: number) => {
+    return value < 0 ? 'red' : 'green' // You can use Tailwind colors here if defined, e.g., 'var(--color-red)'
   }
 
   return (
@@ -77,11 +82,21 @@ export function BarValue({ data, unit = '' }: BarValueProps) {
             <Bar
               key={index}
               dataKey={`value_${index}`}
-              name={`value_${index}`}
-              fill={dataset.backgroundColor || '#8884d8'}
+              //  dataKey={dataset.data || `value_${index}`} // Assuming dataKey is part of dataset
+              //  name={dataset.name || `Series ${index}`} // Assuming name is part of dataset
               radius={[4, 4, 0, 0]}
               fillOpacity={0.8}
-            />
+            >
+              {/* Map over your actual data to render a Cell for each data point */}
+              {chartData.map((entry, dataPointIndex) => (
+                <Cell
+                  key={`cell-${`value_${index}`}-${dataPointIndex}`}
+                  // Here, you extract the actual value for the current data point and apply the color function
+                  // Assuming entry[dataset.dataKey] gives you the numeric value for this specific bar
+                  fill={getBarColor(entry[`value_${index}`])}
+                />
+              ))}
+            </Bar>
           ))}
         </BarChart>
       </ResponsiveContainer>
