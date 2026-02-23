@@ -16,18 +16,16 @@ type FiltrProps = {
 const SortingButton = (title) => {
   return function GhostButton({ column }: FiltrProps) {
     return (
-      <div className="flex">
-        <Button
-          className="p-0 capitalize"
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          {title}
-          {column.getIsSorted() === 'asc' ? <ChevronUp className="ml-2 h-4 w-4" /> : null}
-          {column.getIsSorted() === 'desc' ? <ChevronDown className="ml-2 h-4 w-4" /> : null}
-          {!column.getIsSorted() ? <ArrowUpDown className="ml-2 h-4 w-4" /> : null}
-        </Button>
-      </div>
+      <Button
+        className="text-xs capitalize "
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        {title}
+        {column.getIsSorted() === 'asc' ? <ChevronUp className="ml-2 h-4 w-4" /> : null}
+        {column.getIsSorted() === 'desc' ? <ChevronDown className="ml-2 h-4 w-4" /> : null}
+        {!column.getIsSorted() ? <ArrowUpDown className="ml-2 h-4 w-4" /> : null}
+      </Button>
     )
   }
 }
@@ -153,7 +151,7 @@ export const columns = (selectedPeriod): ColumnDef<security, any>[] => {
 
     {
       accessorKey: 'trailingPE',
-      header: SortingButton('P/E'),
+      header: SortingButton('TTM P/E'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
         const validRows = rows.filter((r) => !!r.getValue('trailingPE'))
@@ -171,7 +169,7 @@ export const columns = (selectedPeriod): ColumnDef<security, any>[] => {
     },
     {
       accessorKey: 'forwardPE',
-      header: SortingButton('P/E Forward'),
+      header: SortingButton('Fwd P/E'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
         const validRows = rows.filter((r) => !!r.getValue('forwardPE'))
@@ -190,7 +188,7 @@ export const columns = (selectedPeriod): ColumnDef<security, any>[] => {
 
     {
       accessorKey: 'dividendYield',
-      header: SortingButton('Dividend Yield'),
+      header: SortingButton('Div Yield'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
         const validRows = rows.filter((r) => !!r.getValue('dividendYield'))
@@ -236,6 +234,45 @@ export const columns = (selectedPeriod): ColumnDef<security, any>[] => {
             }).format(cap)}
           </div>
         )
+      },
+    },
+    {
+      accessorFn: (row) => {
+        return row?.lastYearFundamental?.roa || 0
+      },
+      id: 'roa',
+      header: SortingButton('ROA'),
+      cell: ({ row }) => (
+        <VariationContainer
+          value={(row.original?.lastYearFundamental?.roa || 0) * 100}
+          entity="%"
+          background={false}
+          vaiationColor={false}
+          className="m-0 p-0 py-1 text-[11px]"
+        />
+      ),
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id))
+      },
+    },
+
+    {
+      accessorFn: (row) => {
+        return row?.lastYearFundamental?.roe || 0
+      },
+      id: 'roe',
+      header: SortingButton('ROE'),
+      cell: ({ row }) => (
+        <VariationContainer
+          value={(row.original?.lastYearFundamental?.roe || 0) * 100}
+          entity="%"
+          background={false}
+          vaiationColor={false}
+          className="m-0 p-0 py-1 text-[11px]"
+        />
+      ),
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id))
       },
     },
 

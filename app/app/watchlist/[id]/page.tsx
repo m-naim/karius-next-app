@@ -16,8 +16,19 @@ import {
 import { columns } from './components/columns'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, LineChart, Settings, X } from 'lucide-react'
+import { ArrowLeft, LineChart, Settings, X, Edit2 } from 'lucide-react'
 import Loader from '@/components/molecules/loader/loader'
+import { useLocalStorage } from '@/hooks/useLocalStorage' // Re-import useLocalStorage
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog'
+import MultiSelectTagDropdown from '@/components/molecules/MultiSelectTagDropdown'
+import { Check } from 'lucide-react'
 
 import { TableView } from './components/TableView'
 import { TickerChart } from './components/TickerChart'
@@ -34,8 +45,16 @@ interface watchList {
   updatedAt?: string
 }
 
+type LocalSecurityTags = {
+  [symbol: string]: string[]
+}
+
 export default function Watchlist() {
   const id = usePathname().split('/')[3]
+
+  const { getItem, setItem } = useLocalStorage()
+  const globalTagsKey = 'global_watchlist_tags'
+  const localSecurityTagsKey = `watchlist_security_tags_${id}` // Key for tags specific to this watchlist
 
   const [data, setData] = React.useState<watchList>({
     _id: '',
@@ -48,6 +67,10 @@ export default function Watchlist() {
   const [loading, setloading] = React.useState(true)
   const [selectedTicker, setSelectedTicker] = React.useState<string | null>(null)
   const [showChart, setShowChart] = React.useState(false)
+
+  const [allAvailableTags, setAllAvailableTags] = React.useState<string[]>([])
+  const [isTagEditModalOpen, setIsTagEditModalOpen] = React.useState(false)
+  const [editingSecurity, setEditingSecurity] = React.useState<security | null>(null)
 
   React.useEffect(() => {
     if (window.innerWidth >= 768) {
@@ -68,9 +91,54 @@ export default function Watchlist() {
     }))
   }
 
+  const onEditTagsClick = (security: security) => {
+    setEditingSecurity(security)
+    setIsTagEditModalOpen(true)
+  }
+
+  const onTagsSave = (newTags: string[]) => {
+    if (!editingSecurity) return
+
+    // Update the specific security's tags in React state
+    setData((prevData) => {
+      const updatedSecurities = prevData.securities.map((sec) =>
+        sec.symbol === editingSecurity.symbol ? { ...sec, tags: newTags } : sec
+      )
+      return {
+        ...prevData,
+        securities: updatedSecurities,
+      }
+    })
+
+    // Update local storage for this security's tags
+    const currentLocalSecurityTagsString = getItem(localSecurityTagsKey)
+    const currentLocalSecurityTags: LocalSecurityTags = currentLocalSecurityTagsString
+      ? JSON.parse(currentLocalSecurityTagsString)
+      : {}
+    currentLocalSecurityTags[editingSecurity.symbol] = newTags
+    setItem(localSecurityTagsKey, JSON.stringify(currentLocalSecurityTags))
+
+    // Ensure all new tags are added to the global available tags pool
+    const newGlobalTags = Array.from(new Set([...allAvailableTags, ...newTags]))
+    setAllAvailableTags(newGlobalTags)
+    updateGlobalTagsInLocalStorage(newGlobalTags)
+
+    setIsTagEditModalOpen(false)
+    setEditingSecurity(null)
+  }
+
+  const onAddGlobalTag = (newTag: string) => {
+    const updatedGlobalTags = Array.from(new Set([...allAvailableTags, newTag]))
+    setAllAvailableTags(updatedGlobalTags)
+    updateGlobalTagsInLocalStorage(updatedGlobalTags)
+  }
+
+  const updateGlobalTagsInLocalStorage = (tags: string[]) => {
+    setItem(globalTagsKey, JSON.stringify(tags))
+  }
+
   const useDynamicTableData = (securities: security[]) => {
     return useMemo(() => {
-      // Recalculate data if needed based on selectedPeriod
       return securities.map((security) => ({
         ...security,
         variation: security.variations?.[selectedPeriod] ?? security.regularMarketChangePercent,
@@ -81,7 +149,7 @@ export default function Watchlist() {
   const useDynamicColumns = () =>
     useMemo(() => {
       return columns(id, owned, data.benchMark, deleteRow, selectedPeriod)
-    }, [id, owned, deleteRow, selectedPeriod])
+    }, [id, owned, data.benchMark, deleteRow, selectedPeriod])
 
   const table = useReactTable<security>({
     data: useDynamicTableData(data!.securities),
@@ -108,7 +176,30 @@ export default function Watchlist() {
         watchListService.get(id),
         watchListService.getAll(),
       ])
-      setData(listResponse.watchlist)
+
+      // Load global tags from local storage
+      const storedGlobalTagsString = getItem(globalTagsKey)
+      const storedGlobalTags: string[] = storedGlobalTagsString
+        ? JSON.parse(storedGlobalTagsString)
+        : []
+      setAllAvailableTags(storedGlobalTags)
+
+      // Load security-specific tags from local storage
+      const storedLocalSecurityTagsString = getItem(localSecurityTagsKey)
+      const storedLocalSecurityTags: LocalSecurityTags = storedLocalSecurityTagsString
+        ? JSON.parse(storedLocalSecurityTagsString)
+        : {}
+
+      const securitiesWithLocalTags = listResponse.watchlist.securities.map((sec) => ({
+        ...sec,
+        tags: storedLocalSecurityTags[sec.symbol] || [],
+      }))
+
+      setData({
+        ...listResponse.watchlist,
+        securities: securitiesWithLocalTags,
+      })
+
       if (listResponse.watchlist?.securities?.length > 0) {
         setSelectedTicker(listResponse.watchlist.securities[0].symbol)
       }
@@ -122,7 +213,7 @@ export default function Watchlist() {
   return loading ? (
     <Loader />
   ) : (
-    <div className="flex h-[calc(100vh-100px)] flex-col space-y-4 p-4 md:p-6">
+    <div className="flex h-[calc(100vh-20px)] flex-col space-y-2 p-2">
       <div className="bg-dark flex shrink-0 items-center justify-between gap-4 rounded-lg border p-4">
         <div className="flex min-w-0 items-center gap-3">
           <Link href="/app/watchlist" className="inline-flex shrink-0">
@@ -186,6 +277,24 @@ export default function Watchlist() {
               <ArrowLeft className="h-4 w-4" />
               <span className="sr-only">Retour</span>
             </Button>
+            {selectedTicker && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-9 top-2 z-10 hidden h-6 w-6 text-gray-500 hover:bg-gray-100 md:flex"
+                onClick={() => {
+                  const securityToEdit = data?.securities.find(
+                    (sec) => sec.symbol === selectedTicker
+                  )
+                  if (securityToEdit) {
+                    onEditTagsClick(securityToEdit)
+                  }
+                }}
+              >
+                <Edit2 className="h-4 w-4" />
+                <span className="sr-only">Edit Tags</span>
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -205,6 +314,31 @@ export default function Watchlist() {
           </div>
         )}
       </div>
+
+      <Dialog open={isTagEditModalOpen} onOpenChange={setIsTagEditModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Tags for {editingSecurity?.symbol}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            {editingSecurity && (
+              <MultiSelectTagDropdown
+                selectedTags={editingSecurity.tags || []}
+                allAvailableTags={allAvailableTags}
+                onTagsChange={onTagsSave}
+                onAddGlobalTag={onAddGlobalTag}
+              />
+            )}
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Close
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

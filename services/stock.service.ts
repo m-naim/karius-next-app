@@ -34,3 +34,7 @@ export function getQuotes(symbols: string[]) {
 
   return http.get(`${host}/api/v1/stocks/quotes?symbols=${encodedSymbols}`)
 }
+
+export function getFundamentals(symbol: string) {
+  return http.get(`${host}/api/v1/stocks/${encodeURIComponent(symbol)}/fundamentals`)
+}

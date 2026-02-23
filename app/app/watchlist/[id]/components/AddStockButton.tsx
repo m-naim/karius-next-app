@@ -1,33 +1,41 @@
 'use client'
 
 import * as React from 'react'
-import { PlusIcon, CheckIcon } from 'lucide-react'
-
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
+import { StockSearchCommand } from '@/components/ui/comboBox'
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from '@/components/ui/command'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { search } from 'services/stock.service'
-import { ComboboxPopover } from '@/components/ui/comboBox'
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Plus } from 'lucide-react'
 
-type securityInfos = {
-  symbol: string
-  exchange: string
-  longname: string
-}
 export function AddStockButton({ addRow }) {
-  const [value, setValue] = React.useState('')
+  const [open, setOpen] = React.useState(false)
 
-  const setTicker = (ticker) => {
-    setValue('')
+  const handleSelect = (ticker) => {
     addRow(ticker)
+    setOpen(false)
   }
 
-  return <ComboboxPopover ticker={value} setTicker={setTicker} className="col-span-3 w-full" />
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" className="h-8 gap-1">
+          <Plus className="h-3.5 w-3.5" />
+          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Ajouter une valeur</span>
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="gap-0 p-0 sm:max-w-[425px]">
+        <DialogHeader className="border-b px-4 py-3">
+          <DialogTitle>Ajouter une valeur à la watchlist</DialogTitle>
+        </DialogHeader>
+        <div className="px-2 pb-2">
+          <StockSearchCommand onSelect={handleSelect} />
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
 }

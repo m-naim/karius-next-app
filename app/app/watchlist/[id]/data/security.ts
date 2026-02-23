@@ -30,6 +30,7 @@ export interface security {
     roa: number
     roe: number
   }
+  tags?: string[]
 }
 
 export interface score {

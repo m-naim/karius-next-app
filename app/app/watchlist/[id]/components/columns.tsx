@@ -4,6 +4,7 @@ import * as React from 'react'
 import { Column, ColumnDef, GroupColumnDef } from '@tanstack/react-table'
 import { ChevronUp, ArrowUpDown, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Actions } from './Actions'
 import { security } from '../data/security'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
@@ -84,6 +85,22 @@ export const columns = (
             </span>
 
             <span className="text-[10px] text-muted-foreground">{row.original.symbol}</span>
+          </div>
+        </div>
+      ),
+    },
+
+    {
+      accessorKey: 'tags',
+      header: 'Tags',
+      cell: ({ row }) => (
+        <div className="flex items-center gap-1">
+          <div className="flex flex-wrap gap-1">
+            {row.original.tags?.map((tag) => (
+              <Badge key={tag} variant="secondary" className="px-2 py-0.5 text-xs">
+                {tag}
+              </Badge>
+            ))}
           </div>
         </div>
       ),

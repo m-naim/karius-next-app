@@ -16,10 +16,10 @@ export default async function watchlistPage() {
   const listWatch = await getPublicWatchlists()
 
   return (
-    <div className="space-y-12 py-8">
+    <div className="space-y-2 py-2">
       <MyWatchLists />
 
-      <SectionContainer className="space-y-6">
+      <SectionContainer className="space-y-0">
         <div className="flex w-full flex-col items-center px-4 text-center">
           <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl md:text-3xl">
             Découvrez les meilleurs portefeuilles de la communauté
