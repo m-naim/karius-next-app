@@ -91,22 +91,6 @@ export const columns = (
     },
 
     {
-      accessorKey: 'tags',
-      header: 'Tags',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-1">
-          <div className="flex flex-wrap gap-1">
-            {row.original.tags?.map((tag) => (
-              <Badge key={tag} variant="secondary" className="px-2 py-0.5 text-xs">
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      ),
-    },
-
-    {
       accessorKey: 'regularMarketPrice',
       header: SortingButton('prix'),
       cell: ({ row }) => {
@@ -265,6 +249,32 @@ export const columns = (
     },
 
     {
+      accessorKey: 'linearity10y',
+      header: SortingButton('linéarité'),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const validRows = rows.filter((r) => !!r.getValue('linearity10y'))
+        const avg =
+          rows.reduce((acc, row) => acc + ((row.getValue('linearity10y') as number) || 0), 0) /
+          validRows.length
+        return <div className="text-[10px]">{round10(avg, -2) || ''}</div>
+      },
+      cell: ({ row }) => (
+        <VariationContainer
+          value={(row.getValue('linearity10y') as number) * 100 || 0}
+          entity="%"
+          background={false}
+          vaiationColor={false}
+          sign={false}
+          className="m-0 p-0 text-[10px]"
+        />
+      ),
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id))
+      },
+    },
+
+    {
       accessorKey: 'dividendYield',
       header: SortingButton('Dividend Yield'),
       footer: (info) => {
@@ -351,6 +361,21 @@ export const columns = (
       filterFn: (row, id, value) => {
         return value.includes(row.getValue(id))
       },
+    },
+    {
+      accessorKey: 'tags',
+      header: 'Tags',
+      cell: ({ row }) => (
+        <div className="flex items-center gap-1">
+          <div className="flex flex-wrap gap-1">
+            {row.original.tags?.map((tag) => (
+              <Badge key={tag} variant="secondary" className="px-2 py-0.5 text-xs">
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      ),
     },
   ]
 
