@@ -43,3 +43,52 @@ export function calculateR2(values: number[]): number {
 
   return den === 0 ? 0 : Math.pow(num / den, 2)
 }
+
+interface StockHistoryItem {
+  day: number // Unix timestamp in days or similar (number of days since epoch)
+  close: number
+}
+
+export function calculateYearlyVariations(history: StockHistoryItem[]): {
+  bestYearVariation: number | null
+  worstYearVariation: number | null
+} {
+  if (history.length < 2) {
+    return { bestYearVariation: null, worstYearVariation: null }
+  }
+
+  const yearlyData: { [year: number]: { firstClose: number; lastClose: number } } = {}
+
+  history.forEach((item) => {
+    const date = new Date(item.day * 24 * 60 * 60 * 1000) // Convert days to milliseconds for Date object
+    const year = date.getFullYear()
+
+    if (!yearlyData[year]) {
+      yearlyData[year] = { firstClose: item.close, lastClose: item.close }
+    } else {
+      // Update lastClose as we iterate, assuming history is sorted by date
+      yearlyData[year].lastClose = item.close
+      // To ensure firstClose is truly the first for the year, if history isn't guaranteed sorted,
+      // one might need to track min/max date for each year and use close values at those dates.
+      // For simplicity, assuming history is ordered by date.
+    }
+  })
+
+  const variations: number[] = []
+  for (const year in yearlyData) {
+    const { firstClose, lastClose } = yearlyData[year]
+    if (firstClose > 0) {
+      // Avoid division by zero
+      variations.push(((lastClose - firstClose) / firstClose) * 100)
+    }
+  }
+
+  if (variations.length === 0) {
+    return { bestYearVariation: null, worstYearVariation: null }
+  }
+
+  const bestYearVariation = Math.max(...variations)
+  const worstYearVariation = Math.min(...variations)
+
+  return { bestYearVariation, worstYearVariation }
+}

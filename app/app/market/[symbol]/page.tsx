@@ -116,7 +116,6 @@ export default function MarketPage() {
           </Link>
           <div className="min-w-0 truncate">
             <h1 className="truncate text-lg font-semibold text-gray-900">{indexInfo.name}</h1>
-            <p className="truncate text-sm text-gray-500">{indexInfo.holdings.length} Composants</p>
           </div>
         </div>
 

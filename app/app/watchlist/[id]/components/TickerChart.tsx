@@ -8,7 +8,8 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { stringToColor } from '@/lib/colors'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FundamentalChart } from './FundamentalChart'
-import { calculateCAGR, calculateR2 } from '@/lib/math'
+import { calculateCAGR, calculateR2, calculateYearlyVariations } from '@/lib/math'
+import MetricsDisplay, { TickerChartMetrics } from '@/components/molecules/MetricsDisplay'
 
 // Define interfaces for data structures
 interface ChartData {
@@ -39,6 +40,7 @@ const periodes = [
   { value: '6m', label: '6M' },
   { value: '1y', label: '1A' },
   { value: '5y', label: '5A' },
+  { value: '10y', label: '10A' },
 ]
 
 export function TickerChart({ symbol }: { symbol: string }) {
@@ -46,16 +48,14 @@ export function TickerChart({ symbol }: { symbol: string }) {
   const [period, setPeriod] = useState('1y')
   const [loading, setLoading] = useState(true)
   const [selectedBenchmarks, setSelectedBenchmarks] = useState<string[]>([])
-  const [metrics, setMetrics] = useState<{
-    cagr: number | null
-    r2: number | null
-    min: number | null
-    max: number | null
-  }>({
+  const [metrics, setMetrics] = useState<TickerChartMetrics>({
     cagr: null,
     r2: null,
     min: null,
     max: null,
+    allPeriodVariation: null,
+    bestYearVariation: null,
+    worstYearVariation: null,
   })
 
   useEffect(() => {
@@ -117,9 +117,32 @@ export function TickerChart({ symbol }: { symbol: string }) {
           const min = Math.min(...closes)
           const max = Math.max(...closes)
 
-          setMetrics({ cagr, r2, min, max })
+          // Calculate allPeriodVariation
+          const allPeriodVariation = ((last.close - first.close) / first.close) * 100
+
+          // Placeholder for yearly variations (will implement these functions in lib/math.ts)
+          const { bestYearVariation, worstYearVariation } =
+            calculateYearlyVariations(primaryHistory)
+
+          setMetrics({
+            cagr,
+            r2,
+            min,
+            max,
+            allPeriodVariation,
+            bestYearVariation,
+            worstYearVariation,
+          })
         } else {
-          setMetrics({ cagr: null, r2: null, min: null, max: null })
+          setMetrics({
+            cagr: null,
+            r2: null,
+            min: null,
+            max: null,
+            allPeriodVariation: null,
+            bestYearVariation: null,
+            worstYearVariation: null,
+          })
         }
 
         setLoading(false)
@@ -187,46 +210,7 @@ export function TickerChart({ symbol }: { symbol: string }) {
             )}
           </div>
 
-          {!loading && metrics.cagr !== null && (
-            <div className="flex justify-center space-x-8 rounded-lg border bg-muted/20 p-4">
-              <div className="flex flex-col items-center">
-                <span className="text-xs font-bold uppercase tracking-tight text-muted-foreground">
-                  CAGR ({period})
-                </span>
-                <span
-                  className={`text-lg font-bold ${
-                    metrics.cagr > 0 ? 'text-green-600' : 'text-red-600'
-                  }`}
-                >
-                  {metrics.cagr.toFixed(1)}%
-                </span>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-xs font-bold uppercase tracking-tight text-muted-foreground">
-                  LIN. (R²)
-                </span>
-                <span className="text-lg font-bold">
-                  {metrics.r2 !== null ? `${(metrics.r2 * 100).toFixed(0)}%` : 'N/A'}
-                </span>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-xs font-bold uppercase tracking-tight text-muted-foreground">
-                  MIN
-                </span>
-                <span className="text-lg font-bold">
-                  {metrics.min !== null ? metrics.min.toFixed(2) : 'N/A'}
-                </span>
-              </div>
-              <div className="flex flex-col items-center">
-                <span className="text-xs font-bold uppercase tracking-tight text-muted-foreground">
-                  MAX
-                </span>
-                <span className="text-lg font-bold">
-                  {metrics.max !== null ? metrics.max.toFixed(2) : 'N/A'}
-                </span>
-              </div>
-            </div>
-          )}
+          <MetricsDisplay metrics={metrics} loading={loading} period={period} />
         </TabsContent>
 
         <TabsContent value="fundamental">
