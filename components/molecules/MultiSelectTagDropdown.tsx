@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Check, PlusCircle } from 'lucide-react'
+import { Check, PlusCircle, Trash2 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
@@ -23,6 +23,7 @@ interface MultiSelectTagDropdownProps {
   allAvailableTags: string[]
   onTagsChange: (newTags: string[]) => void
   onAddGlobalTag: (newTag: string) => void
+  onDeleteGlobalTag?: (tag: string) => void
 }
 
 const MultiSelectTagDropdown: React.FC<MultiSelectTagDropdownProps> = ({
@@ -30,6 +31,7 @@ const MultiSelectTagDropdown: React.FC<MultiSelectTagDropdownProps> = ({
   allAvailableTags,
   onTagsChange,
   onAddGlobalTag,
+  onDeleteGlobalTag,
 }) => {
   const [open, setOpen] = React.useState(false)
   const [inputValue, setInputValue] = React.useState('')
@@ -48,6 +50,13 @@ const MultiSelectTagDropdown: React.FC<MultiSelectTagDropdownProps> = ({
     ) {
       onAddGlobalTag(inputValue.trim().toLocaleLowerCase())
       setInputValue('')
+    }
+  }
+
+  const handleDeleteTag = (e: React.MouseEvent, tag: string) => {
+    e.stopPropagation()
+    if (onDeleteGlobalTag) {
+      onDeleteGlobalTag(tag)
     }
   }
 
@@ -88,17 +97,30 @@ const MultiSelectTagDropdown: React.FC<MultiSelectTagDropdownProps> = ({
             <CommandGroup>
               {allAvailableTags.map((tag) => (
                 <CommandItem key={tag} onSelect={() => handleSelect(tag)}>
-                  <div
-                    className={cn(
-                      'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
-                      selectedTags.includes(tag)
-                        ? 'bg-primary text-primary-foreground'
-                        : 'opacity-50 [&_svg]:invisible'
+                  <div className="flex w-full items-center justify-between">
+                    <div className="flex items-center">
+                      <div
+                        className={cn(
+                          'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
+                          selectedTags.includes(tag)
+                            ? 'bg-primary text-primary-foreground'
+                            : 'opacity-50 [&_svg]:invisible'
+                        )}
+                      >
+                        <Check className={cn('h-4 w-4')} />
+                      </div>
+                      <span>{tag}</span>
+                    </div>
+                    {onDeleteGlobalTag && (
+                      <button
+                        onClick={(e) => handleDeleteTag(e, tag)}
+                        className="ml-2 rounded-sm p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        <span className="sr-only">Delete tag</span>
+                      </button>
                     )}
-                  >
-                    <Check className={cn('h-4 w-4')} />
                   </div>
-                  <span>{tag}</span>
                 </CommandItem>
               ))}
             </CommandGroup>

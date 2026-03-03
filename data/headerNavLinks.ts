@@ -7,14 +7,7 @@ const headerNavLinks = [
   {
     draft: false,
     title: 'Marchés',
-    href: '#',
-    children: [
-      { href: '/app/market/SPY', title: 'S&P 500' },
-      { href: '/app/market/QQQ', title: 'Nasdaq 100' },
-      { href: '/app/market/QWLD', title: 'msci world quality' },
-      { href: '/app/market/URTH', title: 'msci world' },
-      { href: '/app/market/MEUD.PAR', title: 'STOXX Europe 600 Index' },
-    ],
+    href: '/app/market',
   },
   {
     title: 'Ressources',

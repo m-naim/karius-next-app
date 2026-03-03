@@ -13,6 +13,7 @@ export function TableView({
   columns,
   onRowClick,
   selectedTicker,
+  allAvailableTags = [],
 }: {
   table: any
   id: string
@@ -23,6 +24,7 @@ export function TableView({
   columns: any[]
   onRowClick?: (row: any) => void
   selectedTicker?: string | null
+  allAvailableTags?: string[]
 }) {
   return (
     <div className="flex h-full w-full flex-col">
@@ -34,6 +36,7 @@ export function TableView({
           setData={setData}
           selectedPeriod={selectedPeriod}
           setSelectedPeriod={setSelectedPeriod}
+          allAvailableTags={allAvailableTags}
         />
       </div>
       <div className="min-h-0 flex-1 overflow-auto">

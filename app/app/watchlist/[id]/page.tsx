@@ -16,19 +16,9 @@ import {
 import { columns } from './components/columns'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, LineChart, Settings, X, Edit2 } from 'lucide-react'
+import { ArrowLeft, LineChart, Settings, X } from 'lucide-react'
 import Loader from '@/components/molecules/loader/loader'
 import { useLocalStorage } from '@/hooks/useLocalStorage' // Re-import useLocalStorage
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogClose,
-} from '@/components/ui/dialog'
-import MultiSelectTagDropdown from '@/components/molecules/MultiSelectTagDropdown'
-import { Check } from 'lucide-react'
 
 import { TableView } from './components/TableView'
 import { TickerChart } from './components/TickerChart'
@@ -69,8 +59,6 @@ export default function Watchlist() {
   const [showChart, setShowChart] = React.useState(false)
 
   const [allAvailableTags, setAllAvailableTags] = React.useState<string[]>([])
-  const [isTagEditModalOpen, setIsTagEditModalOpen] = React.useState(false)
-  const [editingSecurity, setEditingSecurity] = React.useState<security | null>(null)
 
   React.useEffect(() => {
     if (window.innerWidth >= 768) {
@@ -80,6 +68,7 @@ export default function Watchlist() {
 
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [globalFilter, setGlobalFilter] = React.useState('')
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
@@ -91,18 +80,11 @@ export default function Watchlist() {
     }))
   }
 
-  const onEditTagsClick = (security: security) => {
-    setEditingSecurity(security)
-    setIsTagEditModalOpen(true)
-  }
-
-  const onTagsSave = (newTags: string[]) => {
-    if (!editingSecurity) return
-
+  const onTagsChangeForSymbol = (symbol: string, newTags: string[]) => {
     // Update the specific security's tags in React state
     setData((prevData) => {
       const updatedSecurities = prevData.securities.map((sec) =>
-        sec.symbol === editingSecurity.symbol ? { ...sec, tags: newTags } : sec
+        sec.symbol === symbol ? { ...sec, tags: newTags } : sec
       )
       return {
         ...prevData,
@@ -115,22 +97,56 @@ export default function Watchlist() {
     const currentLocalSecurityTags: LocalSecurityTags = currentLocalSecurityTagsString
       ? JSON.parse(currentLocalSecurityTagsString)
       : {}
-    currentLocalSecurityTags[editingSecurity.symbol] = newTags
+    currentLocalSecurityTags[symbol] = newTags
     setItem(localSecurityTagsKey, JSON.stringify(currentLocalSecurityTags))
 
     // Ensure all new tags are added to the global available tags pool
     const newGlobalTags = Array.from(new Set([...allAvailableTags, ...newTags]))
     setAllAvailableTags(newGlobalTags)
     updateGlobalTagsInLocalStorage(newGlobalTags)
-
-    setIsTagEditModalOpen(false)
-    setEditingSecurity(null)
   }
 
   const onAddGlobalTag = (newTag: string) => {
     const updatedGlobalTags = Array.from(new Set([...allAvailableTags, newTag]))
     setAllAvailableTags(updatedGlobalTags)
     updateGlobalTagsInLocalStorage(updatedGlobalTags)
+  }
+
+  const onDeleteGlobalTag = (tagToDelete: string) => {
+    const updatedGlobalTags = allAvailableTags.filter((tag) => tag !== tagToDelete)
+    setAllAvailableTags(updatedGlobalTags)
+    updateGlobalTagsInLocalStorage(updatedGlobalTags)
+
+    // Also remove from all securities in this watchlist
+    setData((prevData) => {
+      const updatedSecurities = prevData.securities.map((sec) => ({
+        ...sec,
+        tags: sec.tags?.filter((t) => t !== tagToDelete) || [],
+      }))
+
+      // Update local storage for all securities in this watchlist
+      const currentLocalSecurityTagsString = getItem(localSecurityTagsKey)
+      if (currentLocalSecurityTagsString) {
+        try {
+          const currentLocalSecurityTags: LocalSecurityTags = JSON.parse(
+            currentLocalSecurityTagsString
+          )
+          Object.keys(currentLocalSecurityTags).forEach((symbol) => {
+            currentLocalSecurityTags[symbol] = currentLocalSecurityTags[symbol].filter(
+              (t) => t !== tagToDelete
+            )
+          })
+          setItem(localSecurityTagsKey, JSON.stringify(currentLocalSecurityTags))
+        } catch (e) {
+          console.error('Error parsing local security tags:', e)
+        }
+      }
+
+      return {
+        ...prevData,
+        securities: updatedSecurities,
+      }
+    })
   }
 
   const updateGlobalTagsInLocalStorage = (tags: string[]) => {
@@ -156,14 +172,24 @@ export default function Watchlist() {
     columns: useDynamicColumns(),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    onGlobalFilterChange: setGlobalFilter,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    globalFilterFn: (row, columnId, filterValue) => {
+      const value = filterValue.toLowerCase()
+      return (
+        row.original.symbol.toLowerCase().includes(value) ||
+        row.original.longname.toLowerCase().includes(value) ||
+        row.original.shortname.toLowerCase().includes(value)
+      )
+    },
     state: {
       sorting,
       columnFilters,
+      globalFilter,
       columnVisibility,
       rowSelection,
     },
@@ -262,6 +288,7 @@ export default function Watchlist() {
                   if (!showChart) setShowChart(true)
                 }}
                 selectedTicker={selectedTicker}
+                allAvailableTags={allAvailableTags}
               />
             </div>
           )}
@@ -277,24 +304,6 @@ export default function Watchlist() {
               <ArrowLeft className="h-4 w-4" />
               <span className="sr-only">Retour</span>
             </Button>
-            {selectedTicker && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-9 top-2 z-10 hidden h-6 w-6 text-gray-500 hover:bg-gray-100 md:flex"
-                onClick={() => {
-                  const securityToEdit = data?.securities.find(
-                    (sec) => sec.symbol === selectedTicker
-                  )
-                  if (securityToEdit) {
-                    onEditTagsClick(securityToEdit)
-                  }
-                }}
-              >
-                <Edit2 className="h-4 w-4" />
-                <span className="sr-only">Edit Tags</span>
-              </Button>
-            )}
             <Button
               variant="ghost"
               size="icon"
@@ -305,7 +314,14 @@ export default function Watchlist() {
               <span className="sr-only">Fermer</span>
             </Button>
             {selectedTicker ? (
-              <TickerChart symbol={selectedTicker} />
+              <TickerChart
+                symbol={selectedTicker}
+                tags={data?.securities.find((sec) => sec.symbol === selectedTicker)?.tags || []}
+                allAvailableTags={allAvailableTags}
+                onTagsChange={(newTags) => onTagsChangeForSymbol(selectedTicker, newTags)}
+                onAddGlobalTag={onAddGlobalTag}
+                onDeleteGlobalTag={onDeleteGlobalTag}
+              />
             ) : (
               <div className="flex h-full items-center justify-center text-gray-500">
                 Select a security to view chart
@@ -314,31 +330,6 @@ export default function Watchlist() {
           </div>
         )}
       </div>
-
-      <Dialog open={isTagEditModalOpen} onOpenChange={setIsTagEditModalOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Edit Tags for {editingSecurity?.symbol}</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            {editingSecurity && (
-              <MultiSelectTagDropdown
-                selectedTags={editingSecurity.tags || []}
-                allAvailableTags={allAvailableTags}
-                onTagsChange={onTagsSave}
-                onAddGlobalTag={onAddGlobalTag}
-              />
-            )}
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="secondary">
-                Close
-              </Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

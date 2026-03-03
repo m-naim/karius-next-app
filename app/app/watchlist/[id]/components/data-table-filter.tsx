@@ -32,7 +32,11 @@ export function DataTableFacetedFilter<TData, TValue>({
   options,
 }: DataTableFacetedFilterProps<TData, TValue>) {
   const facets = column?.getFacetedUniqueValues()
-  const selectedValues = new Set(column?.getFilterValue() as string[])
+  const filterValue = column?.getFilterValue() as any
+  const selectedValues = new Set(
+    Array.isArray(filterValue) ? filterValue : filterValue?.values || []
+  )
+  const mode = filterValue?.mode || 'is'
 
   return (
     <Popover>
@@ -43,23 +47,31 @@ export function DataTableFacetedFilter<TData, TValue>({
           {selectedValues?.size > 0 && (
             <>
               <Separator orientation="vertical" className="mx-2 h-4" />
-              <Badge variant="secondary" className="rounded-sm px-1 font-normal lg:hidden">
+              <Badge
+                variant={mode === 'isnot' ? 'destructive' : 'secondary'}
+                className="rounded-sm px-1 font-normal lg:hidden"
+              >
+                {mode === 'isnot' ? '-' : ''}
                 {selectedValues.size}
               </Badge>
               <div className="hidden space-x-1 lg:flex">
                 {selectedValues.size > 2 ? (
-                  <Badge variant="secondary" className="rounded-sm px-1 font-normal">
-                    {selectedValues.size} selected
+                  <Badge
+                    variant={mode === 'isnot' ? 'destructive' : 'secondary'}
+                    className="rounded-sm px-1 font-normal"
+                  >
+                    {mode === 'isnot' ? 'Not' : ''} {selectedValues.size} selected
                   </Badge>
                 ) : (
                   options
                     .filter((option) => selectedValues.has(option.value))
                     .map((option) => (
                       <Badge
-                        variant="secondary"
+                        variant={mode === 'isnot' ? 'destructive' : 'secondary'}
                         key={option.value}
                         className="rounded-sm px-1 font-normal"
                       >
+                        {mode === 'isnot' ? '!' : ''}
                         {option.label}
                       </Badge>
                     ))
@@ -71,6 +83,33 @@ export function DataTableFacetedFilter<TData, TValue>({
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0" align="start">
         <Command>
+          <div className="flex items-center justify-between border-b p-2">
+            <span className="text-xs font-medium">Mode de filtre:</span>
+            <div className="flex rounded-md border bg-muted p-0.5">
+              <button
+                onClick={() =>
+                  column?.setFilterValue({ values: Array.from(selectedValues), mode: 'is' })
+                }
+                className={cn(
+                  'rounded-sm px-2 py-0.5 text-[10px] font-medium transition-colors',
+                  mode === 'is' ? 'bg-background shadow-sm' : 'text-muted-foreground'
+                )}
+              >
+                Inclure
+              </button>
+              <button
+                onClick={() =>
+                  column?.setFilterValue({ values: Array.from(selectedValues), mode: 'isnot' })
+                }
+                className={cn(
+                  'rounded-sm px-2 py-0.5 text-[10px] font-medium transition-colors',
+                  mode === 'isnot' ? 'bg-background shadow-sm' : 'text-muted-foreground'
+                )}
+              >
+                Exclure
+              </button>
+            </div>
+          </div>
           <CommandInput placeholder={title} />
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
@@ -87,7 +126,9 @@ export function DataTableFacetedFilter<TData, TValue>({
                         selectedValues.add(option.value)
                       }
                       const filterValues = Array.from(selectedValues)
-                      column?.setFilterValue(filterValues.length ? filterValues : undefined)
+                      column?.setFilterValue(
+                        filterValues.length ? { values: filterValues, mode } : undefined
+                      )
                     }}
                   >
                     <div

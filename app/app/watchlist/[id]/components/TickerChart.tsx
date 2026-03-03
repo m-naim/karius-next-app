@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FundamentalChart } from './FundamentalChart'
 import { calculateCAGR, calculateR2, calculateYearlyVariations } from '@/lib/math'
 import MetricsDisplay, { TickerChartMetrics } from '@/components/molecules/MetricsDisplay'
+import MultiSelectTagDropdown from '@/components/molecules/MultiSelectTagDropdown'
+import { PerHistoryChart } from './PerHistoryChart'
 
 // Define interfaces for data structures
 interface ChartData {
@@ -43,7 +45,21 @@ const periodes = [
   { value: '10y', label: '10A' },
 ]
 
-export function TickerChart({ symbol }: { symbol: string }) {
+export function TickerChart({
+  symbol,
+  tags = [],
+  allAvailableTags = [],
+  onTagsChange,
+  onAddGlobalTag,
+  onDeleteGlobalTag,
+}: {
+  symbol: string
+  tags?: string[]
+  allAvailableTags?: string[]
+  onTagsChange?: (newTags: string[]) => void
+  onAddGlobalTag?: (newTag: string) => void
+  onDeleteGlobalTag?: (tag: string) => void
+}) {
   const [chartData, setChartData] = useState<ChartData>({ labels: [], datasets: [] })
   const [period, setPeriod] = useState('1y')
   const [loading, setLoading] = useState(true)
@@ -171,40 +187,48 @@ export function TickerChart({ symbol }: { symbol: string }) {
         <TabsList className="mb-4">
           <TabsTrigger value="technical">Technique</TabsTrigger>
           <TabsTrigger value="fundamental">Fondamental</TabsTrigger>
+          <TabsTrigger value="valorisation">Valorisation</TabsTrigger>
+          {onTagsChange && <TabsTrigger value="tags">Tags</TabsTrigger>}
         </TabsList>
 
-        <TabsContent value="technical" className="space-y-4">
-          <div className="flex justify-center space-x-2">
-            {periodes.map((p) => (
-              <button
-                key={p.value}
-                onClick={() => setPeriod(p.value)}
-                className={`rounded-md px-3 py-1 text-sm ${
-                  period === p.value ? 'bg-gray-200' : 'bg-transparent'
-                }`}
-              >
-                {p.label}
-              </button>
-            ))}
+        <TabsContent value="technical" className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap gap-1">
+              {periodes.map((p) => (
+                <button
+                  key={p.value}
+                  onClick={() => setPeriod(p.value)}
+                  className={`rounded-md px-2 py-1 text-xs font-medium transition-colors ${
+                    period === p.value
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted hover:bg-muted/80'
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-4 border-l pl-3">
+              {availableBenchmarks.map((bench) => (
+                <div key={bench.symbol} className="flex items-center space-x-1.5">
+                  <Checkbox
+                    id={bench.symbol}
+                    checked={selectedBenchmarks.includes(bench.symbol)}
+                    onCheckedChange={() => handleBenchmarkChange(bench.symbol)}
+                    className="h-3.5 w-3.5"
+                  />
+                  <Label htmlFor={bench.symbol} className="cursor-pointer text-xs font-medium">
+                    {bench.name}
+                  </Label>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="flex items-center justify-center space-x-4">
-            <Label>Comparer avec :</Label>
-            {availableBenchmarks.map((bench) => (
-              <div key={bench.symbol} className="flex items-center space-x-2">
-                <Checkbox
-                  id={bench.symbol}
-                  checked={selectedBenchmarks.includes(bench.symbol)}
-                  onCheckedChange={() => handleBenchmarkChange(bench.symbol)}
-                />
-                <Label htmlFor={bench.symbol}>{bench.name}</Label>
-              </div>
-            ))}
-          </div>
-
-          <div className="h-[400px] w-full">
+          <div className="h-[250px] w-full rounded-lg border bg-card/30 p-1">
             {loading ? (
-              <div className="flex h-full items-center justify-center">Chargement...</div>
+              <div className="flex h-full items-center justify-center text-sm">Chargement...</div>
             ) : (
               <LineValue data={chartData} unit={selectedBenchmarks.length > 0 ? '%' : '€'} />
             )}
@@ -216,6 +240,30 @@ export function TickerChart({ symbol }: { symbol: string }) {
         <TabsContent value="fundamental">
           <FundamentalChart symbol={symbol} />
         </TabsContent>
+
+        <TabsContent value="valorisation">
+          <PerHistoryChart symbol={symbol} />
+        </TabsContent>
+
+        {onTagsChange && (
+          <TabsContent value="tags" className="py-4">
+            <div className="space-y-4">
+              <div className="flex flex-col gap-2">
+                <Label>Manage Tags</Label>
+                <p className="text-xs text-muted-foreground">
+                  Tags added here will be saved for {symbol} across this watchlist.
+                </p>
+              </div>
+              <MultiSelectTagDropdown
+                selectedTags={tags}
+                allAvailableTags={allAvailableTags}
+                onTagsChange={onTagsChange}
+                onAddGlobalTag={onAddGlobalTag || (() => {})}
+                onDeleteGlobalTag={onDeleteGlobalTag}
+              />
+            </div>
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   )
