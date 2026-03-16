@@ -147,6 +147,25 @@ export const columns = (selectedPeriod): ColumnDef<security, any>[] => {
           />
         )
       },
+      filterFn: (row, id, value) => {
+        const val = row.getValue(id) as number
+        if (!value) return true
+        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
+          values: string[]
+          mode: 'is' | 'isnot'
+        }
+
+        if (!values || values.length === 0) return true
+
+        const matches = values.some((filter: string) => {
+          if (filter === 'positive') return val > 0
+          if (filter === 'negative') return val < 0
+          if (filter === 'flat') return val === 0
+          return true
+        })
+
+        return mode === 'is' ? matches : !matches
+      },
     },
 
     {
@@ -164,7 +183,23 @@ export const columns = (selectedPeriod): ColumnDef<security, any>[] => {
         <div className="lowercase">{round10(row.getValue('trailingPE'), -2) || 'N/A'}</div>
       ),
       filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id))
+        const val = row.getValue(id) as number
+        if (!value) return true
+        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
+          values: string[]
+          mode: 'is' | 'isnot'
+        }
+
+        if (!values || values.length === 0) return true
+
+        const matches = values.some((filter: string) => {
+          if (filter === 'value') return val < 15
+          if (filter === 'fair') return val >= 15 && val <= 25
+          if (filter === 'growth') return val > 25
+          return true
+        })
+
+        return mode === 'is' ? matches : !matches
       },
     },
     {
@@ -182,7 +217,15 @@ export const columns = (selectedPeriod): ColumnDef<security, any>[] => {
         <div className="lowercase">{round10(row.getValue('forwardPE'), -2) || 'N/A'}</div>
       ),
       filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id))
+        if (!value) return true
+        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
+          values: string[]
+          mode: 'is' | 'isnot'
+        }
+
+        if (!values || values.length === 0) return true
+        const matches = values.includes(row.getValue(id))
+        return mode === 'is' ? matches : !matches
       },
     },
 
@@ -215,7 +258,23 @@ export const columns = (selectedPeriod): ColumnDef<security, any>[] => {
         />
       ),
       filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id))
+        const val = row.getValue(id) as number
+        if (!value) return true
+        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
+          values: string[]
+          mode: 'is' | 'isnot'
+        }
+
+        if (!values || values.length === 0) return true
+
+        const matches = values.some((filter: string) => {
+          if (filter === 'high') return val >= 4
+          if (filter === 'medium') return val >= 2 && val < 4
+          if (filter === 'low') return val < 2
+          return true
+        })
+
+        return mode === 'is' ? matches : !matches
       },
     },
     {
@@ -240,7 +299,23 @@ export const columns = (selectedPeriod): ColumnDef<security, any>[] => {
         />
       ),
       filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id))
+        const val = (row.getValue(id) as number) * 100
+        if (!value) return true
+        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
+          values: string[]
+          mode: 'is' | 'isnot'
+        }
+
+        if (!values || values.length === 0) return true
+
+        const matches = values.some((filter: string) => {
+          if (filter === 'high') return val >= 90
+          if (filter === 'good') return val >= 70 && val < 90
+          if (filter === 'low') return val < 70
+          return true
+        })
+
+        return mode === 'is' ? matches : !matches
       },
     },
     {
@@ -277,7 +352,23 @@ export const columns = (selectedPeriod): ColumnDef<security, any>[] => {
         />
       ),
       filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id))
+        const val = (row.original?.lastYearFundamental?.roa || 0) * 100
+        if (!value) return true
+        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
+          values: string[]
+          mode: 'is' | 'isnot'
+        }
+
+        if (!values || values.length === 0) return true
+
+        const matches = values.some((filter: string) => {
+          if (filter === 'high') return val >= 15
+          if (filter === 'good') return val >= 5 && val < 15
+          if (filter === 'low') return val < 5
+          return true
+        })
+
+        return mode === 'is' ? matches : !matches
       },
     },
 
@@ -297,7 +388,23 @@ export const columns = (selectedPeriod): ColumnDef<security, any>[] => {
         />
       ),
       filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id))
+        const val = (row.original?.lastYearFundamental?.roe || 0) * 100
+        if (!value) return true
+        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
+          values: string[]
+          mode: 'is' | 'isnot'
+        }
+
+        if (!values || values.length === 0) return true
+
+        const matches = values.some((filter: string) => {
+          if (filter === 'high') return val >= 15
+          if (filter === 'good') return val >= 5 && val < 15
+          if (filter === 'low') return val < 5
+          return true
+        })
+
+        return mode === 'is' ? matches : !matches
       },
     },
 
@@ -306,7 +413,15 @@ export const columns = (selectedPeriod): ColumnDef<security, any>[] => {
       header: SortingButton('secteur'),
       cell: ({ row }) => <div className="lowercase">{row.getValue('sector')}</div>,
       filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id))
+        if (!value) return true
+        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
+          values: string[]
+          mode: 'is' | 'isnot'
+        }
+
+        if (!values || values.length === 0) return true
+        const matches = values.includes(row.getValue(id))
+        return mode === 'is' ? matches : !matches
       },
     },
     {
@@ -314,7 +429,15 @@ export const columns = (selectedPeriod): ColumnDef<security, any>[] => {
       header: SortingButton('industrie'),
       cell: ({ row }) => <div className="lowercase">{row.getValue('industry')}</div>,
       filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id))
+        if (!value) return true
+        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
+          values: string[]
+          mode: 'is' | 'isnot'
+        }
+
+        if (!values || values.length === 0) return true
+        const matches = values.includes(row.getValue(id))
+        return mode === 'is' ? matches : !matches
       },
     },
 
@@ -334,7 +457,23 @@ export const columns = (selectedPeriod): ColumnDef<security, any>[] => {
       ),
 
       filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id))
+        const val = row.getValue(id) as number
+        if (!value) return true
+        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
+          values: string[]
+          mode: 'is' | 'isnot'
+        }
+
+        if (!values || values.length === 0) return true
+
+        const matches = values.some((filter: string) => {
+          if (filter === 'hyper') return val > 20
+          if (filter === 'steady') return val >= 10 && val <= 20
+          if (filter === 'slow') return val < 10
+          return true
+        })
+
+        return mode === 'is' ? matches : !matches
       },
     },
   ]

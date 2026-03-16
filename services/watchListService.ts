@@ -10,6 +10,10 @@ export function get(name = 'curent') {
   return http.get(`${host}/api/v1/watchlists/${name}`)
 }
 
+export function getPublic() {
+  return http.get(`${host}/api/v1/watchlists/public`)
+}
+
 export function add(payload) {
   const body = {
     name: payload.name,
@@ -37,6 +41,7 @@ export function removeList(id) {
 const watchListService = {
   getAll,
   get,
+  getPublic,
   add,
   addStock,
   updateList,

@@ -1,6 +1,6 @@
 import { Input } from '@/components/ui/input'
 import siteMetadata from '@/data/siteMetadata'
-import { findStockBySymbol } from '@/services/actions'
+import * as stockService from '@/services/stock.service'
 import NotFound from 'app/not-found'
 import { Metadata } from 'next'
 
@@ -11,7 +11,7 @@ export async function generateMetadata({
 }): Promise<Metadata | undefined> {
   const { symbol } = params
 
-  const stock = await findStockBySymbol(symbol.toUpperCase())
+  const stock = await stockService.getStock(symbol.toUpperCase())
 
   if (stock == null) return {}
 
@@ -51,7 +51,7 @@ export async function generateMetadata({
 }
 
 async function page({ params }: { params: { symbol: string } }) {
-  const stock = await findStockBySymbol(params.symbol.toUpperCase())
+  const stock = await stockService.getStock(params.symbol.toUpperCase())
   if (stock == null) return <NotFound />
   return (
     <div>

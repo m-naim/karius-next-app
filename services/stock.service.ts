@@ -38,3 +38,7 @@ export function getQuotes(symbols: string[]) {
 export function getFundamentals(symbol: string) {
   return http.get(`${host}/api/v1/stocks/${encodeURIComponent(symbol)}/fundamentals`)
 }
+
+export function getStock(symbol: string) {
+  return http.get(`${host}/api/v1/stocks/${encodeURIComponent(symbol)}`)
+}

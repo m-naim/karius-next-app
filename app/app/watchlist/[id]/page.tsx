@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft, LineChart, Settings, X } from 'lucide-react'
 import Loader from '@/components/molecules/loader/loader'
 import { useLocalStorage } from '@/hooks/useLocalStorage' // Re-import useLocalStorage
+import { useToast } from '@/hooks/use-toast'
 
 import { TableView } from './components/TableView'
 import { TickerChart } from './components/TickerChart'
@@ -41,6 +42,7 @@ type LocalSecurityTags = {
 
 export default function Watchlist() {
   const id = usePathname().split('/')[3]
+  const { toast } = useToast()
 
   const { getItem, setItem } = useLocalStorage()
   const globalTagsKey = 'global_watchlist_tags'
@@ -69,7 +71,23 @@ export default function Watchlist() {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = React.useState('')
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
+    actions: true,
+    symbol: true,
+    regularMarketPrice: true,
+    variation: true,
+    sector: true,
+    trailingPE: true,
+    dividendYield: true,
+    growth: true,
+    tags: true,
+    roa: false,
+    roe: false,
+    linearity10y: false,
+    forwardPE: false,
+    industry: false,
+    relativePerformances: false,
+  })
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
 
@@ -197,41 +215,50 @@ export default function Watchlist() {
 
   useEffect(() => {
     const fetchData = async () => {
-      setloading(true)
-      const [listResponse, allResponse] = await Promise.all([
-        watchListService.get(id),
-        watchListService.getAll(),
-      ])
+      try {
+        setloading(true)
+        const [listResponse, allResponse] = await Promise.all([
+          watchListService.get(id),
+          watchListService.getAll(),
+        ])
 
-      // Load global tags from local storage
-      const storedGlobalTagsString = getItem(globalTagsKey)
-      const storedGlobalTags: string[] = storedGlobalTagsString
-        ? JSON.parse(storedGlobalTagsString)
-        : []
-      setAllAvailableTags(storedGlobalTags)
+        // Load global tags from local storage
+        const storedGlobalTagsString = getItem(globalTagsKey)
+        const storedGlobalTags: string[] = storedGlobalTagsString
+          ? JSON.parse(storedGlobalTagsString)
+          : []
+        setAllAvailableTags(storedGlobalTags)
 
-      // Load security-specific tags from local storage
-      const storedLocalSecurityTagsString = getItem(localSecurityTagsKey)
-      const storedLocalSecurityTags: LocalSecurityTags = storedLocalSecurityTagsString
-        ? JSON.parse(storedLocalSecurityTagsString)
-        : {}
+        // Load security-specific tags from local storage
+        const storedLocalSecurityTagsString = getItem(localSecurityTagsKey)
+        const storedLocalSecurityTags: LocalSecurityTags = storedLocalSecurityTagsString
+          ? JSON.parse(storedLocalSecurityTagsString)
+          : {}
 
-      const securitiesWithLocalTags = listResponse.watchlist.securities.map((sec) => ({
-        ...sec,
-        tags: storedLocalSecurityTags[sec.symbol] || [],
-      }))
+        const securitiesWithLocalTags = listResponse.watchlist.securities.map((sec) => ({
+          ...sec,
+          tags: storedLocalSecurityTags[sec.symbol] || [],
+        }))
 
-      setData({
-        ...listResponse.watchlist,
-        securities: securitiesWithLocalTags,
-      })
+        setData({
+          ...listResponse.watchlist,
+          securities: securitiesWithLocalTags,
+        })
 
-      if (listResponse.watchlist?.securities?.length > 0) {
-        setSelectedTicker(listResponse.watchlist.securities[0].symbol)
+        if (listResponse.watchlist?.securities?.length > 0) {
+          setSelectedTicker(listResponse.watchlist.securities[0].symbol)
+        }
+        setOwned(listResponse.owned)
+        setAllWatchlists(allResponse)
+      } catch (err) {
+        toast({
+          variant: 'destructive',
+          title: 'Erreur de chargement',
+          description: 'Impossible de récupérer les données de la watchlist.',
+        })
+      } finally {
+        setloading(false)
       }
-      setOwned(listResponse.owned)
-      setAllWatchlists(allResponse)
-      setloading(false)
     }
     fetchData()
   }, [id])

@@ -22,7 +22,7 @@ export function WatchCard({
             <CardTitle className="line-clamp-1 text-sm font-medium capitalize sm:text-base">
               {data.name}
             </CardTitle>
-            <p className="text-xs text-gray-500">{data.securities?.length || 0} Actions</p>
+            <p className="text-xs text-gray-500">{data?.securities?.length || 0} Actions</p>
           </div>
           <div className="flex items-center gap-1 rounded-md bg-gray-100 p-1.5">
             <Star className="h-4 w-4" />
@@ -32,7 +32,7 @@ export function WatchCard({
         {displayContent && (
           <CardContent className="p-3 pt-0 sm:p-4">
             <div className="flex w-full flex-wrap gap-1">
-              {data.securities
+              {data?.securities
                 ?.filter((element, index) => index < 6)
                 .map((s) => (
                   <span
@@ -42,9 +42,9 @@ export function WatchCard({
                     {s.symbol}
                   </span>
                 ))}
-              {data.securities.length > 6 && (
+              {data?.securities?.length > 6 && (
                 <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-600 sm:text-xs">
-                  +{data.securities.length - 6}
+                  +{data?.securities?.length - 6}
                 </span>
               )}
             </div>

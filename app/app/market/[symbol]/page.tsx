@@ -17,6 +17,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, LineChart, X } from 'lucide-react'
 import Loader from '@/components/molecules/loader/loader'
+import { useToast } from '@/hooks/use-toast'
 
 import { TableView } from '../../watchlist/[id]/components/TableView'
 import { TickerChart } from '../../watchlist/[id]/components/TickerChart'
@@ -31,6 +32,7 @@ interface IndexData {
 export default function MarketPage() {
   const rawSymbol = usePathname().split('/')[3]
   const symbol = decodeURIComponent(rawSymbol)
+  const { toast } = useToast()
 
   const [indexInfo, setIndexInfo] = React.useState<IndexData>({
     symbol: '',
@@ -52,7 +54,23 @@ export default function MarketPage() {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = React.useState('')
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
+    actions: true,
+    symbol: true,
+    weight: true,
+    regularMarketPrice: true,
+    variation: true,
+    sector: true,
+    trailingPE: true,
+    dividendYield: true,
+    marketCap: true,
+    roa: false,
+    roe: false,
+    linearity10y: false,
+    forwardPE: false,
+    industry: false,
+    growth: false,
+  })
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
 
@@ -106,13 +124,17 @@ export default function MarketPage() {
         setIndexInfo(infos)
         setSecurities(infos.holdings)
       } catch (error) {
-        console.error('Error loading index data:', error)
+        toast({
+          variant: 'destructive',
+          title: 'Erreur',
+          description: "Impossible de charger les données de l'indice.",
+        })
       } finally {
         setLoading(false)
       }
     }
     fetchData()
-  }, [symbol])
+  }, [symbol, toast])
 
   return loading ? (
     <Loader />
