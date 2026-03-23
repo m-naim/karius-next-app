@@ -9,9 +9,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
 } from '@/components/ui/dropdown-menu'
 import {
   Dialog,
@@ -25,8 +22,16 @@ import watchListService from '@/services/watchListService'
 import { Copy, MoreHorizontal, Move, Plus, Trash2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { watchList } from '../page'
 
-export const Actions = ({ symbol, id, deleteRow, allWatchlists = [] }) => {
+interface ActionsProps {
+  allWatchlists: watchList[]
+  symbol: string
+  id: string
+  deleteRow: (symbol: string) => void
+}
+
+export const Actions = ({ symbol, id, deleteRow, allWatchlists = [] }: ActionsProps) => {
   const { toast } = useToast()
   const [open, setOpen] = React.useState(false)
 
