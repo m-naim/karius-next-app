@@ -67,7 +67,7 @@ async function CheckError(response: Response) {
   throw new HttpError(response.status, errorMessage, errorData)
 }
 
-function authHeader() {
+function authHeader(): Record<string, string> {
   if (typeof window !== 'undefined') {
     const accessToken = localStorage.getItem('accessToken')
     if (accessToken) {
