@@ -9,8 +9,8 @@ import { Actions } from './Actions'
 import { security } from '../data/security'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { round10 } from '@/lib/decimalAjustement'
-import { ro } from 'date-fns/locale'
 import { percentVariation } from '@/lib/math'
+import { watchList } from '../page'
 
 type FiltrProps = {
   column: Column<security, string>
@@ -42,7 +42,7 @@ export const columns = (
   deleteRow,
   selectedPeriod,
   yearsInterval = 10,
-  allWatchlists = []
+  allWatchlists = [] as watchList[]
 ): ColumnDef<security, any>[] => {
   const linearityKey = yearsInterval === 10 ? 'linearity10y' : `linearity${yearsInterval}y`
 
