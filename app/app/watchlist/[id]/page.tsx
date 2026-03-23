@@ -25,7 +25,7 @@ import { TableView } from './components/TableView'
 import { TickerChart } from './components/TickerChart'
 import { WatchlistSelector } from './components/WatchlistSelector'
 
-interface watchList {
+export interface watchList {
   _id: string
   name: string
   benchMark?: {
