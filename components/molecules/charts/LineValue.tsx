@@ -22,9 +22,10 @@ interface LineValueProps {
     }[]
   }
   unit?: string
+  isLogarithmic?: boolean
 }
 
-export function LineValue({ data, unit = '€' }: LineValueProps) {
+export function LineValue({ data, unit = '€', isLogarithmic = false }: LineValueProps) {
   const chartData = data.labels.map((label, index) => ({
     name: label,
     ...data.datasets.reduce(
@@ -36,7 +37,7 @@ export function LineValue({ data, unit = '€' }: LineValueProps) {
     ),
   }))
 
-  const allYValues = data.datasets.flatMap((set) => set.data).filter((v) => v != null)
+  const allYValues = data.datasets.flatMap((set) => set.data).filter((v) => v != null && v !== 0)
 
   const minValue = Math.min(...allYValues)
   const maxValue = Math.max(...allYValues)
@@ -44,6 +45,12 @@ export function LineValue({ data, unit = '€' }: LineValueProps) {
   // Padding as % of range
   const range = maxValue - minValue || 1 // avoid division by zero
   const padding = range * 0.1
+
+  const domain = isLogarithmic
+    ? minValue > 0
+      ? ['auto', 'auto']
+      : [0.01, 'auto']
+    : [minValue - padding, maxValue + padding]
 
   return (
     <div className="h-full w-full">
@@ -81,7 +88,8 @@ export function LineValue({ data, unit = '€' }: LineValueProps) {
             tickLine={false}
             tick={{ fill: '#999', fontSize: 11 }}
             tickFormatter={(value) => `${value.toLocaleString('fr-FR')}${unit}`}
-            domain={[minValue - padding, maxValue + padding]}
+            domain={domain as any}
+            scale={isLogarithmic ? 'log' : 'auto'}
           />
           <Tooltip
             formatter={(value: number) => [`${value.toLocaleString('fr-FR')}${unit}`, '']}

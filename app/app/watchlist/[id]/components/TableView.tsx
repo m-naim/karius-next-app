@@ -14,6 +14,9 @@ export function TableView({
   onRowClick,
   selectedTicker,
   allAvailableTags = [],
+  yearsInterval,
+  setYearsInterval,
+  allWatchlists = [],
 }: {
   table: any
   id: string
@@ -25,6 +28,9 @@ export function TableView({
   onRowClick?: (row: any) => void
   selectedTicker?: string | null
   allAvailableTags?: string[]
+  yearsInterval?: number
+  setYearsInterval?: (years: number) => void
+  allWatchlists?: any[]
 }) {
   return (
     <div className="flex h-full w-full flex-col">
@@ -37,6 +43,8 @@ export function TableView({
           selectedPeriod={selectedPeriod}
           setSelectedPeriod={setSelectedPeriod}
           allAvailableTags={allAvailableTags}
+          yearsInterval={yearsInterval}
+          setYearsInterval={setYearsInterval}
         />
       </div>
       <div className="min-h-0 flex-1 overflow-auto">

@@ -12,7 +12,8 @@ import { calculateCAGR, calculateR2, calculateYearlyVariations } from '@/lib/mat
 import MetricsDisplay, { TickerChartMetrics } from '@/components/molecules/MetricsDisplay'
 import MultiSelectTagDropdown from '@/components/molecules/MultiSelectTagDropdown'
 import { PerHistoryChart } from './PerHistoryChart'
-
+import { Slider } from '@/components/ui/slider'
+import { Button } from '@/components/ui/button'
 // Define interfaces for data structures
 interface ChartData {
   labels: string[]
@@ -43,6 +44,7 @@ const periodes = [
   { value: '1y', label: '1A' },
   { value: '5y', label: '5A' },
   { value: '10y', label: '10A' },
+  { value: 'max', label: 'MAX' },
 ]
 
 export function TickerChart({
@@ -64,6 +66,10 @@ export function TickerChart({
   const [period, setPeriod] = useState('1y')
   const [loading, setLoading] = useState(true)
   const [selectedBenchmarks, setSelectedBenchmarks] = useState<string[]>([])
+  const [isLogarithmic, setIsLogarithmic] = useState(false)
+  const [yearRange, setYearRange] = useState<[number, number]>([0, 0])
+  const [selectedRange, setSelectedRange] = useState<[number, number]>([0, 0])
+  const [fullHistory, setFullHistory] = useState<{ [key: string]: StockHistoryItem[] }>({})
   const [metrics, setMetrics] = useState<TickerChartMetrics>({
     cagr: null,
     r2: null,
@@ -81,84 +87,18 @@ export function TickerChart({
 
     historyPromises
       .then((results: { [key: string]: StockHistoryItem[] }) => {
-        // Normalize data to show percentage change
-        const historyData = Object.entries(results).map(([seriesSymbol, history]) => {
-          return {
-            label: seriesSymbol,
-            data: history.map((item) => item.close),
-            borderColor: stringToColor(seriesSymbol),
+        setFullHistory(results)
+
+        const allPoints = Object.values(results).flat()
+        if (allPoints.length > 0) {
+          const years = allPoints.map((p) => new Date(p.day * 24 * 60 * 60 * 1000).getFullYear())
+          const minYear = Math.min(...years)
+          const maxYear = Math.max(...years)
+          setYearRange([minYear, maxYear])
+          // Only reset selectedRange if it's currently outside the new yearRange or if it's the first load
+          if (selectedRange[0] === 0 || selectedRange[0] < minYear || selectedRange[1] > maxYear) {
+            setSelectedRange([minYear, maxYear])
           }
-        })
-
-        const normalizedDatasets = Object.entries(results)
-          .map(([seriesSymbol, history]) => {
-            const firstValue = history[0]?.close
-
-            // Return null for empty histories to filter them out later
-            if (!firstValue || firstValue === 0) return null
-
-            const normalizedData = history.map((item) => (item.close / firstValue) * 100 - 100)
-
-            return {
-              label: seriesSymbol,
-              data: normalizedData,
-              borderColor: stringToColor(seriesSymbol),
-            }
-          })
-          .filter(Boolean) as ChartData['datasets']
-
-        // Use the labels from the primary stock's history
-        const labels = (Object.values(results)[0] || []).map((item: StockHistoryItem) => {
-          const millisecondsPerDay = 24 * 60 * 60 * 1000
-          const date = new Date(item.day * millisecondsPerDay)
-          return format(date, 'dd/MM/yyyy')
-        })
-
-        setChartData({
-          labels,
-          datasets: selectedBenchmarks.length > 0 ? normalizedDatasets : historyData,
-        })
-
-        // Calculate metrics for the primary symbol
-        const primaryHistory = results[symbol]
-        if (primaryHistory && primaryHistory.length > 1) {
-          const first = primaryHistory[0]
-          const last = primaryHistory[primaryHistory.length - 1]
-          const daysDiff = last.day - first.day
-          const years = daysDiff / 365.25
-
-          const closes = primaryHistory.map((d) => d.close)
-          const cagr = calculateCAGR(first.close, last.close, years)
-          const r2 = calculateR2(closes)
-          const min = Math.min(...closes)
-          const max = Math.max(...closes)
-
-          // Calculate allPeriodVariation
-          const allPeriodVariation = ((last.close - first.close) / first.close) * 100
-
-          // Placeholder for yearly variations (will implement these functions in lib/math.ts)
-          const { bestYearVariation, worstYearVariation } =
-            calculateYearlyVariations(primaryHistory)
-
-          setMetrics({
-            cagr,
-            r2,
-            min,
-            max,
-            allPeriodVariation,
-            bestYearVariation,
-            worstYearVariation,
-          })
-        } else {
-          setMetrics({
-            cagr: null,
-            r2: null,
-            min: null,
-            max: null,
-            allPeriodVariation: null,
-            bestYearVariation: null,
-            worstYearVariation: null,
-          })
         }
 
         setLoading(false)
@@ -168,6 +108,104 @@ export function TickerChart({
         setLoading(false)
       })
   }, [symbol, period, selectedBenchmarks])
+
+  useEffect(() => {
+    if (Object.keys(fullHistory).length === 0) return
+
+    let filteredHistory = { ...fullHistory }
+
+    if (selectedRange[0] !== 0) {
+      const minTs = new Date(selectedRange[0], 0, 1).getTime() / (24 * 60 * 60 * 1000)
+      const maxTs = new Date(selectedRange[1], 11, 31).getTime() / (24 * 60 * 60 * 1000)
+
+      filteredHistory = Object.entries(fullHistory).reduce(
+        (acc, [s, history]) => {
+          acc[s] = history.filter((p) => p.day >= minTs && p.day <= maxTs)
+          return acc
+        },
+        {} as { [key: string]: StockHistoryItem[] }
+      )
+    }
+
+    const results = filteredHistory
+    // Normalize data to show percentage change
+    const historyData = Object.entries(results).map(([seriesSymbol, history]) => {
+      return {
+        label: seriesSymbol,
+        data: history.map((item) => item.close),
+        borderColor: stringToColor(seriesSymbol),
+      }
+    })
+
+    const normalizedDatasets = Object.entries(results)
+      .map(([seriesSymbol, history]) => {
+        const firstValue = history[0]?.close
+
+        // Return null for empty histories to filter them out later
+        if (!firstValue || firstValue === 0) return null
+
+        const normalizedData = history.map((item) => (item.close / firstValue) * 100 - 100)
+
+        return {
+          label: seriesSymbol,
+          data: normalizedData,
+          borderColor: stringToColor(seriesSymbol),
+        }
+      })
+      .filter(Boolean) as ChartData['datasets']
+
+    // Use the labels from the primary stock's history
+    const labels = (Object.values(results)[0] || []).map((item: StockHistoryItem) => {
+      const millisecondsPerDay = 24 * 60 * 60 * 1000
+      const date = new Date(item.day * millisecondsPerDay)
+      return format(date, 'dd/MM/yyyy')
+    })
+
+    setChartData({
+      labels,
+      datasets: selectedBenchmarks.length > 0 ? normalizedDatasets : historyData,
+    })
+
+    // Calculate metrics for the primary symbol
+    const primaryHistory = results[symbol]
+    if (primaryHistory && primaryHistory.length > 1) {
+      const first = primaryHistory[0]
+      const last = primaryHistory[primaryHistory.length - 1]
+      const daysDiff = last.day - first.day
+      const years = daysDiff / 365.25
+
+      const closes = primaryHistory.map((d) => d.close)
+      const cagr = calculateCAGR(first.close, last.close, years)
+      const r2 = calculateR2(closes)
+      const min = Math.min(...closes)
+      const max = Math.max(...closes)
+
+      // Calculate allPeriodVariation
+      const allPeriodVariation = ((last.close - first.close) / first.close) * 100
+
+      const { bestYearVariation, worstYearVariation } = calculateYearlyVariations(primaryHistory)
+
+      setMetrics({
+        cagr,
+        r2,
+        min,
+        max,
+        allPeriodVariation,
+        bestYearVariation,
+        worstYearVariation,
+      })
+    } else {
+      setMetrics({
+        cagr: null,
+        r2: null,
+        min: null,
+        max: null,
+        allPeriodVariation: null,
+        bestYearVariation: null,
+        worstYearVariation: null,
+      })
+    }
+  }, [fullHistory, selectedRange, period, symbol, selectedBenchmarks])
 
   const handleBenchmarkChange = (benchmarkSymbol: string) => {
     setSelectedBenchmarks((prev) =>
@@ -223,6 +261,14 @@ export function TickerChart({
                   </Label>
                 </div>
               ))}
+              <Button
+                variant={isLogarithmic ? 'default' : 'outline'}
+                size="sm"
+                className="h-7 px-2 text-[10px] font-bold uppercase tracking-tight"
+                onClick={() => setIsLogarithmic(!isLogarithmic)}
+              >
+                Log
+              </Button>
             </div>
           </div>
 
@@ -230,9 +276,31 @@ export function TickerChart({
             {loading ? (
               <div className="flex h-full items-center justify-center text-sm">Chargement...</div>
             ) : (
-              <LineValue data={chartData} unit={selectedBenchmarks.length > 0 ? '%' : '€'} />
+              <LineValue
+                data={chartData}
+                unit={selectedBenchmarks.length > 0 ? '%' : '€'}
+                isLogarithmic={isLogarithmic}
+              />
             )}
           </div>
+
+          {!loading && yearRange[0] !== yearRange[1] && (
+            <div className="px-2 pt-2">
+              <div className="mb-1 flex justify-between text-[10px] font-medium text-muted-foreground">
+                <span>
+                  Intervalle: {selectedRange[0]} - {selectedRange[1]}
+                </span>
+              </div>
+              <Slider
+                min={yearRange[0]}
+                max={yearRange[1]}
+                step={1}
+                value={[selectedRange[0], selectedRange[1]]}
+                onValueChange={(value) => setSelectedRange(value as [number, number])}
+                className="py-2"
+              />
+            </div>
+          )}
 
           <MetricsDisplay metrics={metrics} loading={loading} period={period} />
         </TabsContent>

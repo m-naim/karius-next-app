@@ -16,6 +16,8 @@ import { T } from 'framer-motion/dist/types.d-B50aGbjN'
 import { Table } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 
+import { Slider } from '@/components/ui/slider'
+
 const periods = [
   { label: '1 jour', value: '1d' },
   { label: '1 semaine', value: '1w' },
@@ -34,6 +36,8 @@ interface TableContextHeaderProps {
   selectedPeriod: string
   setSelectedPeriod: (period: string) => void
   allAvailableTags?: string[]
+  yearsInterval?: number
+  setYearsInterval?: (years: number) => void
 }
 
 export const TableContextHeader = ({
@@ -44,6 +48,8 @@ export const TableContextHeader = ({
   selectedPeriod,
   setSelectedPeriod,
   allAvailableTags = [],
+  yearsInterval = 10,
+  setYearsInterval,
 }: TableContextHeaderProps) => {
   const [showFilters, setShowFilters] = React.useState(false)
 
@@ -90,6 +96,22 @@ export const TableContextHeader = ({
         </div>
 
         <div className="flex items-center gap-2">
+          {setYearsInterval && (
+            <div className="flex w-32 items-center gap-2 px-2">
+              <span className="whitespace-nowrap text-[10px] font-medium text-muted-foreground">
+                Lin {yearsInterval}y
+              </span>
+              <Slider
+                min={1}
+                max={20}
+                step={1}
+                value={[yearsInterval]}
+                onValueChange={(value) => setYearsInterval(value[0])}
+                className="w-16"
+              />
+            </div>
+          )}
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button size="sm" variant="outline" className="h-8 w-8 p-0">

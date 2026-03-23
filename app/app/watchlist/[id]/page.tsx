@@ -84,12 +84,14 @@ export default function Watchlist() {
     roa: false,
     roe: false,
     linearity10y: false,
+    ret_lin: false,
     forwardPE: false,
     industry: false,
     relativePerformances: false,
   })
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
+  const [yearsInterval, setYearsInterval] = React.useState(10)
 
   const deleteRow = (symbol: string) => {
     setData((prevData) => ({
@@ -182,8 +184,16 @@ export default function Watchlist() {
 
   const useDynamicColumns = () =>
     useMemo(() => {
-      return columns(id, owned, data.benchMark, deleteRow, selectedPeriod)
-    }, [id, owned, data.benchMark, deleteRow, selectedPeriod])
+      return columns(
+        id,
+        owned,
+        data.benchMark,
+        deleteRow,
+        selectedPeriod,
+        yearsInterval,
+        allWatchlists
+      )
+    }, [id, owned, data.benchMark, deleteRow, selectedPeriod, yearsInterval, allWatchlists])
 
   const table = useReactTable<security>({
     data: useDynamicTableData(data!.securities),
@@ -309,13 +319,24 @@ export default function Watchlist() {
                 setData={setData}
                 selectedPeriod={selectedPeriod}
                 setSelectedPeriod={setSelectedPeriod}
-                columns={columns(id, owned, data.benchMark, deleteRow, selectedPeriod)}
+                columns={columns(
+                  id,
+                  owned,
+                  data.benchMark,
+                  deleteRow,
+                  selectedPeriod,
+                  yearsInterval,
+                  allWatchlists
+                )}
                 onRowClick={(row) => {
                   setSelectedTicker(row.symbol)
                   if (!showChart) setShowChart(true)
                 }}
                 selectedTicker={selectedTicker}
                 allAvailableTags={allAvailableTags}
+                yearsInterval={yearsInterval}
+                setYearsInterval={setYearsInterval}
+                allWatchlists={allWatchlists}
               />
             </div>
           )}

@@ -30,7 +30,13 @@ const SortingButton = (title) => {
   }
 }
 
-export const columns = (selectedPeriod): ColumnDef<security, any>[] => {
+export const columns = (
+  selectedPeriod,
+  yearsInterval = 10,
+  allWatchlists = []
+): ColumnDef<security, any>[] => {
+  const linearityKey = yearsInterval === 10 ? 'linearity10y' : `linearity${yearsInterval}y`
+
   const cols: ColumnDef<security, any>[] = [
     {
       accessorKey: 'actions',
@@ -279,18 +285,18 @@ export const columns = (selectedPeriod): ColumnDef<security, any>[] => {
     },
     {
       accessorKey: 'linearity10y',
-      header: SortingButton('linéarité'),
+      header: SortingButton(`linéarité ${yearsInterval}a`),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const validRows = rows.filter((r) => !!r.getValue('linearity10y'))
+        const validRows = rows.filter((r) => !!r.original[linearityKey])
         const avg =
-          rows.reduce((acc, row) => acc + ((row.getValue('linearity10y') as number) || 0), 0) /
+          rows.reduce((acc, row) => acc + ((row.original[linearityKey] as number) || 0), 0) /
           validRows.length
         return <div className="text-[10px]">{round10(avg, -2) || ''}</div>
       },
       cell: ({ row }) => (
         <VariationContainer
-          value={(row.getValue('linearity10y') as number) * 100 || 0}
+          value={(row.original[linearityKey] as number) * 100 || 0}
           entity="%"
           background={false}
           vaiationColor={false}
@@ -299,7 +305,7 @@ export const columns = (selectedPeriod): ColumnDef<security, any>[] => {
         />
       ),
       filterFn: (row, id, value) => {
-        const val = (row.getValue(id) as number) * 100
+        const val = (row.original[linearityKey] as number) * 100
         if (!value) return true
         const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
           values: string[]
@@ -316,6 +322,54 @@ export const columns = (selectedPeriod): ColumnDef<security, any>[] => {
         })
 
         return mode === 'is' ? matches : !matches
+      },
+    },
+    {
+      accessorFn: (row) => {
+        let chg = row.regularMarketChangePercent
+        if (selectedPeriod != '1d') {
+          const variations = row.variations as Record<string, number>
+          if (variations != null) {
+            chg = variations[selectedPeriod]
+          } else {
+            chg = -10000
+          }
+        }
+        if (chg === -10000) return -10000
+        const lin = (row as any)[linearityKey] || (row as any).linearity10y || 0
+        return chg * lin
+      },
+      id: 'ret_lin',
+      header: SortingButton('ret * lin'),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const filteredRows = rows.filter(
+          (r) => !isNaN(r.getValue('ret_lin') as number) && r.getValue('ret_lin') !== -10000
+        )
+        const avg =
+          rows.reduce((acc, row) => {
+            const val = row.getValue('ret_lin') as number
+            return isNaN(val) || val === -10000 ? acc : acc + val
+          }, 0) / filteredRows.length
+        return (
+          <VariationContainer
+            value={avg}
+            entity="%"
+            background={false}
+            className="m-0 p-0 text-[10px]"
+          />
+        )
+      },
+      cell: ({ row }) => {
+        const val = row.getValue('ret_lin') as number
+        return (
+          <VariationContainer
+            value={val}
+            entity="%"
+            background={false}
+            className="m-0 p-0 py-1 text-[11px]"
+          />
+        )
       },
     },
     {

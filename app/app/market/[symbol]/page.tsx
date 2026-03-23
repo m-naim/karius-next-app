@@ -67,12 +67,14 @@ export default function MarketPage() {
     roa: false,
     roe: false,
     linearity10y: false,
+    ret_lin: false,
     forwardPE: false,
     industry: false,
     growth: false,
   })
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
+  const [yearsInterval, setYearsInterval] = React.useState(10)
 
   const useDynamicTableData = (securities: security[]) => {
     return useMemo(() => {
@@ -85,8 +87,8 @@ export default function MarketPage() {
 
   const useDynamicColumns = () =>
     useMemo(() => {
-      return columns(selectedPeriod)
-    }, [symbol, selectedPeriod])
+      return columns(selectedPeriod, yearsInterval)
+    }, [symbol, selectedPeriod, yearsInterval])
 
   const table = useReactTable<security>({
     data: useDynamicTableData(securities),
@@ -176,12 +178,14 @@ export default function MarketPage() {
                 setData={() => {}}
                 selectedPeriod={selectedPeriod}
                 setSelectedPeriod={setSelectedPeriod}
-                columns={columns(selectedPeriod)}
+                columns={columns(selectedPeriod, yearsInterval)}
                 onRowClick={(row) => {
                   setSelectedTicker(row.symbol)
                   if (!showChart) setShowChart(true)
                 }}
                 selectedTicker={selectedTicker}
+                yearsInterval={yearsInterval}
+                setYearsInterval={setYearsInterval}
               />
             </div>
           )}
