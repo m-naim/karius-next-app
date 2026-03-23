@@ -67,6 +67,7 @@ export function TickerChart({
   const [loading, setLoading] = useState(true)
   const [selectedBenchmarks, setSelectedBenchmarks] = useState<string[]>([])
   const [isLogarithmic, setIsLogarithmic] = useState(false)
+  const [isDrawdown, setIsDrawdown] = useState(false)
   const [yearRange, setYearRange] = useState<[number, number]>([0, 0])
   const [selectedRange, setSelectedRange] = useState<[number, number]>([0, 0])
   const [fullHistory, setFullHistory] = useState<{ [key: string]: StockHistoryItem[] }>({})
@@ -128,11 +129,21 @@ export function TickerChart({
     }
 
     const results = filteredHistory
-    // Normalize data to show percentage change
+    // Normalize data to show percentage change or drawdown
     const historyData = Object.entries(results).map(([seriesSymbol, history]) => {
+      let data = history.map((item) => item.close)
+
+      if (isDrawdown) {
+        let peak = -Infinity
+        data = data.map((price) => {
+          if (price > peak) peak = price
+          return ((price - peak) / peak) * 100
+        })
+      }
+
       return {
         label: seriesSymbol,
-        data: history.map((item) => item.close),
+        data: data,
         borderColor: stringToColor(seriesSymbol),
       }
     })
@@ -144,7 +155,16 @@ export function TickerChart({
         // Return null for empty histories to filter them out later
         if (!firstValue || firstValue === 0) return null
 
-        const normalizedData = history.map((item) => (item.close / firstValue) * 100 - 100)
+        let normalizedData = []
+        if (isDrawdown) {
+          let peak = -Infinity
+          normalizedData = history.map((item) => {
+            if (item.close > peak) peak = item.close
+            return ((item.close - peak) / peak) * 100
+          })
+        } else {
+          normalizedData = history.map((item) => (item.close / firstValue) * 100 - 100)
+        }
 
         return {
           label: seriesSymbol,
@@ -205,7 +225,7 @@ export function TickerChart({
         worstYearVariation: null,
       })
     }
-  }, [fullHistory, selectedRange, period, symbol, selectedBenchmarks])
+  }, [fullHistory, selectedRange, period, symbol, selectedBenchmarks, isDrawdown])
 
   const handleBenchmarkChange = (benchmarkSymbol: string) => {
     setSelectedBenchmarks((prev) =>
@@ -261,14 +281,32 @@ export function TickerChart({
                   </Label>
                 </div>
               ))}
-              <Button
-                variant={isLogarithmic ? 'default' : 'outline'}
-                size="sm"
-                className="h-7 px-2 text-[10px] font-bold uppercase tracking-tight"
-                onClick={() => setIsLogarithmic(!isLogarithmic)}
-              >
-                Log
-              </Button>
+              <div className="flex gap-1 border-l pl-3">
+                <Button
+                  variant={isLogarithmic ? 'default' : 'outline'}
+                  size="sm"
+                  className="h-7 px-2 text-[10px] font-bold uppercase tracking-tight"
+                  onClick={() => {
+                    setIsLogarithmic(!isLogarithmic)
+                    if (isDrawdown) setIsDrawdown(false)
+                  }}
+                  disabled={isDrawdown}
+                >
+                  Log
+                </Button>
+                <Button
+                  variant={isDrawdown ? 'default' : 'outline'}
+                  size="sm"
+                  className="h-7 px-2 text-[10px] font-bold uppercase tracking-tight"
+                  onClick={() => {
+                    const nextValue = !isDrawdown
+                    setIsDrawdown(nextValue)
+                    if (nextValue) setIsLogarithmic(false)
+                  }}
+                >
+                  DD
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -278,8 +316,8 @@ export function TickerChart({
             ) : (
               <LineValue
                 data={chartData}
-                unit={selectedBenchmarks.length > 0 ? '%' : '€'}
-                isLogarithmic={isLogarithmic}
+                unit={isDrawdown || selectedBenchmarks.length > 0 ? '%' : '€'}
+                isLogarithmic={isLogarithmic && !isDrawdown}
               />
             )}
           </div>

@@ -91,7 +91,6 @@ export default function Watchlist() {
   })
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
-  const [yearsInterval, setYearsInterval] = React.useState(10)
 
   const deleteRow = (symbol: string) => {
     setData((prevData) => ({
@@ -184,16 +183,8 @@ export default function Watchlist() {
 
   const useDynamicColumns = () =>
     useMemo(() => {
-      return columns(
-        id,
-        owned,
-        data.benchMark,
-        deleteRow,
-        selectedPeriod,
-        yearsInterval,
-        allWatchlists
-      )
-    }, [id, owned, data.benchMark, deleteRow, selectedPeriod, yearsInterval, allWatchlists])
+      return columns(id, owned, data.benchMark, deleteRow, selectedPeriod, allWatchlists)
+    }, [id, owned, data.benchMark, deleteRow, selectedPeriod, allWatchlists])
 
   const table = useReactTable<security>({
     data: useDynamicTableData(data!.securities),
@@ -325,7 +316,6 @@ export default function Watchlist() {
                   data.benchMark,
                   deleteRow,
                   selectedPeriod,
-                  yearsInterval,
                   allWatchlists
                 )}
                 onRowClick={(row) => {
@@ -334,8 +324,6 @@ export default function Watchlist() {
                 }}
                 selectedTicker={selectedTicker}
                 allAvailableTags={allAvailableTags}
-                yearsInterval={yearsInterval}
-                setYearsInterval={setYearsInterval}
                 allWatchlists={allWatchlists}
               />
             </div>

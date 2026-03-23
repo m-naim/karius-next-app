@@ -30,13 +30,7 @@ const SortingButton = (title) => {
   }
 }
 
-export const columns = (
-  selectedPeriod,
-  yearsInterval = 10,
-  allWatchlists = []
-): ColumnDef<security, any>[] => {
-  const linearityKey = yearsInterval === 10 ? 'linearity10y' : `linearity${yearsInterval}y`
-
+export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security, any>[] => {
   const cols: ColumnDef<security, any>[] = [
     {
       accessorKey: 'actions',
@@ -285,18 +279,18 @@ export const columns = (
     },
     {
       accessorKey: 'linearity10y',
-      header: SortingButton(`linéarité ${yearsInterval}a`),
+      header: SortingButton('linéarité'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const validRows = rows.filter((r) => !!r.original[linearityKey])
+        const validRows = rows.filter((r) => !!r.getValue('linearity10y'))
         const avg =
-          rows.reduce((acc, row) => acc + ((row.original[linearityKey] as number) || 0), 0) /
+          rows.reduce((acc, row) => acc + ((row.getValue('linearity10y') as number) || 0), 0) /
           validRows.length
         return <div className="text-[10px]">{round10(avg, -2) || ''}</div>
       },
       cell: ({ row }) => (
         <VariationContainer
-          value={(row.original[linearityKey] as number) * 100 || 0}
+          value={(row.getValue('linearity10y') as number) * 100 || 0}
           entity="%"
           background={false}
           vaiationColor={false}
@@ -305,7 +299,7 @@ export const columns = (
         />
       ),
       filterFn: (row, id, value) => {
-        const val = (row.original[linearityKey] as number) * 100
+        const val = (row.getValue(id) as number) * 100
         if (!value) return true
         const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
           values: string[]
@@ -336,7 +330,7 @@ export const columns = (
           }
         }
         if (chg === -10000) return -10000
-        const lin = (row as any)[linearityKey] || (row as any).linearity10y || 0
+        const lin = row.linearity10y || 0
         return chg * lin
       },
       id: 'ret_lin',
