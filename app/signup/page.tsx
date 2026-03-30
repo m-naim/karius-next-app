@@ -13,7 +13,6 @@ import { useAuth } from '@/hooks/useAuth'
 function Signup() {
   const router = useRouter()
   const { login } = useAuth()
-
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
@@ -56,9 +55,9 @@ function Signup() {
             Votre surnom
           </Label>
           <Input
-            type="email"
-            name="email"
-            id="email"
+            type="Text"
+            name="username"
+            id="username"
             className="input-primary"
             placeholder="Batman"
             value={username}
