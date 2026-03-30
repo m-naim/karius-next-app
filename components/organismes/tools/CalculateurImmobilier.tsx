@@ -99,7 +99,7 @@ export default function CalculateurImmobilier() {
     let breakEvenYear: number | null = null
 
     let patrimoineLocataire = A
-    let rEpargneMois = rendementEpargne / 100 / 12
+    const rEpargneMois = rendementEpargne / 100 / 12
 
     for (let year = 1; year <= 30; year++) {
       const inflationLoyerFacteur = Math.pow(1 + inflationLoyer / 100, year - 1)
