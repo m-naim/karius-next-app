@@ -80,19 +80,13 @@ const Header = () => {
           <SearchButton />
           <ThemeSwitch />
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger>
-                <Avatar>
-                  <AvatarFallback className="bg-primary text-white">
-                    {user.sub.substring(0, 1)}
-                  </AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
-
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={logOut}>Se déconnecter</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Link href="/app/profile">
+              <Avatar className="cursor-pointer transition-opacity hover:opacity-80">
+                <AvatarFallback className="bg-primary text-white">
+                  {user.sub.substring(0, 1)}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
           ) : (
             <div className="hidden md:block">
               <Link href="/login">

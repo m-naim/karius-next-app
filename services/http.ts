@@ -1,3 +1,5 @@
+import { toast } from '@/hooks/use-toast'
+
 export class HttpError extends Error {
   status: number
   data: any
@@ -44,27 +46,29 @@ async function CheckError(response: Response) {
   if (response.status === 401) {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('accessToken')
-      // Optional: window.location.href = '/login'
     }
   }
 
-  // Global notification for server errors or critical failures
-  if (response.status >= 500 && typeof window !== 'undefined') {
-    // Dynamically import toast to avoid server-side issues with client hooks
-    import('@/hooks/use-toast')
-      .then((module) => {
-        if (module && module.toast) {
-          module.toast({
-            variant: 'destructive',
-            title: 'Erreur Serveur',
-            description: 'Une erreur inattendue est survenue sur le serveur.',
-          })
-        }
-      })
-      .catch((e) => console.error('Failed to load toast module:', e))
+  // Global notification for all errors
+  if (typeof window !== 'undefined') {
+    toast({
+      variant: 'destructive',
+      title: response.status >= 500 ? 'Erreur Serveur' : 'Erreur API',
+      description: errorMessage || 'Une erreur est survenue lors de la requête.',
+    })
   }
 
   throw new HttpError(response.status, errorMessage, errorData)
+}
+
+function handleNetworkError(err: any) {
+  if (!(err instanceof HttpError) && typeof window !== 'undefined') {
+    toast({
+      variant: 'destructive',
+      title: 'Erreur Réseau',
+      description: 'Impossible de contacter le serveur. Vérifiez votre connexion.',
+    })
+  }
 }
 
 function authHeader(): Record<string, string> {
@@ -88,7 +92,12 @@ function post(path: string, body: any) {
     body: JSON.stringify(body),
     method: 'POST',
     mode: 'cors',
-  }).then(CheckError)
+  })
+    .then(CheckError)
+    .catch((err) => {
+      handleNetworkError(err)
+      throw err
+    })
 }
 
 function get(path: string) {
@@ -101,7 +110,12 @@ function get(path: string) {
     },
     method: 'GET',
     mode: 'cors',
-  }).then(CheckError)
+  })
+    .then(CheckError)
+    .catch((err) => {
+      handleNetworkError(err)
+      throw err
+    })
 }
 
 function put(path: string, body: any) {
@@ -115,7 +129,12 @@ function put(path: string, body: any) {
     body: JSON.stringify(body),
     method: 'PUT',
     mode: 'cors',
-  }).then(CheckError)
+  })
+    .then(CheckError)
+    .catch((err) => {
+      handleNetworkError(err)
+      throw err
+    })
 }
 
 function deleteReq(path: string) {
@@ -128,7 +147,12 @@ function deleteReq(path: string) {
     },
     method: 'DELETE',
     mode: 'cors',
-  }).then(CheckError)
+  })
+    .then(CheckError)
+    .catch((err) => {
+      handleNetworkError(err)
+      throw err
+    })
 }
 
 const http = {

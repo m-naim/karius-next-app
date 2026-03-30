@@ -9,6 +9,7 @@ import { ThemeProviders } from './theme-providers'
 import { Metadata } from 'next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Providers } from './providers'
+import { Toaster } from '@/components/ui/toaster'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteMetadata.siteUrl),
@@ -75,6 +76,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ThemeProviders>
             <Analytics />
             <SpeedInsights />
+            <Toaster />
 
             <div className="flex h-screen flex-col justify-between">
               <SearchProvider searchConfig={siteMetadata.search as SearchConfig}>

@@ -55,11 +55,35 @@ const getCurrentUser = () => {
   }
 }
 
+const getProfile = () => {
+  return http.get(`${host}/api/v1/profile/`)
+}
+
+const updateProfile = (data: {
+  name: string
+  telegramChatId: string
+  notificationsEnabled: boolean
+}) => {
+  return http.post(`${host}/api/v1/profile/update`, data)
+}
+
+const changePassword = (data: { oldPassword: string; newPassword: string }) => {
+  return http.post(`${host}/api/v1/profile/change-password`, data)
+}
+
+const deleteAccount = () => {
+  return http.deleteReq(`${host}/api/v1/profile/delete-account`)
+}
+
 const authService = {
   register,
   login,
   logOut,
   getCurrentUser,
+  getProfile,
+  updateProfile,
+  changePassword,
+  deleteAccount,
 }
 
 export default authService

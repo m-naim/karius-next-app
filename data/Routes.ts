@@ -32,6 +32,10 @@ const footerRoutes = [
         href: '/fr/simulation-portefeuille-bourse',
         title: 'Simulation portefeuille boursier',
       },
+      {
+        href: '/fr/outils/calculateur-immobilier',
+        title: 'Calculateur Immobilier',
+      },
     ],
   },
   {

@@ -26,6 +26,7 @@ export interface security {
   forwardPE: number
   currency: string
   weight?: number
+  linearity10y: number
   lastYearFundamental?: {
     roa: number
     roe: number
