@@ -10,7 +10,6 @@ import { security } from '../data/security'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { round10 } from '@/lib/decimalAjustement'
 import { percentVariation } from '@/lib/math'
-import { watchList } from '../page'
 
 type FiltrProps = {
   column: Column<security, string>
@@ -41,7 +40,7 @@ export const columns = (
   benchmark,
   deleteRow,
   selectedPeriod,
-  allWatchlists = []
+  allWatchlists
 ): ColumnDef<security, any>[] => {
   const cols: ColumnDef<security, any>[] = [
     {

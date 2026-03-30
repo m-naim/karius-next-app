@@ -155,7 +155,7 @@ export function TickerChart({
         // Return null for empty histories to filter them out later
         if (!firstValue || firstValue === 0) return null
 
-        let normalizedData = []
+        let normalizedData: number[] = [0]
         if (isDrawdown) {
           let peak = -Infinity
           normalizedData = history.map((item) => {
