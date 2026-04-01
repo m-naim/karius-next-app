@@ -2,7 +2,9 @@ import { genPageMetadata } from 'app/seo'
 import SectionContainer from '@/components/organismes/layout/SectionContainer'
 import CalculateurImmobilier from '@/components/organismes/tools/CalculateurImmobilier'
 import { NewsletterForm } from '@/components/molecules/ui/NewsletterForm'
-import { Home, Calculator, TrendingUp, Info } from 'lucide-react'
+import { Home, Calculator, TrendingUp, Info, ArrowRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 export const metadata = genPageMetadata({
   title: 'Simulateur Immobilier : Achat vs Location | BourseHorus',
@@ -29,6 +31,19 @@ export default function Page() {
         </div>
 
         <CalculateurImmobilier />
+
+        <div className="mt-8 flex flex-col items-center gap-4 rounded-xl border border-primary/20 bg-primary/5 p-6 text-center">
+          <h3 className="text-xl font-bold">Besoin de voir le détail de vos mensualités ?</h3>
+          <p className="text-muted-foreground">
+            Découvrez la part des intérêts et du capital remboursé chaque année avec notre
+            simulateur d'amortissement détaillé.
+          </p>
+          <Button asChild>
+            <Link href="/fr/outils/calculateur-mensualite">
+              Voir le simulateur de mensualité <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
 
         <div className="mt-16 grid grid-cols-1 gap-12 md:grid-cols-2">
           <div className="space-y-4">

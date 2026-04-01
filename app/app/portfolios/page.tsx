@@ -73,15 +73,27 @@ const Portfolios = () => {
           <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl md:text-3xl">
             Découvrez les meilleurs portefeuilles de la communauté
           </h1>
+          <Link
+            href="/app/portfolios/explore"
+            className="mt-2 text-sm font-medium text-primary hover:underline"
+          >
+            Voir tout →
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <Card className="w-full">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Flame className="h-5 w-5 text-red-500" fill="currentColor" />
                 Les plus performants
               </CardTitle>
+              <Link
+                href="/app/portfolios/explore"
+                className="text-xs font-medium text-primary hover:underline"
+              >
+                Voir tout
+              </Link>
             </CardHeader>
             <CardContent>
               <PortfoliosSuggestSection items={data?.bestPerformingPortfolios} />
@@ -89,11 +101,17 @@ const Portfolios = () => {
           </Card>
 
           <Card className="w-full">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <StarIcon className="h-5 w-5 text-yellow-400" fill="currentColor" />
                 Les plus suivis
               </CardTitle>
+              <Link
+                href="/app/portfolios/explore"
+                className="text-xs font-medium text-primary hover:underline"
+              >
+                Voir tout
+              </Link>
             </CardHeader>
             <CardContent>
               <PortfoliosSuggestSection items={data?.mostFollowedPortfolios} />

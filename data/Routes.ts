@@ -36,6 +36,10 @@ const footerRoutes = [
         href: '/fr/outils/calculateur-immobilier',
         title: 'Calculateur Immobilier',
       },
+      {
+        href: '/fr/outils/calculateur-mensualite',
+        title: 'Simulateur Mensualité',
+      },
     ],
   },
   {

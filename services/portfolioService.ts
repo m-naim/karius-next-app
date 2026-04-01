@@ -10,6 +10,10 @@ export function getAll() {
   return http.get(`${host}/api/v1/portfolios`)
 }
 
+export function getPublicPortfolios() {
+  return http.get(`${host}/api/v1/portfolios/public`)
+}
+
 export function getStocksNameByName(name) {
   return http.get(`${host}/api/v1/stocks/search/${name}`)
 }
