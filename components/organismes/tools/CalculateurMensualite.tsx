@@ -119,7 +119,7 @@ export default function CalculateurMensualite() {
 
     const mAssurance = (L * (tauxAssurance / 100)) / 12
 
-    const data = []
+    const data: any = []
     let balance = L
     let cumulInterets = 0
     let cumulPrincipal = 0

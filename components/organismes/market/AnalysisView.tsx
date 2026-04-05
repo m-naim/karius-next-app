@@ -15,11 +15,11 @@ import {
   Legend,
 } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { security } from '@/app/app/watchlist/[id]/data/security'
 import { round10 } from '@/lib/decimalAjustement'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { BarChart3, Activity, Layers, Box, CalendarDays, TrendingUp, Filter } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { security } from 'app/app/watchlist/[id]/data/security'
 
 interface AnalysisViewProps {
   securities: security[]
