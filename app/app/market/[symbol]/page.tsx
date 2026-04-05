@@ -21,7 +21,9 @@ import { useToast } from '@/hooks/use-toast'
 
 import { TableView } from '../../watchlist/[id]/components/TableView'
 import { TickerChart } from '../../watchlist/[id]/components/TickerChart'
+import { AnalysisView } from '@/components/organismes/market/AnalysisView'
 import { columns } from './columns'
+import { LayoutDashboard, Table as TableIcon } from 'lucide-react'
 
 interface IndexData {
   symbol: string
@@ -41,6 +43,7 @@ export default function MarketPage() {
   })
 
   const [securities, setSecurities] = React.useState<security[]>([])
+  const [view, setView] = React.useState<'table' | 'analysis'>('table')
   const [loading, setLoading] = React.useState(true)
   const [selectedTicker, setSelectedTicker] = React.useState<string | null>(null)
   const [showChart, setShowChart] = React.useState(false)
@@ -157,6 +160,19 @@ export default function MarketPage() {
           <Button
             variant="ghost"
             size="icon"
+            className="h-8 w-8 shrink-0"
+            onClick={() => setView(view === 'table' ? 'analysis' : 'table')}
+            title={view === 'table' ? 'Vue Analyse' : 'Vue Tableau'}
+          >
+            {view === 'table' ? (
+              <LayoutDashboard className="h-4 w-4" />
+            ) : (
+              <TableIcon className="h-4 w-4" />
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             className={`h-8 w-8 shrink-0 rounded-full ${showChart ? 'bg-gray-100' : ''}`}
             onClick={() => setShowChart(!showChart)}
           >
@@ -170,20 +186,28 @@ export default function MarketPage() {
         <div className="bg-dark flex-1 overflow-hidden rounded-lg border">
           {!loading && (
             <div className="flex h-full flex-col">
-              <TableView
-                table={table}
-                id={symbol}
-                owned={false}
-                setData={() => {}}
-                selectedPeriod={selectedPeriod}
-                setSelectedPeriod={setSelectedPeriod}
-                columns={columns(selectedPeriod)}
-                onRowClick={(row) => {
-                  setSelectedTicker(row.symbol)
-                  if (!showChart) setShowChart(true)
-                }}
-                selectedTicker={selectedTicker}
-              />
+              {view === 'table' ? (
+                <TableView
+                  table={table}
+                  id={symbol}
+                  owned={false}
+                  setData={() => {}}
+                  selectedPeriod={selectedPeriod}
+                  setSelectedPeriod={setSelectedPeriod}
+                  columns={columns(selectedPeriod)}
+                  onRowClick={(row) => {
+                    setSelectedTicker(row.symbol)
+                    if (!showChart) setShowChart(true)
+                  }}
+                  selectedTicker={selectedTicker}
+                />
+              ) : (
+                <AnalysisView
+                  securities={securities}
+                  selectedPeriod={selectedPeriod}
+                  setSelectedPeriod={setSelectedPeriod}
+                />
+              )}
             </div>
           )}
         </div>

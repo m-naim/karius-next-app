@@ -24,6 +24,8 @@ import { useToast } from '@/hooks/use-toast'
 import { TableView } from './components/TableView'
 import { TickerChart } from './components/TickerChart'
 import { WatchlistSelector } from './components/WatchlistSelector'
+import { AnalysisView } from '@/components/organismes/market/AnalysisView'
+import { LayoutDashboard, Table as TableIcon } from 'lucide-react'
 
 export interface watchList {
   _id: string
@@ -54,6 +56,7 @@ export default function Watchlist() {
     benchMark: null,
     securities: [],
   })
+  const [view, setView] = React.useState<'table' | 'analysis'>('table')
   const [allWatchlists, setAllWatchlists] = React.useState<watchList[]>([])
   const [owned, setOwned] = React.useState(false)
   const [loading, setloading] = React.useState(true)
@@ -284,6 +287,19 @@ export default function Watchlist() {
           <Button
             variant="ghost"
             size="icon"
+            className="h-8 w-8 shrink-0"
+            onClick={() => setView(view === 'table' ? 'analysis' : 'table')}
+            title={view === 'table' ? 'Vue Analyse' : 'Vue Tableau'}
+          >
+            {view === 'table' ? (
+              <LayoutDashboard className="h-4 w-4" />
+            ) : (
+              <TableIcon className="h-4 w-4" />
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             className={`h-8 w-8 shrink-0 rounded-full ${showChart ? 'bg-gray-100' : ''}`}
             onClick={() => setShowChart(!showChart)}
           >
@@ -303,29 +319,37 @@ export default function Watchlist() {
         <div className="bg-dark flex-1 overflow-hidden rounded-lg border">
           {!loading && data!.securities != null && (
             <div className="flex h-full flex-col">
-              <TableView
-                table={table}
-                id={id}
-                owned={owned}
-                setData={setData}
-                selectedPeriod={selectedPeriod}
-                setSelectedPeriod={setSelectedPeriod}
-                columns={columns(
-                  id,
-                  owned,
-                  data.benchMark,
-                  deleteRow,
-                  selectedPeriod,
-                  allWatchlists
-                )}
-                onRowClick={(row) => {
-                  setSelectedTicker(row.symbol)
-                  if (!showChart) setShowChart(true)
-                }}
-                selectedTicker={selectedTicker}
-                allAvailableTags={allAvailableTags}
-                allWatchlists={allWatchlists}
-              />
+              {view === 'table' ? (
+                <TableView
+                  table={table}
+                  id={id}
+                  owned={owned}
+                  setData={setData}
+                  selectedPeriod={selectedPeriod}
+                  setSelectedPeriod={setSelectedPeriod}
+                  columns={columns(
+                    id,
+                    owned,
+                    data.benchMark,
+                    deleteRow,
+                    selectedPeriod,
+                    allWatchlists
+                  )}
+                  onRowClick={(row) => {
+                    setSelectedTicker(row.symbol)
+                    if (!showChart) setShowChart(true)
+                  }}
+                  selectedTicker={selectedTicker}
+                  allAvailableTags={allAvailableTags}
+                  allWatchlists={allWatchlists}
+                />
+              ) : (
+                <AnalysisView
+                  securities={data.securities}
+                  selectedPeriod={selectedPeriod}
+                  setSelectedPeriod={setSelectedPeriod}
+                />
+              )}
             </div>
           )}
         </div>

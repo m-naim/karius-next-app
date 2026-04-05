@@ -10,6 +10,7 @@ import { Metadata } from 'next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Providers } from './providers'
 import { Toaster } from '@/components/ui/toaster'
+import SupportBubble from '@/components/molecules/support/SupportBubble'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteMetadata.siteUrl),
@@ -85,6 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </SearchProvider>
               <Footer />
             </div>
+            <SupportBubble />
           </ThemeProviders>
         </Providers>
       </body>

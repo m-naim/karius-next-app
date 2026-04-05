@@ -63,6 +63,7 @@ export const columns = (
                 symbol={row.original.symbol}
                 deleteRow={deleteRow}
                 allWatchlists={allWatchlists}
+                security={row.original}
               ></Actions>
             )}
           </div>
