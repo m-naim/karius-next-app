@@ -102,7 +102,7 @@ export default function SupportBubble() {
     <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end">
       {isOpen && (
         <Card className="mb-4 w-[350px] overflow-hidden border-none shadow-2xl duration-300 animate-in slide-in-from-bottom-4 sm:w-[400px]">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 bg-slate-900 p-4 text-white">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 bg-slate-900/10 p-4">
             <div className="flex items-center gap-3">
               <div className="relative">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-primary/20">
@@ -140,21 +140,21 @@ export default function SupportBubble() {
                     className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm shadow-sm ${
+                      className={`max-w-[80%] rounded-2xl px-4 py-1 text-sm shadow-sm ${
                         msg.sender === 'user'
                           ? 'rounded-tr-none bg-primary text-white'
                           : 'rounded-tl-none border border-slate-200 bg-white text-slate-800'
                       }`}
                     >
-                      <p className="leading-relaxed">{msg.text}</p>
-                      <p
-                        className={`mt-1 text-[9px] opacity-50 ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}
+                      <p className="m-0 p-0 leading-relaxed text-white">{msg.text}</p>
+                      <span
+                        className={`m-0 p-0 text-[9px] opacity-50 ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}
                       >
                         {msg.timestamp.toLocaleTimeString([], {
                           hour: '2-digit',
                           minute: '2-digit',
                         })}
-                      </p>
+                      </span>
                     </div>
                   </div>
                 ))}

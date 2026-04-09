@@ -237,10 +237,6 @@ export function TickerChart({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-bold">{symbol}</h2>
-      </div>
-
       <Tabs defaultValue="technical" className="flex-1">
         <TabsList className="mb-4">
           <TabsTrigger value="technical">Technique</TabsTrigger>

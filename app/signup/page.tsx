@@ -23,7 +23,8 @@ function Signup() {
     setState(value)
   }
 
-  const logIn = async () => {
+  const logIn = async (e) => {
+    e.preventDefault()
     if (username == null || username.length <= 0)
       return setMessage("Le nom d'utilisateur est obligatoire")
     if (email == null || email.length <= 0) return setMessage("L'email est obligatoire")

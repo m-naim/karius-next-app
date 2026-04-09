@@ -24,6 +24,7 @@ import { TickerChart } from '../../watchlist/[id]/components/TickerChart'
 import { AnalysisView } from '@/components/organismes/market/AnalysisView'
 import { columns } from './columns'
 import { LayoutDashboard, Table as TableIcon } from 'lucide-react'
+import { RightSidebar } from '@/components/organismes/layout/RightSidebar'
 
 interface IndexData {
   symbol: string
@@ -211,35 +212,20 @@ export default function MarketPage() {
             </div>
           )}
         </div>
-        {showChart && (
-          <div className="md:bg-dark fixed inset-0 z-50 flex h-full w-full flex-col overflow-hidden bg-background p-4 md:relative md:h-auto md:w-[600px] md:rounded-lg md:border">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute left-2 top-2 z-10 md:hidden"
-              onClick={() => setShowChart(false)}
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span className="sr-only">Retour</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-2 top-2 z-10 hidden h-6 w-6 text-gray-500 hover:bg-gray-100 md:flex"
-              onClick={() => setShowChart(false)}
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">Fermer</span>
-            </Button>
-            {selectedTicker ? (
-              <TickerChart symbol={selectedTicker} />
-            ) : (
-              <div className="flex h-full items-center justify-center text-gray-500">
-                Select a security to view chart
-              </div>
-            )}
-          </div>
-        )}
+        <RightSidebar
+          isOpen={showChart}
+          onClose={() => setShowChart(false)}
+          title={selectedTicker ? `ANALYSE : ${selectedTicker}` : 'ANALYSE'}
+          className="md:relative md:shadow-none"
+        >
+          {selectedTicker ? (
+            <TickerChart symbol={selectedTicker} />
+          ) : (
+            <div className="flex h-full items-center justify-center text-gray-500">
+              Select a security to view chart
+            </div>
+          )}
+        </RightSidebar>
       </div>
     </div>
   )

@@ -301,10 +301,12 @@ function AlertList({
 function AlertCard({
   alert,
   onDelete,
+  onRestart,
   safeFormat,
 }: {
   alert: Alert
   onDelete: (id: string) => void
+  onRestart: (id: string) => void
   safeFormat: (d: any, f: string) => string
 }) {
   const { toast } = useToast()
@@ -369,7 +371,7 @@ function AlertCard({
                   variant="ghost"
                   size="icon"
                   className="h-9 w-9 hover:bg-emerald-50 hover:text-emerald-600"
-                  onClick={handleFeatureSoon}
+                  onClick={() => onRestart(alert.id)}
                   title="Relancer"
                 >
                   <Play className="h-4 w-4" />
@@ -403,7 +405,11 @@ function AlertCard({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleFeatureSoon}>Relancer</DropdownMenuItem>
+                  {alert.isTriggered && (
+                    <DropdownMenuItem onClick={() => onRestart(alert.id)}>
+                      Relancer
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={handleFeatureSoon}>Paramètres</DropdownMenuItem>
                   <DropdownMenuItem className="text-red-600" onClick={() => onDelete(alert.id)}>
                     Supprimer

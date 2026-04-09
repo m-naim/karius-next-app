@@ -11,6 +11,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Providers } from './providers'
 import { Toaster } from '@/components/ui/toaster'
 import SupportBubble from '@/components/molecules/support/SupportBubble'
+import WatchlistSidebar from '@/components/organismes/layout/WatchlistSidebar'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteMetadata.siteUrl),

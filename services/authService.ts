@@ -75,6 +75,10 @@ const deleteAccount = () => {
   return http.deleteReq(`${host}/api/v1/profile/delete-account`)
 }
 
+const testNotification = (chatId: string) => {
+  return http.post(`${host}/api/v1/profile/test-notification`, chatId)
+}
+
 const authService = {
   register,
   login,
@@ -84,6 +88,7 @@ const authService = {
   updateProfile,
   changePassword,
   deleteAccount,
+  testNotification,
 }
 
 export default authService

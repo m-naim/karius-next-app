@@ -17,7 +17,8 @@ import {
 
 import authService from '@/services/authService'
 import { useAuth } from '@/hooks/useAuth'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Bell } from 'lucide-react'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/tooltip'
 
 const Header = () => {
   const { user, logout } = useAuth()
@@ -77,6 +78,20 @@ const Header = () => {
                 </Button>
               )
             })}
+          {user && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" asChild className="hidden sm:flex">
+                  <Link href="/app/alerts">
+                    <Bell className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Mes Alertes</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
           <SearchButton />
           <ThemeSwitch />
           {user ? (

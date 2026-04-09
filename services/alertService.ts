@@ -8,6 +8,7 @@ export const alertService = {
   createAlert: (data: { symbol: string; type: string; operator: string; value: number }) =>
     http.post(`${host}/api/v1/alerts/`, data),
   deleteAlert: (id: string) => http.deleteReq(`${host}/api/v1/alerts/${id}`),
+  restartAlert: (id: string) => http.post(`${host}/api/v1/alerts/${id}/restart`, {}),
   updateTelegram: (chatId: string) => http.post(`${host}/api/v1/alerts/telegram`, { chatId }),
 }
 
