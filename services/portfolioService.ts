@@ -121,6 +121,11 @@ export function getPerformancesSummary(id: string) {
   return http.get(`${host}/api/v1/portfolios/${id}/performance/summary`)
 }
 
+export function getBenchmarksPerformanceSummary(symbols: string[]) {
+  const encodedSymbols = encodeURIComponent(symbols.join(','))
+  return http.get(`${host}/api/v1/benchmarks/summary?symbols=${encodedSymbols}`)
+}
+
 export function getDividends(id) {
   return http.get(`${qwantHost}/api/v1/portfolios/${id}/dividends`)
 }

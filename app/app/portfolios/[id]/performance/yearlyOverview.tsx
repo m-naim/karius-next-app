@@ -12,7 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { getPerformancesSummary } from '@/services/portfolioService'
+import {
+  getPerformancesSummary,
+  getBenchmarksPerformanceSummary,
+} from '@/services/portfolioService'
 import { useEffect, useState } from 'react'
 import { CalendarDays, ChevronRight } from 'lucide-react'
 import { benchmarkOptions } from './components/BenchmarkSelector'
@@ -34,13 +37,21 @@ const month = [
   { value: 'December', display: 'Déc' },
 ]
 
+interface PerformanceSummary {
+  idPortfolio: string
+  year: number
+  performance: number
+  monthlyPerformance: { [key: string]: number }
+}
+
 interface YearlyOverviewProps {
   id: string
   selectedBenchmarks: string[]
 }
 
 export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOverviewProps) {
-  const [perf, setPerf] = useState([])
+  const [perf, setPerf] = useState<PerformanceSummary[]>([])
+  const [benchmarksPerf, setBenchmarksPerf] = useState<{ [key: string]: PerformanceSummary[] }>({})
   const [selectedYear, setSelectedYear] = useState('')
   const [loading, setLoading] = useState(true)
   const [isExpanded, setIsExpanded] = useState(false)
@@ -50,7 +61,9 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
       try {
         const data = (await getPerformancesSummary(id as string)).sort((b, a) => b.year - a.year)
         setPerf(data)
-        setSelectedYear(data.at(-1).year)
+        if (data.length > 0) {
+          setSelectedYear(data.at(-1).year.toString())
+        }
         setLoading(false)
       } catch (e) {
         console.error('error api', e)
@@ -58,6 +71,22 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
     }
     fetchData()
   }, [id])
+
+  useEffect(() => {
+    const fetchBenchmarks = async () => {
+      try {
+        const data = await getBenchmarksPerformanceSummary(selectedBenchmarks)
+        setBenchmarksPerf(data)
+      } catch (e) {
+        console.error('error api benchmarks', e)
+      }
+    }
+    if (selectedBenchmarks.length > 0) {
+      fetchBenchmarks()
+    } else {
+      setBenchmarksPerf({})
+    }
+  }, [selectedBenchmarks])
 
   const isCurrentYear = (year: string) => year === new Date().getFullYear().toString()
 
@@ -83,7 +112,11 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
                 className={cn('h-4 w-4 transition-transform', isExpanded && 'rotate-90')}
               />
             </button>
-            <Select onValueChange={(e) => setSelectedYear(e)} defaultValue={selectedYear}>
+            <Select
+              onValueChange={(e) => setSelectedYear(e)}
+              value={selectedYear}
+              defaultValue={selectedYear}
+            >
               <SelectTrigger className="bg-dark flex h-10 w-32 items-center gap-2 rounded-lg border border-gray-200 px-3 text-sm font-medium">
                 <CalendarDays className="h-4 w-4 text-gray-500" />
                 <SelectValue />
@@ -93,7 +126,7 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
                   {perf.map(({ year }) => (
                     <SelectItem
                       key={year}
-                      value={year}
+                      value={year.toString()}
                       className="cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-700 data-[highlighted]:bg-gray-100"
                     >
                       {year}
@@ -134,7 +167,7 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
               <div className="grid auto-cols-[minmax(100px,1fr)] grid-flow-col sm:auto-cols-[minmax(120px,1fr)]">
                 {perf &&
                   perf
-                    .filter(({ year }) => year === selectedYear)
+                    .filter(({ year }) => year.toString() === selectedYear)
                     .map(({ year, performance, monthlyPerformance }) => (
                       <div
                         key={year}
@@ -143,7 +176,7 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
                         <div
                           className={cn(
                             'flex h-12 items-center justify-end border-b border-gray-200 px-3 text-[11px] font-medium sm:h-14 sm:px-4 sm:text-xs lg:px-5',
-                            isCurrentYear(year) ? 'text-blue-600' : 'text-gray-900'
+                            isCurrentYear(year.toString()) ? 'text-blue-600' : 'text-gray-900'
                           )}
                         >
                           {year}
@@ -172,27 +205,46 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
                       </div>
                     ))}
 
-                {selectedBenchmarks.map((benchmark) => (
-                  <div
-                    key={benchmark}
-                    className="space-y-0 border-r border-gray-200 last:border-r-0"
-                  >
-                    <div className="flex h-12 items-center justify-end border-b border-gray-200 px-3 text-[11px] font-medium text-gray-500 sm:h-14 sm:px-4 sm:text-xs lg:px-5">
-                      {benchmarkOptions.find((b) => b.value === benchmark)?.label || benchmark}
-                    </div>
-                    {month.map((m) => (
-                      <div
-                        key={m.value}
-                        className="flex h-10 items-center justify-end border-b border-gray-100/50 px-3 hover:bg-gray-50/50 sm:h-12 sm:px-4 lg:px-5"
-                      >
-                        <span className="text-[11px] text-gray-400 sm:text-xs">—</span>
+                {selectedBenchmarks.map((benchmark) => {
+                  const benchSummary = benchmarksPerf[benchmark]?.find(
+                    (p) => p.year.toString() === selectedYear
+                  )
+                  return (
+                    <div
+                      key={benchmark}
+                      className="space-y-0 border-r border-gray-200 last:border-r-0"
+                    >
+                      <div className="flex h-12 items-center justify-end border-b border-gray-200 px-3 text-[11px] font-medium text-gray-500 sm:h-14 sm:px-4 sm:text-xs lg:px-5">
+                        {benchmarkOptions.find((b) => b.value === benchmark)?.label || benchmark}
                       </div>
-                    ))}
-                    <div className="flex h-12 items-center justify-end bg-gray-100/80 px-3 sm:h-14 sm:px-4 lg:px-5">
-                      <span className="text-[11px] text-gray-400 sm:text-xs">—</span>
+                      {month.map((m) => (
+                        <div
+                          key={m.value}
+                          className="flex h-10 items-center justify-end border-b border-gray-100/50 px-3 hover:bg-gray-50/50 sm:h-12 sm:px-4 lg:px-5"
+                        >
+                          {benchSummary?.monthlyPerformance[m.value] ? (
+                            <VariationContainer
+                              value={benchSummary.monthlyPerformance[m.value]}
+                              className="text-[11px] font-medium sm:text-xs"
+                            />
+                          ) : (
+                            <span className="text-[11px] text-gray-400 sm:text-xs">—</span>
+                          )}
+                        </div>
+                      ))}
+                      <div className="flex h-12 items-center justify-end bg-gray-100/80 px-3 sm:h-14 sm:px-4 lg:px-5">
+                        {benchSummary ? (
+                          <VariationContainer
+                            value={benchSummary.performance}
+                            className="text-[11px] font-medium sm:text-xs"
+                          />
+                        ) : (
+                          <span className="text-[11px] text-gray-400 sm:text-xs">—</span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           </div>

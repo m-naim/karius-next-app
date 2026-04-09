@@ -6,6 +6,7 @@ echo '🏗️👷 Styling, testing and building your project before committing'
 # Check Prettier standards
 yarn run check-format ||
 (
+    npm run format;
     echo '🤢🤮🤢🤮 Its F**KING RAW - Your styling looks disgusting. 🤢🤮🤢🤮
             Prettier Check Failed. Run npm run format, add changes and try commit again.';
     false;
