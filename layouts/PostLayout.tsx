@@ -1,5 +1,5 @@
 import { ReactNode } from 'react'
-import { CoreContent } from 'pliny/utils/contentlayer'
+import { coreContent } from '@/lib/contentlayer'
 import type { Blog, Authors } from 'contentlayer/generated'
 import Link from '@/components/atoms/Link'
 import PageTitle from '@/components/molecules/article/PageTitle'
@@ -7,7 +7,7 @@ import SectionContainer from '@/components/organismes/layout/SectionContainer'
 import Tag from '@/components/molecules/article/Tag'
 import siteMetadata from '@/data/siteMetadata'
 import ScrollTopAndComment from '@/components/molecules/article/ScrollTopAndComment'
-import { Toc } from 'pliny/mdx-plugins'
+import { Toc } from '@/lib/types'
 import { Calendar, ClockIcon } from 'lucide-react'
 import { PositionScrollDisplay } from '@/components/ui/positionScrollDisplay'
 
@@ -19,8 +19,8 @@ const postDateTemplate: Intl.DateTimeFormatOptions = {
 }
 
 interface LayoutProps {
-  content: CoreContent<Blog>
-  authorDetails: CoreContent<Authors>[]
+  content: ReturnType<typeof coreContent>
+  authorDetails: ReturnType<typeof coreContent>[]
   next?: { path: string; title: string }
   prev?: { path: string; title: string }
   children: ReactNode
@@ -31,7 +31,6 @@ interface LayoutProps {
 export default function PostLayout({
   content,
   toc,
-  authorDetails,
   next,
   prev,
   readingTime,

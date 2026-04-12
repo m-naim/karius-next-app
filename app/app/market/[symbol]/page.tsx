@@ -15,7 +15,7 @@ import {
 } from '@tanstack/react-table'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, LineChart, X } from 'lucide-react'
+import { ArrowLeft, LineChart } from 'lucide-react'
 import Loader from '@/components/molecules/loader/loader'
 import { useToast } from '@/hooks/use-toast'
 
@@ -32,8 +32,8 @@ interface IndexData {
   holdings: any[]
 }
 
-export default function MarketPage() {
-  const rawSymbol = usePathname().split('/')[3]
+export default function MarketPage({ params }: { params: Promise<{ symbol: string }> }) {
+  const { symbol: rawSymbol } = React.use(params)
   const symbol = decodeURIComponent(rawSymbol)
   const { toast } = useToast()
 
@@ -129,6 +129,7 @@ export default function MarketPage() {
         setIndexInfo(infos)
         setSecurities(infos.holdings)
       } catch (error) {
+        console.error(error)
         toast({
           variant: 'destructive',
           title: 'Erreur',

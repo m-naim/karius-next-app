@@ -1,49 +1,38 @@
-/**
- * @typedef TocHeading
- * @prop {string} value
- * @prop {number} depth
- * @prop {string} url
- */
+import { Toc } from '@/lib/types'
 
-/**
- * Generates an inline table of contents
- * Exclude titles matching this string (new RegExp('^(' + string + ')$', 'i')).
- * If an array is passed the array gets joined with a pipe (new RegExp('^(' + array.join('|') + ')$', 'i')).
- *
- * @param {{
- *  toc: TocHeading[],
- *  indentDepth?: number,
- *  fromHeading?: number,
- *  toHeading?: number,
- *  asDisclosure?: boolean,
- *  exclude?: string|string[]
- * }} props
- *
- */
+interface TOCInlineProps {
+  toc: Toc
+  fromHeading?: number
+  toHeading?: number
+  asDisclosure?: boolean
+  exclude?: string | string[]
+}
+
 const TOCInline = ({
   toc,
-  indentDepth = 3,
   fromHeading = 1,
   toHeading = 6,
   asDisclosure = false,
   exclude = '',
-}) => {
+}: TOCInlineProps) => {
   const re = Array.isArray(exclude)
     ? new RegExp('^(' + exclude.join('|') + ')$', 'i')
-    : new RegExp('^(' + exclude + ')$', 'i')
+    : exclude !== ''
+      ? new RegExp('^(' + exclude + ')$', 'i')
+      : null
 
   const filteredToc = toc.filter(
     (heading) =>
-      heading.depth >= fromHeading && heading.depth <= toHeading && !re.test(heading.value)
+      heading.depth >= fromHeading &&
+      heading.depth <= toHeading &&
+      (re ? !re.test(heading.value) : true)
   )
 
   const tocList = (
-    <ul className="sticky top-0 mt-12 border-l-4 p-4 py-12 ">
+    <ul>
       {filteredToc.map((heading) => (
-        <li key={heading.value} className={`${heading.depth >= indentDepth && 'ml-6'}`}>
-          <a href={heading.url} className="h target:text-blue-600 hover:text-blue-600">
-            {heading.value}
-          </a>
+        <li key={heading.value} className={`${heading.depth >= 3 && 'ml-6'}`}>
+          <a href={heading.url}>{heading.value}</a>
         </li>
       ))}
     </ul>

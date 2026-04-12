@@ -41,7 +41,7 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
   const allocationData = useMemo(() => {
     if (!securities || securities.length === 0) return []
 
-    let result = []
+    let result: any[] = []
     if (view === 'assets') {
       result = securities.map((s) => ({
         name: s.symbol,

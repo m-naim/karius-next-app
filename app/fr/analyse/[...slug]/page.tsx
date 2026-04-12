@@ -1,6 +1,4 @@
-import { components } from '@/components/molecules/article/MDXComponents'
-import { MDXLayoutRenderer } from 'pliny/mdx-components'
-import { sortPosts, coreContent, allCoreContent } from 'pliny/utils/contentlayer'
+import { sortPosts, coreContent, allCoreContent } from '@/lib/contentlayer'
 import { allAuthors, allAnalyses } from 'contentlayer/generated'
 import type { Analyse, Authors } from 'contentlayer/generated'
 import PostSimple from '@/layouts/PostSimple'
@@ -10,6 +8,7 @@ import { Metadata } from 'next'
 import siteMetadata from '@/data/siteMetadata'
 import { notFound } from 'next/navigation'
 import { round10 } from '@/lib/decimalAjustement'
+import { MDXLayoutRenderer } from '@/components/molecules/article/MDXLayoutRenderer'
 
 const defaultLayout = 'PostLayout'
 const layouts = {
@@ -21,9 +20,10 @@ const layouts = {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string[] }
+  params: Promise<{ slug: string[] }>
 }): Promise<Metadata | undefined> {
-  const slug = decodeURI(params.slug.join('/'))
+  const { slug: rawSlug } = await params
+  const slug = decodeURI(rawSlug.join('/'))
   const post = allAnalyses.find((p) => p.slug === slug)
   const authorList = post?.authors || ['default']
   const authorDetails = authorList.map((author) => {
@@ -77,8 +77,9 @@ export const generateStaticParams = async () => {
   return paths
 }
 
-export default async function Page({ params }: { params: { slug: string[] } }) {
-  const slug = decodeURI(params.slug.join('/'))
+export default async function Page({ params }: { params: Promise<{ slug: string[] }> }) {
+  const { slug: rawSlug } = await params
+  const slug = decodeURI(rawSlug.join('/'))
   // Filter out drafts in production
   const sortedCoreContents = allCoreContent(sortPosts(allAnalyses))
   const postIndex = sortedCoreContents.findIndex((p) => p.slug === slug)
@@ -119,7 +120,7 @@ export default async function Page({ params }: { params: { slug: string[] } }) {
         toc={post.toc}
         readingTime={round10(post.readingTime.minutes, 0)}
       >
-        <MDXLayoutRenderer code={post.body.code} components={components} toc={post.toc} />
+        <MDXLayoutRenderer code={post.body.code} toc={post.toc} />
       </Layout>
     </>
   )

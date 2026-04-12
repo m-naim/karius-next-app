@@ -1,11 +1,25 @@
 import { writeFileSync, mkdirSync } from 'fs'
 import path from 'path'
 import { slug } from 'github-slugger'
-import { escape } from 'pliny/utils/htmlEscaper.js'
 import siteMetadata from '../data/siteMetadata.js'
 import tagData from '../app/tag-data.json' with { type: 'json' }
 import { allBlogs } from '../.contentlayer/generated/index.mjs'
-import { sortPosts } from 'pliny/utils/contentlayer.js'
+
+const escape = (str) =>
+  str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+
+const sortPosts = (allPosts) => {
+  return allPosts.sort((a, b) => {
+    if (a.date > b.date) return -1
+    if (a.date < b.date) return 1
+    return 0
+  })
+}
 
 const generateRssItem = (config, post) => `
   <item>

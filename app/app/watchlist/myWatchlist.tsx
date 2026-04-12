@@ -9,6 +9,7 @@ import SectionContainer from '@/components/organismes/layout/SectionContainer'
 import { WatchListInfos } from './page'
 
 export function MyWatchLists() {
+  const [mounted, setMounted] = React.useState(false)
   const [data, setData] = React.useState<WatchListInfos[]>([])
   const { authentificated } = authService.getCurrentUser()
 
@@ -21,9 +22,13 @@ export function MyWatchLists() {
     }
   }
 
-  useEffect(() => {
+  React.useEffect(() => {
+    setMounted(true)
     fetchData()
   }, [])
+
+  if (!mounted) return null
+
   return authentificated && data ? (
     <SectionContainer className="space-y-6">
       <div className="flex w-full flex-col items-center px-4 text-center">

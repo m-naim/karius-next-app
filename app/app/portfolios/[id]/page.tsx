@@ -20,8 +20,6 @@ import {
   PlusIcon,
   WalletMinimal,
   Search,
-  ArrowUpRight,
-  ArrowDownLeft,
 } from 'lucide-react'
 import TransactionDialogue from './transactionDialogue'
 import Link from 'next/link'
@@ -41,8 +39,8 @@ import PortfolioTable from '@/components/molecules/table/PortfolioTable'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 
-export default function PortfolioView() {
-  const id = usePathname().split('/')[3]
+export default function PortfolioView({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = React.use(params)
   const { toast } = useToast()
   const [data, setData] = React.useState<PortfolioSecurity[]>([])
   const [loading, setLoading] = React.useState(true)

@@ -1,6 +1,5 @@
 'use client'
 import Tag from '@/components/mdx/Tag'
-import siteMetadata from '@/data/siteMetadata'
 import { useState } from 'react'
 import Pagination from '@/components/mdx/Pagination'
 import formatDate from '@/lib/utils/formatDate'

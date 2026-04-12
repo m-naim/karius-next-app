@@ -1,8 +1,7 @@
 import 'katex/dist/katex.css'
 
-import { components } from '@/components/molecules/article/MDXComponents'
-import { MDXLayoutRenderer } from 'pliny/mdx-components'
-import { sortPosts, coreContent, allCoreContent } from 'pliny/utils/contentlayer'
+import { MDXLayoutRenderer } from '@/components/molecules/article/MDXLayoutRenderer'
+import { sortPosts, coreContent, allCoreContent } from '@/lib/contentlayer'
 import { allBlogs, allAuthors } from 'contentlayer/generated'
 import type { Authors, Blog } from 'contentlayer/generated'
 import PostSimple from '@/layouts/PostSimple'
@@ -24,9 +23,10 @@ const layouts = {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string[] }
+  params: Promise<{ slug: string[] }>
 }): Promise<Metadata | undefined> {
-  const slug = decodeURI(params.slug.join('/'))
+  const { slug: rawSlug } = await params
+  const slug = decodeURI(rawSlug.join('/'))
   const post = allBlogs.find((p) => p.slug === slug)
   const authorList = post?.authors || ['default']
   const authorDetails = authorList.map((author) => {
@@ -80,8 +80,9 @@ export const generateStaticParams = async () => {
   return paths
 }
 
-export default async function Page({ params }: { params: { slug: string[] } }) {
-  const slug = decodeURI(params.slug.join('/'))
+export default async function Page({ params }: { params: Promise<{ slug: string[] }> }) {
+  const { slug: rawSlug } = await params
+  const slug = decodeURI(rawSlug.join('/'))
   // Filter out drafts in production
   const sortedCoreContents = allCoreContent(sortPosts(allBlogs))
   const postIndex = sortedCoreContents.findIndex((p) => p.slug === slug)
@@ -122,7 +123,7 @@ export default async function Page({ params }: { params: { slug: string[] } }) {
         toc={post.toc}
         readingTime={round10(post.readingTime.minutes, 0)}
       >
-        <MDXLayoutRenderer code={post.body.code} components={components} toc={post.toc} />
+        <MDXLayoutRenderer code={post.body.code} toc={post.toc} />
       </Layout>
     </>
   )

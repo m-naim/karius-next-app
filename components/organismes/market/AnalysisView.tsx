@@ -1,17 +1,13 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import  { useMemo, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { round10 } from '@/lib/decimalAjustement'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import {
   TrendingUp,
   Layers,
-  Box,
   Target,
   Zap,
-  ArrowUpCircle,
-  ArrowDownCircle,
   BarChart3,
 } from 'lucide-react'
 import { stringToColor } from '@/lib/colors'
@@ -50,7 +46,7 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
   const allocationData = useMemo(() => {
     if (!securities || securities.length === 0) return []
 
-    let result = []
+    let result: any[] = []
     if (view === 'assets') {
       result = securities.map((s) => ({
         name: s.symbol,

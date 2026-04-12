@@ -46,13 +46,7 @@ const chartOptions = {
 }
 
 function DividendsView({ id, loading, dates, values }) {
-  const [period, setPeriod] = useState('Annuel')
-  const get_years = (input) => {
-    return input.map((s) => format(new Date(s), 'yyyy'))
-  }
-  const get_months = (input) => {
-    return input.map((s) => format(new Date(s), 'MMMM yy'))
-  }
+
 
   return loading ? (
     <Loader />

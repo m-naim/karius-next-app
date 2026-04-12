@@ -74,6 +74,16 @@ export default function AlertsPage() {
     }
   }
 
+  const handleRestart = async (id: string) => {
+    try {
+      const updated = await alertService.restartAlert(id)
+      setAlerts(alerts.map((a) => (a.id === id ? updated : a)))
+      toast({ title: 'Alerte réactivée' })
+    } catch (error) {
+      console.error('Failed to restart alert:', error)
+    }
+  }
+
   const handleUpdateTelegram = async () => {
     if (!chatId) return
     setUpdatingTelegram(true)
@@ -239,6 +249,7 @@ export default function AlertsPage() {
                   <AlertList
                     alerts={filteredAlerts}
                     onDelete={handleDelete}
+                    onRestart={handleRestart}
                     safeFormat={safeFormat}
                   />
                 </TabsContent>
@@ -246,6 +257,7 @@ export default function AlertsPage() {
                   <AlertList
                     alerts={activeAlerts}
                     onDelete={handleDelete}
+                    onRestart={handleRestart}
                     safeFormat={safeFormat}
                   />
                 </TabsContent>
@@ -253,6 +265,7 @@ export default function AlertsPage() {
                   <AlertList
                     alerts={triggeredAlerts}
                     onDelete={handleDelete}
+                    onRestart={handleRestart}
                     safeFormat={safeFormat}
                   />
                 </TabsContent>
@@ -268,10 +281,12 @@ export default function AlertsPage() {
 function AlertList({
   alerts,
   onDelete,
+  onRestart,
   safeFormat,
 }: {
   alerts: Alert[]
   onDelete: (id: string) => void
+  onRestart: (id: string) => void
   safeFormat: (d: any, f: string) => string
 }) {
   if (alerts.length === 0) {
@@ -291,7 +306,13 @@ function AlertList({
   return (
     <div className="space-y-3">
       {alerts.map((alert) => (
-        <AlertCard key={alert.id} alert={alert} onDelete={onDelete} safeFormat={safeFormat} />
+        <AlertCard
+          key={alert.id}
+          alert={alert}
+          onDelete={onDelete}
+          onRestart={onRestart}
+          safeFormat={safeFormat}
+        />
       ))}
     </div>
   )

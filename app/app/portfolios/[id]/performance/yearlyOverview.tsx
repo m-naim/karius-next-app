@@ -164,7 +164,7 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
                             <div className="w-full truncate">{benchLabel}</div>
                           </td>
                           {MONTHS.map((m) => {
-                            const val = benchData?.monthlyPerformance[m.value]
+                            const val = benchData?.monthlyPerformance[m.value] || 0
                             return (
                               <td
                                 key={m.value}

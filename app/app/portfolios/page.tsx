@@ -27,6 +27,7 @@ interface PortfoliosPresentation {
 }
 
 const Portfolios = () => {
+  const [mounted, setMounted] = React.useState(false)
   const [data, setData] = React.useState<PortfoliosPresentation>()
 
   const { authentificated } = authService.getCurrentUser()
@@ -41,8 +42,11 @@ const Portfolios = () => {
   }
 
   useEffect(() => {
+    setMounted(true)
     fetchData()
   }, [])
+
+  if (!mounted) return null
 
   return (
     <div className="space-y-12 py-8">

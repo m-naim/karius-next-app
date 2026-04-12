@@ -6,12 +6,7 @@ import path from 'path'
 // Remark packages
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
-import {
-  remarkExtractFrontmatter,
-  remarkCodeTitles,
-  remarkImgToJsx,
-  extractTocHeadings,
-} from 'pliny/mdx-plugins/index.js'
+
 // Rehype packages
 import rehypeSlug from 'rehype-slug'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
@@ -20,7 +15,7 @@ import rehypeCitation from 'rehype-citation'
 import rehypePrismPlus from 'rehype-prism-plus'
 import rehypePresetMinify from 'rehype-preset-minify'
 import siteMetadata from './data/siteMetadata'
-import { allCoreContent, sortPosts } from 'pliny/utils/contentlayer.js'
+import { extractTocHeadings } from './lib/contentlayer'
 
 const root = process.cwd()
 const isProduction = process.env.NODE_ENV === 'production'
@@ -39,7 +34,7 @@ const computedFields: ComputedFields = {
     type: 'string',
     resolve: (doc) => doc._raw.sourceFilePath,
   },
-  toc: { type: 'string', resolve: (doc) => extractTocHeadings(doc.body.raw) },
+  toc: { type: 'json', resolve: (doc) => extractTocHeadings(doc.body.raw) },
 }
 
 /**
@@ -60,19 +55,6 @@ function createTagCount(allBlogs) {
     }
   })
   writeFileSync('./app/tag-data.json', JSON.stringify(tagCount))
-}
-
-function createSearchIndex(allBlogs) {
-  if (
-    siteMetadata?.search?.provider === 'kbar' &&
-    siteMetadata.search.kbarConfig.searchDocumentsPath
-  ) {
-    writeFileSync(
-      `public/${siteMetadata.search.kbarConfig.searchDocumentsPath}`,
-      JSON.stringify(allCoreContent(sortPosts(allBlogs)))
-    )
-    console.log('Local search index generated...')
-  }
 }
 
 export const Blog = defineDocumentType(() => ({
@@ -204,11 +186,8 @@ export default makeSource({
   mdx: {
     cwd: process.cwd(),
     remarkPlugins: [
-      remarkExtractFrontmatter,
       remarkGfm,
-      remarkCodeTitles,
       remarkMath,
-      remarkImgToJsx,
     ],
     rehypePlugins: [
       rehypeSlug,
@@ -219,9 +198,4 @@ export default makeSource({
       rehypePresetMinify,
     ],
   },
-  // onSuccess: async (importData) => {
-  //   const { allBlogs } = await importData()
-  //   createTagCount(allBlogs)
-  //   createSearchIndex(allBlogs)
-  // },
 })

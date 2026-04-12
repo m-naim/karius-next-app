@@ -5,7 +5,6 @@ import headerNavLinks from '@/data/headerNavLinks'
 import Link from '../../atoms/Link'
 import MobileNav from './MobileNav'
 import ThemeSwitch from './ThemeSwitch'
-import SearchButton from '../../atoms/SearchButton'
 import { Button } from '../../ui/button'
 import { Avatar, AvatarFallback } from '../../ui/avatar'
 import {
@@ -87,7 +86,6 @@ const Header = () => {
               </TooltipContent>
             </Tooltip>
           )}
-          <SearchButton />
           <ThemeSwitch />
           {user ? (
             <Link href="/app/profile">

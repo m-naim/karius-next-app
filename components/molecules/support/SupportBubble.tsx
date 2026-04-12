@@ -1,12 +1,11 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { MessageCircle, X, Send, User, Headset, Loader2 } from 'lucide-react'
+import { MessageCircle, X, Send, Headset } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { useAuth } from '@/hooks/useAuth'
 import config from '@/services/config'
 import http from '@/services/http'
 
@@ -23,7 +22,6 @@ export default function SupportBubble() {
   const [inputValue, setInputValue] = useState('')
   const [userId, setUserId] = useState<string>('')
   const scrollRef = useRef<HTMLDivElement>(null)
-  const { user } = useAuth()
 
   const host = config.API_URL
 

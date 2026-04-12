@@ -1,11 +1,9 @@
 import React from 'react'
-import Image from 'next/image'
-
-import Bell from './bell.svg'
-import Chart from './chart.svg'
-import LightBlub from './lightblub.svg'
-import ShareNode from './share-node.svg'
-import FileSheild from './file-sheild.svg'
+import Bell from './BellIcon'
+import Chart from './ChartIcon'
+import LightBlub from './LightBulbIcon'
+import ShareNode from './ShareNodeIcon'
+import FileSheild from './FileShieldIcon'
 import Annotation from './annotation'
 
 const components = {
@@ -20,8 +18,9 @@ const components = {
 const Icon = ({ kind, size = 6 }) => {
   if (!kind) return null
   const SvgIcon = components[kind]
+  if (!SvgIcon) return null
 
-  return <SvgIcon className={`h-${size} w-${size} fill-primary`}></SvgIcon>
+  return <SvgIcon className={`h-${size} w-${size} fill-primary`} />
 }
 
 export default Icon

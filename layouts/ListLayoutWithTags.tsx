@@ -1,4 +1,4 @@
-import { CoreContent } from 'pliny/utils/contentlayer'
+import { coreContent } from '@/lib/contentlayer'
 import type { Blog, Analyse, Guide } from 'contentlayer/generated'
 import Link from '@/components/atoms/Link'
 import { groupBy } from '@/lib/arrays'
@@ -12,9 +12,9 @@ interface PaginationProps {
   currentPage: number
 }
 interface ListLayoutProps {
-  posts: CoreContent<Content>[]
+  posts: ReturnType<typeof coreContent>[]
   title: string
-  initialDisplayPosts?: CoreContent<Content>[]
+  initialDisplayPosts?: ReturnType<typeof coreContent>[]
   pagination?: PaginationProps
 }
 

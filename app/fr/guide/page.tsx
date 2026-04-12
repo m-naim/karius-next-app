@@ -1,4 +1,4 @@
-import { allCoreContent, dateSortDesc, sortPosts } from 'pliny/utils/contentlayer'
+import { allCoreContent, dateSortDesc, sortPosts } from '@/lib/contentlayer'
 import { allGuides } from 'contentlayer/generated'
 import tagData from 'app/tag-data.json'
 import { genPageMetadata } from 'app/seo'

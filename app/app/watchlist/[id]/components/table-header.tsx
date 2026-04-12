@@ -12,7 +12,6 @@ import { ChevronDown, Cross, Filter, Search, Settings2, XCircleIcon } from 'luci
 import watchListService from '@/services/watchListService'
 import { DataTableFacetedFilter } from './data-table-filter'
 import { industries, sectors } from '../data/data'
-import { T } from 'framer-motion/dist/types.d-B50aGbjN'
 import { Table } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 

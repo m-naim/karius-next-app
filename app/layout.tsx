@@ -1,7 +1,7 @@
 import 'css/globals.css'
 
 import { Analytics } from '@vercel/analytics/react'
-import { SearchProvider, SearchConfig } from 'pliny/search'
+import Script from 'next/script'
 import Header from '@/components/organismes/layout/Header'
 import Footer from '@/components/organismes/layout/Footer'
 import siteMetadata from '@/data/siteMetadata'
@@ -66,12 +66,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <link rel="alternate" type="application/rss+xml" href="/feed.xml" />
 
       <body className="antialiased">
-        <script
+        <Script
           defer
           src="/static/script/miam.js"
           data-host-url="https://eu.umami.is"
           data-website-id="c2756f1a-e293-4054-8093-263e21da1be0"
-        ></script>
+        />
 
         <Providers>
           <ThemeProviders>
@@ -80,10 +80,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Toaster />
 
             <div className="flex h-screen flex-col justify-between">
-              <SearchProvider searchConfig={siteMetadata.search as SearchConfig}>
                 <Header />
                 <main className="mb-auto">{children}</main>
-              </SearchProvider>
               <Footer />
             </div>
             <SupportBubble />

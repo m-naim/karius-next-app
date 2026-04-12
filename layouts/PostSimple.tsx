@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
-import { formatDate } from 'pliny/utils/formatDate'
-import { CoreContent } from 'pliny/utils/contentlayer'
+import { formatDate } from '@/lib/formatDate'
+import { coreContent } from '@/lib/contentlayer'
 import type { Blog } from 'contentlayer/generated'
 import Comments from '@/components/molecules/article/Comments'
 import Link from '@/components/atoms/Link'
@@ -10,7 +10,7 @@ import siteMetadata from '@/data/siteMetadata'
 import ScrollTopAndComment from '@/components/molecules/article/ScrollTopAndComment'
 
 interface LayoutProps {
-  content: CoreContent<Blog>
+  content: ReturnType<typeof coreContent>
   children: ReactNode
   next?: { path: string; title: string }
   prev?: { path: string; title: string }

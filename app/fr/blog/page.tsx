@@ -1,5 +1,5 @@
 import ListLayout from '@/layouts/ListLayout'
-import { allCoreContent, sortPosts } from 'pliny/utils/contentlayer'
+import { allCoreContent, sortPosts } from '@/lib/contentlayer'
 import { allBlogs } from 'contentlayer/generated'
 import { genPageMetadata } from 'app/seo'
 import { slug } from 'github-slugger'
