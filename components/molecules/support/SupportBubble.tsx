@@ -35,8 +35,23 @@ export default function SupportBubble() {
     setUserId(storedId)
 
     const history = localStorage.getItem('support_chat_history')
+    const mockMessages: Message[] = [
+      {
+        id: 'welcome-1',
+        text: 'Bonjour ! Je suis votre assistant BourseHorus. Comment puis-je vous aider ?',
+        sender: 'admin',
+        timestamp: new Date(),
+      },
+    ]
+
     if (history) {
-      setMessages(JSON.parse(history).map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) })))
+      const parsedHistory = JSON.parse(history).map((m: any) => ({
+        ...m,
+        timestamp: new Date(m.timestamp),
+      }))
+      setMessages([...mockMessages, ...parsedHistory])
+    } else {
+      setMessages(mockMessages)
     }
   }, [])
 
@@ -99,18 +114,18 @@ export default function SupportBubble() {
   return (
     <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end">
       {isOpen && (
-        <Card className="mb-4 w-[350px] overflow-hidden border-none shadow-2xl duration-300 animate-in slide-in-from-bottom-4 sm:w-[400px]">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 bg-slate-900/10 p-4">
+        <Card className="mb-4 w-[350px] overflow-hidden border border-border bg-background shadow-2xl duration-300 animate-in slide-in-from-bottom-4 sm:w-[400px]">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 bg-muted/50 p-4">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-primary/20">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-primary/10 bg-primary/20">
                   <Headset className="h-5 w-5 text-primary" />
                 </div>
-                <div className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-slate-900 bg-green-500" />
+                <div className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-background bg-green-500" />
               </div>
               <div>
                 <CardTitle className="text-sm font-bold">Support Direct</CardTitle>
-                <p className="text-[10px] font-medium uppercase tracking-widest text-slate-400">
+                <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
                   En ligne
                 </p>
               </div>
@@ -118,17 +133,17 @@ export default function SupportBubble() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-white/50 hover:bg-white/10 hover:text-white"
+              className="h-8 w-8 text-muted-foreground hover:bg-muted hover:text-foreground"
               onClick={() => setIsOpen(false)}
             >
               <X className="h-4 w-4" />
             </Button>
           </CardHeader>
 
-          <CardContent className="bg-slate-50 p-0">
+          <CardContent className="bg-background p-0">
             <ScrollArea className="h-[400px] p-4">
               <div className="space-y-4">
-                <div className="rounded-xl border border-primary/10 bg-primary/5 p-3 text-[11px] italic text-slate-600">
+                <div className="rounded-xl border border-primary/10 bg-primary/5 p-3 text-[11px] italic text-muted-foreground">
                   Bonjour ! Posez votre question ici, nous vous répondrons directement sur ce chat.
                 </div>
 
@@ -140,11 +155,11 @@ export default function SupportBubble() {
                     <div
                       className={`max-w-[80%] rounded-2xl px-4 py-1 text-sm shadow-sm ${
                         msg.sender === 'user'
-                          ? 'rounded-tr-none bg-primary text-white'
-                          : 'rounded-tl-none border border-slate-200 bg-white text-slate-800'
+                          ? 'rounded-tr-none bg-primary text-primary-foreground'
+                          : 'rounded-tl-none border border-border bg-card text-card-foreground'
                       }`}
                     >
-                      <p className="m-0 p-0 leading-relaxed text-white">{msg.text}</p>
+                      <p className="m-0 p-0 leading-relaxed">{msg.text}</p>
                       <span
                         className={`m-0 p-0 text-[9px] opacity-50 ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}
                       >
@@ -160,14 +175,14 @@ export default function SupportBubble() {
               </div>
             </ScrollArea>
 
-            <div className="border-t border-slate-200 bg-white p-4">
+            <div className="border-t border-border bg-muted/20 p-4">
               <div className="flex gap-2">
                 <Input
                   placeholder="Écrivez votre message..."
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                  className="h-10 flex-1 rounded-full border-slate-200 px-4 focus-visible:ring-primary"
+                  className="h-10 flex-1 rounded-full border-border bg-background px-4 focus-visible:ring-primary"
                 />
                 <Button
                   size="icon"
@@ -188,13 +203,13 @@ export default function SupportBubble() {
 
       <Button
         size="icon"
-        className={`h-14 w-14 rounded-full shadow-2xl transition-all duration-300 ${isOpen ? 'rotate-90 scale-90 bg-slate-900' : 'bg-primary hover:scale-110'}`}
+        className={`h-14 w-14 rounded-full shadow-2xl transition-all duration-300 ${isOpen ? 'rotate-90 scale-90 bg-muted hover:bg-muted' : 'bg-primary hover:scale-110'}`}
         onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen ? (
-          <X className="h-6 w-6 text-white" />
+          <X className="h-6 w-6 text-foreground" />
         ) : (
-          <MessageCircle className="h-6 w-6 text-white" />
+          <MessageCircle className="h-6 w-6 text-primary-foreground" />
         )}
       </Button>
     </div>

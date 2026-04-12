@@ -44,7 +44,7 @@ export const Features = () => {
     <section>
       <div className="mx-auto max-w-screen-xl px-4 py-8 sm:py-16 lg:px-6">
         <div className="mb-8 max-w-screen-lg lg:mb-16">
-          <h2 className="mb-4 text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+          <h2 className="mb-4 text-4xl font-extrabold tracking-tight">
             Fonctionnalités sur Mesure pour un Investissement Personnel Optimal.
           </h2>
           <p className="text-gray-500 dark:text-gray-400 sm:text-xl">

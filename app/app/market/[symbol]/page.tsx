@@ -148,7 +148,7 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
     <div className="flex h-[calc(100vh-100px)] flex-col space-y-4 p-4 md:p-6">
       <div className="bg-dark flex shrink-0 items-center justify-between gap-4 rounded-lg border p-4">
         <div className="flex min-w-0 items-center gap-3">
-          <Link href="/app/dashboard" className="inline-flex shrink-0">
+          <Link href="/app/market" className="inline-flex shrink-0">
             <Button variant="ghost" size="icon" className="h-8 w-8">
               <ArrowLeft className="h-4 w-4" />
             </Button>

@@ -147,7 +147,7 @@ export default function PerformanceBox({
       <CardHeader className="space-y-4 pb-2">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
-            <h2 className="text-lg font-semibold text-gray-900">{selectedChart?.label}</h2>
+            <h2 className="text-lg font-semibold">{selectedChart?.label}</h2>
             <p className="text-sm text-gray-500">{selectedChart?.description}</p>
           </div>
           <div className="flex items-center gap-2">

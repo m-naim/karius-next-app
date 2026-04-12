@@ -32,10 +32,10 @@ export function MyWatchLists() {
   return authentificated && data ? (
     <SectionContainer className="space-y-6">
       <div className="flex w-full flex-col items-center px-4 text-center">
-        <h2 className="text-xl font-semibold text-gray-900 sm:text-2xl md:text-3xl">
+        <h2 className="text-xl font-semibold sm:text-2xl md:text-3xl">
           Mes watchlists
         </h2>
-        <p className="mt-2 max-w-2xl text-sm text-gray-500 sm:text-base">
+        <p className="mt-2 max-w-2xl text-sm sm:text-base">
           Gérez et analysez vos listes de suivi personnelles
         </p>
         <div className="mt-4">

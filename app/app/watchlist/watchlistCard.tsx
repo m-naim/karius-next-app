@@ -24,7 +24,7 @@ export function WatchCard({
             </CardTitle>
             <p className="text-xs text-gray-500">{data?.securities?.length || 0} Actions</p>
           </div>
-          <div className="flex items-center gap-1 rounded-md bg-gray-100 p-1.5">
+          <div className="flex items-center gap-1 rounded-md p-1.5">
             <Star className="h-4 w-4" />
             <span className="px-0.5 text-xs font-medium">0</span>
           </div>
