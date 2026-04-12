@@ -5,24 +5,15 @@ import { usePathname } from 'next/navigation'
 import PerformanceBox from './performanceBox'
 import SectionContainer from '@/components/organismes/layout/SectionContainer'
 import YearlyOverview from './yearlyOverview'
-import BenchmarkSelector, { validateBenchmark } from './components/BenchmarkSelector'
-import { Card } from '@/components/ui/card'
+import { validateBenchmark } from './components/BenchmarkSelector'
 
 function PagePerformance() {
   const id = usePathname().split('/')[3]
   const [selectedBenchmarks, setSelectedBenchmarks] = useState<string[]>([])
-  const [error, setError] = useState('')
 
   const handleAddBenchmark = (benchmark: string) => {
-    if (!validateBenchmark(benchmark)) {
-      setError('Format de benchmark invalide')
-      return
-    }
-    if (selectedBenchmarks.includes(benchmark)) {
-      setError('Ce benchmark est déjà ajouté')
-      return
-    }
-    setError('')
+    if (!validateBenchmark(benchmark)) return
+    if (selectedBenchmarks.includes(benchmark)) return
     setSelectedBenchmarks([...selectedBenchmarks, benchmark])
   }
 
@@ -33,17 +24,12 @@ function PagePerformance() {
   return (
     <div className="flex flex-col gap-6">
       <SectionContainer className="w-full">
-        <PerformanceBox id={id} selectedBenchmarks={selectedBenchmarks} />
-      </SectionContainer>
-      <SectionContainer className="w-full">
-        <Card className="p-4">
-          <BenchmarkSelector
-            selectedBenchmarks={selectedBenchmarks}
-            onAddBenchmark={handleAddBenchmark}
-            onRemoveBenchmark={handleRemoveBenchmark}
-            error={error}
-          />
-        </Card>
+        <PerformanceBox
+          id={id}
+          selectedBenchmarks={selectedBenchmarks}
+          onAddBenchmark={handleAddBenchmark}
+          onRemoveBenchmark={handleRemoveBenchmark}
+        />
       </SectionContainer>
 
       <SectionContainer className="w-full">

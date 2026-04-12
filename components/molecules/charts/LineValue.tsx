@@ -1,4 +1,3 @@
-import { tr } from 'date-fns/locale'
 import React from 'react'
 import {
   LineChart,
@@ -9,6 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
+  ReferenceLine,
 } from 'recharts'
 
 interface LineValueProps {
@@ -25,6 +25,36 @@ interface LineValueProps {
   isLogarithmic?: boolean
 }
 
+const CustomTooltip = ({ active, payload, label, unit }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="rounded-lg border border-border bg-background bg-opacity-95 p-3 shadow-xl backdrop-blur-sm">
+        <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          {label}
+        </p>
+        <div className="space-y-1.5">
+          {payload.map((entry: any, index: number) => (
+            <div key={index} className="flex items-center justify-between gap-8">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full" style={{ backgroundColor: entry.color }} />
+                <span className="text-xs font-medium text-foreground">{entry.name}</span>
+              </div>
+              <span className="text-xs font-bold tabular-nums" style={{ color: entry.color }}>
+                {entry.value?.toLocaleString('fr-FR', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+                {unit}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+  return null
+}
+
 export function LineValue({ data, unit = '€', isLogarithmic = false }: LineValueProps) {
   const chartData = data.labels.map((label, index) => ({
     name: label,
@@ -37,47 +67,52 @@ export function LineValue({ data, unit = '€', isLogarithmic = false }: LineVal
     ),
   }))
 
-  const allYValues = data.datasets.flatMap((set) => set.data).filter((v) => v != null && v !== 0)
-
+  const allYValues = data.datasets.flatMap((set) => set.data).filter((v) => v != null)
   const minValue = Math.min(...allYValues)
   const maxValue = Math.max(...allYValues)
 
-  // Padding as % of range
-  const range = maxValue - minValue || 1 // avoid division by zero
-  const padding = range * 0.1
-
+  // Domain handling
   const domain = isLogarithmic
     ? minValue > 0
       ? ['auto', 'auto']
       : [0.01, 'auto']
-    : [minValue - padding, maxValue + padding]
+    : ['auto', 'auto']
 
   return (
     <div className="h-full w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
-          <CartesianGrid vertical={true} stroke="#ddd" />
+        <LineChart data={chartData} margin={{ top: 20, right: 10, left: 0, bottom: 10 }}>
+          <defs>
+            <linearGradient id="colorPortfolio" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.1} />
+              <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid
+            strokeDasharray="3 3"
+            vertical={false}
+            stroke="hsl(var(--muted-foreground))"
+            opacity={0.1}
+          />
           <XAxis
             dataKey="name"
             axisLine={false}
             tickLine={false}
-            tick={{ fill: '#777', fontSize: 11 }}
+            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10, fontWeight: 500 }}
             dy={10}
-            interval={chartData.length > 20 ? Math.floor(chartData.length / 7) : 0}
-            tickFormatter={(value, index) => {
+            interval="preserveStartEnd"
+            minTickGap={30}
+            tickFormatter={(value) => {
               const parts = value.split('/')
               if (parts.length === 3) {
-                const day = parts[0]
-                const month = parts[1]
-                const year = parts[2]
-
-                const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
-                const monthName = date.toLocaleDateString('fr-FR', { month: 'short' })
-
-                if (chartData.length > 300)
-                  return monthName.charAt(0).toUpperCase() + monthName.slice(1) + ' ' + year
-                if (month === '01') return year
-                return monthName.charAt(0).toUpperCase() + monthName.slice(1)
+                const date = new Date(
+                  parseInt(parts[2]),
+                  parseInt(parts[1]) - 1,
+                  parseInt(parts[0])
+                )
+                if (chartData.length > 365)
+                  return date.toLocaleDateString('fr-FR', { year: 'numeric' })
+                return date.toLocaleDateString('fr-FR', { month: 'short' })
               }
               return value
             }}
@@ -86,40 +121,66 @@ export function LineValue({ data, unit = '€', isLogarithmic = false }: LineVal
             orientation="right"
             axisLine={false}
             tickLine={false}
-            tick={{ fill: '#999', fontSize: 11 }}
+            tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10, fontWeight: 500 }}
             tickFormatter={(value) => `${value.toLocaleString('fr-FR')}${unit}`}
             domain={domain as any}
             scale={isLogarithmic ? 'log' : 'auto'}
+            width={60}
           />
           <Tooltip
-            formatter={(value: number) => [`${value.toLocaleString('fr-FR')}${unit}`, '']}
-            contentStyle={{
-              backgroundColor: 'white',
-              border: '1px solid #f0f0f0',
-              borderRadius: '6px',
-              padding: '8px 12px',
-            }}
+            content={<CustomTooltip unit={unit} />}
+            cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '4 4' }}
           />
+
+          {unit === '%' && (
+            <ReferenceLine
+              y={0}
+              stroke="hsl(var(--muted-foreground))"
+              strokeDasharray="3 3"
+              opacity={0.5}
+            />
+          )}
+
           <Legend
             verticalAlign="top"
-            height={36}
+            align="right"
+            height={40}
             iconType="circle"
-            iconSize={8}
-            wrapperStyle={{
-              paddingLeft: '10px',
-            }}
+            iconSize={6}
+            formatter={(value) => (
+              <span className="text-[11px] font-semibold uppercase tracking-tight text-muted-foreground">
+                {value}
+              </span>
+            )}
           />
-          {data.datasets.map((dataset, index) => (
-            <Line
-              key={dataset.label}
-              type="monotone"
-              dataKey={dataset.label}
-              stroke={dataset.borderColor || `rgb(${59 + index * 40}, ${130 + index * 20}, 246)`}
-              strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 4, strokeWidth: 0 }}
-            />
-          ))}
+
+          {data.datasets.map((dataset, index) => {
+            const isMain = index === 0
+            return (
+              <Line
+                key={dataset.label}
+                name={dataset.label}
+                type="monotone"
+                dataKey={dataset.label}
+                stroke={
+                  dataset.borderColor ||
+                  (isMain ? 'hsl(var(--primary))' : `hsl(${(200 + index * 45) % 360}, 60%, 60%)`)
+                }
+                strokeWidth={isMain ? 3 : 1.5}
+                strokeOpacity={isMain ? 1 : 0.7}
+                dot={false}
+                activeDot={{
+                  r: isMain ? 5 : 4,
+                  strokeWidth: 0,
+                  fill:
+                    dataset.borderColor ||
+                    (isMain ? 'hsl(var(--primary))' : `hsl(${(200 + index * 45) % 360}, 60%, 60%)`),
+                }}
+                animationDuration={1000}
+                connectNulls
+              />
+            )
+          })}
         </LineChart>
       </ResponsiveContainer>
     </div>

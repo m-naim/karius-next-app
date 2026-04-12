@@ -1,15 +1,17 @@
 import React from 'react'
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { X, Plus } from 'lucide-react'
+import { X, Plus, Search, BarChart3 } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 
 export const benchmarkOptions = [
   { value: '^GSPC', label: 'S&P 500' },
@@ -21,7 +23,6 @@ interface BenchmarkSelectorProps {
   selectedBenchmarks: string[]
   onAddBenchmark: (benchmark: string) => void
   onRemoveBenchmark: (benchmark: string) => void
-  error?: string
 }
 
 export function validateBenchmark(value: string) {
@@ -33,75 +34,79 @@ export default function BenchmarkSelector({
   selectedBenchmarks,
   onAddBenchmark,
   onRemoveBenchmark,
-  error,
 }: BenchmarkSelectorProps) {
   const [customBenchmark, setCustomBenchmark] = React.useState('')
 
-  const handleAddCustomBenchmark = () => {
-    if (customBenchmark) {
+  const handleAddCustomBenchmark = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (customBenchmark && validateBenchmark(customBenchmark)) {
       onAddBenchmark(customBenchmark)
       setCustomBenchmark('')
     }
   }
 
   return (
-    <div className="flex flex-col gap-4 sm:gap-3">
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <Select onValueChange={(value) => onAddBenchmark(value)} value="">
-          <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue placeholder="Ajouter un benchmark" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              {benchmarkOptions.map((option) => (
-                <SelectItem
-                  key={option.value}
-                  value={option.value}
-                  disabled={selectedBenchmarks.includes(option.value)}
-                >
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-
-        <div className="flex w-full gap-2 sm:w-auto">
-          <Input
-            className="flex-1 sm:w-[120px] sm:flex-none"
-            placeholder="Code personnalisé"
-            value={customBenchmark}
-            onChange={(e) => setCustomBenchmark(e.target.value.toUpperCase())}
-          />
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleAddCustomBenchmark}
-            disabled={!customBenchmark}
-          >
-            <Plus className="h-4 w-4" />
+    <div className="flex items-center gap-2">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="sm" className="h-8 gap-2 border-dashed">
+            <Plus className="h-3.5 w-3.5" />
+            <span>Comparer</span>
           </Button>
-        </div>
-      </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuLabel>Indices de référence</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            {benchmarkOptions.map((option) => (
+              <DropdownMenuItem
+                key={option.value}
+                disabled={selectedBenchmarks.includes(option.value)}
+                onClick={() => onAddBenchmark(option.value)}
+                className="cursor-pointer"
+              >
+                <BarChart3 className="mr-2 h-4 w-4 text-muted-foreground" />
+                <span>{option.label}</span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <div className="p-2">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Symbole (ex: AAPL)"
+                value={customBenchmark}
+                onChange={(e) => setCustomBenchmark(e.target.value.toUpperCase())}
+                className="h-8 text-xs"
+              />
+              <Button
+                size="icon"
+                className="h-8 w-8 shrink-0"
+                onClick={handleAddCustomBenchmark}
+                disabled={!customBenchmark || !validateBenchmark(customBenchmark)}
+              >
+                <Search className="h-3 w-3" />
+              </Button>
+            </div>
+          </div>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-      {error && <span className="order-last text-sm text-red-500">{error}</span>}
-
-      <div className="flex flex-wrap gap-2">
+      <div className="hidden items-center gap-1.5 md:flex">
         {selectedBenchmarks.map((benchmark) => (
-          <div
+          <Badge
             key={benchmark}
-            className="flex items-center gap-1 rounded-full bg-gray-100 px-3 py-1.5 text-sm"
+            variant="secondary"
+            className="h-7 items-center gap-1 pl-2 pr-1 font-medium"
           >
-            <span className="line-clamp-1">
-              {benchmarkOptions.find((b) => b.value === benchmark)?.label || benchmark}
-            </span>
+            {benchmarkOptions.find((b) => b.value === benchmark)?.label || benchmark}
             <button
               onClick={() => onRemoveBenchmark(benchmark)}
-              className="ml-1 rounded-full p-1 hover:bg-gray-200"
+              className="ml-0.5 rounded-full p-0.5 hover:bg-gray-200"
             >
               <X className="h-3 w-3" />
             </button>
-          </div>
+          </Badge>
         ))}
       </div>
     </div>

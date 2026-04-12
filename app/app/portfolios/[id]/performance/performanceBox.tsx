@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getPerformances } from '@/services/portfolioService'
 import { LineChart, BarChart2, TrendingUp, Wallet } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import BenchmarkSelector from './components/BenchmarkSelector'
 
 const periodsConvert = {
   '1W': 7,
@@ -76,9 +77,16 @@ const chartTypes = [
 interface PerformanceBoxProps {
   id: string
   selectedBenchmarks: string[]
+  onAddBenchmark: (benchmark: string) => void
+  onRemoveBenchmark: (benchmark: string) => void
 }
 
-export default function PerformanceBox({ id, selectedBenchmarks }: PerformanceBoxProps) {
+export default function PerformanceBox({
+  id,
+  selectedBenchmarks,
+  onAddBenchmark,
+  onRemoveBenchmark,
+}: PerformanceBoxProps) {
   const [chartType, setChartType] = useState(chartTypes[0].id)
   const [period, setPeriod] = useState(chartTypes[0].defaultPeriod)
   const [dates, setDates] = useState<string[]>([])
@@ -141,6 +149,31 @@ export default function PerformanceBox({ id, selectedBenchmarks }: PerformanceBo
           <div className="space-y-1">
             <h2 className="text-lg font-semibold text-gray-900">{selectedChart?.label}</h2>
             <p className="text-sm text-gray-500">{selectedChart?.description}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="mr-2 flex items-center gap-1 rounded-lg bg-muted/50 p-1">
+              {Object.keys(periodsConvert).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => handlePeriodChange(p)}
+                  className={cn(
+                    'rounded px-2 py-1 text-[10px] font-bold uppercase transition-all',
+                    period === p
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+            {selectedChart?.showBenchmarks && (
+              <BenchmarkSelector
+                selectedBenchmarks={selectedBenchmarks}
+                onAddBenchmark={onAddBenchmark}
+                onRemoveBenchmark={onRemoveBenchmark}
+              />
+            )}
           </div>
         </div>
 
@@ -249,25 +282,6 @@ export default function PerformanceBox({ id, selectedBenchmarks }: PerformanceBo
           )}
         </div>
       </CardContent>
-
-      <CardFooter className="border-t bg-gray-50/50 p-0">
-        <div className="bg-dark flex items-center gap-1 rounded-lg border p-1">
-          {Object.keys(periodsConvert).map((p) => (
-            <button
-              key={p}
-              onClick={() => handlePeriodChange(p)}
-              className={cn(
-                'rounded px-2.5 py-1.5 text-sm transition-colors',
-                period === p
-                  ? 'bg-gray-100 font-medium text-gray-900'
-                  : 'text-gray-500 hover:text-gray-900'
-              )}
-            >
-              {p}
-            </button>
-          ))}
-        </div>
-      </CardFooter>
     </Card>
   )
 }

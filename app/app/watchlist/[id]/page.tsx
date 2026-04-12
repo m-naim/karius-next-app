@@ -348,7 +348,7 @@ export default function Watchlist() {
                 <AnalysisView
                   securities={data.securities}
                   selectedPeriod={selectedPeriod}
-                  setSelectedPeriod={setSelectedPeriod}
+                  onPeriodChange={setSelectedPeriod}
                 />
               )}
             </div>

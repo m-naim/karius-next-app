@@ -14,8 +14,15 @@ import {
 } from '@tanstack/react-table'
 import { columns, PortfolioSecurity } from './columns'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { FileScan, PlusIcon, WalletMinimal } from 'lucide-react'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import {
+  FileScan,
+  PlusIcon,
+  WalletMinimal,
+  Search,
+  ArrowUpRight,
+  ArrowDownLeft,
+} from 'lucide-react'
 import TransactionDialogue from './transactionDialogue'
 import Link from 'next/link'
 import {
@@ -32,13 +39,13 @@ import { round10 } from '@/lib/decimalAjustement'
 import AllocationPie from './allocationPie'
 import PortfolioTable from '@/components/molecules/table/PortfolioTable'
 import { cn } from '@/lib/utils'
+import { Input } from '@/components/ui/input'
 
 export default function PortfolioView() {
   const id = usePathname().split('/')[3]
   const { toast } = useToast()
   const [data, setData] = React.useState<PortfolioSecurity[]>([])
   const [loading, setLoading] = React.useState(true)
-  const [isRefreshing, setIsRefreshing] = useState(false)
   const [portfolio, setPortfolio] = useState({
     _id: '',
     allocation: [],
@@ -49,6 +56,7 @@ export default function PortfolioView() {
   const [own, setOwn] = React.useState(false)
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [globalFilter, setGlobalFilter] = React.useState('')
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
     symbol: true,
     weight: true,
@@ -72,11 +80,6 @@ export default function PortfolioView() {
       setPortfolio(res.data)
       setData(res.data.allocation)
       setLoading(false)
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de charger les données du portfolio',
-        variant: 'destructive',
-      })
     } catch (e) {
       console.error('error api:', e)
       setPortfolio({ _id: '', allocation: [], transactions: [], cashValue: 0, totalValue: 0 })
@@ -95,12 +98,10 @@ export default function PortfolioView() {
     eventSource = es
     eventSource.addEventListener('portfolio', (event) => {
       const eventData = JSON.parse(event.data)
-      console.log('New message event:', eventData.last_perfs_update)
       setPortfolio(eventData)
       setData(eventData.allocation)
     })
     return () => {
-      console.log('Closing SSE connection...')
       eventSource?.close()
     }
   }, [id])
@@ -113,11 +114,13 @@ export default function PortfolioView() {
       columnFilters,
       columnVisibility,
       rowSelection,
+      globalFilter,
     },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -175,123 +178,131 @@ export default function PortfolioView() {
   return loading ? (
     <Loader />
   ) : (
-    <div className="flex w-full flex-wrap-reverse gap-0.5">
-      <Card className="w-full flex-grow lg:w-8/12">
-        <CardHeader className="px-2 pb-1 pt-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-1">
-              <span className="text-base">Investissements</span>
-              {data.length === 0 && (
-                <span className="text-xs text-muted-foreground">Aucun investissement</span>
-              )}
-            </CardTitle>
-          </div>
-          {own && (
-            <div className="mt-1 flex flex-wrap items-center gap-1">
-              <div className="flex flex-1 items-center gap-1 md:flex-none">
-                <AccountsMouvements
-                  data-umami-event="portfolio-accounts-mouvements-button"
-                  Trigger={() => (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-7 min-w-[110px] flex-1 gap-1 bg-background/60 text-xs backdrop-blur supports-[backdrop-filter]:bg-background/60"
-                    >
-                      <span>Dépôt / retrait</span>
-                    </Button>
-                  )}
-                  submitHandler={addMouvement}
-                />
-
-                <TransactionDialogue
-                  data-umami-event="portfolio-add-transaction-button"
-                  Trigger={() => (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-7 min-w-[110px] flex-1 gap-1 bg-background/60 text-xs backdrop-blur supports-[backdrop-filter]:bg-background/60"
-                    >
-                      <PlusIcon className="h-3.5 w-3.5" />
-                      <span>Acheter / Vendre</span>
-                    </Button>
-                  )}
-                  totalPortfolioValue={portfolio.totalValue}
-                  submitHandler={addTransaction}
-                />
-              </div>
-
-              <div className="flex items-center gap-1">
-                <Link
-                  data-umami-event="portfolio-import-button"
-                  href={`${id}/import`}
-                  className="shrink-0"
-                >
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-7 gap-1 bg-background/60 text-xs backdrop-blur supports-[backdrop-filter]:bg-background/60"
+    <div className="flex w-full flex-wrap-reverse gap-6">
+      <div className="w-full flex-grow lg:w-8/12">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold tracking-tight">Investissements</h1>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">{data.length} actifs détenus</span>
+              <div className="flex items-center gap-1 rounded-md bg-muted/50 p-1">
+                {['1w', '1m', '1y', '5y'].map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setSelectedPeriod(p)}
+                    className={cn(
+                      'rounded px-2 py-0.5 text-[10px] font-bold uppercase transition-all',
+                      selectedPeriod === p
+                        ? 'bg-background text-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
                   >
-                    <FileScan className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Importer</span>
-                  </Button>
-                </Link>
+                    {p}
+                  </button>
+                ))}
               </div>
             </div>
-          )}
-          <div className="bg-dark flex items-center gap-1 rounded-lg border p-1">
-            {['1w', '1m', '1y', '5y'].map((p) => (
-              <button
-                key={p}
-                onClick={() => setSelectedPeriod(p)}
-                className={cn(
-                  'rounded px-2.5 py-1.5 text-sm transition-colors',
-                  selectedPeriod === p
-                    ? 'bg-gray-100 font-medium text-gray-900'
-                    : 'text-gray-500 hover:text-gray-900'
-                )}
-              >
-                {p}
-              </button>
-            ))}
           </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          {data.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-4 text-center">
-              <WalletMinimal className="h-8 w-8 text-muted-foreground/50" />
-              <h3 className="mt-2 text-base font-semibold">Aucun investissement</h3>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Commencez par ajouter votre premier investissement
-              </p>
-              <TransactionDialogue
+
+          {own && (
+            <div className="flex items-center gap-2">
+              <AccountsMouvements
+                submitHandler={addMouvement}
                 Trigger={() => (
-                  <Button className="mt-2 h-7 text-xs" size="sm">
-                    <PlusIcon className="mr-1 h-3.5 w-3.5" />
-                    Ajouter un investissement
+                  <Button variant="outline" size="sm" className="h-9 gap-2">
+                    <WalletMinimal className="h-4 w-4" />
+                    <span>Espèces</span>
                   </Button>
                 )}
+              />
+              <TransactionDialogue
                 totalPortfolioValue={portfolio.totalValue}
                 submitHandler={addTransaction}
+                Trigger={() => (
+                  <Button size="sm" className="h-9 gap-2 shadow-lg shadow-primary/20">
+                    <PlusIcon className="h-4 w-4" />
+                    <span>Transaction</span>
+                  </Button>
+                )}
               />
+              <Link href={`${id}/import`}>
+                <Button variant="ghost" size="icon" className="h-9 w-9 border">
+                  <FileScan className="h-4 w-4" />
+                </Button>
+              </Link>
             </div>
-          ) : (
-            <>
+          )}
+        </div>
+
+        <Card className="overflow-hidden border-gray-200 shadow-sm">
+          <CardHeader className="border-b bg-gray-50/30 px-4 py-3">
+            <div className="flex items-center gap-4">
+              <div className="relative max-w-sm flex-1">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Rechercher par nom ou symbole..."
+                  value={globalFilter ?? ''}
+                  onChange={(e) => setGlobalFilter(e.target.value)}
+                  className="h-9 bg-background pl-9"
+                />
+              </div>
+              <div className="hidden flex-1 items-center justify-end gap-4 text-xs sm:flex">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-muted-foreground">Cash :</span>
+                  <span className="font-semibold text-foreground">
+                    {round10(portfolio.cashValue, -2).toLocaleString()} €
+                  </span>
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            {data.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                  <WalletMinimal className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <h3 className="mt-4 text-lg font-semibold">Aucun investissement</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Commencez par ajouter votre premier actif ou importez un fichier.
+                </p>
+                <div className="mt-6 flex gap-3">
+                  <TransactionDialogue
+                    Trigger={() => (
+                      <Button size="sm" className="gap-2">
+                        <PlusIcon className="h-4 w-4" />
+                        Ajouter un actif
+                      </Button>
+                    )}
+                    totalPortfolioValue={portfolio.totalValue}
+                    submitHandler={addTransaction}
+                  />
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`${id}/import`}>Importer</Link>
+                  </Button>
+                </div>
+              </div>
+            ) : (
               <div className="w-full">
                 <PortfolioTable table={table} colSpan={columns.length} />
               </div>
-              <div className="mt-1 grid grid-cols-4 px-2 py-1">
-                <div className="pl-4  text-sm">Espèces</div>
-                <span className="pl-8 text-sm font-medium">
-                  {round10(portfolio.cashValue, -2).toLocaleString()} €
-                </span>
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-      <div className="w-fill flex flex-grow flex-col gap-0.5">
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="w-fill flex flex-grow flex-col gap-6 lg:max-w-xs">
         <StatsCard pftData={portfolio} />
-        {data.length > 0 && <AllocationPie data={data} totalValue={portfolio.totalValue} />}
+        {data.length > 0 && (
+          <Card className="overflow-hidden border-gray-200 shadow-sm">
+            <CardHeader className="px-4 py-3">
+              <h3 className="text-sm font-semibold">Répartition</h3>
+            </CardHeader>
+            <CardContent className="p-4">
+              <AllocationPie data={data} totalValue={portfolio.totalValue} />
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   )

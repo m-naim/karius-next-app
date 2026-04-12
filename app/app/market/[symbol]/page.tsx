@@ -206,7 +206,7 @@ export default function MarketPage() {
                 <AnalysisView
                   securities={securities}
                   selectedPeriod={selectedPeriod}
-                  setSelectedPeriod={setSelectedPeriod}
+                  onPeriodChange={setSelectedPeriod}
                 />
               )}
             </div>

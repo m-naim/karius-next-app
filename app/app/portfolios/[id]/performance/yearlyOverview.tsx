@@ -1,28 +1,16 @@
-import React from 'react'
-import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import React, { useEffect, useState } from 'react'
 import Loader from '@/components/molecules/loader/loader'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
-import { Card } from '@/components/ui/card'
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   getPerformancesSummary,
   getBenchmarksPerformanceSummary,
 } from '@/services/portfolioService'
-import { useEffect, useState } from 'react'
-import { CalendarDays, ChevronRight } from 'lucide-react'
 import { benchmarkOptions } from './components/BenchmarkSelector'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 
-const month = [
+const MONTHS = [
   { value: 'January', display: 'Jan' },
   { value: 'February', display: 'Fév' },
   { value: 'March', display: 'Mar' },
@@ -52,18 +40,13 @@ interface YearlyOverviewProps {
 export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOverviewProps) {
   const [perf, setPerf] = useState<PerformanceSummary[]>([])
   const [benchmarksPerf, setBenchmarksPerf] = useState<{ [key: string]: PerformanceSummary[] }>({})
-  const [selectedYear, setSelectedYear] = useState('')
   const [loading, setLoading] = useState(true)
-  const [isExpanded, setIsExpanded] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = (await getPerformancesSummary(id as string)).sort((b, a) => b.year - a.year)
+        const data = (await getPerformancesSummary(id as string)).sort((a, b) => b.year - a.year)
         setPerf(data)
-        if (data.length > 0) {
-          setSelectedYear(data.at(-1).year.toString())
-        }
         setLoading(false)
       } catch (e) {
         console.error('error api', e)
@@ -88,168 +71,140 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
     }
   }, [selectedBenchmarks])
 
-  const isCurrentYear = (year: string) => year === new Date().getFullYear().toString()
+  const getHeatmapClass = (val: number, isBenchmark = false) => {
+    if (!val) return ''
+    if (val > 0) return isBenchmark ? 'bg-green-500/10' : 'bg-green-500/20'
+    if (val < 0) return isBenchmark ? 'bg-red-500/10' : 'bg-red-500/20'
+    return ''
+  }
 
   return loading ? (
     <Loader />
   ) : (
-    <Card className="bg-dark w-full overflow-hidden border border-gray-200">
-      <div className="flex flex-col">
-        <div className="flex flex-col gap-4 border-b border-gray-200 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5 md:p-6">
-          <div className="space-y-1.5">
-            <h2 className="text-base font-semibold text-gray-900 sm:text-lg md:text-xl">
-              Performance annuelle
-            </h2>
-            <p className="text-xs text-gray-500 sm:text-sm">Vue mensuelle des performances</p>
-          </div>
-          <div className="flex items-center justify-between gap-4 sm:justify-end">
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="flex items-center gap-2 rounded-lg border border-gray-200 px-3.5 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 md:hidden"
-            >
-              {isExpanded ? 'Réduire' : 'Voir tout'}
-              <ChevronRight
-                className={cn('h-4 w-4 transition-transform', isExpanded && 'rotate-90')}
-              />
-            </button>
-            <Select
-              onValueChange={(e) => setSelectedYear(e)}
-              value={selectedYear}
-              defaultValue={selectedYear}
-            >
-              <SelectTrigger className="bg-dark flex h-10 w-32 items-center gap-2 rounded-lg border border-gray-200 px-3 text-sm font-medium">
-                <CalendarDays className="h-4 w-4 text-gray-500" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {perf.map(({ year }) => (
-                    <SelectItem
-                      key={year}
-                      value={year.toString()}
-                      className="cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-gray-700 data-[highlighted]:bg-gray-100"
-                    >
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+    <Card className="w-full overflow-hidden border-gray-200 shadow-sm">
+      <CardHeader className="border-b bg-gray-50/30 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <CardTitle className="text-lg font-bold tracking-tight">
+              Récapitulatif Historique
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Performance mensuelle et annuelle comparée
+            </p>
           </div>
         </div>
-
-        <ScrollArea className="max-h-[calc(100vh-16rem)]">
-          <div
-            className={cn(
-              'grid w-full divide-x divide-gray-200',
-              'grid-cols-[90px_1fr] sm:grid-cols-[120px_1fr] lg:grid-cols-[160px_1fr]',
-              !isExpanded && 'max-h-[360px] overflow-hidden md:max-h-none'
-            )}
-          >
-            <div className="sticky left-0 z-10 space-y-0 bg-gray-50/80">
-              <div className="flex h-12 items-center border-b border-gray-200 px-3 text-[11px] font-medium uppercase tracking-wider text-gray-500 sm:h-14 sm:px-4 sm:text-xs lg:px-5">
-                Mois
-              </div>
-              {month.map((m) => (
-                <div
-                  key={m.value}
-                  className="flex h-10 items-center border-b border-gray-100/50 px-3 text-[11px] text-gray-600 sm:h-12 sm:px-4 sm:text-xs lg:px-5"
-                >
-                  {m.display}
-                </div>
-              ))}
-              <div className="flex h-12 items-center bg-gray-100/80 px-3 text-[11px] font-medium text-gray-900 sm:h-14 sm:px-4 sm:text-xs lg:px-5">
-                Total
-              </div>
-            </div>
-
-            <div className="overflow-x-auto">
-              <div className="grid auto-cols-[minmax(100px,1fr)] grid-flow-col sm:auto-cols-[minmax(120px,1fr)]">
-                {perf &&
-                  perf
-                    .filter(({ year }) => year.toString() === selectedYear)
-                    .map(({ year, performance, monthlyPerformance }) => (
-                      <div
-                        key={year}
-                        className="space-y-0 border-r border-gray-200 last:border-r-0"
-                      >
-                        <div
-                          className={cn(
-                            'flex h-12 items-center justify-end border-b border-gray-200 px-3 text-[11px] font-medium sm:h-14 sm:px-4 sm:text-xs lg:px-5',
-                            isCurrentYear(year.toString()) ? 'text-blue-600' : 'text-gray-900'
-                          )}
-                        >
-                          {year}
-                        </div>
-                        {month.map((m) => (
-                          <div
+      </CardHeader>
+      <CardContent className="p-0">
+        <ScrollArea className="w-full">
+          <div className="min-w-[1000px]">
+            <table className="w-full border-collapse text-left text-sm">
+              <thead>
+                <tr className="border-b bg-muted/30">
+                  <th className="sticky left-0 z-20 w-[120px] bg-gray-50 px-4 py-3 font-semibold text-muted-foreground">
+                    Année
+                  </th>
+                  {MONTHS.map((m) => (
+                    <th
+                      key={m.value}
+                      className="w-[70px] px-2 py-3 text-center font-semibold text-muted-foreground"
+                    >
+                      {m.display}
+                    </th>
+                  ))}
+                  <th className="w-[90px] bg-muted/50 px-4 py-3 text-right font-bold text-foreground">
+                    Total
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {perf.map((yearPerf) => (
+                  <React.Fragment key={yearPerf.year}>
+                    {/* Ligne Portefeuille */}
+                    <tr className="group transition-colors hover:bg-muted/20">
+                      <td className="sticky left-0 z-10 border-r bg-background px-4 py-3 font-bold text-foreground group-hover:bg-gray-50">
+                        {yearPerf.year}
+                        <span className="ml-2 rounded bg-primary/10 px-1 text-[10px] font-medium uppercase tracking-tighter text-primary">
+                          Portefeuille
+                        </span>
+                      </td>
+                      {MONTHS.map((m) => {
+                        const val = yearPerf.monthlyPerformance[m.value]
+                        return (
+                          <td
                             key={m.value}
-                            className="flex h-10 items-center justify-end border-b border-gray-100/50 px-3 hover:bg-gray-50/50 sm:h-12 sm:px-4 lg:px-5"
+                            className={cn(
+                              'border-r border-gray-100/50 px-2 py-3 text-center last:border-r-0',
+                              getHeatmapClass(val)
+                            )}
                           >
-                            {monthlyPerformance[m.value] ? (
+                            {val ? (
+                              <VariationContainer value={val} className="text-xs font-bold" />
+                            ) : (
+                              <span className="text-muted-foreground/30">—</span>
+                            )}
+                          </td>
+                        )
+                      })}
+                      <td className="bg-primary/5 px-4 py-3 text-right font-black">
+                        <VariationContainer value={yearPerf.performance} className="text-xs" />
+                      </td>
+                    </tr>
+
+                    {/* Lignes Benchmarks pour cette année */}
+                    {selectedBenchmarks.map((bench) => {
+                      const benchData = benchmarksPerf[bench]?.find((p) => p.year === yearPerf.year)
+                      const benchLabel =
+                        benchmarkOptions.find((o) => o.value === bench)?.label || bench
+                      return (
+                        <tr
+                          key={bench}
+                          className="group bg-muted/5 transition-colors hover:bg-muted/30"
+                        >
+                          <td className="sticky left-0 z-10 border-r bg-gray-50/50 px-4 py-2 text-[11px] font-medium italic text-muted-foreground group-hover:bg-gray-100">
+                            <div className="w-full truncate">{benchLabel}</div>
+                          </td>
+                          {MONTHS.map((m) => {
+                            const val = benchData?.monthlyPerformance[m.value]
+                            return (
+                              <td
+                                key={m.value}
+                                className={cn(
+                                  'border-r border-gray-100/50 px-2 py-2 text-center opacity-80 last:border-r-0',
+                                  getHeatmapClass(val, true)
+                                )}
+                              >
+                                {val ? (
+                                  <VariationContainer
+                                    value={val}
+                                    className="text-[10px] font-medium"
+                                  />
+                                ) : (
+                                  <span className="text-muted-foreground/30">—</span>
+                                )}
+                              </td>
+                            )
+                          })}
+                          <td className="bg-muted/20 px-4 py-2 text-right">
+                            {benchData ? (
                               <VariationContainer
-                                value={monthlyPerformance[m.value]}
-                                className="text-[11px] font-medium sm:text-xs"
+                                value={benchData.performance}
+                                className="text-[10px] font-bold"
                               />
                             ) : (
-                              <span className="text-[11px] text-gray-400 sm:text-xs">—</span>
+                              <span className="text-muted-foreground/30">—</span>
                             )}
-                          </div>
-                        ))}
-                        <div className="flex h-12 items-center justify-end bg-gray-100/80 px-3 sm:h-14 sm:px-4 lg:px-5">
-                          <VariationContainer
-                            value={performance}
-                            className="text-[11px] font-medium sm:text-xs"
-                          />
-                        </div>
-                      </div>
-                    ))}
-
-                {selectedBenchmarks.map((benchmark) => {
-                  const benchSummary = benchmarksPerf[benchmark]?.find(
-                    (p) => p.year.toString() === selectedYear
-                  )
-                  return (
-                    <div
-                      key={benchmark}
-                      className="space-y-0 border-r border-gray-200 last:border-r-0"
-                    >
-                      <div className="flex h-12 items-center justify-end border-b border-gray-200 px-3 text-[11px] font-medium text-gray-500 sm:h-14 sm:px-4 sm:text-xs lg:px-5">
-                        {benchmarkOptions.find((b) => b.value === benchmark)?.label || benchmark}
-                      </div>
-                      {month.map((m) => (
-                        <div
-                          key={m.value}
-                          className="flex h-10 items-center justify-end border-b border-gray-100/50 px-3 hover:bg-gray-50/50 sm:h-12 sm:px-4 lg:px-5"
-                        >
-                          {benchSummary?.monthlyPerformance[m.value] ? (
-                            <VariationContainer
-                              value={benchSummary.monthlyPerformance[m.value]}
-                              className="text-[11px] font-medium sm:text-xs"
-                            />
-                          ) : (
-                            <span className="text-[11px] text-gray-400 sm:text-xs">—</span>
-                          )}
-                        </div>
-                      ))}
-                      <div className="flex h-12 items-center justify-end bg-gray-100/80 px-3 sm:h-14 sm:px-4 lg:px-5">
-                        {benchSummary ? (
-                          <VariationContainer
-                            value={benchSummary.performance}
-                            className="text-[11px] font-medium sm:text-xs"
-                          />
-                        ) : (
-                          <span className="text-[11px] text-gray-400 sm:text-xs">—</span>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
           </div>
+          <ScrollBar orientation="horizontal" />
         </ScrollArea>
-      </div>
+      </CardContent>
     </Card>
   )
 }
