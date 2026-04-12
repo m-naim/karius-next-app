@@ -19,7 +19,6 @@ import {
 import {
   Info,
   Calculator,
-  Home,
   ArrowRight,
   TrendingUp,
   Wallet,
@@ -42,7 +41,7 @@ export default function CalculateurImmobilier() {
 
   // --- Location ---
   const [loyerMensuel, setLoyerMensuel] = useState(1000)
-  const [inflationLoyer, setInflationLoyer] = useState(2)
+  const [inflationLoyer] = useState(2)
 
   // --- Marché & Épargne ---
   const [rendementEpargne, setRendementEpargne] = useState(5)
@@ -53,7 +52,6 @@ export default function CalculateurImmobilier() {
     montantPret,
     fraisNotaire,
     mensualiteAssurance,
-    mensualiteCreditHorsAssurance,
     mensualiteTotaleCredit,
     mensualiteAvecCharges,
     coutTotalCredit,

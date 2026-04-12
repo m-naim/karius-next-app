@@ -3,20 +3,18 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import alertService from '@/services/alertService'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import {
-  Bell,
   BellOff,
   Send,
   Trash2,
   CheckCircle2,
   Clock,
   Search,
-  Filter,
   MoreVertical,
   Play,
   Settings2,
@@ -99,6 +97,7 @@ export default function AlertsPage() {
       if (isNaN(date.getTime())) return 'N/A'
       return format(date, formatStr, { locale: fr })
     } catch (e) {
+      console.error('Failed to format date:', e)
       return 'N/A'
     }
   }

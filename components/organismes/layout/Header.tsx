@@ -15,18 +15,13 @@ import {
   DropdownMenuTrigger,
 } from '../../ui/dropdown-menu'
 
-import authService from '@/services/authService'
 import { useAuth } from '@/hooks/useAuth'
 import { ChevronDown, Bell } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/tooltip'
 
 const Header = () => {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
 
-  const logOut = () => {
-    authService.logOut()
-    logout()
-  }
 
   return (
     <header className="border-b py-2">

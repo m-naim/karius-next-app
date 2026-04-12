@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { Column, sortingFns } from '@tanstack/react-table'
-import { ChevronUp, ArrowUpDown, ChevronDown, MoreHorizontal, ListFilterIcon } from 'lucide-react'
+import { ChevronUp, ArrowUpDown, ChevronDown, ListFilterIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -14,10 +14,7 @@ import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { round10 } from '@/lib/decimalAjustement'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
-import { tr } from 'date-fns/locale'
-import { stringToColor } from '@/lib/colors'
 
-// Fonction pour générer une couleur basée sur une chaîne
 
 // Fonction pour obtenir les initiales
 const getInitials = (str: string) => {
@@ -93,8 +90,6 @@ export const columns = (selectedPeriod): any[] => {
       header: SortingButton('Produit x Quantité'),
       cell: ({ row }) => {
         const symbol = row.getValue('symbol') as string
-        const color = stringToColor(symbol)
-        const initials = getInitials(symbol)
 
         return (
           <div className="flex max-w-20 items-center gap-3 overflow-hidden md:max-w-40">
@@ -214,7 +209,7 @@ export const columns = (selectedPeriod): any[] => {
           </div>
         )
       },
-      sortingFns: (rowA, rowB, columnId) => {
+      sortingFns: (rowA, rowB) => {
         const a = rowA.variations[selectedPeriod] * rowA.original.weight
         const b = rowB.variations[selectedPeriod] * rowB.original.weight
         return a - b

@@ -1,9 +1,7 @@
-import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useState, useMemo } from 'react'
 import { stringToColor } from '@/lib/colors'
-import { cn } from '@/lib/utils'
 
 interface AllocationPieProps {
   data: Array<{

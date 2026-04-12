@@ -81,10 +81,6 @@ export default function PortfolioView() {
     setFileLoaded(true)
   }
 
-  const containTransactionWithoutSymbol = () => {
-    return transactions.filter(noExistingSymbol).length > 0
-  }
-
   const dumpTransactions = async () => {
     try {
       setLoading(true)

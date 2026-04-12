@@ -7,7 +7,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { flexRender, Table as TableType } from '@tanstack/react-table'
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { MoreVertical } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {

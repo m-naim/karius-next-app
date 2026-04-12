@@ -7,9 +7,6 @@ import Msft from '@/components/icons/crypto.btc.svg'
 
 import 'css/hero.css'
 
-const imageLoader = ({ src, width, quality }: ImageLoaderProps) => {
-  return 'https://flowbite.s3.amazonaws.com/blocks/marketing-ui/hero/phone-mockup.png'
-}
 
 export default function Hero() {
   return (

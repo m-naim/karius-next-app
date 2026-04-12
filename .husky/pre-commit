@@ -1,21 +1,12 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-echo '🏗️👷 Styling, testing and building your project before committing'
+echo '🏗️👷 Linting and checking your project before committing'
 
-# Check Prettier standards
-yarn run check-format ||
-(
-    npm run format;
-    echo '🤢🤮🤢🤮 Its F**KING RAW - Your styling looks disgusting. 🤢🤮🤢🤮
-            Prettier Check Failed. Run npm run format, add changes and try commit again.';
-    false;
-)
-
-# Check ESLint Standards
-yarn run lint ||
+# Check oxlint Standards
+npm run lint ||
 (
         echo '😤🏀👋😤 Get that weak s**t out of here! 😤🏀👋😤 
-                ESLint Check Failed. Make the required changes listed above, add changes and try to commit again.'
+                Linter Check Failed. Make the required changes listed above, add changes and try to commit again.'
         false; 
 )

@@ -16,7 +16,7 @@ import {
 import { columns } from './components/columns'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, LineChart, Settings, X } from 'lucide-react'
+import { ArrowLeft, LineChart, Settings} from 'lucide-react'
 import Loader from '@/components/molecules/loader/loader'
 import { useLocalStorage } from '@/hooks/useLocalStorage' // Re-import useLocalStorage
 import { useToast } from '@/hooks/use-toast'
@@ -256,6 +256,7 @@ export default function Watchlist() {
         setOwned(listResponse.owned)
         setAllWatchlists(allResponse)
       } catch (err) {
+        console.error(err)
         toast({
           variant: 'destructive',
           title: 'Erreur de chargement',

@@ -8,8 +8,7 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
-  CardFooter,
+  CardTitle
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -23,7 +22,6 @@ import {
   EyeOff,
   Save,
   Bell,
-  BellOff,
   Send,
   LogOut,
   Lock,
@@ -306,7 +304,7 @@ export default function ProfilePage() {
                       value={telegramChatId}
                       onChange={(e) => {
                         setTelegramChatId(e.target.value)
-                        setTestingSuccess(false)
+                        setTestSuccess(false)
                       }}
                       placeholder="Non configuré"
                       className="pr-10 font-mono"

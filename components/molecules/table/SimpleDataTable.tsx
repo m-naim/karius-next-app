@@ -8,8 +8,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { flexRender } from '@tanstack/react-table'
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { InfoIcon, MoreVertical } from 'lucide-react'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { InfoIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,

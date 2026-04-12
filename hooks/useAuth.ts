@@ -26,7 +26,7 @@ export const useAuth = () => {
     }
   }, [])
 
-  const login = (token: String) => {
+  const login = (token: string) => {
     if (token != null && token.length > 2) {
       const decodedJwt: User = JSON.parse(atob(token.split('.')[1]))
       addUser(decodedJwt)

@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Column, ColumnDef, GroupColumnDef } from '@tanstack/react-table'
+import { Column, ColumnDef } from '@tanstack/react-table'
 import { ChevronUp, ArrowUpDown, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
