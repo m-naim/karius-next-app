@@ -52,12 +52,8 @@ const CORRELATION_METRICS = [
   { id: 'trailingPE', label: 'P/E Trail', unit: '', max: 100 },
   { id: 'forwardPE', label: 'P/E Fwd', unit: '', max: 100 },
   { id: 'marketCap', label: 'Cap', unit: 'B', divisor: 1000000000, max: Infinity },
-  { id: 'dividendYield', label: 'Div %', unit: '%', divisor: 0.01, max: 20 },
-  { id: 'priceToBook', label: 'P/B', unit: '', max: 20 },
-  { id: 'beta', label: 'Beta', unit: '', max: 5 },
+  { id: 'dividendYield', label: 'Div yield', unit: '%', divisor: 0.01, max: 20 },
   { id: 'linearity10y', label: 'Linear', unit: '%', max: 100 },
-  { id: 'score.profitability', label: 'Score Prof.', unit: '/10', max: 10 },
-  { id: 'score.growth', label: 'Score Gr.', unit: '/10', max: 10 },
 ] as const
 
 type CorrelationMetricId = (typeof CORRELATION_METRICS)[number]['id']
@@ -165,7 +161,6 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
         return (
           val !== undefined &&
           val !== null &&
-          val > (metricConfig.id === 'beta' ? -5 : 0) &&
           val < (metricConfig.max || Infinity)
         )
       })
@@ -173,7 +168,7 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
         const rawVal = correlMetric.includes('.')
           ? correlMetric.split('.').reduce((obj, key) => obj?.[key], s)
           : s[correlMetric]
-        const xVal = metricConfig.divisor ? rawVal / metricConfig.divisor : rawVal
+        const xVal = rawVal
         return {
           x: xVal,
           y: getPerf(s, selectedPeriod),
