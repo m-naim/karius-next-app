@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import alertService from '@/services/alertService'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -19,6 +19,12 @@ import {
   Play,
   Settings2,
   AlertCircle,
+  MessageSquare,
+  Radio,
+  ExternalLink,
+  Copy,
+  Info,
+  Layers,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
@@ -29,6 +35,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Separator } from '@/components/ui/separator'
 
 interface Alert {
   id: string
@@ -41,27 +49,39 @@ interface Alert {
   createdAt: string
 }
 
+interface NotificationSettings {
+  channel: 'telegram' | 'ntfy'
+  telegramChatId?: string
+  ntfyTopic?: string
+}
+
 export default function AlertsPage() {
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [loading, setLoading] = useState(true)
-  const [chatId, setChatId] = useState('')
-  const [updatingTelegram, setUpdatingTelegram] = useState(false)
+  const [settings, setSettings] = useState<NotificationSettings>({ channel: 'telegram' })
+  const [tempChatId, setTempChatId] = useState('')
+  const [updatingSettings, setUpdatingSettings] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const { toast } = useToast()
 
-  const fetchAlerts = async () => {
+  const fetchData = async () => {
     try {
-      const data = await alertService.getMyAlerts()
-      setAlerts(data)
+      const [alertsData, settingsData] = await Promise.all([
+        alertService.getMyAlerts(),
+        alertService.getNotificationSettings().catch(() => ({ channel: 'telegram' })),
+      ])
+      setAlerts(alertsData)
+      setSettings(settingsData)
+      setTempChatId(settingsData.telegramChatId || '')
     } catch (error) {
-      console.error('Failed to fetch alerts', error)
+      console.error('Failed to fetch data', error)
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchAlerts()
+    fetchData()
   }, [])
 
   const handleDelete = async (id: string) => {
@@ -84,20 +104,55 @@ export default function AlertsPage() {
     }
   }
 
-  const handleUpdateTelegram = async () => {
-    if (!chatId) return
-    setUpdatingTelegram(true)
+  const handleChannelChange = async (channel: 'telegram' | 'ntfy') => {
+    setUpdatingSettings(true)
     try {
-      await alertService.updateTelegram(chatId)
-      toast({
-        title: 'Configuration mise à jour',
-        description: 'Votre Chat ID Telegram a été enregistré.',
-      })
+      await alertService.updateNotificationChannel(channel)
+      setSettings((prev) => ({ ...prev, channel }))
+      toast({ title: 'Canal mis à jour', description: `Vous recevrez désormais vos alertes via ${channel}.` })
+    } catch (error) {
+      console.error('Failed to update channel:', error)
+    } finally {
+      setUpdatingSettings(false)
+    }
+  }
+
+  const handleUpdateTelegram = async () => {
+    setUpdatingSettings(true)
+    try {
+      await alertService.updateTelegram(tempChatId)
+      setSettings((prev) => ({ ...prev, telegramChatId: tempChatId }))
+      toast({ title: 'Config Telegram enregistrée' })
     } catch (error) {
       console.error('Failed to update telegram:', error)
     } finally {
-      setUpdatingTelegram(false)
+      setUpdatingSettings(false)
     }
+  }
+
+  const handleTestNotification = async () => {
+    try {
+      await alertService.testLastNotification()
+      toast({ title: 'Test envoyé', description: 'La dernière notification a été renvoyée.' })
+    } catch (error) {
+      console.error('Failed to test notification:', error)
+      toast({ variant: 'destructive', title: 'Erreur', description: 'Impossible de renvoyer la notification.' })
+    }
+  }
+
+  const handleTestBatchNotification = async () => {
+    try {
+      await alertService.testLastBatchNotification()
+      toast({ title: 'Test Batch envoyé', description: 'La dernière notification batch a été renvoyée.' })
+    } catch (error) {
+      console.error('Failed to test batch notification:', error)
+      toast({ variant: 'destructive', title: 'Erreur', description: 'Aucun historique de batch trouvé.' })
+    }
+  }
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+    toast({ title: 'Copié !' })
   }
 
   const safeFormat = (dateStr: string | undefined | null, formatStr: string) => {
@@ -107,7 +162,6 @@ export default function AlertsPage() {
       if (isNaN(date.getTime())) return 'N/A'
       return format(date, formatStr, { locale: fr })
     } catch (e) {
-      console.error('Failed to format date:', e)
       return 'N/A'
     }
   }
@@ -123,9 +177,9 @@ export default function AlertsPage() {
     <div className="container mx-auto max-w-6xl px-4 py-8">
       <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
-          <h1 className="text-4xl font-black tracking-tighter">GESTION DES ALERTES</h1>
+          <h1 className="text-4xl font-black tracking-tighter uppercase italic">Alertes</h1>
           <p className="font-medium text-muted-foreground">
-            Surveillez le marché en temps réel comme sur TradingView.
+            Surveillance temps réel de vos actifs favoris.
           </p>
         </div>
         <div className="flex gap-3">
@@ -149,42 +203,143 @@ export default function AlertsPage() {
           <Card className="overflow-hidden border-border/60 shadow-sm">
             <CardHeader className="bg-slate-900 p-4 text-white">
               <CardTitle className="flex items-center gap-2 text-sm uppercase tracking-widest">
-                <Send className="h-4 w-4 text-blue-400" />
-                Notifications
+                <Settings2 className="h-4 w-4 text-blue-400" />
+                Configuration
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 p-4">
-              <div className="space-y-2">
-                <Label htmlFor="chatId" className="text-[10px] font-black uppercase text-slate-500">
-                  Chat ID Telegram
+            <CardContent className="space-y-6 p-4">
+              {/* Canal Selection */}
+              <div className="space-y-3">
+                <Label className="text-[10px] font-black uppercase text-slate-500">
+                  Canal de réception
                 </Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="chatId"
-                    placeholder="Ex: 12345678"
-                    value={chatId}
-                    onChange={(e) => setChatId(e.target.value)}
-                    className="h-9 border-slate-200 text-sm font-bold"
-                  />
-                  <Button
-                    size="sm"
-                    onClick={handleUpdateTelegram}
-                    disabled={updatingTelegram || !chatId}
-                    className="font-bold"
-                  >
-                    {updatingTelegram ? '...' : 'SAVE'}
-                  </Button>
+                <RadioGroup 
+                  value={settings.channel} 
+                  onValueChange={(v) => handleChannelChange(v as 'telegram' | 'ntfy')}
+                  className="grid grid-cols-2 gap-2"
+                >
+                  <div>
+                    <RadioGroupItem value="telegram" id="tg" className="peer sr-only" />
+                    <Label
+                      htmlFor="tg"
+                      className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                    >
+                      <MessageSquare className="mb-1 h-4 w-4" />
+                      <span className="text-[10px] font-bold">TELEGRAM</span>
+                    </Label>
+                  </div>
+                  <div>
+                    <RadioGroupItem value="ntfy" id="ntfy" className="peer sr-only" />
+                    <Label
+                      htmlFor="ntfy"
+                      className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                    >
+                      <Radio className="mb-1 h-4 w-4" />
+                      <span className="text-[10px] font-bold">NTFY (WEB)</span>
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <Separator />
+
+              {/* Telegram Config */}
+              {settings.channel === 'telegram' && (
+                <div className="space-y-4 animate-in fade-in slide-in-from-left-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="chatId" className="text-[10px] font-black uppercase text-slate-500">
+                      Chat ID Telegram
+                    </Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="chatId"
+                        placeholder="Ex: 12345678"
+                        value={tempChatId}
+                        onChange={(e) => setTempChatId(e.target.value)}
+                        className="h-9 border-slate-200 text-sm font-bold"
+                      />
+                      <Button
+                        size="sm"
+                        onClick={handleUpdateTelegram}
+                        disabled={updatingSettings || !tempChatId}
+                        className="font-bold"
+                      >
+                        {updatingSettings ? '...' : 'SAVE'}
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 rounded-lg border border-blue-100 bg-blue-50/50 p-3">
+                    <Info className="h-4 w-4 shrink-0 text-blue-500" />
+                    <p className="text-[10px] font-medium leading-relaxed text-blue-700">
+                      Obtenez votre ID via @userinfobot et envoyez /start à notre bot.
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex gap-3 rounded-lg border border-blue-100 bg-blue-50 p-3">
-                <AlertCircle className="h-5 w-5 shrink-0 text-blue-500" />
-                <p className="text-[11px] font-medium leading-relaxed text-blue-700">
-                  Obtenez votre ID via{' '}
-                  <code className="rounded bg-blue-200/50 px-1">@userinfobot</code>. Envoyez{' '}
-                  <code className="rounded bg-blue-200/50 px-1">/start</code> à notre bot pour
-                  activer.
-                </p>
-              </div>
+              )}
+
+              {/* Ntfy Config */}
+              {settings.channel === 'ntfy' && (
+                <div className="space-y-4 animate-in fade-in slide-in-from-right-2">
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-black uppercase text-slate-500">
+                      Votre canal ntfy privé
+                    </Label>
+                    <div className="flex items-center gap-2 rounded-md border bg-muted/30 p-2">
+                      <code className="flex-1 truncate text-[10px] font-bold">
+                        ntfy.sh/{settings.ntfyTopic || 'chargement...'}
+                      </code>
+                      <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => copyToClipboard(`https://ntfy.sh/${settings.ntfyTopic}`)}>
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Button variant="outline" size="sm" className="w-full gap-2 text-[10px] font-bold" asChild>
+                      <a href={`https://ntfy.sh/${settings.ntfyTopic}`} target="_blank" rel="noopener noreferrer">
+                        OUVRIR LE CANAL <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </Button>
+                  </div>
+
+                  <div className="rounded-lg border border-amber-100 bg-amber-50/50 p-3">
+                    <div className="flex gap-2 mb-1">
+                      <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" />
+                      <span className="text-[10px] font-bold uppercase text-amber-700">Information Format</span>
+                    </div>
+                    <p className="text-[10px] font-medium leading-relaxed text-amber-800">
+                      ntfy n'accepte pas le HTML. Les messages seront reçus en texte brut optimisé.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Dev Test Button */}
+              {process.env.NODE_ENV === 'development' && (
+                <div className="space-y-2 pt-2">
+                  <p className="text-[8px] font-black uppercase text-primary/60 text-center">Outils de Développement</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-dashed border-primary/50 text-[9px] font-bold text-primary hover:bg-primary/5 px-1"
+                      onClick={handleTestNotification}
+                    >
+                      <Send className="mr-1 h-3 w-3" />
+                      TEST ALERT
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-dashed border-primary/50 text-[9px] font-bold text-primary hover:bg-primary/5 px-1"
+                      onClick={handleTestBatchNotification}
+                    >
+                      <Layers className="mr-1 h-3 w-3" />
+                      TEST BATCH
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -192,10 +347,6 @@ export default function AlertsPage() {
             <CardContent className="space-y-2 p-4 text-[11px] italic text-muted-foreground">
               <p>• Les alertes de prix sont vérifiées toutes les minutes.</p>
               <p>• Une alerte déclenchée ne sonnera plus jusqu'à sa réactivation.</p>
-              <p>
-                • Assurez-vous que votre compte Telegram est lié pour recevoir les alertes
-                instantanées.
-              </p>
             </CardContent>
           </Card>
         </div>
@@ -207,19 +358,19 @@ export default function AlertsPage() {
               <TabsList className="h-10 bg-muted/50 p-1">
                 <TabsTrigger
                   value="all"
-                  className="px-4 text-xs font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  className="px-4 text-xs font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm"
                 >
                   TOUT
                 </TabsTrigger>
                 <TabsTrigger
                   value="active"
-                  className="px-4 text-xs font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  className="px-4 text-xs font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm"
                 >
                   ACTIVES
                 </TabsTrigger>
                 <TabsTrigger
                   value="triggered"
-                  className="px-4 text-xs font-bold data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  className="px-4 text-xs font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm"
                 >
                   HISTORIQUE
                 </TabsTrigger>
@@ -229,7 +380,7 @@ export default function AlertsPage() {
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Rechercher un ticker..."
-                  className="h-10 w-full border-slate-200 bg-white pl-9 sm:w-[250px]"
+                  className="h-10 w-full border-border bg-background pl-9 sm:w-[250px]"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -357,7 +508,7 @@ function AlertCard({
 
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-lg font-black tracking-tight">{alert.symbol}</span>
+                <span className="text-lg font-black tracking-tight uppercase italic">{alert.symbol}</span>
                 <Badge
                   variant={alert.isTriggered ? 'outline' : 'secondary'}
                   className={`py-0 text-[10px] font-bold uppercase ${alert.isTriggered ? 'border-orange-200 bg-orange-50 text-orange-600' : ''}`}
@@ -365,8 +516,8 @@ function AlertCard({
                   {alert.isTriggered ? 'Déclenchée' : 'En veille'}
                 </Badge>
               </div>
-              <div className="mt-1 flex items-center gap-2 text-sm font-bold text-slate-600">
-                <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] uppercase text-slate-500">
+              <div className="mt-1 flex items-center gap-2 text-sm font-bold text-muted-foreground/80">
+                <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
                   {alert.type === 'PRICE' ? 'PRIX' : 'P/E'}
                 </span>
                 <span>{alert.operator}</span>
