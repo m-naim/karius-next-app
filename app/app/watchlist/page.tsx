@@ -20,16 +20,16 @@ export default async function watchlistPage() {
       <div className="space-y-2 py-2">
         <MyWatchLists />
 
-        <SectionContainer className="space-y-0">
+        <SectionContainer className="space-y-8">
           <div className="flex w-full flex-col items-center px-4 text-center">
-            <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl md:text-3xl">
-              Découvrez les meilleurs portefeuilles de la communauté
+            <h1 className="max-w-3xl text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl md:text-4xl">
+              Portefeuilles de la Communauté
             </h1>
-            <p className="mt-2 max-w-2xl text-sm text-gray-500 sm:text-base">
-              Explorez et suivez les portefeuilles qui vous inspirent
+            <p className="mt-3 max-w-xl text-sm text-gray-500 sm:text-base">
+              Explorez les meilleures stratégies et laissez-vous inspirer par les investisseurs les plus performants.
             </p>
           </div>
-          <div className="grid w-full grid-cols-1 justify-items-center gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {listWatch.map((w) => (
               <WatchCard key={w._id.toString()} data={w} />
             ))}

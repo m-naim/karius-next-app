@@ -128,6 +128,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
     setLoading(true)
     try {
       transactionData.id = uuidv4()
+      transactionData.entryDate = new Date().toISOString()
       const res = await AddTransaction(id, transactionData)
       setOwn(res.own)
       setPortfolio(res.data)
@@ -206,8 +207,8 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
             <div className="flex items-center gap-2">
               <AccountsMouvements
                 submitHandler={addMouvement}
-                Trigger={() => (
-                  <Button variant="outline" size="sm" className="h-9 gap-2">
+                Trigger={(props) => (
+                  <Button {...props} variant="outline" size="sm" className="h-9 gap-2">
                     <WalletMinimal className="h-4 w-4" />
                     <span>Espèces</span>
                   </Button>
@@ -216,8 +217,8 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
               <TransactionDialogue
                 totalPortfolioValue={portfolio.totalValue}
                 submitHandler={addTransaction}
-                Trigger={() => (
-                  <Button size="sm" className="h-9 gap-2 shadow-lg shadow-primary/20">
+                Trigger={(props) => (
+                  <Button {...props} size="sm" className="h-9 gap-2 shadow-lg shadow-primary/20">
                     <PlusIcon className="h-4 w-4" />
                     <span>Transaction</span>
                   </Button>
@@ -266,8 +267,8 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
                 </p>
                 <div className="mt-6 flex gap-3">
                   <TransactionDialogue
-                    Trigger={() => (
-                      <Button size="sm" className="gap-2">
+                    Trigger={(props) => (
+                      <Button {...props} size="sm" className="gap-2">
                         <PlusIcon className="h-4 w-4" />
                         Ajouter un actif
                       </Button>

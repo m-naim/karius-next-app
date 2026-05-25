@@ -9,12 +9,20 @@ import {
   Target,
   Zap,
   BarChart3,
+  Maximize2,
 } from 'lucide-react'
 import { stringToColor } from '@/lib/colors'
 import { cn } from '@/lib/utils'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import {
   BarChart,
   Bar,
@@ -74,13 +82,19 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
 
     let result: any[] = []
     if (view === 'assets') {
-      result = securities.map((s) => ({
-        name: s.symbol,
-        count: 1,
-        weight: (1 / securities.length) * 100,
-        avgPerformance: getPerf(s, selectedPeriod),
-        items: [s],
-      }))
+      result = securities.map((s) => {
+        const perf = getPerf(s, selectedPeriod)
+        return {
+          name: s.symbol,
+          count: 1,
+          weight: (1 / securities.length) * 100,
+          avgPerformance: perf,
+          min: perf,
+          max: perf,
+          stdDev: 0,
+          items: [s],
+        }
+      })
     } else {
       const groups: Record<string, { count: number; performance: number; items: any[] }> = {}
       securities.forEach((s) => {
@@ -155,20 +169,22 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
     const metricConfig = CORRELATION_METRICS.find((m) => m.id === correlMetric)!
     return securities
       .filter((s) => {
-        const val = correlMetric.includes('.')
+        const valX = correlMetric.includes('.')
           ? correlMetric.split('.').reduce((obj, key) => obj?.[key], s)
           : s[correlMetric]
+        const valY = getPerf(s, selectedPeriod)
+        
         return (
-          val !== undefined &&
-          val !== null &&
-          val < (metricConfig.max || Infinity)
+          valX !== undefined && valX !== null && valX > 0 &&
+          valY !== undefined && valY !== null && valY > 0 &&
+          valX < (metricConfig.max || Infinity)
         )
       })
       .map((s) => {
         const rawVal = correlMetric.includes('.')
           ? correlMetric.split('.').reduce((obj, key) => obj?.[key], s)
           : s[correlMetric]
-        const xVal = rawVal
+        const xVal = rawVal / (metricConfig.divisor || 1)
         return {
           x: xVal,
           y: getPerf(s, selectedPeriod),
@@ -376,7 +392,7 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
                             Min / Max
                           </p>
                           <p className="text-[10px] font-black tabular-nums">
-                            {item.min.toFixed(1)}% / {item.max.toFixed(1)}%
+                            {(item.min ?? 0).toFixed(1)}% / {(item.max ?? 0).toFixed(1)}%
                           </p>
                         </div>
                         <div className="rounded-lg bg-muted/20 p-2 text-center">
@@ -384,7 +400,7 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
                             Écart Type
                           </p>
                           <p className="text-[10px] font-black tabular-nums">
-                            {item.stdDev.toFixed(2)}
+                            {(item.stdDev ?? 0).toFixed(2)}
                           </p>
                         </div>
                         <div className="rounded-lg bg-muted/20 p-2 text-center">
@@ -392,7 +408,7 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
                             Linéarité
                           </p>
                           <p className="text-[10px] font-black tabular-nums">
-                            {(100 / (1 + item.stdDev)).toFixed(0)}%
+                            {(100 / (1 + (item.stdDev ?? 0))).toFixed(0)}%
                           </p>
                         </div>
                       </div>
@@ -431,10 +447,65 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
         {/* 4. Distribution & Sentiment */}
         <div className="flex flex-col gap-6 lg:col-span-4">
           <Card className="border-none bg-background shadow-sm">
-            <CardHeader className="border-b pb-2 text-center">
-              <CardTitle className="flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                <Zap className="h-3 w-3 text-amber-500" /> Sentiment ({selectedPeriod})
-              </CardTitle>
+            <CardHeader className="flex flex-col gap-2 border-b pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  <Zap className="h-3 w-3 text-amber-500" /> Sentiment ({selectedPeriod})
+                </CardTitle>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-6 w-6">
+                      <Maximize2 size={12} />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-[90vw] h-[80vh] flex flex-col">
+                    <DialogHeader>
+                      <DialogTitle>Distribution des Performances ({selectedPeriod})</DialogTitle>
+                    </DialogHeader>
+                    <div className="flex-1 min-h-0 pt-6">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={distributionData} margin={{ top: 20, right: 20, left: 0, bottom: 40 }}>
+                          <XAxis 
+                            dataKey="range" 
+                            fontSize={12} 
+                            fontWeight="bold"
+                            axisLine={false}
+                            tickLine={false}
+                            interval={0}
+                            angle={-45}
+                            textAnchor="end"
+                          />
+                          <YAxis fontSize={12} fontWeight="bold" axisLine={false} tickLine={false} />
+                          <Tooltip 
+                            cursor={{ fill: 'hsl(var(--muted))', opacity: 0.4 }}
+                            content={({ active, payload }) => {
+                              if (active && payload && payload.length) {
+                                const data = payload[0].payload;
+                                return (
+                                  <div className="rounded-lg border bg-background p-4 shadow-xl">
+                                    <p className="text-xs font-bold text-muted-foreground uppercase mb-1">{data.range}</p>
+                                    <p className="text-sm font-black">{data.count} actifs</p>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            }}
+                          />
+                          <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+                            {distributionData.map((entry, index) => (
+                              <Cell 
+                                key={`cell-${index}`} 
+                                fill={entry.min >= 0 ? '#10b981' : '#e11d48'} 
+                                fillOpacity={Math.abs(entry.min) > 10 ? 1 : 0.6}
+                              />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </CardHeader>
             <CardContent className="p-4">
               {/* Performance Distribution Histogram */}
@@ -503,9 +574,85 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
 
           <Card className="border-none bg-background shadow-sm">
             <CardHeader className="flex flex-col gap-2 border-b pb-2">
-              <CardTitle className="flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                <Target className="h-3 w-3 text-purple-500" /> Corrélation Marché
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  <Target className="h-3 w-3 text-purple-500" /> Corrélation Marché
+                </CardTitle>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-6 w-6">
+                      <Maximize2 size={12} />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-[90vw] h-[80vh] flex flex-col">
+                    <DialogHeader>
+                      <DialogTitle>Corrélation Marché ({selectedPeriod})</DialogTitle>
+                    </DialogHeader>
+                    <div className="flex-1 min-h-0 pt-6">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <ScatterChart margin={{ top: 20, right: 20, left: 0, bottom: 20 }}>
+                          <XAxis 
+                            type="number" 
+                            dataKey="x" 
+                            name={CORRELATION_METRICS.find(m => m.id === correlMetric)?.label} 
+                            unit={CORRELATION_METRICS.find(m => m.id === correlMetric)?.unit} 
+                            fontSize={12} 
+                            fontWeight="bold" 
+                            axisLine={false} 
+                            tickLine={false}
+                            scale="log"
+                            domain={['dataMin', 'dataMax']}
+                          />
+                          <YAxis 
+                            type="number" 
+                            dataKey="y" 
+                            name="Perf" 
+                            unit="%" 
+                            fontSize={12} 
+                            fontWeight="bold" 
+                            axisLine={false} 
+                            tickLine={false}
+                            scale="log"
+                            domain={['dataMin', 'dataMax']}
+                          />
+                          <ZAxis type="number" dataKey="z" range={[100, 100]} />
+                          <Tooltip 
+                            cursor={{ strokeDasharray: '3 3' }}
+                            content={({ active, payload }) => {
+                              if (active && payload && payload.length) {
+                                const data = payload[0].payload;
+                                const metric = CORRELATION_METRICS.find(m => m.id === correlMetric)!;
+                                return (
+                                  <div className="rounded-lg border bg-background p-4 shadow-xl">
+                                    <p className="text-sm font-black mb-2">{data.symbol}</p>
+                                    <div className="space-y-1">
+                                      <p className="text-xs font-bold text-muted-foreground uppercase">
+                                        {metric.label}: {data.x.toFixed(2)}{metric.unit}
+                                      </p>
+                                      <p className="text-xs font-bold text-muted-foreground uppercase">Perf: {data.y.toFixed(2)}%</p>
+                                    </div>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            }}
+                          />
+                          <Scatter name="Securities" data={correlationData}>
+                            {correlationData.map((entry, index) => (
+                              <Cell 
+                                key={`cell-${index}`} 
+                                fill={entry.y >= 0 ? '#10b981' : '#e11d48'} 
+                                stroke="#fff"
+                                strokeWidth={1}
+                              />
+                            ))}
+                          </Scatter>
+                        </ScatterChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
               <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex justify-center gap-1 pb-2">
                   {CORRELATION_METRICS.map((m) => (
@@ -539,7 +686,8 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
                       fontWeight="bold" 
                       axisLine={false} 
                       tickLine={false}
-                      domain={['auto', 'auto']}
+                      scale="log"
+                      domain={['dataMin', 'dataMax']}
                     />
                     <YAxis 
                       type="number" 
@@ -550,8 +698,10 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
                       fontWeight="bold" 
                       axisLine={false} 
                       tickLine={false}
+                      scale="log"
+                      domain={['dataMin', 'dataMax']}
                     />
-                    <ZAxis type="number" dataKey="z" range={[20, 20]} />
+                    <ZAxis type="number" dataKey="z" range={[60, 60]} />
                     <Tooltip 
                       cursor={{ strokeDasharray: '3 3' }}
                       content={({ active, payload }) => {
@@ -571,20 +721,22 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
                         return null;
                       }}
                     />
-                    <ReferenceLine y={0} stroke="hsl(var(--foreground))" strokeDasharray="3 3" opacity={0.2} />
                     <Scatter name="Securities" data={correlationData}>
                       {correlationData.map((entry, index) => (
                         <Cell 
                           key={`cell-${index}`} 
                           fill={entry.y >= 0 ? '#10b981' : '#e11d48'} 
+                          stroke="#fff"
+                          strokeWidth={0.5}
                         />
                       ))}
                     </Scatter>
                   </ScatterChart>
                 </ResponsiveContainer>
               </div>
-              <p className="mt-2 text-center text-[9px] font-medium text-muted-foreground italic">
-                Axe X: {CORRELATION_METRICS.find(m => m.id === correlMetric)?.label} | Axe Y: Performance {selectedPeriod}
+              <p className="mt-2 text-center text-[9px] font-medium text-muted-foreground italic leading-tight">
+                Axe X: {CORRELATION_METRICS.find(m => m.id === correlMetric)?.label} (Log) | Axe Y: Perf (Log) <br/>
+                <span className="text-rose-500 font-bold opacity-70">* Seules les valeurs positives sont affichées en mode Log.</span>
               </p>
             </CardContent>
           </Card>

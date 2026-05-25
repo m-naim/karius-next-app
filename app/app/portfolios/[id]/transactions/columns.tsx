@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import TransactionDialogue from '../transactionDialogue'
 import { deleteTransaction, modifyTransactionApi } from '@/services/portfolioService'
+import { formatDate } from '@/lib/formatDate'
 
 type FiltrProps = {
   column: Column<Transaction, string>
@@ -71,6 +72,7 @@ const SortingButton = (title, activateFilter = true) => {
 
 interface Transaction {
   date: string
+  entryDate?: string
   symbol: string
   price: number
   qty: number
@@ -88,8 +90,20 @@ export const columns = (
 ): ColumnDef<Transaction, string>[] => [
   {
     accessorKey: 'date',
-    header: SortingButton('date', false),
+    header: SortingButton('Date effectif', false),
     cell: ({ row }) => <div className="">{row.getValue('date')}</div>,
+  },
+  {
+    accessorKey: 'entryDate',
+    header: SortingButton('Ajouté le', false),
+    cell: ({ row }) => {
+      const val = row.getValue('entryDate')
+      return (
+        <div className="text-xs italic text-muted-foreground">
+          {val ? formatDate(val as string) : '-'}
+        </div>
+      )
+    },
   },
 
   {
@@ -140,7 +154,11 @@ export const columns = (
             <TransactionDialogue
               key={row!.original.id}
               data-umami-event="portfolio-transaction-update"
-              Trigger={() => <EllipsisVertical size={16} />}
+              Trigger={(props) => (
+                <div {...props} className="cursor-pointer p-1 hover:bg-muted rounded-md">
+                  <EllipsisVertical size={16} />
+                </div>
+              )}
               initialData={{
                 id: row!.original.id,
                 type: row!.original.price > 0 ? 'Acheter' : 'Vendre',

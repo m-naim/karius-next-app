@@ -7,19 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import authService from '@/services/authService'
 import { getAll } from '@/services/portfolioService'
-import { Flame, Star, StarIcon, TrendingUpIcon } from 'lucide-react'
+import { Flame, Star, StarIcon, TrendingUp, Users, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import React, { useEffect } from 'react'
+import { PortfolioCard, PortfolioSummery } from './portfolioCard'
 
-interface PortfolioSummery {
-  id: string
-  name: string
-  followersSize: number
-  dayChangePercent: number
-  cumulativePerformance: number
-  allocation: string[]
-  annualizedReturn: number
-}
 interface PortfoliosPresentation {
   ownPortfolios: PortfolioSummery[]
   bestPerformingPortfolios: PortfolioSummery[]
@@ -49,20 +41,20 @@ const Portfolios = () => {
   if (!mounted) return null
 
   return (
-    <div className="space-y-12 py-8">
+    <div className="space-y-16 py-8">
       {authentificated && (
-        <SectionContainer className="space-y-6">
+        <SectionContainer className="space-y-8">
           <div className="flex w-full flex-col items-center px-4 text-center">
-            <h2 className="text-xl font-semiboldsm:text-2xl md:text-3xl">
-              Mes portefeuilles
+            <h2 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">
+              Mes Portefeuilles
             </h2>
-            <p className="mt-2 max-w-2xl text-sm sm:text-base">
-              Gérez et analysez vos investissements
+            <p className="mt-2 max-w-2xl text-sm text-gray-500 sm:text-base">
+              Gérez vos actifs, analysez vos performances et optimisez votre stratégie.
             </p>
-            <div className="mt-4">
-              <Button asChild data-umami-event="portfolios-new-button" size={'sm'}>
+            <div className="mt-6">
+              <Button asChild data-umami-event="portfolios-new-button" size={'sm'} className="rounded-full px-6">
                 <Link data-umami-event="portfolios-new-button" href={'portfolios/new'}>
-                  + Créer un nouveau portefeuille
+                  + Créer un portefeuille
                 </Link>
               </Button>
             </div>
@@ -72,52 +64,53 @@ const Portfolios = () => {
         </SectionContainer>
       )}
 
-      <SectionContainer className="space-y-6">
+      <SectionContainer className="space-y-10">
         <div className="flex w-full flex-col items-center px-4 text-center">
-          <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl md:text-3xl">
-            Découvrez les meilleurs portefeuilles de la communauté
+          <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl md:text-4xl">
+            Inspiration Communautaire
           </h1>
-          <Link
-            href="/app/portfolios/explore"
-            className="mt-2 text-sm font-medium text-primary hover:underline"
-          >
-            Voir tout →
-          </Link>
+          <p className="mt-3 max-w-xl text-sm text-gray-500 sm:text-base">
+            Découvrez comment les autres investisseurs structurent leurs portefeuilles.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <Card className="w-full">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Flame className="h-5 w-5 text-red-500" fill="currentColor" />
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+          <Card className="border-none bg-gray-50/50 shadow-none">
+            <CardHeader className="flex flex-row items-center justify-between px-6 pb-4 pt-6">
+              <CardTitle className="flex items-center gap-2.5 text-lg font-bold">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600">
+                  <Flame className="h-4.5 w-4.5" fill="currentColor" />
+                </div>
                 Les plus performants
               </CardTitle>
               <Link
                 href="/app/portfolios/explore"
-                className="text-xs font-medium text-primary hover:underline"
+                className="flex items-center gap-1 text-xs font-bold text-primary hover:underline"
               >
-                Voir tout
+                Tout voir <ArrowRight className="h-3 w-3" />
               </Link>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-2 pb-6">
               <PortfoliosSuggestSection items={data?.bestPerformingPortfolios} />
             </CardContent>
           </Card>
 
-          <Card className="w-full">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <StarIcon className="h-5 w-5 text-yellow-400" fill="currentColor" />
+          <Card className="border-none bg-gray-50/50 shadow-none">
+            <CardHeader className="flex flex-row items-center justify-between px-6 pb-4 pt-6">
+              <CardTitle className="flex items-center gap-2.5 text-lg font-bold">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-100 text-yellow-600">
+                  <StarIcon className="h-4.5 w-4.5" fill="currentColor" />
+                </div>
                 Les plus suivis
               </CardTitle>
               <Link
                 href="/app/portfolios/explore"
-                className="text-xs font-medium text-primary hover:underline"
+                className="flex items-center gap-1 text-xs font-bold text-primary hover:underline"
               >
-                Voir tout
+                Tout voir <ArrowRight className="h-3 w-3" />
               </Link>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-2 pb-6">
               <PortfoliosSuggestSection items={data?.mostFollowedPortfolios} />
             </CardContent>
           </Card>
@@ -129,49 +122,10 @@ const Portfolios = () => {
 
 export default Portfolios
 
-function PortfolioCard(p: PortfolioSummery): React.JSX.Element {
-  return (
-    <Link key={p.id} href={`portfolios/${p.id}`} className="group block h-full">
-      <Card className="flex h-full flex-col justify-between transition-all hover:border-primary/50 hover:bg-muted/50 hover:shadow-md">
-        <CardHeader className="pb-2">
-          <CardTitle className="truncate text-lg font-bold capitalize group-hover:text-primary">
-            {p.name}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <div className="flex items-center gap-1.5">
-              <Star className="h-4 w-4" />
-              <span>{p.followersSize || 0} abonnés</span>
-            </div>
-
-            <div className="flex items-center gap-1.5">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <TrendingUpIcon className="h-4 w-4" />
-                  </TooltipTrigger>
-                  <TooltipContent>Performances annualisées</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <VariationContainer
-                value={p.annualizedReturn}
-                entity="%"
-                background={false}
-                className="p-0 font-semibold"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </Link>
-  )
-}
-
 function PortfoliosSection({ items }) {
   if (!items?.length) return null
   return (
-    <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {items.map((w) => (
         <PortfolioCard key={w.id} {...w} />
       ))}
@@ -180,40 +134,47 @@ function PortfoliosSection({ items }) {
 }
 
 function PortfoliosSuggestSection({ items }) {
+  if (!items?.length) return (
+    <div className="flex h-40 items-center justify-center text-sm text-gray-400 italic">
+      Aucune donnée disponible
+    </div>
+  )
+
   return (
-    <div className="flex w-full flex-col gap-6">
+    <div className="space-y-1">
       {items?.map((p, index) => (
         <Link
-          className="grid grid-cols-2 p-2 hover:bg-gray-500/10"
           key={p.id}
           href={`portfolios/${p.id}`}
+          className="group flex items-center justify-between rounded-xl p-3 transition-colors hover:bg-white hover:shadow-sm"
         >
-          <div className="text-md text-ellipsis p-1 font-medium capitalize">
-            <span className="mx-2">{index + 1}</span>
-            {p.name}
+          <div className="flex items-center gap-4">
+            <span className="flex h-6 w-6 items-center justify-center text-xs font-bold text-gray-400 group-hover:text-primary">
+              {String(index + 1).padStart(2, '0')}
+            </span>
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-gray-700 group-hover:text-primary">
+                {p.name}
+              </span>
+              <span className="flex items-center gap-1 text-[10px] font-medium text-gray-400 uppercase tracking-tight">
+                <Users className="h-3 w-3" />
+                {p.followersSize || 0} followers
+              </span>
+            </div>
           </div>
 
-          <div className="grid max-w-[140px] grid-cols-2 gap-1">
-            <div className="flex place-items-center p-1">
-              <Star fill="#eedd00" stroke="#eedd00" size={18} />
-              <span className="xs px-1">{p.followersSize || 0}</span>
-            </div>
-
-            <div className="flex gap-1 p-1">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <TrendingUpIcon className="h-4 w-4" size={18} />
-                  </TooltipTrigger>
-                  <TooltipContent>Performances annualisées</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+          <div className="flex items-center gap-3">
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] font-bold text-gray-400 uppercase">Annualized</span>
               <VariationContainer
                 value={p.annualizedReturn}
                 entity="%"
                 background={false}
-                className="m-0 p-0 py-2"
+                className="p-0 text-sm font-black"
               />
+            </div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-400 transition-colors group-hover:bg-primary group-hover:text-white">
+              <ArrowRight className="h-4 w-4" />
             </div>
           </div>
         </Link>

@@ -26,7 +26,11 @@ const Header = () => {
     <header className="border-b py-2">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 sm:px-6 xl:max-w-7xl xl:px-0">
         <div>
-          <Link data-umami-event={'header-home'} href="/" aria-label={siteMetadata.headerTitle}>
+          <Link 
+            data-umami-event={'header-home'} 
+            href={user ? '/app' : '/'} 
+            aria-label={siteMetadata.headerTitle}
+          >
             <div className="text-2xl font-semibold italic text-primary ">
               {siteMetadata.headerTitle}
             </div>

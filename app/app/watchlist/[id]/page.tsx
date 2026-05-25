@@ -16,7 +16,7 @@ import {
 import { columns } from './components/columns'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, LineChart, Settings} from 'lucide-react'
+import { ArrowLeft, LineChart, Settings, Download } from 'lucide-react'
 import Loader from '@/components/molecules/loader/loader'
 import { useLocalStorage } from '@/hooks/useLocalStorage' // Re-import useLocalStorage
 import { useToast } from '@/hooks/use-toast'
@@ -65,6 +65,56 @@ export default function Watchlist() {
   const [showChart, setShowChart] = React.useState(false)
 
   const [allAvailableTags, setAllAvailableTags] = React.useState<string[]>([])
+
+  const downloadCSV = () => {
+    if (!data.securities || data.securities.length === 0) return
+
+    const headers = [
+      'Symbol',
+      'Name',
+      'Price',
+      'Change %',
+      'Sector',
+      'Industry',
+      'P/E Trailing',
+      'Yield %',
+      'Revenue Growth %',
+      'ROE %',
+      'ROA %'
+    ]
+
+    const csvRows = data.securities.map((s) => {
+      return [
+        `"${s.symbol}"`,
+        `"${(s.longname || s.shortname || '').replace(/"/g, '""')}"`,
+        s.regularMarketPrice || 0,
+        s.regularMarketChangePercent || 0,
+        `"${(s.sector || '').replace(/"/g, '""')}"`,
+        `"${(s.industry || '').replace(/"/g, '""')}"`,
+        s.trailingPE || '',
+        (s.dividendYield ? s.dividendYield * 100 : 0).toFixed(2),
+        (s.growth ? s.growth * 100 : 0).toFixed(2),
+        (s.roe ? s.roe * 100 : 0).toFixed(2),
+        (s.roa ? s.roa * 100 : 0).toFixed(2)
+      ].join(',')
+    })
+
+    const csvContent = [headers.join(','), ...csvRows].join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.setAttribute('href', url)
+    link.setAttribute('download', `watchlist_${data.name || id}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    
+    toast({
+      title: 'CSV Téléchargé',
+      description: `Le fichier watchlist_${data.name || id}.csv a été généré avec succès.`,
+    })
+  }
 
   React.useEffect(() => {
     if (window.innerWidth >= 768) {
@@ -286,6 +336,15 @@ export default function Watchlist() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0"
+            onClick={downloadCSV}
+            title="Télécharger en CSV"
+          >
+            <Download className="h-4 w-4" />
+          </Button>
           <Button
             variant="ghost"
             size="icon"

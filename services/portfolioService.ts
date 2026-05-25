@@ -10,8 +10,10 @@ export function getAll() {
   return http.get(`${host}/api/v1/portfolios`)
 }
 
-export function getPublicPortfolios() {
-  return http.get(`${host}/api/v1/portfolios/public`)
+export function getPublicPortfolios(page = 0, limit = 10, sortBy = 'annualized_return', direction = 'DESC') {
+  return http.get(
+    `${host}/api/v1/portfolios/public?page=${page}&limit=${limit}&sortBy=${sortBy}&direction=${direction}`
+  )
 }
 
 export function getStocksNameByName(name) {

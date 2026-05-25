@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -40,7 +40,7 @@ interface data {
 interface TransactionDialogueProps {
   initialData?: data
   totalPortfolioValue: number
-  Trigger: React.FunctionComponent
+  Trigger: React.ComponentType<any>
   submitHandler?: CallableFunction
   deleteHandler?: CallableFunction
   modifyHandler?: CallableFunction
@@ -63,42 +63,43 @@ function TransactionDialogue({
   const [quantity, setQuantity] = useState<number>(initialData.quantity)
   const [prix, setPrix] = useState<number>(initialData.prix)
 
-  const handleTickerChange = (newTicker) => {
-    setTicker(newTicker)
-  }
-
-  if (date == null || Number.isNaN(date.valueOf())) {
-    console.log('date problem', date, initialData.date)
-  }
-
-  const onDataChange = useDebouncedCallback(async (date, ticker) => {
-    const price = await getStockPrixForDate(ticker, format(date, 'yyyy-MM-dd', { locale: fr }))
-    setPrix(price.close)
-  }, 300)
-
-  const updatePriceOnChange = (setter) => {
-    if (date && ticker) {
-      onDataChange(date, ticker)
+  const fetchPrice = useDebouncedCallback(async (d, t) => {
+    try {
+      const price = await getStockPrixForDate(t, format(new Date(d), 'yyyy-MM-dd', { locale: fr }))
+      if (price && price.close) {
+        setPrix(price.close)
+      }
+    } catch (e) {
+      console.error('Error fetching price:', e)
     }
-    return setter
-  }
+  }, 500)
+
+  useEffect(() => {
+    if (date && ticker && ticker !== initialData.ticker) {
+      fetchPrice(date, ticker)
+    }
+  }, [date, ticker])
 
   const onDateChange = (e) => {
-    const date = e.target.value
-    updatePriceOnChange(setDate)(date)
+    setDate(e.target.value)
   }
 
   const closingAction = async (e, callback) => {
     e.preventDefault()
     setExecuting(true)
-    const res = await callback()
-    setExecuting(false)
-    setOpen(false)
+    try {
+      await callback()
+      setOpen(false)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setExecuting(false)
+    }
   }
 
   return date ? (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
+      <DialogTrigger asChild>
         <Trigger />
       </DialogTrigger>
       {open && (
@@ -113,7 +114,7 @@ function TransactionDialogue({
               <Label htmlFor="name">Action</Label>
               <ComboboxPopover
                 ticker={ticker}
-                setTicker={updatePriceOnChange(handleTickerChange)}
+                setTicker={setTicker}
                 className="col-span-3 w-full"
               />
             </div>
@@ -124,7 +125,6 @@ function TransactionDialogue({
                 <Input
                   id="date"
                   type="date"
-                  defaultValue={'01-01-2022'}
                   value={date}
                   onChange={onDateChange}
                 />

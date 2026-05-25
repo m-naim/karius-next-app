@@ -23,18 +23,24 @@ const defaultData = {
   prix: 0,
 }
 
-function AccountsMouvements({ initialData = defaultData, Trigger, submitHandler }) {
-  const [type, setType] = useState(initialData.type)
-  const [date, setDate] = React.useState<Date>(initialData.date)
-  const [amount, setAmount] = useState<number>(initialData.prix)
+interface AccountsMouvementsProps {
+  initialData?: typeof defaultData
+  Trigger: React.ComponentType<any>
+  submitHandler: (data: any) => void
+}
 
-  if (Number.isNaN(date.valueOf())) {
-    console.log(date, initialData.date)
-  }
+function AccountsMouvements({
+  initialData = defaultData,
+  Trigger,
+  submitHandler,
+}: AccountsMouvementsProps) {
+  const [type, setType] = useState(initialData.type)
+  const [date, setDate] = React.useState<Date>(initialData.date as Date)
+  const [amount, setAmount] = useState<number>(initialData.prix)
 
   return (
     <Dialog>
-      <DialogTrigger>
+      <DialogTrigger asChild>
         <Trigger />
       </DialogTrigger>
       <DialogContent className=" dark:bg-black">
