@@ -45,12 +45,12 @@ function PageTransactions() {
 
   const modifyTransactionHandler = async (updateData) => {
     const res = await modifyTransactionApi(id, updateData)
-    setData(res.data.transactions)
+    setData(res?.data?.transactions || [])
   }
 
   const deleteTransactionHandler = async (idTransaction) => {
     const res = await deleteTransaction(id, idTransaction)
-    setData(res.data.transactions)
+    setData(res?.data?.transactions || [])
   }
 
   useEffect(() => {
@@ -73,10 +73,10 @@ function PageTransactions() {
   // Extraction des années disponibles
   const availableYears = useMemo(() => {
     const years = new Set<string>()
-    data.forEach((t: any) => {
+    ;(data || []).forEach((t: any) => {
       if (t.date) years.add(new Date(t.date).getFullYear().toString())
     })
-    movements.forEach((m: any) => {
+    ;(movements || []).forEach((m: any) => {
       if (m.date) years.add(new Date(m.date).getFullYear().toString())
     })
     return Array.from(years).sort((a, b) => b.localeCompare(a))
@@ -84,13 +84,13 @@ function PageTransactions() {
 
   // Filtrage par année
   const filteredTransactions = useMemo(() => {
-    if (selectedYear === 'all') return data
-    return data.filter((t: any) => new Date(t.date).getFullYear().toString() === selectedYear)
+    if (selectedYear === 'all') return data || []
+    return (data || []).filter((t: any) => new Date(t.date).getFullYear().toString() === selectedYear)
   }, [data, selectedYear])
 
   const filteredMovements = useMemo(() => {
-    if (selectedYear === 'all') return movements
-    return movements.filter((m: any) => new Date(m.date).getFullYear().toString() === selectedYear)
+    if (selectedYear === 'all') return movements || []
+    return (movements || []).filter((m: any) => new Date(m.date).getFullYear().toString() === selectedYear)
   }, [movements, selectedYear])
 
   const transactionsTable = useReactTable({
