@@ -57,11 +57,11 @@ type ViewType = 'assets' | 'sectors' | 'industries'
 type SortType = 'perf' | 'weight'
 
 const CORRELATION_METRICS = [
-  { id: 'trailingPE', label: 'P/E Trail', unit: '', max: 100 },
-  { id: 'forwardPE', label: 'P/E Fwd', unit: '', max: 100 },
+  { id: 'trailingPE', label: 'P/E Trail', unit: '', divisor: 1, max: 100 },
+  { id: 'forwardPE', label: 'P/E Fwd', unit: '', divisor: 1, max: 100 },
   { id: 'marketCap', label: 'Cap', unit: 'B', divisor: 1000000000, max: Infinity },
   { id: 'dividendYield', label: 'Div yield', unit: '%', divisor: 0.01, max: 20 },
-  { id: 'linearity10y', label: 'Linear', unit: '%', max: 100 },
+  { id: 'linearity10y', label: 'Linear', unit: '%', divisor: 1, max: 100 },
 ] as const
 
 type CorrelationMetricId = (typeof CORRELATION_METRICS)[number]['id']
@@ -215,13 +215,13 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
   const stats = useMemo(() => {
     const avgPerf =
       securities.reduce((acc, s) => acc + getPerf(s, selectedPeriod), 0) / (securities.length || 1)
-    const top3 = [...securities]
+    const top5 = [...securities]
       .sort((a, b) => getPerf(b, selectedPeriod) - getPerf(a, selectedPeriod))
-      .slice(0, 3)
-    const bottom3 = [...securities]
+      .slice(0, 5)
+    const bottom5 = [...securities]
       .sort((a, b) => getPerf(a, selectedPeriod) - getPerf(b, selectedPeriod))
-      .slice(0, 3)
-    return { avgPerf, top3, bottom3 }
+      .slice(0, 5)
+    return { avgPerf, top5, bottom5 }
   }, [securities, selectedPeriod])
 
   const periods = ['1d', '1w', '1m', '1y', '5y']
@@ -752,7 +752,7 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
                 <div className="text-[9px] font-black uppercase tracking-tighter text-green-600">
                   Meilleures hausses
                 </div>
-                {stats.top3.map((s) => (
+                {stats.top5.map((s) => (
                   <div
                     key={s.symbol}
                     className="flex items-center justify-between rounded-lg border-l-4 border-green-500 bg-green-50/30 p-2.5 text-xs shadow-sm"
@@ -771,7 +771,7 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
                 <div className="text-[9px] font-black uppercase tracking-tighter text-red-600">
                   Plus fortes baisses
                 </div>
-                {stats.bottom3.map((s) => (
+                {stats.bottom5.map((s) => (
                   <div
                     key={s.symbol}
                     className="flex items-center justify-between rounded-lg border-l-4 border-red-500 bg-red-50/30 p-2.5 text-xs shadow-sm"

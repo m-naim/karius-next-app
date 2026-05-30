@@ -51,12 +51,12 @@ const SimpleDataTable = ({ table, colSpan, onRowClick, selectedId }: SimpleDataT
   ]
 
   return (
-    <div className="rounded-md border">
+    <div className="w-full">
       <ScrollArea className="w-full whitespace-nowrap">
         <Table containerClassName="overflow-visible">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="border-b border-border/50 hover:bg-transparent">
                 {headerGroup.headers.map((header) => {
                   if (isMobile && !visibleColumns.includes(header.id)) {
                     return null
@@ -65,11 +65,11 @@ const SimpleDataTable = ({ table, colSpan, onRowClick, selectedId }: SimpleDataT
                     <TableHead
                       key={header.id}
                       className={cn(
-                        'py-1text-xs whitespace-nowrap',
+                        'py-2 text-xs font-semibold text-muted-foreground whitespace-nowrap',
                         isMobile && header.id === 'symbol' && 'w-[50%]',
                         isMobile && header.id === 'regularMarketPrice' && 'w-[25%]',
                         isMobile && header.id === 'regularMarketChangePercent' && 'w-[20%]',
-                        !isMobile && 'px-1'
+                        !isMobile && 'px-4'
                       )}
                     >
                       {header.isPlaceholder
@@ -89,9 +89,9 @@ const SimpleDataTable = ({ table, colSpan, onRowClick, selectedId }: SimpleDataT
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                   className={cn(
-                    'hover:bg-muted/50',
+                    'border-b border-border/30 transition-colors hover:bg-accent/30',
                     onRowClick && 'cursor-pointer',
-                    selectedId === row.original.symbol && 'bg-muted'
+                    selectedId === row.original.symbol && 'bg-accent/50'
                   )}
                   onClick={() => onRowClick && onRowClick(row.original)}
                 >
@@ -103,11 +103,11 @@ const SimpleDataTable = ({ table, colSpan, onRowClick, selectedId }: SimpleDataT
                       <TableCell
                         key={cell.id}
                         className={cn(
-                          'whitespace-nowrap py-2 text-xs',
+                          'whitespace-nowrap py-3 text-xs tabular-nums',
                           isMobile && cell.column.id === 'symbol' && 'w-[50%]',
                           isMobile && cell.column.id === 'regularMarketPrice' && 'w-[25%]',
                           isMobile && cell.column.id === 'regularMarketChangePercent' && 'w-[20%]',
-                          !isMobile && 'px-5'
+                          !isMobile && 'px-4'
                         )}
                       >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -190,6 +190,33 @@ const SimpleDataTable = ({ table, colSpan, onRowClick, selectedId }: SimpleDataT
           </TableFooter>
         </Table>
       </ScrollArea>
+      {table.getPageCount() > 1 && (
+        <div className="flex items-center justify-between border-t border-border/50 px-4 py-3">
+          <div className="flex-1 text-xs text-muted-foreground">
+            Page {table.getState().pagination.pageIndex + 1} sur {table.getPageCount()}
+          </div>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              className="h-8 text-xs"
+            >
+              Précédent
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              className="h-8 text-xs"
+            >
+              Suivant
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

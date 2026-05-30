@@ -31,12 +31,12 @@ const PortfolioTable = ({ table, colSpan }: PortfolioTableProps) => {
   const visibleColumns = ['symbol', 'last', 'weight', 'variationPercent']
 
   return (
-    <div className="rounded-md border">
+    <div className="w-full">
       <ScrollArea className="w-full whitespace-nowrap">
         <Table containerClassName="overflow-visible">
           <TableHeader className="sticky top-0 z-10 bg-background/95 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="border-b border-border/50 hover:bg-transparent">
                 {headerGroup.headers.map((header) => {
                   if (isMobile && !visibleColumns.includes(header.id)) {
                     return null
@@ -45,7 +45,7 @@ const PortfolioTable = ({ table, colSpan }: PortfolioTableProps) => {
                     <TableHead
                       key={header.id}
                       className={cn(
-                        'whitespace-nowrap py-3',
+                        'whitespace-nowrap py-3 font-semibold text-muted-foreground',
                         isMobile && header.id === 'symbol' && 'w-[25%]',
                         isMobile && header.id === 'averagePrice' && 'w-[20%]',
                         isMobile && header.id === 'currentValue' && 'w-[20%]',
@@ -68,7 +68,7 @@ const PortfolioTable = ({ table, colSpan }: PortfolioTableProps) => {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className="hover:bg-muted/50"
+                  className="border-b border-border/30 transition-colors hover:bg-accent/30 data-[state=selected]:bg-accent"
                 >
                   {row.getVisibleCells().map((cell) => {
                     if (isMobile && !visibleColumns.includes(cell.column.id)) {
@@ -78,7 +78,7 @@ const PortfolioTable = ({ table, colSpan }: PortfolioTableProps) => {
                       <TableCell
                         key={cell.id}
                         className={cn(
-                          'whitespace-nowrap py-3',
+                          'whitespace-nowrap py-3 tabular-nums',
                           isMobile && cell.column.id === 'symbol' && 'w-[35%]',
                           isMobile && cell.column.id === 'quantity' && 'w-[15%]',
                           isMobile && cell.column.id === 'averagePrice' && 'w-[20%]',

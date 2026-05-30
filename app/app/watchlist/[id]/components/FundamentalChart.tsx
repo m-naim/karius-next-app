@@ -19,6 +19,7 @@ import { X } from 'lucide-react'
 import { calculateCAGR, calculateR2 } from '@/lib/math'
 import { Badge } from '@/components/ui/badge'
 import { Slider } from '@/components/ui/slider'
+import { Button } from '@/components/ui/button'
 
 interface FinancialMetrics {
   fiscalDate: string
@@ -75,6 +76,7 @@ export function FundamentalChart({ symbol }: { symbol: string }) {
   const [yearRange, setYearRange] = useState<[number, number]>([0, 0])
   const [selectedRange, setSelectedRange] = useState<[number, number]>([0, 0])
   const [loading, setLoading] = useState(true)
+  const [showYoY, setShowYoY] = useState(false)
 
   const storageKey = 'fundamental_chart_metrics'
 
@@ -183,27 +185,44 @@ export function FundamentalChart({ symbol }: { symbol: string }) {
         }
         return year.toString()
       }),
-      datasets: categoryMetrics.map((m, index) => ({
-        label: m.label,
-        data: filteredPoints.map((point) => point[m.value] * (category === 'percentage' ? 100 : 1)),
-        backgroundColor: ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00c49f'][
-          index % 6
-        ],
-      })),
+      datasets: categoryMetrics.map((m, index) => {
+        let mappedData = filteredPoints.map((point) => point[m.value] * (category === 'percentage' ? 100 : 1))
+
+        if (showYoY) {
+          mappedData = filteredPoints.map((point) => {
+            const rawIdx = rawPoints.findIndex((rp) => rp.fiscalDate === point.fiscalDate)
+            const prevOffset = periodType === 'yearly' ? 1 : 4
+            const prevPoint = rawPoints[rawIdx + prevOffset]
+
+            if (!prevPoint || prevPoint[m.value] === undefined || prevPoint[m.value] === 0) {
+              return 0
+            }
+            return ((point[m.value] - prevPoint[m.value]) / Math.abs(prevPoint[m.value])) * 100
+          })
+        }
+
+        return {
+          label: m.label + (showYoY ? ' (YoY)' : ''),
+          data: mappedData,
+          backgroundColor: ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#0088fe', '#00c49f'][
+            index % 6
+          ],
+        }
+      }),
     }
 
-    const unit = categoryMetrics[0]?.unit || ''
+    const unit = showYoY ? '%' : categoryMetrics[0]?.unit || ''
 
     return (
-      <div key={category} className="space-y-1">
-        <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
+      <div key={category} className="space-y-2">
+        <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground/70">
           {category === 'financial'
             ? 'Financier'
             : category === 'percentage'
               ? 'Performance (%)'
               : 'Ratios'}
         </h3>
-        <div className="h-[200px] w-full rounded-lg border bg-card/40 p-1">
+        <div className="h-[280px] w-full rounded-xl border bg-card/40 p-4 shadow-sm transition-all hover:shadow-md">
           <BarValue data={chartData} unit={unit} />
         </div>
       </div>
@@ -211,14 +230,14 @@ export function FundamentalChart({ symbol }: { symbol: string }) {
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
+    <div className="space-y-6 p-2">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
           <Select onValueChange={addMetric}>
-            <SelectTrigger className="h-8 w-[150px] text-xs">
-              <SelectValue placeholder="Métrique" />
+            <SelectTrigger className="h-10 w-[180px] text-sm shadow-sm">
+              <SelectValue placeholder="Ajouter une métrique..." />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[100]">
               {categoryOrder.map((category, idx) => (
                 <SelectGroup key={category}>
                   {idx > 0 && <SelectSeparator />}
@@ -245,28 +264,36 @@ export function FundamentalChart({ symbol }: { symbol: string }) {
               ))}
             </SelectContent>
           </Select>
+          <Button
+            variant={showYoY ? 'default' : 'outline'}
+            size="sm"
+            className="h-10 px-4 text-xs font-bold uppercase tracking-wide shadow-sm transition-all"
+            onClick={() => setShowYoY(!showYoY)}
+          >
+            YoY (%)
+          </Button>
         </div>
 
-        <Tabs value={periodType} onValueChange={(v) => setPeriodType(v as any)} className="h-8">
-          <TabsList className="grid h-8 w-[160px] grid-cols-2 p-0.5">
-            <TabsTrigger value="yearly" className="py-1 text-[11px]">
+        <Tabs value={periodType} onValueChange={(v) => setPeriodType(v as any)} className="h-10">
+          <TabsList className="grid h-10 w-[200px] grid-cols-2 p-1 shadow-sm">
+            <TabsTrigger value="yearly" className="text-xs font-semibold">
               Annuel
             </TabsTrigger>
-            <TabsTrigger value="quarterly" className="py-1 text-[11px]">
+            <TabsTrigger value="quarterly" className="text-xs font-semibold">
               Trimestriel
             </TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
 
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-2">
         {selectedMetrics.map((mValue) => (
           <Badge
             key={mValue}
             variant="secondary"
-            className="flex h-5 items-center gap-1 pl-2 pr-1 text-[10px]"
+            className="flex h-7 items-center gap-1.5 px-3 text-xs font-medium shadow-sm transition-colors hover:bg-secondary/80"
           >
-            <span className="max-w-[100px] truncate">
+            <span className="max-w-[150px] truncate">
               {metrics.find((m) => m.value === mValue)?.label}
             </span>
             <button
@@ -280,23 +307,23 @@ export function FundamentalChart({ symbol }: { symbol: string }) {
         ))}
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-8">
         {loading ? (
-          <div className="flex h-[200px] items-center justify-center text-sm">Chargement...</div>
+          <div className="flex h-[300px] items-center justify-center text-sm font-medium text-muted-foreground animate-pulse">Chargement des données...</div>
         ) : filteredPoints.length > 0 ? (
           Object.entries(selectedMetricsByCategory).map(([category, categoryMetrics]) =>
             renderChart(category as MetricCategory, categoryMetrics)
           )
         ) : (
-          <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
+          <div className="flex h-[300px] items-center justify-center text-sm font-medium text-muted-foreground">
             Aucune donnée pour cette période
           </div>
         )}
       </div>
 
       {!loading && yearRange[0] !== yearRange[1] && (
-        <div className="px-2">
-          <div className="flex justify-between text-[10px] font-medium text-muted-foreground">
+        <div className="px-4 py-2 bg-muted/20 rounded-xl">
+          <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
             <span>
               Intervalle: {selectedRange[0]} - {selectedRange[1]}
             </span>
@@ -312,7 +339,7 @@ export function FundamentalChart({ symbol }: { symbol: string }) {
         </div>
       )}
       {!loading && data && (
-        <div className="grid grid-cols-2 gap-1.5">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 mt-6">
           {selectedMetrics.map((mValue, index) => {
             const vals = filteredPoints.map((m) => m[mValue])
             const { cagr, r2 } = calculateMetrics(vals)
@@ -324,38 +351,38 @@ export function FundamentalChart({ symbol }: { symbol: string }) {
             return (
               <div
                 key={mValue}
-                className="flex items-center justify-between rounded border bg-muted/10 px-2 py-1.5"
+                className="flex flex-col gap-3 rounded-xl border bg-card p-4 shadow-sm transition-all hover:shadow-md"
               >
-                <div className="flex min-w-0 flex-1 items-center gap-1.5 truncate">
+                <div className="flex items-center gap-2">
                   <div
-                    className="h-2 w-2 shrink-0 rounded-full"
+                    className="h-3 w-3 shrink-0 rounded-full shadow-sm"
                     style={{ backgroundColor: color }}
                   />
-                  <span className="truncate text-[10px] font-bold">{label}</span>
+                  <span className="truncate text-sm font-bold text-foreground">{label}</span>
                 </div>
-                <div className="flex gap-2">
-                  <div className="flex flex-col items-end">
-                    <span className="text-[8px] font-bold uppercase tracking-tight text-muted-foreground/60">
+                <div className="flex items-center justify-between border-t border-border/50 pt-3">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                       CAGR
                     </span>
                     <span
                       className={cn(
-                        'text-[10px] font-bold',
+                        'text-sm font-black',
                         cagr !== null && cagr > 0
-                          ? 'text-green-600'
+                          ? 'text-emerald-500'
                           : cagr !== null && cagr < 0
-                            ? 'text-red-600'
-                            : ''
+                            ? 'text-rose-500'
+                            : 'text-foreground'
                       )}
                     >
                       {cagr !== null ? `${cagr.toFixed(1)}%` : 'N/A'}
                     </span>
                   </div>
                   <div className="flex flex-col items-end">
-                    <span className="text-[8px] font-bold uppercase tracking-tight text-muted-foreground/60">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                       R²
                     </span>
-                    <span className="text-[10px] font-bold">
+                    <span className="text-sm font-black text-foreground">
                       {r2 !== null ? `${(r2 * 100).toFixed(0)}%` : 'N/A'}
                     </span>
                   </div>

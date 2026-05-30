@@ -45,10 +45,10 @@ const Portfolios = () => {
       {authentificated && (
         <SectionContainer className="space-y-8">
           <div className="flex w-full flex-col items-center px-4 text-center">
-            <h2 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">
+            <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
               Mes Portefeuilles
             </h2>
-            <p className="mt-2 max-w-2xl text-sm text-gray-500 sm:text-base">
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
               Gérez vos actifs, analysez vos performances et optimisez votre stratégie.
             </p>
             <div className="mt-6">
@@ -66,19 +66,19 @@ const Portfolios = () => {
 
       <SectionContainer className="space-y-10">
         <div className="flex w-full flex-col items-center px-4 text-center">
-          <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl md:text-4xl">
+          <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl md:text-4xl">
             Inspiration Communautaire
           </h1>
-          <p className="mt-3 max-w-xl text-sm text-gray-500 sm:text-base">
+          <p className="mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">
             Découvrez comment les autres investisseurs structurent leurs portefeuilles.
           </p>
         </div>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          <Card className="border-none bg-gray-50/50 shadow-none">
+          <Card className="border-border bg-card/50 shadow-none">
             <CardHeader className="flex flex-row items-center justify-between px-6 pb-4 pt-6">
               <CardTitle className="flex items-center gap-2.5 text-lg font-bold">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500/10 text-red-500">
                   <Flame className="h-4.5 w-4.5" fill="currentColor" />
                 </div>
                 Les plus performants
@@ -95,10 +95,10 @@ const Portfolios = () => {
             </CardContent>
           </Card>
 
-          <Card className="border-none bg-gray-50/50 shadow-none">
+          <Card className="border-border bg-card/50 shadow-none">
             <CardHeader className="flex flex-row items-center justify-between px-6 pb-4 pt-6">
               <CardTitle className="flex items-center gap-2.5 text-lg font-bold">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-100 text-yellow-600">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-500/10 text-yellow-500">
                   <StarIcon className="h-4.5 w-4.5" fill="currentColor" />
                 </div>
                 Les plus suivis
@@ -135,7 +135,7 @@ function PortfoliosSection({ items }) {
 
 function PortfoliosSuggestSection({ items }) {
   if (!items?.length) return (
-    <div className="flex h-40 items-center justify-center text-sm text-gray-400 italic">
+    <div className="flex h-40 items-center justify-center text-sm text-muted-foreground italic">
       Aucune donnée disponible
     </div>
   )
@@ -146,17 +146,17 @@ function PortfoliosSuggestSection({ items }) {
         <Link
           key={p.id}
           href={`portfolios/${p.id}`}
-          className="group flex items-center justify-between rounded-xl p-3 transition-colors hover:bg-white hover:shadow-sm"
+          className="group flex items-center justify-between rounded-xl p-3 transition-colors hover:bg-accent hover:shadow-sm"
         >
           <div className="flex items-center gap-4">
-            <span className="flex h-6 w-6 items-center justify-center text-xs font-bold text-gray-400 group-hover:text-primary">
+            <span className="flex h-6 w-6 items-center justify-center text-xs font-bold text-muted-foreground/50 group-hover:text-primary">
               {String(index + 1).padStart(2, '0')}
             </span>
             <div className="flex flex-col">
-              <span className="text-sm font-bold text-gray-700 group-hover:text-primary">
+              <span className="text-sm font-bold text-foreground group-hover:text-primary">
                 {p.name}
               </span>
-              <span className="flex items-center gap-1 text-[10px] font-medium text-gray-400 uppercase tracking-tight">
+              <span className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground uppercase tracking-tight">
                 <Users className="h-3 w-3" />
                 {p.followersSize || 0} followers
               </span>
@@ -165,7 +165,7 @@ function PortfoliosSuggestSection({ items }) {
 
           <div className="flex items-center gap-3">
             <div className="flex flex-col items-end">
-              <span className="text-[10px] font-bold text-gray-400 uppercase">Annualized</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase">Annualized</span>
               <VariationContainer
                 value={p.annualizedReturn}
                 entity="%"
@@ -173,7 +173,7 @@ function PortfoliosSuggestSection({ items }) {
                 className="p-0 text-sm font-black"
               />
             </div>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-400 transition-colors group-hover:bg-primary group-hover:text-white">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
               <ArrowRight className="h-4 w-4" />
             </div>
           </div>

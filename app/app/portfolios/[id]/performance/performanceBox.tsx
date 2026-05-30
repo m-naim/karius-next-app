@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { LineValue } from '@/components/molecules/charts/LineValue'
 import { BarValue } from '@/components/molecules/charts/BarValue'
 import { AreaValue } from '@/components/molecules/charts/AreaValue'
-import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getPerformances } from '@/services/portfolioService'
 import { LineChart, BarChart2, TrendingUp, Wallet } from 'lucide-react'
@@ -143,21 +142,21 @@ export default function PerformanceBox({
   }
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="space-y-4 pb-2">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="w-full">
+      <div className="space-y-6 pb-2">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-2">
           <div className="space-y-1">
-            <h2 className="text-lg font-semibold">{selectedChart?.label}</h2>
-            <p className="text-sm text-gray-500">{selectedChart?.description}</p>
+            <h2 className="text-2xl font-bold tracking-tight">{selectedChart?.label}</h2>
+            <p className="text-sm text-muted-foreground">{selectedChart?.description}</p>
           </div>
           <div className="flex items-center gap-2">
-            <div className="mr-2 flex items-center gap-1 rounded-lg bg-muted/50 p-1">
+            <div className="mr-2 flex items-center gap-1 rounded-full bg-muted/50 p-1">
               {Object.keys(periodsConvert).map((p) => (
                 <button
                   key={p}
                   onClick={() => handlePeriodChange(p)}
                   className={cn(
-                    'rounded px-2 py-1 text-[10px] font-bold uppercase transition-all',
+                    'rounded-full px-3 py-1.5 text-[11px] font-bold uppercase transition-all',
                     period === p
                       ? 'bg-background text-foreground shadow-sm'
                       : 'text-muted-foreground hover:text-foreground'
@@ -177,55 +176,45 @@ export default function PerformanceBox({
           </div>
         </div>
 
-        <Tabs value={chartType} onValueChange={setChartType} className="w-full">
-          <TabsList className="grid h-auto w-full grid-cols-2 bg-transparent p-0 sm:grid-cols-3 md:grid-cols-5">
+        <Tabs value={chartType} onValueChange={setChartType} className="w-full px-2">
+          <TabsList className="flex h-auto w-full flex-wrap justify-start gap-2 bg-transparent p-0">
             {chartTypes.map((chart) => (
               <TabsTrigger
                 key={chart.id}
                 value={chart.id}
                 className={cn(
-                  'bg-dark relative flex items-center justify-start gap-2 border-b border-r last:border-r-0',
-                  'h-full min-h-[3rem] flex-row px-3 py-2',
-                  'sm:min-h-[3.5rem] md:min-h-[3.5rem] md:justify-center',
-                  'transition-all duration-200 hover:bg-gray-50/80',
-                  'data-[state=active]:bg-dark data-[state=active]:font-medium',
-                  'data-[state=active]:before:absolute data-[state=active]:before:left-0 data-[state=active]:before:h-full data-[state=active]:before:w-0.5 data-[state=active]:before:bg-primary md:data-[state=active]:before:left-0 md:data-[state=active]:before:top-0 md:data-[state=active]:before:h-0.5 md:data-[state=active]:before:w-full',
+                  'relative flex items-center gap-2 rounded-full border border-border/50 bg-background/50 px-4 py-2 transition-all duration-200 hover:bg-accent hover:text-accent-foreground',
+                  'data-[state=active]:border-primary/50 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none',
                   chart.primary ? 'font-medium' : 'font-normal'
                 )}
               >
-                <div className="flex w-full items-center gap-2">
+                <div className="flex items-center gap-2">
                   <chart.icon
                     className={cn(
-                      'h-4 w-4 flex-shrink-0 md:h-5 md:w-5',
-                      'text-gray-500',
+                      'h-4 w-4 flex-shrink-0',
+                      'text-muted-foreground',
                       'data-[state=active]:text-primary'
                     )}
                   />
-                  <span
-                    className={cn(
-                      'text-xs leading-tight md:text-sm',
-                      'text-gray-600 group-hover:text-gray-900',
-                      'data-[state=active]:text-gray-900',
-                      'line-clamp-2 md:line-clamp-1'
-                    )}
-                  >
+                  <span className="text-sm">
                     {chart.label}
                   </span>
                 </div>
                 {chart.primary && (
-                  <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-primary md:-top-1 md:right-2 md:h-2 md:w-2" />
+                  <span className="absolute -right-1 -top-1 flex h-3 w-3 items-center justify-center rounded-full bg-primary ring-2 ring-background">
+                  </span>
                 )}
               </TabsTrigger>
             ))}
           </TabsList>
         </Tabs>
-      </CardHeader>
+      </div>
 
-      <CardContent>
-        <div className="relative h-[300px] sm:h-[400px]">
+      <div className="mt-4 px-2">
+        <div className="relative h-[400px] sm:h-[500px]">
           {loading ? (
-            <div className="bg-dark/80 absolute inset-0 flex items-center justify-center">
-              <div className="text-sm text-gray-500">Chargement des données...</div>
+            <div className="absolute inset-0 flex items-center justify-center bg-background/80">
+              <div className="text-sm text-muted-foreground">Chargement des données...</div>
             </div>
           ) : (
             <>
@@ -281,7 +270,7 @@ export default function PerformanceBox({
             </>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

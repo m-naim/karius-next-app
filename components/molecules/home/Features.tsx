@@ -1,76 +1,107 @@
+'use client'
 import React from 'react'
+import { motion } from 'framer-motion'
 import Icon from '@/components/icons'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 const features = [
   {
     icon: 'chart',
-    title: 'Tracker votre portfolio',
+    title: 'Suivez vos performances',
     description:
-      'Suivrez vos performances et comparer vos performances les indices et les autres portefeuilles.',
+      'Suivez en temps réel et comparez vos performances avec les grands indices et autres portefeuilles.',
   },
   {
     icon: 'annotation',
-    title: 'Saisie facile',
-    description: "Importer votre portefeuille a partir d'un fichier Excel.",
+    title: 'Saisie ultra-rapide',
+    description: "Importez l'intégralité de votre portefeuille en un clic à partir d'un fichier Excel.",
   },
   {
     icon: 'lightblub',
-    title: 'Inspirez vous',
+    title: 'Inspirez-vous',
     description:
-      'Inspirer vous avec les portfeilles de la communauté. Avec plein de statistiques pour les analyser. ',
+      'Découvrez les portefeuilles de la communauté. Analysez-les grâce à des statistiques poussées.',
   },
   {
     icon: 'sharenode',
     title: 'Partagez',
     description:
-      'Partager vous portefeuilles avec vos amis et la communauté Comparer les performances et autres statistiques',
+      'Partagez vos portefeuilles avec vos amis et comparez vos stratégies et rendements.',
   },
   {
     icon: 'filesheild',
-    title: 'Calcule des Impôts',
-    description: 'Gérer automatiquement le rapport pour Impôts à payer',
+    title: 'Calcul des impôts',
+    description: 'Générez automatiquement vos rapports pour faciliter vos déclarations fiscales.',
   },
   {
     icon: 'bell',
     title: 'Alertes intelligentes',
     description:
-      'Suivre en temps réel des transactions des portefeuilles que vos Suivez Notifications programmées.',
+      'Recevez des notifications en temps réel sur les transactions des portefeuilles que vous suivez.',
   },
 ]
 
 export const Features = () => {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+      },
+    },
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' as const } },
+  }
+
   return (
-    <section>
-      <div className="mx-auto max-w-screen-xl px-4 py-8 sm:py-16 lg:px-6">
-        <div className="mb-8 max-w-screen-lg lg:mb-16">
-          <h2 className="mb-4 text-4xl font-extrabold tracking-tight">
-            Fonctionnalités sur Mesure pour un Investissement Personnel Optimal.
+    <section className="py-16 sm:py-24">
+      <div className="mx-auto max-w-screen-xl px-4 lg:px-6">
+        <div className="mb-12 flex flex-col items-center text-center lg:mb-20">
+          <h2 className="mb-4 max-w-3xl text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-4xl">
+            Des outils pensés pour votre <span className="text-primary">performance</span>
           </h2>
-          <p className="text-gray-500 dark:text-gray-400 sm:text-xl">
-            De la gestion de portefeuille intuitive aux analyses personnalisées, notre application
-            offre une expérience transparente, éducative et centrée sur vous.
+          <p className="max-w-2xl text-base text-muted-foreground sm:text-lg">
+            Tout ce dont vous avez besoin pour gérer, analyser et optimiser vos investissements, 
+            réuni dans une interface claire et sans friction.
           </p>
         </div>
 
-        <div className="space-y-8 md:grid md:grid-cols-2 md:gap-12 md:space-y-0 lg:grid-cols-3">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6"
+        >
           {features.map((f) => (
-            <Item title={f.title} description={f.description} icon={f.icon} key={f.icon} />
+            <motion.div key={f.icon} variants={itemVariants} className="flex">
+              <Item title={f.title} description={f.description} icon={f.icon} />
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   )
 }
 
 const Item = ({ title, description, icon }) => (
-  <Card>
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
-      <CardTitle className="mb-2 text-xl font-bold dark:text-white">{title}</CardTitle>
-      <Icon kind={icon} />
+  <Card className="group relative flex h-full w-full flex-col overflow-hidden border-border/40 bg-transparent shadow-none transition-all duration-300 hover:bg-muted/30 hover:border-border/80">
+    <CardHeader className="pb-3 pt-6 px-6">
+      <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/20 transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-sm">
+        <Icon kind={icon} />
+      </div>
+      <CardTitle className="text-lg font-semibold tracking-tight text-foreground">
+        {title}
+      </CardTitle>
     </CardHeader>
-    <CardContent>
-      <p className="text-gray-500 dark:text-gray-400">{description}</p>
+    <CardContent className="px-6 pb-6 pt-0">
+      <p className="text-sm leading-relaxed text-muted-foreground">
+        {description}
+      </p>
     </CardContent>
   </Card>
 )

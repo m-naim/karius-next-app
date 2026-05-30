@@ -177,131 +177,139 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
   return loading ? (
     <Loader />
   ) : (
-    <div className="flex w-full flex-wrap-reverse gap-6">
-      <div className="w-full flex-grow lg:w-8/12">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-bold tracking-tight">Investissements</h1>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">{data.length} actifs détenus</span>
-              <div className="flex items-center gap-1 rounded-md bg-muted/50 p-1">
-                {['1w', '1m', '1y', '5y'].map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setSelectedPeriod(p)}
-                    className={cn(
-                      'rounded px-2 py-0.5 text-[10px] font-bold uppercase transition-all',
-                      selectedPeriod === p
-                        ? 'bg-background text-foreground shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
-                    )}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {own && (
-            <div className="flex items-center gap-2">
-              <AccountsMouvements
-                submitHandler={addMouvement}
-                Trigger={(props) => (
-                  <Button {...props} variant="outline" size="sm" className="h-9 gap-2">
-                    <WalletMinimal className="h-4 w-4" />
-                    <span>Espèces</span>
-                  </Button>
-                )}
-              />
-              <TransactionDialogue
-                totalPortfolioValue={portfolio.totalValue}
-                submitHandler={addTransaction}
-                Trigger={(props) => (
-                  <Button {...props} size="sm" className="h-9 gap-2 shadow-lg shadow-primary/20">
-                    <PlusIcon className="h-4 w-4" />
-                    <span>Transaction</span>
-                  </Button>
-                )}
-              />
-              <Link href={`${id}/import`}>
-                <Button variant="ghost" size="icon" className="h-9 w-9 border">
-                  <FileScan className="h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
-          )}
-        </div>
-
-        <Card className="overflow-hidden border-gray-200 shadow-sm">
-          <CardHeader className="border-b bg-gray-50/30 px-4 py-3">
-            <div className="flex items-center gap-4">
-              <div className="relative max-w-sm flex-1">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Rechercher par nom ou symbole..."
-                  value={globalFilter ?? ''}
-                  onChange={(e) => setGlobalFilter(e.target.value)}
-                  className="h-9 bg-background pl-9"
-                />
-              </div>
-              <div className="hidden flex-1 items-center justify-end gap-4 text-xs sm:flex">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-muted-foreground">Cash :</span>
-                  <span className="font-semibold text-foreground">
-                    {round10(portfolio.cashValue, -2).toLocaleString()} €
-                  </span>
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            {data.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                  <WalletMinimal className="h-6 w-6 text-muted-foreground" />
-                </div>
-                <h3 className="mt-4 text-lg font-semibold">Aucun investissement</h3>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Commencez par ajouter votre premier actif ou importez un fichier.
-                </p>
-                <div className="mt-6 flex gap-3">
-                  <TransactionDialogue
-                    Trigger={(props) => (
-                      <Button {...props} size="sm" className="gap-2">
-                        <PlusIcon className="h-4 w-4" />
-                        Ajouter un actif
-                      </Button>
-                    )}
-                    totalPortfolioValue={portfolio.totalValue}
-                    submitHandler={addTransaction}
-                  />
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`${id}/import`}>Importer</Link>
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="w-full">
-                <PortfolioTable table={table} colSpan={columns.length} />
-              </div>
-            )}
-          </CardContent>
-        </Card>
+    <div className="flex w-full flex-col gap-8 pb-12">
+      {/* HERO SECTION: Stats at the top */}
+      <div className="w-full">
+        <StatsCard pftData={portfolio} />
       </div>
 
-      <div className="w-fill flex flex-grow flex-col gap-6 lg:max-w-xs">
-        <StatsCard pftData={portfolio} />
-        {data.length > 0 && (
-          <Card className="overflow-hidden border-gray-200 shadow-sm">
-            <CardHeader className="px-4 py-3">
-              <h3 className="text-sm font-semibold">Répartition</h3>
+      <div className="flex w-full flex-wrap-reverse gap-6">
+        {/* LEFT COLUMN: Table */}
+        <div className="w-full flex-grow lg:w-8/12">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1">
+              <h2 className="text-xl font-bold tracking-tight">Investissements</h2>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">{data.length} actifs détenus</span>
+                <div className="flex items-center gap-1 rounded-md bg-muted/50 p-1">
+                  {['1w', '1m', '1y', '5y'].map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setSelectedPeriod(p)}
+                      className={cn(
+                        'rounded px-2 py-0.5 text-[10px] font-bold uppercase transition-all',
+                        selectedPeriod === p
+                          ? 'bg-background text-foreground shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      )}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {own && (
+              <div className="flex items-center gap-2">
+                <AccountsMouvements
+                  submitHandler={addMouvement}
+                  Trigger={(props) => (
+                    <Button {...props} variant="outline" size="sm" className="h-9 gap-2">
+                      <WalletMinimal className="h-4 w-4" />
+                      <span>Espèces</span>
+                    </Button>
+                  )}
+                />
+                <TransactionDialogue
+                  totalPortfolioValue={portfolio.totalValue}
+                  submitHandler={addTransaction}
+                  Trigger={(props) => (
+                    <Button {...props} size="sm" className="h-9 gap-2 shadow-lg shadow-primary/20">
+                      <PlusIcon className="h-4 w-4" />
+                      <span>Transaction</span>
+                    </Button>
+                  )}
+                />
+                <Link href={`${id}/import`}>
+                  <Button variant="ghost" size="icon" className="h-9 w-9 border border-border">
+                    <FileScan className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
+
+          <Card className="overflow-hidden border-border bg-card shadow-sm">
+            <CardHeader className="border-b border-border bg-muted/30 px-4 py-3">
+              <div className="flex items-center gap-4">
+                <div className="relative max-w-sm flex-1">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Rechercher par nom ou symbole..."
+                    value={globalFilter ?? ''}
+                    onChange={(e) => setGlobalFilter(e.target.value)}
+                    className="h-9 bg-background pl-9 border-border"
+                  />
+                </div>
+                <div className="hidden flex-1 items-center justify-end gap-4 text-xs sm:flex">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-muted-foreground">Cash :</span>
+                    <span className="font-semibold text-foreground tabular-nums">
+                      {round10(portfolio.cashValue, -2).toLocaleString()} €
+                    </span>
+                  </div>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent className="p-4">
-              <AllocationPie data={data} totalValue={portfolio.totalValue} />
+            <CardContent className="p-0">
+              {data.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                    <WalletMinimal className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <h3 className="mt-4 text-lg font-semibold text-foreground">Aucun investissement</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Commencez par ajouter votre premier actif ou importez un fichier.
+                  </p>
+                  <div className="mt-6 flex gap-3">
+                    <TransactionDialogue
+                      Trigger={(props) => (
+                        <Button {...props} size="sm" className="gap-2">
+                          <PlusIcon className="h-4 w-4" />
+                          Ajouter un actif
+                        </Button>
+                      )}
+                      totalPortfolioValue={portfolio.totalValue}
+                      submitHandler={addTransaction}
+                    />
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={`${id}/import`}>Importer</Link>
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-full">
+                  <PortfolioTable table={table} colSpan={columns.length} />
+                </div>
+              )}
             </CardContent>
           </Card>
-        )}
+        </div>
+
+        {/* RIGHT COLUMN: Allocation */}
+        <div className="w-fill flex flex-grow flex-col gap-6 lg:max-w-xs">
+          {data.length > 0 && (
+            <Card className="overflow-hidden border-border bg-card shadow-sm">
+              <CardHeader className="px-4 py-3 border-b border-border/50">
+                <h3 className="text-sm font-semibold">Répartition</h3>
+              </CardHeader>
+              <CardContent className="p-4">
+                <AllocationPie data={data} totalValue={portfolio.totalValue} />
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   )

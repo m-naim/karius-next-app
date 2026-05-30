@@ -6,7 +6,7 @@ import { getQuotes } from '@/services/stock.service'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { Skeleton } from '@/components/ui/skeleton'
 
-const macroSymbols = ['SPY', 'QQQ', 'AAPL', 'NVDA', 'TSLA', 'MSFT']
+const macroSymbols = ['SPY', 'QQQ', '^VIX']
 
 export function MarketPulse() {
   const [marketData, setMarketData] = useState<any[]>([])
@@ -44,12 +44,12 @@ export function MarketPulse() {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: i * 0.05 }}
-          className="group relative flex flex-col items-center justify-center rounded-2xl border border-gray-100 bg-white p-3 transition-all hover:border-primary/20 hover:shadow-md"
+          className="group relative flex flex-col items-center justify-center rounded-2xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-lg"
         >
-          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 group-hover:text-primary">
+          <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground group-hover:text-primary">
             {item.symbol}
           </span>
-          <span className="mt-0.5 text-xs font-black text-gray-800">
+          <span className="mt-1 text-sm font-black text-foreground">
             {item.regularMarketPrice?.toLocaleString('en-US', { 
                 style: 'currency', 
                 currency: item.currency || 'USD',
@@ -58,7 +58,7 @@ export function MarketPulse() {
           </span>
           <VariationContainer
             value={item.regularMarketChangePercent}
-            className="mt-0.5 p-0 text-[9px] font-bold"
+            className="mt-1 p-0 text-xs font-bold"
             background={false}
           />
         </motion.div>

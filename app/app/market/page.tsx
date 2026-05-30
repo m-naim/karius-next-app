@@ -1,180 +1,266 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import SectionContainer from '@/components/organismes/layout/SectionContainer'
-import { TrendingUp, Globe, ShieldCheck, PieChart, Landmark, Activity, Zap, Info } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { TrendingUp, Globe, ShieldCheck, PieChart, Landmark, ArrowRight, Activity, Zap } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { MarketPulse } from '@/components/molecules/market/MarketPulse'
+import { MarketIndexSparkline } from '@/components/molecules/market/MarketIndexSparkline'
+import { MarketTopFlop } from '@/components/molecules/market/MarketTopFlop'
+import VariationContainer from '@/components/molecules/portfolio/variationContainer'
+import { getStockHistory } from '@/services/stock.service'
+import { cn } from '@/lib/utils'
 
 const markets = [
   {
     symbol: 'SPY',
     name: 'S&P 500',
-    description: 'Les 500 plus grandes entreprises américaines, référence mondiale de la performance boursière.',
-    icon: <TrendingUp className="h-6 w-6 text-blue-500" />,
-    tags: ['US', 'Large Cap', 'Standard'],
+    description: 'Les 500 plus grandes entreprises américaines. Le poumon de la finance mondiale.',
+    icon: <TrendingUp className="h-5 w-5" />,
+    color: 'text-blue-500',
+    bg: 'bg-blue-500/10',
   },
   {
     symbol: 'QQQ',
     name: 'Nasdaq 100',
-    description: 'Indice technologique regroupant les 100 plus grandes valeurs non financières du Nasdaq.',
-    icon: <PieChart className="h-6 w-6 text-purple-500" />,
-    tags: ['US', 'Tech', 'Growth'],
+    description: 'Le cœur de l\'innovation technologique et de la croissance agressive.',
+    icon: <PieChart className="h-5 w-5" />,
+    color: 'text-purple-500',
+    bg: 'bg-purple-500/10',
   },
   {
     symbol: 'QWLD',
     name: 'MSCI World Quality',
-    description: 'Entreprises aux fondamentaux solides : ROE élevé, croissance stable et faible endettement.',
-    icon: <ShieldCheck className="h-6 w-6 text-green-500" />,
-    tags: ['Global', 'Quality', 'Smart Beta'],
+    description: 'Sélection mondiale d\'entreprises aux fondamentaux financiers irréprochables.',
+    icon: <ShieldCheck className="h-5 w-5" />,
+    color: 'text-emerald-500',
+    bg: 'bg-emerald-500/10',
   },
   {
     symbol: 'URTH',
     name: 'MSCI World',
-    description: 'Large couverture mondiale sur 23 marchés développés.',
-    icon: <Globe className="h-6 w-6 text-cyan-500" />,
-    tags: ['Global', 'Developed'],
+    description: 'Le marché mondial global couvrant 23 pays développés.',
+    icon: <Globe className="h-5 w-5" />,
+    color: 'text-cyan-500',
+    bg: 'bg-cyan-500/10',
   },
   {
     symbol: 'MEUD.PAR',
     name: 'STOXX Europe 600',
-    description: 'La référence majeure du marché actions européen à travers 17 pays.',
-    icon: <Landmark className="h-6 w-6 text-orange-500" />,
-    tags: ['Europe', 'Broad Market'],
+    description: 'La référence majeure du marché actions européen.',
+    icon: <Landmark className="h-5 w-5" />,
+    color: 'text-amber-500',
+    bg: 'bg-amber-500/10',
+  },
+  {
+    symbol: '^VIX',
+    name: 'VIX Volatility',
+    description: 'L\'indice de la peur. Mesure la volatilité attendue du S&P 500.',
+    icon: <Activity className="h-5 w-5" />,
+    color: 'text-rose-500',
+    bg: 'bg-rose-500/10',
   },
 ]
 
+const periods = ['1d', '1w', '1m', '1y', '5y']
+
 export default function MarketListingPage() {
+  const [activeMarket, setActiveMarket] = useState(markets[0])
+  const [selectedPeriod, setSelectedPeriod] = useState('1d')
+  const [marketPerfs, setMarketPerfs] = useState<Record<string, number>>({})
+
+  useEffect(() => {
+    const fetchPerfs = async () => {
+      try {
+        const symbols = markets.map(m => m.symbol)
+        
+        const history = await getStockHistory(symbols, selectedPeriod)
+        const perfs: Record<string, number> = {}
+
+        symbols.forEach(sym => {
+          const data = history[sym]
+          if (data && data.length > 0) {
+            const first = data[0].close
+            const last = data[data.length - 1].close
+            perfs[sym] = ((last - first) / first) * 100
+          }
+        })
+        setMarketPerfs(perfs)
+      } catch (e) {
+        console.error('Failed to fetch market perfs', e)
+      }
+    }
+    fetchPerfs()
+  }, [selectedPeriod])
+
   return (
-    <div className="space-y-12 py-8">
-      {/* Hero Section with Market Pulse */}
+    <div className="flex min-h-[calc(100vh-80px)] flex-col space-y-8 py-8">
+      {/* Dynamic Header */}
       <SectionContainer>
-        <div className="mb-10 flex flex-col items-center text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
-              Tableau de Bord <span className="text-primary">Marché</span>
+        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between mb-8">
+          <div>
+            <h1 className="text-4xl font-black tracking-tighter text-foreground sm:text-5xl">
+              Market <span className="text-primary">Pulse</span>
             </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-base text-gray-500 sm:text-lg">
-              Comprendre les tendances mondiales, analyser les flux de capitaux et identifier les opportunités.
+            <p className="mt-2 max-w-xl text-sm font-medium text-muted-foreground">
+              Surveillez la respiration de l'économie mondiale. Identifiez instantanément ce qui tire ou freine les marchés.
             </p>
-          </motion.div>
+          </div>
+          <div className="flex items-center gap-1 rounded-full bg-muted/40 p-1 backdrop-blur-md border border-border/50">
+            {periods.map((p) => (
+              <button
+                key={p}
+                onClick={() => setSelectedPeriod(p)}
+                className={cn(
+                  'rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all',
+                  selectedPeriod === p
+                    ? 'bg-background text-primary shadow-sm ring-1 ring-border/50'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                )}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Pulse Bar */}
-        <MarketPulse />
       </SectionContainer>
 
-      {/* Educational Context / Market Summary */}
-      <SectionContainer>
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <Card className="border-none bg-primary/5 shadow-none lg:col-span-2">
-            <CardHeader className="flex flex-row items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <Activity size={20} />
+      {/* The Command Center */}
+      <SectionContainer className="flex-1">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8 h-full">
+          
+          {/* Left Column: Index Ribbon */}
+          <div className="flex flex-col gap-3 lg:col-span-4">
+            <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">
+              Indices Majeurs
+            </h2>
+            <div className="flex flex-col gap-2">
+              {markets.map((market) => {
+                const isActive = activeMarket.symbol === market.symbol
+                const perf = marketPerfs[market.symbol]
+                
+                return (
+                  <button
+                    key={market.symbol}
+                    onClick={() => setActiveMarket(market)}
+                    className={cn(
+                      'group relative flex items-center justify-between overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300',
+                      isActive 
+                        ? 'bg-background border-primary/20 shadow-md ring-1 ring-primary/10' 
+                        : 'bg-muted/20 border-border/40 hover:bg-muted/40 hover:border-border'
+                    )}
+                  >
+                    <div className="flex items-center gap-4 relative z-10 flex-1 min-w-0">
+                      <div className={cn('rounded-xl p-2.5 transition-colors shrink-0', isActive ? market.bg + ' ' + market.color : 'bg-muted text-muted-foreground')}>
+                        {market.icon}
+                      </div>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className={cn('text-sm font-bold transition-colors truncate', isActive ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground')}>
+                          {market.name}
+                        </span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                          {market.symbol}
+                        </span>
+                      </div>
+                      {perf !== undefined && (
+                        <div className="shrink-0 ml-2">
+                          <VariationContainer value={perf} entity="%" className="text-[10px] font-black p-0" background={false} />
+                        </div>
+                      )}
+                    </div>
+                    {isActive && (
+                      <motion.div layoutId="active-indicator" className="absolute right-0 top-0 bottom-0 w-1 bg-primary" />
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+            
+            {/* Why Watch? Info Card */}
+            <div className="mt-4 rounded-2xl bg-muted/30 border border-border/50 p-5">
+              <div className="flex items-center gap-2 mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                <Zap className="h-3 w-3 text-amber-500" /> Le saviez-vous ?
               </div>
-              <CardTitle className="text-xl font-bold">État du Marché</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm leading-relaxed text-gray-600">
-                Le marché est actuellement influencé par les politiques monétaires et les résultats technologiques. 
-                Une rotation sectorielle est en cours vers les valeurs de croissance. Suivez les indices de volatilité 
-                pour évaluer le sentiment global (Peur vs Cupidité).
+              <p className="text-xs leading-relaxed text-muted-foreground font-medium">
+                L'indice <strong>VIX</strong> monte quand la peur s'installe. Si le S&P 500 baisse et que le VIX explose, c'est un vent de panique. Surveiller le Top/Flop des actions américaines pendant ces périodes permet d'identifier les valeurs résilientes.
               </p>
-              <div className="mt-6 flex items-center gap-4">
-                <div className="flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-gray-700 shadow-sm">
-                  <Zap className="h-3 w-3 text-yellow-500" />
-                  Volatility: Low
+            </div>
+          </div>
+
+          {/* Right Column: The Deep Dive */}
+          <div className="lg:col-span-8 flex flex-col h-full">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeMarket.symbol}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="flex flex-col h-full rounded-3xl border bg-background shadow-xl overflow-hidden"
+              >
+                {/* Header of Active View */}
+                <div className="flex items-start justify-between border-b p-6 bg-muted/10">
+                  <div className="flex items-center gap-4">
+                     <div className={cn('rounded-2xl p-4', activeMarket.bg, activeMarket.color)}>
+                        {activeMarket.icon}
+                     </div>
+                     <div>
+                       <h2 className="text-2xl font-black text-foreground">{activeMarket.name}</h2>
+                       <p className="text-xs font-medium text-muted-foreground mt-1 max-w-md">
+                         {activeMarket.description}
+                       </p>
+                     </div>
+                  </div>
+                  
+                  {activeMarket.symbol !== '^VIX' && (
+                    <Link href={`/app/market/${encodeURIComponent(activeMarket.symbol)}`}>
+                      <button className="group flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-md">
+                        <span>Analyse Complète</span>
+                        <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+                      </button>
+                    </Link>
+                  )}
                 </div>
-                <div className="flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-gray-700 shadow-sm">
-                  <TrendingUp className="h-3 w-3 text-green-500" />
-                  Trend: Bullish
+
+                {/* Body of Active View */}
+                <div className="p-6 flex flex-col flex-1 gap-8">
+                  
+                  {/* Sparkline Section */}
+                  <div className="flex flex-col gap-2">
+                    <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                      Tendance Globale ({selectedPeriod})
+                    </h3>
+                    <div className="h-[200px] w-full rounded-xl border bg-muted/5 p-4 relative">
+                      {/* Pass mapped period to Sparkline so graph dynamically scales to selection */}
+                      <MarketIndexSparkline 
+                        symbol={activeMarket.symbol} 
+                        period={selectedPeriod} 
+                      />
+                    </div>
+                  </div>
+
+                  {/* Top / Flop Dynamics */}
+                  {activeMarket.symbol !== '^VIX' && (
+                    <div className="flex flex-col gap-2 flex-1">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                          Moteurs & Freins ({selectedPeriod})
+                        </h3>
+                      </div>
+                      <div className="flex-1 rounded-xl border bg-muted/10 p-4">
+                        <MarketTopFlop symbol={activeMarket.symbol} period={selectedPeriod} />
+                      </div>
+                    </div>
+                  )}
+
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
-          <Card className="border-none bg-gray-50 shadow-none">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg font-bold">
-                <Info size={18} className="text-gray-400" />
-                Pourquoi regarder ?
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-3">
-                <div className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                <p className="text-xs text-gray-500">
-                  <span className="font-bold text-gray-700">S&P 500</span> : Représente 80% de la capitalisation US.
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <div className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                <p className="text-xs text-gray-500">
-                  <span className="font-bold text-gray-700">Nasdaq</span> : Coeur de l'innovation technologique.
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <div className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                <p className="text-xs text-gray-500">
-                  <span className="font-bold text-gray-700">Magnificent 7</span> : Les 7 géants qui tirent le marché.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </SectionContainer>
-
-      {/* ETFs & Indices Details */}
-      <SectionContainer className="space-y-8">
-        <div className="flex flex-col items-center text-center">
-          <h2 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl">
-            Explorateur d'Indices & ETF
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm text-gray-500">
-            Détails profonds sur les véhicules d'investissement passifs les plus populaires.
-          </p>
-        </div>
-
-        <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {markets.map((market) => (
-            <Link key={market.symbol} href={`/app/market/${encodeURIComponent(market.symbol)}`}>
-              <Card className="group relative h-full overflow-hidden transition-all duration-300 hover:border-primary/30 hover:shadow-xl">
-                <CardHeader className="flex flex-row items-center gap-4 pb-4">
-                  <div className="rounded-2xl bg-gray-50 p-3 transition-colors group-hover:bg-primary/5">
-                    {market.icon}
-                  </div>
-                  <div className="flex flex-col">
-                    <CardTitle className="text-lg font-bold group-hover:text-primary transition-colors">{market.name}</CardTitle>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                      {market.symbol}
-                    </span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="mb-6 line-clamp-2 text-xs leading-relaxed text-gray-500">
-                    {market.description}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {market.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="inline-flex items-center rounded-md border border-gray-100 bg-white px-2 py-0.5 text-[9px] font-bold uppercase text-gray-600 transition-colors group-hover:border-primary/20 group-hover:text-primary"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </CardContent>
-                <div className="absolute bottom-0 h-0.5 w-0 bg-primary transition-all duration-500 group-hover:w-full" />
-              </Card>
-            </Link>
-          ))}
         </div>
       </SectionContainer>
     </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import Loader from '@/components/molecules/loader/loader'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -73,17 +73,48 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
 
   const getHeatmapClass = (val: number, isBenchmark = false) => {
     if (!val) return ''
-    if (val > 0) return isBenchmark ? 'bg-green-500/10' : 'bg-green-500/20'
-    if (val < 0) return isBenchmark ? 'bg-red-500/10' : 'bg-red-500/20'
+    if (val > 0) return isBenchmark ? 'bg-green-500/10' : 'bg-green-500/20 ring-1 ring-inset ring-green-500/30'
+    if (val < 0) return isBenchmark ? 'bg-red-500/10' : 'bg-red-500/20 ring-1 ring-inset ring-red-500/30'
     return ''
   }
+
+  const stats = useMemo(() => {
+    let bestMonth = { val: -Infinity, month: '', year: 0 }
+    let worstMonth = { val: Infinity, month: '', year: 0 }
+    let totalMonths = 0
+    let positiveMonths = 0
+
+    perf.forEach(yearData => {
+      Object.entries(yearData.monthlyPerformance).forEach(([m, val]) => {
+        if (val !== null && val !== undefined && val !== 0) {
+          totalMonths++
+          if (val > 0) positiveMonths++
+          if (val > bestMonth.val) bestMonth = { val, month: m, year: yearData.year }
+          if (val < worstMonth.val) worstMonth = { val, month: m, year: yearData.year }
+        }
+      })
+    })
+
+    const winRate = totalMonths > 0 ? (positiveMonths / totalMonths) * 100 : 0
+    
+    // Map English month keys to short French display names
+    const getMonthDisplay = (mValue: string) => {
+      return MONTHS.find(m => m.value === mValue)?.display || mValue
+    }
+
+    return {
+      bestMonth: bestMonth.val !== -Infinity ? { ...bestMonth, displayMonth: getMonthDisplay(bestMonth.month) } : null,
+      worstMonth: worstMonth.val !== Infinity ? { ...worstMonth, displayMonth: getMonthDisplay(worstMonth.month) } : null,
+      winRate: Math.round(winRate)
+    }
+  }, [perf])
 
   return loading ? (
     <Loader />
   ) : (
-    <Card className="w-full overflow-hidden border-gray-200 shadow-sm">
-      <CardHeader className="border-b bg-gray-50/30 px-6 py-4">
-        <div className="flex items-center justify-between">
+    <Card className="w-full overflow-hidden border-border bg-card shadow-sm">
+      <CardHeader className="border-b border-border/50 bg-muted/20 px-6 py-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">
             <CardTitle className="text-lg font-bold tracking-tight">
               Récapitulatif Historique
@@ -92,61 +123,95 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
               Performance mensuelle et annuelle comparée
             </p>
           </div>
+          
+          {/* Quick Stats */}
+          {stats.bestMonth && stats.worstMonth && (
+            <div className="flex items-center gap-4 text-sm">
+              <div className="flex flex-col items-end">
+                <span className="text-xs text-muted-foreground uppercase font-semibold tracking-wider">Meilleur Mois</span>
+                <div className="flex items-center gap-1.5 font-bold">
+                  <VariationContainer background={false} value={stats.bestMonth.val} />
+                  <span className="text-xs text-muted-foreground font-normal">({stats.bestMonth.displayMonth} {stats.bestMonth.year})</span>
+                </div>
+              </div>
+              <div className="h-8 w-px bg-border/50 hidden sm:block"></div>
+              <div className="flex flex-col items-end sm:items-start">
+                <span className="text-xs text-muted-foreground uppercase font-semibold tracking-wider">Pire Mois</span>
+                <div className="flex items-center gap-1.5 font-bold">
+                  <VariationContainer background={false} value={stats.worstMonth.val} />
+                  <span className="text-xs text-muted-foreground font-normal">({stats.worstMonth.displayMonth} {stats.worstMonth.year})</span>
+                </div>
+              </div>
+              <div className="h-8 w-px bg-border/50 hidden sm:block"></div>
+              <div className="flex flex-col items-end sm:items-start">
+                <span className="text-xs text-muted-foreground uppercase font-semibold tracking-wider">Win Rate</span>
+                <div className="font-bold text-foreground">
+                  {stats.winRate}% <span className="text-xs font-normal text-muted-foreground">(dans le vert)</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </CardHeader>
       <CardContent className="p-0">
         <ScrollArea className="w-full">
-          <div className="min-w-[1000px]">
-            <table className="w-full border-collapse text-left text-sm">
+          <div className="min-w-[1000px] p-2">
+            <table className="w-full border-collapse text-left text-sm" style={{ borderSpacing: '4px', borderCollapse: 'separate' }}>
               <thead>
-                <tr className="border-b bg-muted/30">
-                  <th className="sticky left-0 z-20 w-[120px] bg-gray-50 px-4 py-3 font-semibold text-muted-foreground">
+                <tr>
+                  <th className="sticky left-0 z-20 w-[120px] bg-card px-4 py-2 font-semibold text-muted-foreground">
                     Année
                   </th>
                   {MONTHS.map((m) => (
                     <th
                       key={m.value}
-                      className="w-[70px] px-2 py-3 text-center font-semibold text-muted-foreground"
+                      className="w-[70px] px-1 py-2 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                     >
                       {m.display}
                     </th>
                   ))}
-                  <th className="w-[90px] bg-muted/50 px-4 py-3 text-right font-bold text-foreground">
+                  <th className="w-[90px] px-4 py-2 text-right font-bold text-foreground">
                     Total
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="space-y-2">
                 {perf.map((yearPerf) => (
                   <React.Fragment key={yearPerf.year}>
                     {/* Ligne Portefeuille */}
-                    <tr className="group transition-colors hover:bg-muted/20">
-                      <td className="sticky left-0 z-10 border-r bg-background px-4 py-3 font-bold text-foreground group-hover:bg-gray-50">
-                        {yearPerf.year}
-                        <span className="ml-2 rounded bg-primary/10 px-1 text-[10px] font-medium uppercase tracking-tighter text-primary">
-                          Portefeuille
-                        </span>
+                    <tr className="group">
+                      <td className="sticky left-0 z-10 bg-card px-4 py-2 font-bold text-foreground transition-colors group-hover:bg-muted/50 rounded-l-lg">
+                        <div className="flex flex-col">
+                          <span>{yearPerf.year}</span>
+                          <span className="text-[10px] font-medium uppercase tracking-tighter text-primary/70">
+                            Portefeuille
+                          </span>
+                        </div>
                       </td>
                       {MONTHS.map((m) => {
                         const val = yearPerf.monthlyPerformance[m.value]
                         return (
                           <td
                             key={m.value}
-                            className={cn(
-                              'border-r border-gray-100/50 px-2 py-3 text-center last:border-r-0',
-                              getHeatmapClass(val)
-                            )}
+                            className="p-1"
                           >
-                            {val ? (
-                              <VariationContainer value={val} className="text-xs font-bold" />
-                            ) : (
-                              <span className="text-muted-foreground/30">—</span>
-                            )}
+                            <div className={cn(
+                              'flex h-10 w-full flex-col items-center justify-center rounded-md transition-colors',
+                              getHeatmapClass(val)
+                            )}>
+                              {val ? (
+                                <VariationContainer background={false} value={val} className="text-xs font-bold" />
+                              ) : (
+                                <span className="text-muted-foreground/30">—</span>
+                              )}
+                            </div>
                           </td>
                         )
                       })}
-                      <td className="bg-primary/5 px-4 py-3 text-right font-black">
-                        <VariationContainer value={yearPerf.performance} className="text-xs" />
+                      <td className="px-4 py-2 text-right font-black">
+                        <div className="flex h-10 items-center justify-end rounded-md bg-primary/5 px-3">
+                          <VariationContainer background={false} value={yearPerf.performance} className="text-sm" />
+                        </div>
                       </td>
                     </tr>
 
@@ -158,41 +223,47 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
                       return (
                         <tr
                           key={bench}
-                          className="group bg-muted/5 transition-colors hover:bg-muted/30"
+                          className="group"
                         >
-                          <td className="sticky left-0 z-10 border-r bg-gray-50/50 px-4 py-2 text-[11px] font-medium italic text-muted-foreground group-hover:bg-gray-100">
-                            <div className="w-full truncate">{benchLabel}</div>
+                          <td className="sticky left-0 z-10 bg-card px-4 py-1.5 text-[11px] font-medium italic text-muted-foreground transition-colors group-hover:bg-muted/50 rounded-l-lg">
+                            <div className="w-[100px] truncate">{benchLabel}</div>
                           </td>
                           {MONTHS.map((m) => {
                             const val = benchData?.monthlyPerformance[m.value] || 0
                             return (
                               <td
                                 key={m.value}
-                                className={cn(
-                                  'border-r border-gray-100/50 px-2 py-2 text-center opacity-80 last:border-r-0',
-                                  getHeatmapClass(val, true)
-                                )}
+                                className="p-1"
                               >
-                                {val ? (
-                                  <VariationContainer
-                                    value={val}
-                                    className="text-[10px] font-medium"
-                                  />
-                                ) : (
-                                  <span className="text-muted-foreground/30">—</span>
-                                )}
+                                <div className={cn(
+                                  'flex h-8 w-full items-center justify-center rounded border border-transparent opacity-80',
+                                  getHeatmapClass(val, true)
+                                )}>
+                                  {val ? (
+                                    <VariationContainer
+                                      background={false}
+                                      value={val}
+                                      className="text-[10px] font-medium"
+                                    />
+                                  ) : (
+                                    <span className="text-muted-foreground/20 text-[10px]">—</span>
+                                  )}
+                                </div>
                               </td>
                             )
                           })}
-                          <td className="bg-muted/20 px-4 py-2 text-right">
-                            {benchData ? (
-                              <VariationContainer
-                                value={benchData.performance}
-                                className="text-[10px] font-bold"
-                              />
-                            ) : (
-                              <span className="text-muted-foreground/30">—</span>
-                            )}
+                          <td className="px-4 py-1.5 text-right">
+                             <div className="flex h-8 items-center justify-end rounded bg-muted/20 px-2">
+                              {benchData ? (
+                                <VariationContainer
+                                  background={false}
+                                  value={benchData.performance}
+                                  className="text-[11px] font-bold"
+                                />
+                              ) : (
+                                <span className="text-muted-foreground/30">—</span>
+                              )}
+                             </div>
                           </td>
                         </tr>
                       )

@@ -9,8 +9,10 @@ import {
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
+  getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+
 import {
   deleteTransaction,
   getTransactions,
@@ -92,10 +94,14 @@ function PageTransactions() {
     if (selectedYear === 'all') return movements || []
     return (movements || []).filter((m: any) => new Date(m.date).getFullYear().toString() === selectedYear)
   }, [movements, selectedYear])
-
   const transactionsTable = useReactTable({
     data: filteredTransactions,
     columns: transactionColumns(id, own, modifyTransactionHandler, deleteTransactionHandler),
+    initialState: {
+      pagination: {
+        pageSize: 20,
+      },
+    },
     state: {
       sorting,
       globalFilter,
@@ -105,11 +111,17 @@ function PageTransactions() {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
   })
 
   const movementsTable = useReactTable({
     data: filteredMovements,
     columns: MovementsColumns,
+    initialState: {
+      pagination: {
+        pageSize: 20,
+      },
+    },
     state: {
       sorting,
     },
@@ -117,6 +129,7 @@ function PageTransactions() {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
   })
 
   const stats = useMemo(() => {
@@ -128,7 +141,28 @@ function PageTransactions() {
       .reduce((acc, t: any) => acc + t.price * Math.abs(t.qty), 0)
     const netMovements = filteredMovements.reduce((acc, m: any) => acc + m.amount, 0)
 
-    return { totalInvested, totalSold, netMovements }
+    const allDates = [...filteredTransactions, ...filteredMovements]
+      .map((t: any) => new Date(t.date).getTime())
+      .filter(t => !isNaN(t))
+    
+    const firstTxDate = allDates.length > 0 ? new Date(Math.min(...allDates)) : null
+    
+    let yearsActive = 1
+    if (firstTxDate) {
+       const now = new Date()
+       yearsActive = Math.max(1, (now.getTime() - firstTxDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25))
+    }
+    
+    const totalMovementsCount = filteredTransactions.length + filteredMovements.length
+    const avgMovementsPerYear = totalMovementsCount > 0 ? Math.round(totalMovementsCount / yearsActive) : 0
+
+    return { 
+      totalInvested, 
+      totalSold, 
+      netMovements,
+      firstTxDate: firstTxDate ? firstTxDate.toLocaleDateString('fr-FR') : 'N/A',
+      avgMovementsPerYear
+    }
   }, [filteredTransactions, filteredMovements])
 
   return loading ? (
@@ -164,7 +198,7 @@ function PageTransactions() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         <Card className="bg-muted/30">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -190,6 +224,24 @@ function PageTransactions() {
               Flux Net Cash ({selectedYear === 'all' ? 'Total' : selectedYear})
             </div>
             <div className="mt-1 text-xl font-bold">{stats.netMovements.toLocaleString()} €</div>
+          </CardContent>
+        </Card>
+        <Card className="bg-muted/30">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              <CalendarDays className="h-3 w-3" />
+              Début d'activité
+            </div>
+            <div className="mt-1 text-xl font-bold">{stats.firstTxDate}</div>
+          </CardContent>
+        </Card>
+        <Card className="bg-muted/30">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              <History className="h-3 w-3" />
+              Moy. Mouvements / an
+            </div>
+            <div className="mt-1 text-xl font-bold">{stats.avgMovementsPerYear} trans.</div>
           </CardContent>
         </Card>
       </div>
@@ -221,7 +273,7 @@ function PageTransactions() {
         </div>
 
         <TabsContent value="transactions" className="mt-4 border-none p-0">
-          <Card className="overflow-hidden border-gray-200 shadow-sm">
+          <Card className="overflow-hidden border-border bg-card shadow-sm">
             <CardContent className="p-0">
               <SimpleDataTable table={transactionsTable} colSpan={transactionColumns.length} />
             </CardContent>
@@ -229,7 +281,7 @@ function PageTransactions() {
         </TabsContent>
 
         <TabsContent value="movements" className="mt-4 border-none p-0">
-          <Card className="overflow-hidden border-gray-200 shadow-sm">
+          <Card className="overflow-hidden border-border bg-card shadow-sm">
             <CardContent className="p-0">
               <SimpleDataTable table={movementsTable} colSpan={MovementsColumns.length} />
             </CardContent>

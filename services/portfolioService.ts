@@ -112,6 +112,14 @@ export function deletePortfolio(id) {
   return http.deleteReq(`${host}/api/v1/portfolios/${id}`)
 }
 
+export function updatePortfolio(id, payload) {
+  const body = {
+    name: payload.name,
+    isPublic: payload.visibility,
+  }
+  return http.put(`${host}/api/v1/portfolios/${id}`, body)
+}
+
 export function getPerformances(id, benchmarks, period) {
   const encodedBenchmarks = encodeURIComponent(benchmarks.join(','))
   return http.get(

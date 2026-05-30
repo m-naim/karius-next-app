@@ -93,6 +93,7 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
               innerRadius="65%"
               outerRadius="95%"
               paddingAngle={2}
+              cornerRadius={4}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={() => setHoveredData(null)}
               stroke="none"

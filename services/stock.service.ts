@@ -25,8 +25,9 @@ export function getStockPrixForDate(symbol, date) {
 }
 
 export function getStockHistory(symbols: string[], period: string) {
+  const mappedPeriod = period === '1d' ? 'day' : period
   const encodedSymbols = symbols.map((symbol) => encodeURIComponent(symbol)).join(',')
-  return http.get(`${host}/api/v1/stocks/history?symbols=${encodedSymbols}&period=${period}`)
+  return http.get(`${host}/api/v1/stocks/history?symbols=${encodedSymbols}&period=${mappedPeriod}`)
 }
 
 export function getQuotes(symbols: string[]) {

@@ -11,6 +11,7 @@ import {
   Trash2,
   TrendingUp,
   WalletMinimal,
+  Settings,
 } from 'lucide-react'
 import SectionContainer from '@/components/organismes/layout/SectionContainer'
 import { deletePortfolio, follow } from '@/services/portfolioService'
@@ -70,107 +71,71 @@ const PortfolioLayout = ({
 
   return (
     <div>
-      <div className="border-b py-1 md:py-4">
+      <div className="border-b border-border/50 bg-background/95 pb-0 pt-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
         <SectionContainer>
-          <div className="flex w-full flex-col items-center">
-            <div className="flex w-full items-center justify-between">
-              <div className="flex items-center self-start">
+          <div className="flex w-full flex-col">
+            <div className="flex w-full items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
                 <Link href={`/app/portfolios`} className="h-fit">
-                  <Button variant={'ghost'}>
-                    <ArrowLeft />
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-accent/50">
+                    <ArrowLeft size={16} />
                   </Button>
                 </Link>
+                <h1 className="text-2xl font-black capitalize tracking-tight">{name}</h1>
               </div>
 
               <div className="flex items-center gap-4">
                 {isOwn ? (
-                  <>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button size={'sm'} variant="ghost">
-                          <EllipsisVertical size={16} />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-56">
-                        <DropdownMenuGroup>
-                          <DropdownMenuItem onClick={handleDeletePortfolio}>
-                            <Trash2 className="h-4 text-red-600" strokeWidth={1} />
-                            <span>Supprimer</span>
-                            <DropdownMenuShortcut>ctrl + d</DropdownMenuShortcut>
-                          </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </>
+                  <Link href={`/app/portfolios/${id}/settings`}>
+                    <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full hover:bg-accent/50" aria-label="Paramètres">
+                      <Settings size={16} />
+                    </Button>
+                  </Link>
                 ) : (
-                  <Button onClick={handleFollowClick} size="sm" variant="outline" className="gap-1">
+                  <Button onClick={handleFollowClick} size="sm" variant="outline" className="h-8 gap-2 rounded-full border-border/50 bg-background hover:bg-accent/50">
                     <StarIcon
-                      className="h-5 w-5"
-                      fill={followed ? '#eac54f' : '#999'}
-                      strokeWidth={0}
+                      className="h-4 w-4"
+                      fill={followed ? '#eac54f' : 'transparent'}
+                      strokeWidth={followed ? 0 : 2}
+                      color={followed ? '#eac54f' : 'currentColor'}
                     />
-                    <span className="w-10 text-foreground">{followed ? 'Suivis' : 'Suivre'}</span>
-                    <span className="text-foreground"> {followersSize}</span>
+                    <span className="font-semibold">{followed ? 'Suivis' : 'Suivre'}</span>
+                    <span className="text-muted-foreground">({followersSize})</span>
                   </Button>
                 )}
               </div>
             </div>
-            <h1 className="pb-1 pt-0 text-xl capitalize md:mx-4">{name}</h1>
+
+            {/* Horizontal Navigation for Desktop & Mobile */}
+            <div className="flex w-full items-center gap-1 overflow-x-auto no-scrollbar border-b border-transparent">
+              {navItems.map((item) => {
+                const isActive = pathname === item.url || pathname === `${item.url}/`
+                return (
+                  <Link key={item.name} href={item.url}>
+                    <div
+                      className={`relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors hover:text-foreground ${
+                        isActive ? 'text-foreground' : 'text-muted-foreground'
+                      }`}
+                    >
+                      <item.icon size={16} className="hidden sm:block" />
+                      {item.name}
+                      {isActive && (
+                        <div className="absolute bottom-0 left-0 h-0.5 w-full bg-primary" />
+                      )}
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
           </div>
         </SectionContainer>
       </div>
 
       <SectionContainer>
-        <div className="flex w-full flex-wrap gap-2 py-2 md:flex-nowrap">
-          <div className="hidden flex-col gap-2 md:flex">
-            <Button
-              className={` ${isLinkActive(`/app/portfolios/${id}`)} `}
-              variant="ghost"
-              asChild
-            >
-              <Link href={`/app/portfolios/${id}/`}>
-                <WalletMinimal className="mr-2 h-4 w-4" />
-                Investissements
-              </Link>
-            </Button>
-            <Button
-              className={` ${isLinkActive(`/app/portfolios/${id}/dividends`)} justify-start`}
-              variant="ghost"
-              asChild
-            >
-              <Link href={`/app/portfolios/${id}/dividends`}>
-                <GemIcon className="mr-2 h-4 w-4" /> Dividendes{' '}
-              </Link>
-            </Button>
-            <Button
-              className={` ${isLinkActive(`/app/portfolios/${id}/performance`)} justify-start`}
-              variant="ghost"
-              asChild
-            >
-              <Link href={`/app/portfolios/${id}/performance`}>
-                <TrendingUp className="mr-2 h-4 w-4" />
-                Performances
-              </Link>
-            </Button>
-            <Button
-              className={` ${isLinkActive(`/app/portfolios/${id}/transactions`)} justify-start`}
-              variant="ghost"
-              asChild
-            >
-              <Link href={`/app/portfolios/${id}/transactions`}>
-                <ArrowLeftRight className="mr-2 h-4 w-4" />
-                Activité
-              </Link>
-            </Button>
-          </div>
-
-          <div className="mb-20 flex w-full flex-col gap-2">
-            <div className="bg-dark w-full flex-grow rounded-md">{children}</div>
-          </div>
+        <div className="mb-20 mt-6 flex w-full flex-col">
+          <div className="w-full flex-grow rounded-md">{children}</div>
         </div>
       </SectionContainer>
-
-      <NavBar items={navItems} className="md:hidden" />
     </div>
   )
 }

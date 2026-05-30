@@ -93,9 +93,9 @@ export default function Watchlist() {
         `"${(s.industry || '').replace(/"/g, '""')}"`,
         s.trailingPE || '',
         (s.dividendYield ? s.dividendYield * 100 : 0).toFixed(2),
-        (s.growth ? s.growth * 100 : 0).toFixed(2),
-        (s.roe ? s.roe * 100 : 0).toFixed(2),
-        (s.roa ? s.roa * 100 : 0).toFixed(2)
+        (s.score?.growth ? s.score.growth * 100 : 0).toFixed(2),
+        (s.lastYearFundamental?.roe ? s.lastYearFundamental.roe * 100 : 0).toFixed(2),
+        (s.lastYearFundamental?.roa ? s.lastYearFundamental.roa * 100 : 0).toFixed(2)
       ].join(',')
     })
 

@@ -85,7 +85,7 @@ const MultiSelectTagDropdown: React.FC<MultiSelectTagDropdownProps> = ({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0" align="start">
+      <PopoverContent className="w-[200px] p-0 z-[100]" align="start">
         <Command>
           <CommandInput
             placeholder="Search tags or add new..."
