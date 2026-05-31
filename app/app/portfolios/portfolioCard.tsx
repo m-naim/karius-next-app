@@ -19,7 +19,7 @@ export function PortfolioCard(p: PortfolioSummery) {
   return (
     <Link
       key={p.id}
-      href={`portfolios/${p.id}`}
+      href={`/app/portfolios/${p.id}`}
       className="group block w-full"
     >
       <Card className={cn(
