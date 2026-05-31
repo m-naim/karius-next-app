@@ -92,3 +92,40 @@ export function calculateYearlyVariations(history: StockHistoryItem[]): {
 
   return { bestYearVariation, worstYearVariation }
 }
+
+export function calculateLogRegressionBands(values: number[]): {
+  regressionLine: number[]
+  upperBand: number[]
+  lowerBand: number[]
+} {
+  const n_pts = values.length
+  if (n_pts < 2) return { regressionLine: [], upperBand: [], lowerBand: [] }
+
+  const x = Array.from({ length: n_pts }, (_, i) => i)
+  // Ensure values are > 0 to avoid log(<=0) returning NaN
+  const y = values.map((v) => Math.log(v > 0 ? v : 1e-10))
+
+  const sum_x = x.reduce((a, b) => a + b, 0)
+  const sum_y = y.reduce((a, b) => a + b, 0)
+  const sum_xy = x.reduce((a, i) => a + x[i] * y[i], 0)
+  const sum_x2 = x.reduce((a, b) => a + b * b, 0)
+
+  // Calculate slope (m) and intercept (b)
+  const m = (n_pts * sum_xy - sum_x * sum_y) / (n_pts * sum_x2 - sum_x * sum_x)
+  const b = (sum_y - m * sum_x) / n_pts
+
+  // Calculate regression line values in log space
+  const y_reg = x.map((xi) => m * xi + b)
+
+  // Calculate residuals and standard deviation
+  const residuals = y.map((yi, i) => yi - y_reg[i])
+  const sum_residuals_sq = residuals.reduce((a, val) => a + val * val, 0)
+  const stdDev = Math.sqrt(sum_residuals_sq / n_pts)
+
+  // Exponentiate to get values back to linear space
+  const regressionLine = y_reg.map((yi) => Math.exp(yi))
+  const upperBand = y_reg.map((yi) => Math.exp(yi + 2 * stdDev))
+  const lowerBand = y_reg.map((yi) => Math.exp(yi - 2 * stdDev))
+
+  return { regressionLine, upperBand, lowerBand }
+}

@@ -51,21 +51,22 @@ const SimpleDataTable = ({ table, colSpan, onRowClick, selectedId }: SimpleDataT
   ]
 
   return (
-    <div className="w-full">
-      <ScrollArea className="w-full whitespace-nowrap">
+    <div className="w-full whitespace-nowrap">
         <Table containerClassName="overflow-visible">
-          <TableHeader>
+          <TableHeader className="sticky top-0 z-30 bg-background/95 backdrop-blur shadow-[0_1px_0_0_hsl(var(--border))]">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="border-b border-border/50 hover:bg-transparent">
-                {headerGroup.headers.map((header) => {
+              <TableRow key={headerGroup.id} className="border-b-0 hover:bg-transparent">
+                {headerGroup.headers.map((header, index) => {
                   if (isMobile && !visibleColumns.includes(header.id)) {
                     return null
                   }
+                  const isFirst = index === 0;
                   return (
                     <TableHead
                       key={header.id}
                       className={cn(
                         'py-2 text-xs font-semibold text-muted-foreground whitespace-nowrap',
+                        isFirst && "sticky left-0 z-40 bg-background/95 backdrop-blur",
                         isMobile && header.id === 'symbol' && 'w-[50%]',
                         isMobile && header.id === 'regularMarketPrice' && 'w-[25%]',
                         isMobile && header.id === 'regularMarketChangePercent' && 'w-[20%]',
@@ -89,21 +90,23 @@ const SimpleDataTable = ({ table, colSpan, onRowClick, selectedId }: SimpleDataT
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
                   className={cn(
-                    'border-b border-border/30 transition-colors hover:bg-accent/30',
+                    'group/row border-b border-border/30 transition-colors hover:bg-accent/30',
                     onRowClick && 'cursor-pointer',
                     selectedId === row.original.symbol && 'bg-accent/50'
                   )}
                   onClick={() => onRowClick && onRowClick(row.original)}
                 >
-                  {row.getVisibleCells().map((cell) => {
+                  {row.getVisibleCells().map((cell, index) => {
                     if (isMobile && !visibleColumns.includes(cell.column.id)) {
                       return null
                     }
+                    const isFirst = index === 0;
                     return (
                       <TableCell
                         key={cell.id}
                         className={cn(
                           'whitespace-nowrap py-3 text-xs tabular-nums',
+                          isFirst && "sticky left-0 z-20 bg-background shadow-[1px_0_0_0_hsl(var(--border)/0.2)]",
                           isMobile && cell.column.id === 'symbol' && 'w-[50%]',
                           isMobile && cell.column.id === 'regularMarketPrice' && 'w-[25%]',
                           isMobile && cell.column.id === 'regularMarketChangePercent' && 'w-[20%]',
@@ -163,18 +166,20 @@ const SimpleDataTable = ({ table, colSpan, onRowClick, selectedId }: SimpleDataT
               </TableRow>
             )}
           </TableBody>
-          <TableFooter className="sticky bottom-0 z-10 bg-muted/50 font-semibold">
+          <TableFooter className="sticky bottom-0 z-30 bg-muted/50 font-semibold shadow-[0_-1px_0_0_hsl(var(--border))]">
             {table.getFooterGroups().map((footerGroup) => (
-              <TableRow key={footerGroup.id}>
-                {footerGroup.headers.map((header) => {
+              <TableRow key={footerGroup.id} className="border-b-0 hover:bg-transparent">
+                {footerGroup.headers.map((header, index) => {
                   if (isMobile && !visibleColumns.includes(header.id)) {
                     return null
                   }
+                  const isFirst = index === 0;
                   return (
                     <TableHead
                       key={header.id}
                       className={cn(
                         'whitespace-nowrap py-2 text-[11px] text-foreground',
+                        isFirst && "sticky left-0 z-40 bg-muted/95 backdrop-blur",
                         !isMobile && 'px-2'
                       )}
                     >
@@ -189,7 +194,6 @@ const SimpleDataTable = ({ table, colSpan, onRowClick, selectedId }: SimpleDataT
             ))}
           </TableFooter>
         </Table>
-      </ScrollArea>
       {table.getPageCount() > 1 && (
         <div className="flex items-center justify-between border-t border-border/50 px-4 py-3">
           <div className="flex-1 text-xs text-muted-foreground">

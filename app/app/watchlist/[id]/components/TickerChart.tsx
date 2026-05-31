@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { stringToColor } from '@/lib/colors'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FundamentalChart } from './FundamentalChart'
-import { calculateCAGR, calculateR2, calculateYearlyVariations } from '@/lib/math'
+import { calculateCAGR, calculateR2, calculateYearlyVariations, calculateLogRegressionBands } from '@/lib/math'
 import MetricsDisplay, { TickerChartMetrics } from '@/components/molecules/MetricsDisplay'
 import MultiSelectTagDropdown from '@/components/molecules/MultiSelectTagDropdown'
 import { PerHistoryChart } from './PerHistoryChart'
@@ -96,10 +96,7 @@ export function TickerChart({
           const minYear = Math.min(...years)
           const maxYear = Math.max(...years)
           setYearRange([minYear, maxYear])
-          // Only reset selectedRange if it's currently outside the new yearRange or if it's the first load
-          if (selectedRange[0] === 0 || selectedRange[0] < minYear || selectedRange[1] > maxYear) {
-            setSelectedRange([minYear, maxYear])
-          }
+          setSelectedRange([minYear, maxYear])
         }
 
         setLoading(false)
@@ -181,9 +178,47 @@ export function TickerChart({
       return format(date, 'dd/MM/yyyy')
     })
 
+    let finalDatasets = selectedBenchmarks.length > 0 ? normalizedDatasets : historyData
+
+    if (isLogarithmic && !isDrawdown && finalDatasets.length > 0) {
+      const primaryDataset = finalDatasets.find((d) => d.label === symbol) || finalDatasets[0]
+      if (primaryDataset && primaryDataset.data.length > 0) {
+        const { regressionLine, upperBand, lowerBand } = calculateLogRegressionBands(primaryDataset.data)
+        if (regressionLine.length > 0) {
+          finalDatasets = [
+            ...finalDatasets,
+            {
+              label: 'Régression',
+              data: regressionLine,
+              borderColor: 'rgba(255, 255, 255, 0.5)',
+              borderDash: [5, 5],
+              pointRadius: 0,
+              borderWidth: 1,
+            },
+            {
+              label: '+2 Écarts types',
+              data: upperBand,
+              borderColor: 'rgba(0, 255, 0, 0.3)',
+              borderDash: [2, 2],
+              pointRadius: 0,
+              borderWidth: 1,
+            },
+            {
+              label: '-2 Écarts types',
+              data: lowerBand,
+              borderColor: 'rgba(255, 0, 0, 0.3)',
+              borderDash: [2, 2],
+              pointRadius: 0,
+              borderWidth: 1,
+            },
+          ] as any
+        }
+      }
+    }
+
     setChartData({
       labels,
-      datasets: selectedBenchmarks.length > 0 ? normalizedDatasets : historyData,
+      datasets: finalDatasets as ChartData['datasets'],
     })
 
     // Calculate metrics for the primary symbol
