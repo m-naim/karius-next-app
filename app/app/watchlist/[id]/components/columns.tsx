@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { Column, ColumnDef } from '@tanstack/react-table'
-import { ChevronUp, ArrowUpDown, ChevronDown } from 'lucide-react'
+import { ChevronUp, ArrowUpDown, ChevronDown, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Actions } from './Actions'
@@ -44,61 +44,59 @@ export const columns = (
 ): ColumnDef<security, any>[] => {
   const cols: ColumnDef<security, any>[] = [
     {
-      accessorKey: 'actions',
-      enableHiding: false,
+      accessorKey: 'symbol',
+      header: SortingButton('Actif'),
+      footer: (info) => (
+        <div className="text-[10px]">Total: {info.table.getFilteredRowModel().rows.length}</div>
+      ),
       cell: ({ row }) => {
         const t = row.original.symbol.split('.')
         let ticker = t[0]
-
         if (t[1] == 'PA') ticker = 'xpar:' + ticker
 
         return (
-          <div className="flex">
-            <a target="_blank" href={`https://www.gurufocus.com/stock/${ticker}`}>
-              guru
-            </a>
-            {owned && (
-              <Actions
-                id={id}
-                symbol={row.original.symbol}
-                deleteRow={deleteRow}
-                allWatchlists={allWatchlists}
-                security={row.original}
-              ></Actions>
-            )}
+          <div className="flex items-center justify-between pr-2">
+            <div className="flex gap-2 items-center">
+              <img
+                className="h-5 w-5 shrink-0 rounded-full bg-white/10 p-0.5 ring-1 ring-white/20"
+                src={`https://financialmodelingprep.com/image-stock/${row.original.symbol.toLocaleUpperCase()}.png`}
+                alt=""
+              />
+              <div className="flex flex-col">
+                <span className="max-w-[80px] truncate text-xs font-semibold md:max-w-[150px]">
+                  {row.original.longname}
+                </span>
+                <span className="text-[10px] font-bold uppercase text-muted-foreground">{row.original.symbol}</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover/row:opacity-100">
+              <a 
+                target="_blank" 
+                href={`https://www.gurufocus.com/stock/${ticker}`}
+                className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                title="Voir sur GuruFocus"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+              {owned && (
+                <Actions
+                  id={id}
+                  symbol={row.original.symbol}
+                  deleteRow={deleteRow}
+                  allWatchlists={allWatchlists}
+                  security={row.original}
+                />
+              )}
+            </div>
           </div>
         )
       },
     },
 
     {
-      accessorKey: 'symbol',
-      header: SortingButton('Action'),
-      footer: (info) => (
-        <div className="text-[10px]">Total: {info.table.getFilteredRowModel().rows.length}</div>
-      ),
-      cell: ({ row }) => (
-        <div className="flex gap-2">
-          <img
-            className="h-4 w-4"
-            src={`https://financialmodelingprep.com/image-stock/${row.original.symbol.toLocaleUpperCase()}.png`}
-            alt=""
-          />
-
-          <div className="flex flex-col">
-            <span className="max-w-[80px] truncate text-[11px] lowercase md:max-w-[150px]">
-              {row.original.longname}
-            </span>
-
-            <span className="text-[10px] text-muted-foreground">{row.original.symbol}</span>
-          </div>
-        </div>
-      ),
-    },
-
-    {
       accessorKey: 'regularMarketPrice',
-      header: SortingButton('prix'),
+      header: SortingButton('Prix'),
       cell: ({ row }) => {
         const prix = parseFloat(row.getValue('regularMarketPrice'))
 
@@ -197,7 +195,7 @@ export const columns = (
               return chg
             },
             id: 'relativePerformances',
-            header: SortingButton('relativePerformances'),
+            header: SortingButton('Perf. Relative'),
             footer: (info) => {
               const rows = info.table.getFilteredRowModel().rows
               const avg =
@@ -272,7 +270,7 @@ export const columns = (
     },
     {
       accessorKey: 'forwardPE',
-      header: SortingButton('P/E Forward'),
+      header: SortingButton('P/E Fwd'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
         const validRows = rows.filter((r) => !!r.getValue('forwardPE'))
@@ -291,7 +289,7 @@ export const columns = (
 
     {
       accessorKey: 'linearity10y',
-      header: SortingButton('linéarité'),
+      header: SortingButton('Linéarité'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
         const validRows = rows.filter((r) => !!r.getValue('linearity10y'))
@@ -347,7 +345,7 @@ export const columns = (
         return chg * lin
       },
       id: 'ret_lin',
-      header: SortingButton('ret * lin'),
+      header: SortingButton('Score (Ret×Lin)'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
         const filteredRows = rows.filter(
@@ -382,7 +380,7 @@ export const columns = (
 
     {
       accessorKey: 'dividendYield',
-      header: SortingButton('Dividend Yield'),
+      header: SortingButton('Rendement Div.'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
         const validRows = rows.filter((r) => !!r.getValue('dividendYield'))
@@ -431,8 +429,8 @@ export const columns = (
 
     {
       accessorKey: 'sector',
-      header: SortingButton('secteur'),
-      cell: ({ row }) => <div className="lowercase">{row.getValue('sector')}</div>,
+      header: SortingButton('Secteur'),
+      cell: ({ row }) => <div className="capitalize">{row.getValue('sector')}</div>,
       filterFn: (row, id, value) => {
         if (!value) return true
         const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
@@ -447,8 +445,8 @@ export const columns = (
     },
     {
       accessorKey: 'industry',
-      header: SortingButton('industrie'),
-      cell: ({ row }) => <div className="lowercase">{row.getValue('industry')}</div>,
+      header: SortingButton('Industrie'),
+      cell: ({ row }) => <div className="capitalize">{row.getValue('industry')}</div>,
       filterFn: (row, id, value) => {
         if (!value) return true
         const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
@@ -538,7 +536,7 @@ export const columns = (
         return percentVariation(row.forwardPE, row.trailingPE)
       },
       id: 'growth',
-      header: SortingButton('Estimated Growth'),
+      header: SortingButton('Croiss. Est.'),
       cell: ({ row }) => (
         <VariationContainer
           value={percentVariation(row.getValue('forwardPE'), row.getValue('trailingPE'))}
