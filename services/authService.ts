@@ -63,6 +63,9 @@ const updateProfile = (data: {
   name: string
   telegramChatId: string
   notificationsEnabled: boolean
+  portfolioNotifFreq: string
+  watchlistNotifFreq: string
+  notificationChannel: string
 }) => {
   return http.post(`${host}/api/v1/profile/update`, data)
 }
@@ -79,6 +82,14 @@ const testNotification = (chatId: string) => {
   return http.post(`${host}/api/v1/profile/test-notification`, chatId)
 }
 
+const getDisabledEntities = () => {
+  return http.get(`${host}/api/v1/profile/preferences/disabled-entities`)
+}
+
+const updateDisabledEntities = (data: string[]) => {
+  return http.post(`${host}/api/v1/profile/preferences/disabled-entities`, data)
+}
+
 const authService = {
   register,
   login,
@@ -89,6 +100,8 @@ const authService = {
   changePassword,
   deleteAccount,
   testNotification,
+  getDisabledEntities,
+  updateDisabledEntities,
 }
 
 export default authService

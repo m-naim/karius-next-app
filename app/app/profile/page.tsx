@@ -52,9 +52,6 @@ export default function ProfilePage() {
   // Profile Form state
   const [name, setName] = useState('')
   const [telegramChatId, setTelegramChatId] = useState('')
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false)
-  const [testing, setTesting] = useState(false)
-  const [testSuccess, setTestSuccess] = useState(false)
 
   // Password state
   const [oldPassword, setOldPassword] = useState('')
@@ -73,7 +70,6 @@ export default function ProfilePage() {
       setProfile(data)
       setName(data.name || '')
       setTelegramChatId(data.telegramChatId || '')
-      setNotificationsEnabled(data.notificationsEnabled || false)
     } catch (error) {
       console.error('Failed to fetch profile', error)
     } finally {
@@ -87,7 +83,6 @@ export default function ProfilePage() {
       await authService.updateProfile({
         name,
         telegramChatId,
-        notificationsEnabled,
       })
       toast({
         title: 'Profil mis à jour',
@@ -100,30 +95,7 @@ export default function ProfilePage() {
     }
   }
 
-  const handleTestNotification = async () => {
-    if (!telegramChatId) {
-      toast({
-        variant: 'destructive',
-        title: 'Erreur',
-        description: 'Veuillez renseigner votre Chat ID avant de tester.',
-      })
-      return
-    }
-    setTesting(true)
-    setTestSuccess(false)
-    try {
-      await authService.testNotification(telegramChatId)
-      setTestSuccess(true)
-      toast({
-        title: 'Test envoyé',
-        description: 'Vérifiez votre Telegram !',
-      })
-    } catch (error) {
-      console.error('Failed to test notification', error)
-    } finally {
-      setTesting(false)
-    }
-  }
+
 
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
@@ -215,116 +187,7 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        {/* Notifications */}
-        <Card className={!telegramChatId ? 'border-amber-200 bg-amber-50/10' : ''}>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Bell className="h-5 w-5" />
-                Notifications & Alertes
-              </CardTitle>
-              {telegramChatId && (
-                <Badge
-                  variant="outline"
-                  className="gap-1 border-green-200 bg-green-50 text-green-700"
-                >
-                  <CheckCircle2 className="h-3 w-3" /> Configuré
-                </Badge>
-              )}
-            </div>
-            <CardDescription>Gérez vos préférences de réception d'alertes.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {!telegramChatId && (
-              <div className="flex gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-amber-800">
-                <AlertTriangle className="h-5 w-5 shrink-0" />
-                <p className="text-xs font-medium">
-                  Aucun canal de notification n'est configuré. Vous ne recevrez pas vos alertes de
-                  prix.
-                </p>
-              </div>
-            )}
 
-            <div className="flex items-center justify-between space-x-2">
-              <div className="flex flex-col space-y-1">
-                <Label htmlFor="notifications" className="text-base font-bold">
-                  Activer les notifications Telegram
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Recevez vos alertes de prix et de PE instantanément.
-                </p>
-              </div>
-              <Switch
-                id="notifications"
-                checked={notificationsEnabled}
-                onCheckedChange={setNotificationsEnabled}
-                disabled={!telegramChatId}
-              />
-            </div>
-
-            <div className="space-y-4 border-t pt-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm font-semibold">
-                  <Send className="h-4 w-4 text-blue-500" />
-                  Configuration Telegram
-                </div>
-                {telegramChatId && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className={`h-8 gap-2 text-xs ${testSuccess ? 'border-green-500 text-green-600' : ''}`}
-                    onClick={handleTestNotification}
-                    disabled={testing}
-                  >
-                    {testing ? (
-                      'Envoi...'
-                    ) : testSuccess ? (
-                      <>
-                        <CheckCircle2 className="h-3.5 w-3.5" /> Test OK
-                      </>
-                    ) : (
-                      <>
-                        <Zap className="h-3.5 w-3.5 fill-amber-500 text-amber-500" /> Tester la
-                        config
-                      </>
-                    )}
-                  </Button>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="chatId" className="text-xs uppercase text-muted-foreground">
-                  Votre Chat ID
-                </Label>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Input
-                      id="chatId"
-                      type={showChatId ? 'text' : 'password'}
-                      value={telegramChatId}
-                      onChange={(e) => {
-                        setTelegramChatId(e.target.value)
-                        setTestSuccess(false)
-                      }}
-                      placeholder="Non configuré"
-                      className="pr-10 font-mono"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowChatId(!showChatId)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showChatId ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  Obtenez votre ID via <code className="rounded bg-muted px-1">@userinfobot</code>.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Sécurité */}
         <Card className="border-orange-100 bg-orange-50/5">
