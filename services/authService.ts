@@ -60,12 +60,12 @@ const getProfile = () => {
 }
 
 const updateProfile = (data: {
-  name: string
-  telegramChatId: string
-  notificationsEnabled: boolean
-  portfolioNotifFreq: string
-  watchlistNotifFreq: string
-  notificationChannel: string
+  name?: string
+  telegramChatId?: string
+  notificationsEnabled?: boolean
+  portfolioNotifFreq?: string
+  watchlistNotifFreq?: string
+  notificationChannel?: string
 }) => {
   return http.post(`${host}/api/v1/profile/update`, data)
 }
