@@ -134,13 +134,14 @@ export default function WatchlistSidebar() {
             </div>
           )}
 
-          {filteredWatchlists.map((wl) => {
-            const isActive = pathname === `/app/watchlist/${wl._id}`
+          {filteredWatchlists.map((wl, index) => {
+            const wlId = wl._id || wl.id || index.toString()
+            const isActive = pathname === `/app/watchlist/${wlId}`
 
             return (
-              <Tooltip key={wl._id} delayDuration={isCollapsed ? 0 : 500}>
+              <Tooltip key={wlId} delayDuration={isCollapsed ? 0 : 500}>
                 <TooltipTrigger asChild>
-                  <Link href={`/app/watchlist/${wl._id}`}>
+                  <Link href={`/app/watchlist/${wlId}`}>
                     <div
                       className={cn(
                         'group flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition-all',

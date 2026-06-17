@@ -1,11 +1,11 @@
 import SectionContainer from '@/components/organismes/layout/SectionContainer'
 import watchListService from '@/services/watchListService'
-import React from 'react'
 import { WatchCard } from './watchlistCard'
 import { MyWatchLists } from './myWatchlist'
 
 export interface WatchListInfos {
-  _id: string
+  _id?: string
+  id?: string
   name: string
   securities: { symbol: string }[]
   createdAt: string
@@ -30,8 +30,8 @@ export default async function watchlistPage() {
             </p>
           </div>
           <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {listWatch.map((w) => (
-              <WatchCard key={w._id.toString()} data={w} />
+            {listWatch.map((w, index) => (
+              <WatchCard key={w._id?.toString() || w.id?.toString() || index} data={w} />
             ))}
           </div>
         </SectionContainer>

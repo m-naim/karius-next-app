@@ -17,10 +17,12 @@ export function WatchCard({
     month: '2-digit',
   }) : null
 
+  const watchlistId = data._id || data.id
+
   return (
     <Link
-      data-umami-event={`watchlist/${data._id}`}
-      href={`watchlist/${data._id}`}
+      data-umami-event={`watchlist/${watchlistId}`}
+      href={`/app/watchlist/${watchlistId}`}
       className="group block w-full"
     >
       <Card className={cn(

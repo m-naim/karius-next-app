@@ -5,9 +5,11 @@ import Link from '../../atoms/Link'
 import headerNavLinks from '@/data/headerNavLinks'
 import { BadgeEuro, CrossIcon, MenuIcon, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useAuth } from '@/hooks/useAuth'
 
 const MobileNav = () => {
   const [navShow, setNavShow] = useState(false)
+  const { user } = useAuth()
 
   const onToggleNav = () => {
     setNavShow((status) => {
@@ -27,7 +29,7 @@ const MobileNav = () => {
         <MenuIcon />
       </button>
       <div
-        className={`fixed left-0 top-0 z-10 h-full w-full transform bg-white  duration-300 ease-in-out dark:bg-gray-950 dark:opacity-[0.98] ${
+        className={`fixed left-0 top-0 z-50 h-full w-full transform bg-white  duration-300 ease-in-out dark:bg-gray-950 dark:opacity-[0.98] ${
           navShow ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -38,22 +40,26 @@ const MobileNav = () => {
         </div>
 
         <nav className="fixed z-0 mt-8 flex h-full w-full flex-col items-center gap-4 px-12">
-          <Button
-            asChild
-            variant={'link'}
-            data-umami-event="header-Signup-login"
-            onClick={onToggleNav}
-          >
-            <Link href="/login" data-umami-event={`mobile-header-login`}>
-              Se connecter
-            </Link>
-          </Button>
+          {!user && (
+            <>
+              <Button
+                asChild
+                variant={'link'}
+                data-umami-event="header-Signup-login"
+                onClick={onToggleNav}
+              >
+                <Link href="/login" data-umami-event={`mobile-header-login`}>
+                  Se connecter
+                </Link>
+              </Button>
 
-          <Button data-umami-event="header-Signup-button" onClick={onToggleNav}>
-            <Link href="/signup" data-umami-event="header-Signup-button">
-              Crée un compte gratuit
-            </Link>
-          </Button>
+              <Button data-umami-event="header-Signup-button" onClick={onToggleNav}>
+                <Link href="/signup" data-umami-event="header-Signup-button">
+                  Crée un compte gratuit
+                </Link>
+              </Button>
+            </>
+          )}
 
           {headerNavLinks
             .filter((link) => !link.draft)

@@ -23,7 +23,7 @@ const Header = () => {
 
 
   return (
-    <header className="border-b py-2">
+    <header className="relative z-50 border-b py-2 bg-background">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 sm:px-6 xl:max-w-7xl xl:px-0">
         <div>
           <Link 

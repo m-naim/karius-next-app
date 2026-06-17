@@ -64,7 +64,7 @@ export function StockSearchCommand({ onSelect }: { onSelect: (value: string) => 
                 <CommandItem
                   key={`${security.symbol}-${security.quoteType}-${security.exchange}`}
                   onSelect={() => handleSelection(security.symbol)}
-                  className="cursor-pointer !opacity-100 !pointer-events-auto hover:bg-accent hover:text-accent-foreground"
+                  className="cursor-pointer hover:bg-accent hover:text-accent-foreground"
                   onPointerDown={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
@@ -95,7 +95,7 @@ export function StockSearchCommand({ onSelect }: { onSelect: (value: string) => 
                 <CommandItem
                   key={`${security.symbol}-${security.quoteType}-${security.exchange}`}
                   onSelect={() => handleSelection(security.symbol)}
-                  className="cursor-pointer !opacity-100 !pointer-events-auto hover:bg-accent hover:text-accent-foreground"
+                  className="cursor-pointer hover:bg-accent hover:text-accent-foreground"
                   onPointerDown={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
@@ -115,7 +115,7 @@ export function StockSearchCommand({ onSelect }: { onSelect: (value: string) => 
                 <CommandItem
                   key={`${security.symbol}-${security.quoteType}-${security.exchange}`}
                   onSelect={() => handleSelection(security.symbol)}
-                  className="cursor-pointer !opacity-100 !pointer-events-auto hover:bg-accent hover:text-accent-foreground"
+                  className="cursor-pointer hover:bg-accent hover:text-accent-foreground"
                   onPointerDown={(e) => {
                     e.preventDefault()
                     e.stopPropagation()

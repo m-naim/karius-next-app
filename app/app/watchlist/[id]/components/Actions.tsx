@@ -82,7 +82,7 @@ export const Actions = ({ symbol, id, deleteRow, allWatchlists = [], security }:
     )
   }, [alertType, operator, value, symbol])
 
-  const otherWatchlists = allWatchlists.filter((w) => w._id !== id)
+  const otherWatchlists = allWatchlists.filter((w) => (w._id || w.id) !== id)
 
   const handleAction = async (targetId: string, targetName: string, isMove: boolean) => {
     try {
@@ -139,11 +139,11 @@ export const Actions = ({ symbol, id, deleteRow, allWatchlists = [], security }:
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem onClick={() => setActiveDialog('alert')}>
+          <DropdownMenuItem onSelect={() => setTimeout(() => setActiveDialog('alert'), 100)}>
             <Bell className="mr-2 h-4 w-4" /> Ajouter une Alerte
           </DropdownMenuItem>
 
-          <DropdownMenuItem onClick={() => setActiveDialog('copy')}>
+          <DropdownMenuItem onSelect={() => setTimeout(() => setActiveDialog('copy'), 100)}>
             <Copy className="mr-2 h-4 w-4" /> Copier/Déplacer vers...
           </DropdownMenuItem>
 
@@ -177,32 +177,35 @@ export const Actions = ({ symbol, id, deleteRow, allWatchlists = [], security }:
                   Aucune autre watchlist.
                 </p>
               ) : (
-                otherWatchlists.map((watchlist) => (
-                  <div
-                    key={watchlist._id}
-                    className="flex items-center justify-between gap-4 rounded-lg border p-3"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">{watchlist.name}</p>
+                otherWatchlists.map((watchlist, index) => {
+                  const wlId = watchlist._id || watchlist.id || index.toString()
+                  return (
+                    <div
+                      key={wlId}
+                      className="flex items-center justify-between gap-4 rounded-lg border p-3"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{watchlist.name}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleAction(wlId, watchlist.name, false)}
+                        >
+                          Copier
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleAction(wlId, watchlist.name, true)}
+                        >
+                          Déplacer
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleAction(watchlist._id, watchlist.name, false)}
-                      >
-                        Copier
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => handleAction(watchlist._id, watchlist.name, true)}
-                      >
-                        Déplacer
-                      </Button>
-                    </div>
-                  </div>
-                ))
+                  )
+                })
               )}
             </div>
           </ScrollArea>

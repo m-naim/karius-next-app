@@ -33,7 +33,7 @@ export default async function Page() {
           </p>
           
           <div className="flex flex-col items-center gap-4 sm:flex-row">
-            <Button size="lg" className="group h-14 px-8 text-lg font-bold shadow-xl shadow-primary/25 transition-all hover:scale-105 hover:shadow-primary/40 asChild">
+            <Button asChild size="lg" className="group h-14 px-8 text-lg font-bold shadow-xl shadow-primary/25 transition-all hover:scale-105 hover:shadow-primary/40">
               <Link data-umami-event="landing-try-button" href={'/signup'} className="flex items-center whitespace-nowrap">
                 Commencer gratuitement
                 <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -95,7 +95,7 @@ export default async function Page() {
       
       <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
         <h2 className="mb-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Prêt à optimiser vos investissements ?</h2>
-        <Button size="lg" className="group h-14 px-8 text-lg font-bold shadow-xl shadow-primary/25 transition-all hover:scale-105 hover:shadow-primary/40 asChild">
+        <Button asChild size="lg" className="group h-14 px-8 text-lg font-bold shadow-xl shadow-primary/25 transition-all hover:scale-105 hover:shadow-primary/40">
           <Link data-umami-event="landing-bottom-try-button" href={'/signup'} className="flex items-center whitespace-nowrap">
             Commencer gratuitement
             <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />

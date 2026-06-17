@@ -29,7 +29,8 @@ import { LayoutDashboard, Table as TableIcon } from 'lucide-react'
 import { RightSidebar } from '@/components/organismes/layout/RightSidebar'
 
 export interface watchList {
-  _id: string
+  _id?: string
+  id?: string
   name: string
   benchMark?: {
     symbol: string

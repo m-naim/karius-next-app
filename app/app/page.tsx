@@ -130,8 +130,8 @@ export default function AppDashboard() {
               {loading ? (
                 Array(2).fill(0).map((_, i) => <Skeleton key={i} className="h-32 w-full rounded-2xl" />)
               ) : watchlists.length > 0 ? (
-                watchlists.slice(0, 4).map((w) => (
-                  <WatchCard key={w._id} data={w} displayContent={true} />
+                watchlists.slice(0, 4).map((w, index) => (
+                  <WatchCard key={w._id || w.id || index} data={w} displayContent={true} />
                 ))
               ) : (
                 <div className="col-span-2 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-muted bg-muted/20 py-12 text-center transition-colors hover:bg-muted/40">

@@ -39,7 +39,7 @@ export function MyWatchLists() {
           Gérez et analysez vos listes de suivi personnelles
         </p>
         <div className="mt-4">
-          <Link data-umami-event="portfolios-new-button" href={'watchlist/new'}>
+          <Link data-umami-event="portfolios-new-button" href={'/app/watchlist/new'}>
             <Button data-umami-event="portfolios-new-button" variant={'default'} size={'sm'}>
               + Ajouter une watchlist
             </Button>
@@ -47,8 +47,8 @@ export function MyWatchLists() {
         </div>
       </div>
       <div className="grid w-full grid-cols-1 justify-items-center gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {data.map((w) => (
-          <WatchCard key={w._id} data={w} displayContent={false} />
+        {data.map((w, index) => (
+          <WatchCard key={w._id || w.id || index} data={w} displayContent={false} />
         ))}
       </div>
     </SectionContainer>

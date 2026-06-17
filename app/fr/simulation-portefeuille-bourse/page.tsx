@@ -40,7 +40,7 @@ export default async function Page() {
           </ul>
           
           <div className="flex flex-col items-center gap-4 sm:flex-row">
-            <Button size="lg" className="group h-14 px-8 text-lg font-bold shadow-xl shadow-primary/25 transition-all hover:scale-105 hover:shadow-primary/40 asChild">
+            <Button asChild size="lg" className="group h-14 px-8 text-lg font-bold shadow-xl shadow-primary/25 transition-all hover:scale-105 hover:shadow-primary/40">
               <Link href={'/signup'} className="flex items-center whitespace-nowrap">
                 Créer mon portefeuille virtuel
                 <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -134,7 +134,7 @@ export default async function Page() {
 
       <div className="flex flex-col items-center justify-center py-20 px-6 text-center border-t border-border/40 bg-muted/10">
         <h2 className="mb-6 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Prêt à tester vos stratégies ?</h2>
-        <Button size="lg" className="group h-14 px-8 text-lg font-bold shadow-xl shadow-primary/25 transition-all hover:scale-105 hover:shadow-primary/40 asChild">
+        <Button asChild size="lg" className="group h-14 px-8 text-lg font-bold shadow-xl shadow-primary/25 transition-all hover:scale-105 hover:shadow-primary/40">
           <Link href={'/signup'} className="flex items-center whitespace-nowrap">
             Lancer une simulation
             <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />

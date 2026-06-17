@@ -17,7 +17,8 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 interface Watchlist {
-  _id: string
+  _id?: string
+  id?: string
   name: string
 }
 
@@ -31,7 +32,7 @@ export function WatchlistSelector({ watchlists, currentId }: WatchlistSelectorPr
   const [open, setOpen] = React.useState(false)
 
   const frameworks = watchlists.map((w) => ({
-    value: w._id,
+    value: w._id || w.id,
     label: w.name,
   }))
 
