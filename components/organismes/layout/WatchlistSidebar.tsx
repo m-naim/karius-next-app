@@ -23,7 +23,8 @@ import { useAuth } from '@/hooks/useAuth'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface WatchlistSummary {
-  _id: string
+  _id?: string
+  id?: string
   name: string
   securities?: any[]
 }
