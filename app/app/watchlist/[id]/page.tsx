@@ -359,15 +359,7 @@ export default function Watchlist() {
               <TableIcon className="h-4 w-4" />
             )}
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className={`h-8 w-8 shrink-0 rounded-full ${showChart ? 'bg-gray-100' : ''}`}
-            onClick={() => setShowChart(!showChart)}
-          >
-            <LineChart className="h-4 w-4" />
-            <span className="sr-only">Afficher/Masquer le graphique</span>
-          </Button>
+
           {owned && (
             <Link href={`/app/watchlist/${id}/settings`}>
               <Settings className="mr-2 h-4 w-4" strokeWidth={1.5} />

@@ -79,6 +79,7 @@ export function TickerChart({
     allPeriodVariation: null,
     bestYearVariation: null,
     worstYearVariation: null,
+    regressionCagr: null,
   })
 
   useEffect(() => {
@@ -239,6 +240,10 @@ export function TickerChart({
       const allPeriodVariation = ((last.close - first.close) / first.close) * 100
 
       const { bestYearVariation, worstYearVariation } = calculateYearlyVariations(primaryHistory)
+      const { regressionLine: regLine } = calculateLogRegressionBands(closes)
+      const regressionCagr = regLine.length > 1 
+        ? calculateCAGR(regLine[0], regLine[regLine.length - 1], years) 
+        : null
 
       setMetrics({
         cagr,
@@ -248,6 +253,7 @@ export function TickerChart({
         allPeriodVariation,
         bestYearVariation,
         worstYearVariation,
+        regressionCagr,
       })
     } else {
       setMetrics({
@@ -258,6 +264,7 @@ export function TickerChart({
         allPeriodVariation: null,
         bestYearVariation: null,
         worstYearVariation: null,
+        regressionCagr: null,
       })
     }
   }, [fullHistory, selectedRange, period, symbol, selectedBenchmarks, isDrawdown])

@@ -11,6 +11,7 @@ export interface TickerChartMetrics {
   allPeriodVariation: number | null
   bestYearVariation: number | null
   worstYearVariation: number | null
+  regressionCagr: number | null
 }
 
 interface MetricsDisplayProps {
@@ -49,6 +50,7 @@ const MetricsDisplay: React.FC<MetricsDisplayProps> = ({ metrics, period, loadin
       {!loading && metrics.cagr !== null && (
         <div className="flex flex-wrap justify-center gap-x-6 rounded-lg border bg-muted/20 px-3 py-2">
           {renderMetric(`CAGR (${period})`, metrics.cagr)}
+          {renderMetric(`Tendance (${period})`, metrics.regressionCagr)}
           {renderMetric(
             'LIN. (R²)',
             metrics.r2 !== null ? metrics.r2 * 100 : null,
