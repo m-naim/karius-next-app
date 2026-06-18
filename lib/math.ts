@@ -20,6 +20,18 @@ export function calculateCAGR(startValue: number, endValue: number, periods: num
 }
 
 /**
+ * Calculates the Compound Annual Growth Rate (CAGR) from a total percentage variation.
+ * @param variationPercent The total variation as a percentage (e.g., 150 for +150%).
+ * @param periods The number of periods (years).
+ * @returns The CAGR as a percentage.
+ */
+export function cagrFromVariation(variationPercent: number, periods: number): number | null {
+  if (periods <= 0 || variationPercent <= -100) return null
+  return (Math.pow(1 + variationPercent / 100, 1 / periods) - 1) * 100
+}
+
+
+/**
  * Calculates the R-squared (coefficient of determination) for a linear regression
  * of the given values against their indices (0, 1, 2, ...).
  * @param values The array of values (y-axis).

@@ -9,7 +9,7 @@ import { Actions } from './Actions'
 import { security } from '../data/security'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { round10 } from '@/lib/decimalAjustement'
-import { percentVariation } from '@/lib/math'
+import { percentVariation, cagrFromVariation } from '@/lib/math'
 
 type FiltrProps = {
   column: Column<security, string>
@@ -176,6 +176,94 @@ export const columns = (
         })
 
         return mode === 'is' ? matches : !matches
+      },
+    },
+    {
+      accessorFn: (row) => {
+        const variations = row.variations as Record<string, number>
+        if (variations != null && variations['5y'] != null) {
+          return cagrFromVariation(variations['5y'], 5)
+        }
+        return NaN
+      },
+      id: 'cagr5y',
+      header: SortingButton('TCAC 5y'),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const validRows = rows.filter((r) => {
+          const val = r.getValue('cagr5y')
+          return val !== null && !isNaN(val as number)
+        })
+        const avg =
+          rows.reduce((acc, row) => {
+            const val = row.getValue('cagr5y') as number
+            return val === null || isNaN(val) ? acc : acc + val
+          }, 0) / (validRows.length || 1)
+        return validRows.length > 0 ? (
+          <VariationContainer
+            value={avg}
+            entity="%"
+            background={false}
+            className="m-0 p-0 text-[10px]"
+          />
+        ) : null
+      },
+      cell: ({ row }) => {
+        const val = row.getValue('cagr5y') as number
+        return val === null || isNaN(val) ? (
+          <div className="text-[11px] text-muted-foreground text-center">N/A</div>
+        ) : (
+          <VariationContainer
+            value={val}
+            entity="%"
+            background={false}
+            className="m-0 p-0 py-1 text-[11px]"
+          />
+        )
+      },
+    },
+    {
+      accessorFn: (row) => {
+        const variations = row.variations as Record<string, number>
+        if (variations != null && variations['10y'] != null) {
+          return cagrFromVariation(variations['10y'], 10)
+        }
+        return NaN
+      },
+      id: 'cagr10y',
+      header: SortingButton('TCAC 10y'),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const validRows = rows.filter((r) => {
+          const val = r.getValue('cagr10y')
+          return val !== null && !isNaN(val as number)
+        })
+        const avg =
+          rows.reduce((acc, row) => {
+            const val = row.getValue('cagr10y') as number
+            return val === null || isNaN(val) ? acc : acc + val
+          }, 0) / (validRows.length || 1)
+        return validRows.length > 0 ? (
+          <VariationContainer
+            value={avg}
+            entity="%"
+            background={false}
+            className="m-0 p-0 text-[10px]"
+          />
+        ) : null
+      },
+      cell: ({ row }) => {
+        const val = row.getValue('cagr10y') as number
+        return val === null || isNaN(val) ? (
+          <div className="text-[11px] text-muted-foreground text-center">N/A</div>
+        ) : (
+          <VariationContainer
+            value={val}
+            entity="%"
+            background={false}
+            className="m-0 p-0 py-1 text-[11px]"
+          />
+        )
       },
     },
 
