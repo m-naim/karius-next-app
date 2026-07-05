@@ -38,7 +38,7 @@ function getDB(): Promise<IDBDatabase> {
 export async function getCache(key: string): Promise<any> {
   try {
     const db = await getDB();
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       const transaction = db.transaction([STORE_NAME], 'readonly');
       const store = transaction.objectStore(STORE_NAME);
       const request = store.get(key);
@@ -55,7 +55,7 @@ export async function getCache(key: string): Promise<any> {
 export async function setCache(key: string, data: any): Promise<void> {
   try {
     const db = await getDB();
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       const transaction = db.transaction([STORE_NAME], 'readwrite');
       const store = transaction.objectStore(STORE_NAME);
       const request = store.put(data, key);
