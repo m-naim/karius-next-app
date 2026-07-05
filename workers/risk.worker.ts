@@ -5,7 +5,6 @@ import {
   calculateSortinoRatio,
   calculateMaxDrawdown,
 } from '../lib/risk-math';
-import * as RiskMath from '../lib/risk-math';
 
 export interface CalculateMessagePayload {
   values: number[];
@@ -22,7 +21,7 @@ self.addEventListener('message', (event: MessageEvent<CalculateMessage>) => {
     const data = event.data;
     
     if (data?.type === 'CALCULATE') {
-      const { values, benchmarkValues } = data.payload;
+      const { values } = data.payload;
       
       if (!values || !Array.isArray(values)) {
         self.postMessage({ type: 'ERROR', payload: { error: 'Invalid payload' }});
@@ -36,13 +35,6 @@ self.addEventListener('message', (event: MessageEvent<CalculateMessage>) => {
       const sortino = calculateSortinoRatio(returns);
       const maxDrawdown = calculateMaxDrawdown(values);
       
-      let beta: number | undefined = undefined;
-      // Use calculateBeta if available
-      if (benchmarkValues && 'calculateBeta' in RiskMath) {
-        // @ts-ignore
-        beta = RiskMath.calculateBeta(returns, calculateDailyReturns(benchmarkValues));
-      }
-      
       self.postMessage({
         type: 'RESULT',
         payload: {
@@ -50,11 +42,10 @@ self.addEventListener('message', (event: MessageEvent<CalculateMessage>) => {
           sortino,
           maxDrawdown,
           volatility,
-          ...(beta !== undefined && { beta }),
         }
       });
     }
-  } catch (error: any) {
-    self.postMessage({ type: 'ERROR', payload: { error: error?.message || 'Calculation error' }});
+  } catch (error: unknown) {
+    self.postMessage({ type: 'ERROR', payload: { error: error instanceof Error ? error.message : 'Calculation error' }});
   }
 });
