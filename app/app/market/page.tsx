@@ -4,13 +4,13 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import SectionContainer from '@/components/organismes/layout/SectionContainer'
-import { TrendingUp, Globe, ShieldCheck, PieChart, Landmark, ArrowRight, Activity, Zap } from 'lucide-react'
+import { TrendingUp, Globe, ShieldCheck, PieChart, Landmark, ArrowRight, ArrowLeft, Activity, Zap } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MarketPulse } from '@/components/molecules/market/MarketPulse'
 import { MarketIndexSparkline } from '@/components/molecules/market/MarketIndexSparkline'
 import { MarketTopFlop } from '@/components/molecules/market/MarketTopFlop'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
-import { getStockHistory } from '@/services/stock.service'
+import { getStockHistory, getQuotes, getStocksVariations } from '@/services/stock.service'
 import { cn } from '@/lib/utils'
 
 const markets = [
@@ -70,29 +70,64 @@ export default function MarketListingPage() {
   const [activeMarket, setActiveMarket] = useState(markets[0])
   const [selectedPeriod, setSelectedPeriod] = useState('1d')
   const [marketPerfs, setMarketPerfs] = useState<Record<string, number>>({})
+  const [marketQuotes, setMarketQuotes] = useState<Record<string, any>>({})
+  const [mobileView, setMobileView] = useState<'list' | 'details'>('list')
 
   useEffect(() => {
-    const fetchPerfs = async () => {
+    const fetchQuotesAndVariations = async () => {
       try {
         const symbols = markets.map(m => m.symbol)
         
-        const history = await getStockHistory(symbols, selectedPeriod)
-        const perfs: Record<string, number> = {}
+        // Fetch quotes for real-time prices & 1d variation
+        const quotesData = await getQuotes(symbols)
+        const quotesMap: Record<string, any> = {}
+        quotesData.forEach((q: any) => {
+          quotesMap[q.symbol] = q
+        })
+        setMarketQuotes(quotesMap)
 
+        // Fetch pre-calculated variations map for other periods (1w, 1m, 1y, 5y)
+        const variationsData = await getStocksVariations(symbols)
+        const variationsMap: Record<string, Record<string, number>> = {}
+        variationsData.forEach((v: any) => {
+          variationsMap[v.symbol] = v.variations
+        })
+
+        // Combine them to calculate perfs for current period
+        const perfs: Record<string, number> = {}
         symbols.forEach(sym => {
-          const data = history[sym]
-          if (data && data.length > 0) {
-            const first = data[0].close
-            const last = data[data.length - 1].close
-            perfs[sym] = ((last - first) / first) * 100
+          if (selectedPeriod === '1d') {
+            perfs[sym] = quotesMap[sym]?.regularMarketChangePercent ?? 0
+          } else {
+            // Check variations map from database
+            perfs[sym] = variationsMap[sym]?.[selectedPeriod] ?? 0
           }
         })
         setMarketPerfs(perfs)
       } catch (e) {
-        console.error('Failed to fetch market perfs', e)
+        console.error('Failed to fetch market metrics', e)
+        
+        // Fallback to history logic if anything fails
+        try {
+          const symbols = markets.map(m => m.symbol)
+          const history = await getStockHistory(symbols, selectedPeriod)
+          const perfs: Record<string, number> = {}
+          symbols.forEach(sym => {
+            const data = history[sym]
+            if (data && data.length > 0) {
+              const first = data[0].close
+              const last = data[data.length - 1].close
+              perfs[sym] = ((last - first) / first) * 100
+            }
+          })
+          setMarketPerfs(perfs)
+        } catch (err) {
+          console.error('Fallback history calculation failed', err)
+        }
       }
     }
-    fetchPerfs()
+    
+    fetchQuotesAndVariations()
   }, [selectedPeriod])
 
   return (
@@ -133,7 +168,7 @@ export default function MarketListingPage() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8 h-full">
           
           {/* Left Column: Index Ribbon */}
-          <div className="flex flex-col gap-3 lg:col-span-4">
+          <div className={cn("flex flex-col gap-3 lg:col-span-4", mobileView === 'details' && "hidden lg:flex")}>
             <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">
               Indices Majeurs
             </h2>
@@ -145,7 +180,10 @@ export default function MarketListingPage() {
                 return (
                   <button
                     key={market.symbol}
-                    onClick={() => setActiveMarket(market)}
+                    onClick={() => {
+                      setActiveMarket(market)
+                      setMobileView('details')
+                    }}
                     className={cn(
                       'group relative flex items-center justify-between overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300',
                       isActive 
@@ -191,7 +229,16 @@ export default function MarketListingPage() {
           </div>
 
           {/* Right Column: The Deep Dive */}
-          <div className="lg:col-span-8 flex flex-col h-full">
+          <div className={cn("lg:col-span-8 flex flex-col h-full", mobileView === 'list' && "hidden lg:flex")}>
+            {/* Mobile Back Button */}
+            <button
+              onClick={() => setMobileView('list')}
+              className="flex items-center gap-2 rounded-full border border-border/50 bg-muted/40 px-4 py-2 text-xs font-bold text-muted-foreground transition-all hover:bg-muted hover:text-foreground mb-4 lg:hidden max-w-max"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Retour aux indices</span>
+            </button>
+
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeMarket.symbol}

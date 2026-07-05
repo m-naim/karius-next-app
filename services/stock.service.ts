@@ -43,3 +43,8 @@ export function getFundamentals(symbol: string) {
 export function getStock(symbol: string) {
   return http.get(`${host}/api/v1/stocks/${encodeURIComponent(symbol)}`)
 }
+
+export function getStocksVariations(symbols: string[]) {
+  const encodedSymbols = symbols.map((symbol) => encodeURIComponent(symbol)).join(',')
+  return http.get(`${host}/api/v1/stocks/variations?symbols=${encodedSymbols}`)
+}

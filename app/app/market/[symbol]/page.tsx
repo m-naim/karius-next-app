@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft, LineChart } from 'lucide-react'
 import Loader from '@/components/molecules/loader/loader'
 import { useToast } from '@/hooks/use-toast'
+import { cn } from '@/lib/utils'
 
 import { TableView } from '../../watchlist/[id]/components/TableView'
 import { TickerChart } from '../../watchlist/[id]/components/TickerChart'
@@ -44,6 +45,40 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
   })
 
   const [securities, setSecurities] = React.useState<security[]>([])
+  const [activeScreener, setActiveScreener] = React.useState<string | null>(null)
+
+  const screeners = [
+    { id: 'dividend', label: '💰 Rendement Élevé', desc: 'Rendement > 3% & P/E raisonnable (< 22)' },
+    { id: 'value', label: '🏷️ Super Value', desc: 'P/E < 15 & Rentabilité (ROE > 12%)' },
+    { id: 'garp', label: '🚀 Croissance GARP', desc: 'Forte croissance (Score > 60%) & P/E < 25' },
+    { id: 'profitability', label: '🛡️ Rentabilité Forte', desc: 'Score rentabilité > 70% & ROA > 5%' },
+    { id: 'megacap', label: '🏢 Mega-Caps', desc: 'Capitalisation > 100 Milliards' },
+  ]
+
+  const filteredSecurities = useMemo(() => {
+    if (!activeScreener) return securities
+
+    return securities.filter((s) => {
+      switch (activeScreener) {
+        case 'dividend': {
+          const dy = s.dividendYield ?? 0
+          const dyPercent = dy >= 1 ? dy : dy * 100
+          return dyPercent >= 3 && (s.trailingPE ?? 999) < 22
+        }
+        case 'value':
+          return (s.trailingPE ?? 999) > 0 && (s.trailingPE ?? 999) <= 15 && (s.lastYearFundamental?.roe ?? 0) >= 0.12
+        case 'garp':
+          return (s.trailingPE ?? 999) > 0 && (s.trailingPE ?? 999) <= 25 && (s.score?.growth ?? 0) >= 0.60
+        case 'profitability':
+          return (s.score?.profitability ?? 0) >= 0.70 && (s.lastYearFundamental?.roa ?? 0) >= 0.05
+        case 'megacap':
+          return (s.marketCap ?? 0) >= 100_000_000_000
+        default:
+          return true
+      }
+    })
+  }, [securities, activeScreener])
+
   const [view, setView] = React.useState<'table' | 'analysis'>('table')
   const [loading, setLoading] = React.useState(true)
   const [selectedTicker, setSelectedTicker] = React.useState<string | null>(null)
@@ -94,7 +129,7 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
     }, [symbol, selectedPeriod])
 
   const table = useReactTable<security>({
-    data: useDynamicTableData(securities),
+    data: useDynamicTableData(filteredSecurities),
     columns: useDynamicColumns(),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -183,6 +218,47 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
           </Button>
         </div>
       </div>
+
+      {view === 'table' && (
+        <div className="flex flex-col gap-2 rounded-xl border bg-card/50 p-3 shadow-sm backdrop-blur-sm border-border/40">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mr-2">
+              Filtres de Marché:
+            </span>
+            {screeners.map((scr) => {
+              const isActive = activeScreener === scr.id
+              return (
+                <button
+                  key={scr.id}
+                  onClick={() => setActiveScreener(isActive ? null : scr.id)}
+                  title={scr.desc}
+                  className={cn(
+                    "rounded-full px-3.5 py-1 text-xs font-bold transition-all border",
+                    isActive
+                      ? "bg-primary border-primary text-primary-foreground shadow-md ring-1 ring-primary/20"
+                      : "bg-muted/40 text-muted-foreground border-border/50 hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  {scr.label}
+                  {isActive && (
+                    <span className="ml-1.5 rounded-full bg-primary-foreground/20 px-1.5 py-0.5 text-[9px] font-black">
+                      {table.getFilteredRowModel().rows.length}
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+            {activeScreener && (
+              <button
+                onClick={() => setActiveScreener(null)}
+                className="text-[10px] font-black uppercase tracking-widest text-destructive hover:underline ml-auto"
+              >
+                Réinitialiser
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="flex min-h-0 flex-1 gap-4">
         <div className="bg-dark flex-1 overflow-hidden rounded-lg border">
