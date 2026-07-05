@@ -21,6 +21,7 @@ export default function SupportBubble() {
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
   const [userId, setUserId] = useState<string>('')
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'error'>('connecting')
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const host = config.API_URL
@@ -59,7 +60,17 @@ export default function SupportBubble() {
   useEffect(() => {
     if (!userId) return
 
+    setConnectionStatus('connecting')
     const eventSource = new EventSource(`${host}/api/v1/support/stream?userId=${userId}`)
+
+    eventSource.onopen = () => {
+      setConnectionStatus('connected')
+    }
+
+    eventSource.onerror = (error) => {
+      console.error('Support SSE connection error:', error)
+      setConnectionStatus('error')
+    }
 
     eventSource.addEventListener('reply', (event) => {
       const newMessage: Message = {
@@ -121,12 +132,16 @@ export default function SupportBubble() {
                 <div className="flex h-10 w-10 items-center justify-center rounded-full border border-primary/10 bg-primary/20">
                   <Headset className="h-5 w-5 text-primary" />
                 </div>
-                <div className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-background bg-green-500" />
+                <div className={`absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-background ${
+                  connectionStatus === 'connected' ? 'bg-green-500' :
+                  connectionStatus === 'connecting' ? 'bg-yellow-500 animate-pulse' : 'bg-red-500'
+                }`} />
               </div>
               <div>
                 <CardTitle className="text-sm font-bold">Support Direct</CardTitle>
                 <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-                  En ligne
+                  {connectionStatus === 'connected' ? 'En ligne' :
+                   connectionStatus === 'connecting' ? 'Connexion...' : 'Hors ligne'}
                 </p>
               </div>
             </div>

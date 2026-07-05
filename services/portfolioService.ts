@@ -153,12 +153,8 @@ export function initPortfolioSSE(id: string) {
   const eventSource = new EventSource(fullUrl, { withCredentials: false })
 
   eventSource.onerror = (error) => {
-    console.error('SSE error:', error)
-    eventSource?.close()
+    console.error('SSE connection error, attempting automatic reconnection...', error)
   }
 
-  // eventSource.onopen = () => {
-  //   console.log('SSE connection opened.')
-  // }
   return eventSource
 }

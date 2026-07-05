@@ -64,7 +64,6 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
   })
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
-  let eventSource: EventSource | null = null
 
   const useDynamicColumns = () =>
     useMemo(() => {
@@ -93,14 +92,13 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
   useEffect(() => {
     fetchData(id)
     const es = initPortfolioSSE(id)
-    eventSource = es
-    eventSource.addEventListener('portfolio', (event) => {
+    es.addEventListener('portfolio', (event) => {
       const eventData = JSON.parse(event.data)
       setPortfolio(eventData)
       setData(eventData.allocation)
     })
     return () => {
-      eventSource?.close()
+      es.close()
     }
   }, [id])
 
