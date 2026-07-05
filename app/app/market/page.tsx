@@ -137,9 +137,9 @@ export default function MarketListingPage() {
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between mb-8">
           <div>
             <h1 className="text-4xl font-black tracking-tighter text-foreground sm:text-5xl">
-              Market <span className="text-primary">Pulse</span>
+              Pulse des <span className="text-primary">Marchés</span>
             </h1>
-            <p className="mt-2 max-w-xl text-sm font-medium text-muted-foreground">
+            <p className="mt-2 max-w-xl text-sm text-muted-foreground sm:text-base">
               Surveillez la respiration de l'économie mondiale. Identifiez instantanément ce qui tire ou freine les marchés.
             </p>
           </div>
