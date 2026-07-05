@@ -44,10 +44,10 @@ const Portfolios = () => {
     <div className="space-y-16 py-8">
       {authentificated && (
         <SectionContainer className="space-y-8">
-          <div className="flex w-full flex-col items-center px-4 text-center">
-            <h2 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl">
+            <div className="flex w-full flex-col items-center px-4 text-center">
+            <h1 className="text-4xl font-black tracking-tighter text-foreground sm:text-5xl">
               Mes Portefeuilles
-            </h2>
+            </h1>
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
               Gérez vos actifs, analysez vos performances et optimisez votre stratégie.
             </p>
@@ -66,9 +66,9 @@ const Portfolios = () => {
 
       <SectionContainer className="space-y-10">
         <div className="flex w-full flex-col items-center px-4 text-center">
-          <h1 className="text-2xl font-extrabold tracking-tight text-foreground sm:text-3xl md:text-4xl">
+          <h2 className="text-4xl font-black tracking-tighter text-foreground sm:text-5xl">
             Inspiration Communautaire
-          </h1>
+          </h2>
           <p className="mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">
             Découvrez comment les autres investisseurs structurent leurs portefeuilles.
           </p>

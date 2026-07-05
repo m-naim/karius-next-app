@@ -81,7 +81,7 @@ const PortfolioLayout = ({
                     <ArrowLeft size={16} />
                   </Button>
                 </Link>
-                <h1 className="text-2xl font-black capitalize tracking-tight">{name}</h1>
+                <h1 className="text-2xl font-black capitalize tracking-tight text-foreground">{name}</h1>
               </div>
 
               <div className="flex items-center gap-4">

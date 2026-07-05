@@ -120,7 +120,7 @@ export default function PortfolioView() {
             <ArrowLeft />
           </Button>
         </Link>
-        <h1>Importer depuis un ficher CSV</h1>
+        <h1 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">Importer depuis un fichier CSV</h1>
       </div>
 
       <div className="flex flex-col content-center items-center gap-2 px-6">

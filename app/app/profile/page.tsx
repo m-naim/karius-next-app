@@ -155,7 +155,7 @@ export default function ProfilePage() {
           <User className="h-10 w-10" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{profile?.name || 'Mon Profil'}</h1>
+          <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">{profile?.name || 'Mon Profil'}</h1>
           <p className="text-muted-foreground">{profile?.email}</p>
         </div>
       </div>

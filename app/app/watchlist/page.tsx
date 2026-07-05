@@ -22,7 +22,7 @@ export default async function watchlistPage() {
 
         <SectionContainer className="space-y-8">
           <div className="flex w-full flex-col items-center px-4 text-center">
-            <h1 className="max-w-3xl text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl md:text-4xl">
+            <h1 className="max-w-3xl text-4xl font-black tracking-tighter text-foreground sm:text-5xl">
               Portefeuilles de la Communauté
             </h1>
             <p className="mt-3 max-w-xl text-sm text-gray-500 sm:text-base">

@@ -171,7 +171,7 @@ function PageTransactions() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight">Activité</h1>
+          <h1 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">Activité</h1>
           <p className="text-sm text-muted-foreground">
             Historique complet de vos transactions et flux de trésorerie.
           </p>

@@ -112,7 +112,7 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
       {/* 1. Top Bar: Title & Period Selector */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
-          <h1 className="text-xl font-bold tracking-tight">Analyse de la Watchlist</h1>
+          <h1 className="text-xl font-black tracking-tight text-foreground sm:text-2xl">Analyse de la Watchlist</h1>
           <p className="text-xs font-semibold uppercase text-muted-foreground">
             {securities.length} Valeurs sous surveillance
           </p>

@@ -84,7 +84,7 @@ export default function ExplorePortfoliosPage() {
   return (
     <SectionContainer className="py-8 space-y-8">
       <div className="flex flex-col items-center text-center">
-        <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
+        <h1 className="text-4xl font-black tracking-tighter text-foreground sm:text-5xl">
           Découvrir les <span className="text-primary">Stratégies</span>
         </h1>
         <p className="mt-4 max-w-2xl text-sm text-gray-500">

@@ -189,7 +189,7 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
             </Button>
           </Link>
           <div className="min-w-0 truncate">
-            <h1 className="truncate text-lg font-semibold text-gray-900">{indexInfo.name}</h1>
+            <h1 className="truncate text-lg font-bold text-foreground">{indexInfo.name}</h1>
           </div>
         </div>
 

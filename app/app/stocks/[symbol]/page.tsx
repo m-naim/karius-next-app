@@ -179,7 +179,7 @@ export default function StockDetailPage() {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-extrabold tracking-tight sm:text-2xl">
+                <h1 className="text-xl font-black tracking-tight text-foreground sm:text-2xl">
                   {stock.longname || stock.shortname}
                 </h1>
                 <Badge variant="secondary" className="font-mono text-xs">

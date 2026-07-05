@@ -102,7 +102,7 @@ export default function WatchlistSettings() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Paramètres de la watchlist</h1>
+          <h1 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">Paramètres de la watchlist</h1>
           <p className="text-sm text-muted-foreground">
             Gérez les préférences et la visibilité de votre liste de suivi.
           </p>
