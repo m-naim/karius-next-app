@@ -143,21 +143,30 @@ export default function MarketListingPage() {
               Surveillez la respiration de l'économie mondiale. Identifiez instantanément ce qui tire ou freine les marchés.
             </p>
           </div>
-          <div className="flex items-center gap-1 rounded-full bg-muted/40 p-1 backdrop-blur-md border border-border/50">
-            {periods.map((p) => (
-              <button
-                key={p}
-                onClick={() => setSelectedPeriod(p)}
-                className={cn(
-                  'rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all',
-                  selectedPeriod === p
-                    ? 'bg-background text-primary shadow-sm ring-1 ring-border/50'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                )}
-              >
-                {p}
-              </button>
-            ))}
+          <div className="relative flex items-center gap-1 rounded-full bg-muted/30 p-1 border border-border/40 backdrop-blur-md">
+            {periods.map((p) => {
+              const isActive = selectedPeriod === p
+              return (
+                <button
+                  key={p}
+                  onClick={() => setSelectedPeriod(p)}
+                  className={cn(
+                    'relative rounded-full px-4 py-1.5 text-[10px] font-black uppercase tracking-widest transition-all z-10',
+                    isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="active-period"
+                      className="absolute inset-0 rounded-full bg-background shadow-sm border border-border/50"
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      style={{ zIndex: -1 }}
+                    />
+                  )}
+                  {p}
+                </button>
+              )
+            })}
           </div>
         </div>
 
@@ -172,7 +181,10 @@ export default function MarketListingPage() {
             <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">
               Indices Majeurs
             </h2>
-            <div className="flex flex-col gap-2">
+            <div 
+              className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
               {markets.map((market) => {
                 const isActive = activeMarket.symbol === market.symbol
                 const perf = marketPerfs[market.symbol]
@@ -185,32 +197,38 @@ export default function MarketListingPage() {
                       setMobileView('details')
                     }}
                     className={cn(
-                      'group relative flex items-center justify-between overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300',
+                      'group relative flex flex-col justify-between w-36 h-36 shrink-0 snap-start rounded-3xl border p-4 text-left transition-all duration-300 overflow-hidden',
                       isActive 
-                        ? 'bg-background border-primary/20 shadow-md ring-1 ring-primary/10' 
-                        : 'bg-muted/20 border-border/40 hover:bg-muted/40 hover:border-border'
+                        ? 'bg-background border-primary/30 shadow-lg ring-1 ring-primary/20 scale-[0.98]' 
+                        : 'bg-muted/10 border-border/40 hover:bg-muted/30 hover:border-border/80'
                     )}
                   >
-                    <div className="flex items-center gap-4 relative z-10 flex-1 min-w-0">
-                      <div className={cn('rounded-xl p-2.5 transition-colors shrink-0', isActive ? market.bg + ' ' + market.color : 'bg-muted text-muted-foreground')}>
+                    <div className="flex items-center justify-between w-full">
+                      <div className={cn('rounded-xl p-2 transition-colors shrink-0', isActive ? market.bg + ' ' + market.color : 'bg-muted/80 text-muted-foreground')}>
                         {market.icon}
                       </div>
-                      <div className="flex flex-col min-w-0 flex-1">
-                        <span className={cn('text-sm font-bold transition-colors truncate', isActive ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground')}>
-                          {market.name}
-                        </span>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
-                          {market.symbol}
-                        </span>
-                      </div>
                       {perf !== undefined && (
-                        <div className="shrink-0 ml-2">
+                        <div className="shrink-0">
                           <VariationContainer value={perf} entity="%" className="text-[10px] font-black p-0" background={false} />
                         </div>
                       )}
                     </div>
+                    
+                    <div className="flex flex-col min-w-0 mt-3">
+                      <span className={cn('text-xs font-bold transition-colors truncate', isActive ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground')}>
+                        {market.name}
+                      </span>
+                      <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 mt-0.5">
+                        {market.symbol}
+                      </span>
+                    </div>
+
                     {isActive && (
-                      <motion.div layoutId="active-indicator" className="absolute right-0 top-0 bottom-0 w-1 bg-primary" />
+                      <motion.div 
+                        layoutId="active-indicator" 
+                        className="absolute bottom-0 left-0 right-0 h-1 bg-primary" 
+                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      />
                     )}
                   </button>
                 )
