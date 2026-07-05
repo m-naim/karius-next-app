@@ -173,102 +173,55 @@ export default function MarketListingPage() {
       </SectionContainer>
 
       {/* The Command Center */}
-      <SectionContainer className="flex-1">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-12 md:gap-8 h-full">
-          
-          {/* Left Column: Index Ribbon */}
-          <div className={cn("flex flex-col gap-3 md:col-span-4", mobileView === 'details' && "hidden md:flex")}>
-            <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">
-              Indices Majeurs
-            </h2>
-            <div 
-              className="flex md:flex-col gap-3 overflow-x-auto md:overflow-x-visible pb-3 md:pb-0 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 md:mx-0 md:px-0"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {markets.map((market) => {
-                const isActive = activeMarket.symbol === market.symbol
-                const perf = marketPerfs[market.symbol]
-                
-                return (
-                  <button
-                    key={market.symbol}
-                    onClick={() => {
-                      setActiveMarket(market)
-                      setMobileView('details')
-                    }}
-                    className={cn(
-                      'group relative flex flex-col md:flex-row md:items-center justify-between w-36 md:w-full h-36 md:h-auto shrink-0 snap-start rounded-3xl border p-4 text-left transition-all duration-300 overflow-hidden',
-                      isActive 
-                        ? 'bg-background border-primary/30 shadow-lg ring-1 ring-primary/20 scale-[0.98]' 
-                        : 'bg-muted/10 border-border/40 hover:bg-muted/30 hover:border-border/80'
-                    )}
-                  >
-                    <div className="flex md:flex-1 items-center justify-between w-full md:w-auto">
-                      <div className={cn('rounded-xl p-2 transition-colors shrink-0', isActive ? market.bg + ' ' + market.color : 'bg-muted/80 text-muted-foreground')}>
-                        {market.icon}
-                      </div>
-                      <div className="flex flex-col min-w-0 ml-3 hidden md:flex">
-                        <span className={cn('text-sm font-bold transition-colors truncate', isActive ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground')}>
-                          {market.name}
-                        </span>
-                        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 mt-0.5">
-                          {market.symbol}
-                        </span>
-                      </div>
-                      {perf !== undefined && (
-                        <div className="shrink-0 ml-2 md:hidden">
-                          <VariationContainer value={perf} entity="%" className="text-[10px] font-black p-0" background={false} />
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="flex flex-col min-w-0 mt-3 md:hidden">
-                      <span className={cn('text-xs font-bold transition-colors truncate', isActive ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground')}>
-                        {market.name}
-                      </span>
-                      <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 mt-0.5">
-                        {market.symbol}
-                      </span>
-                    </div>
+      <SectionContainer className="flex-1 flex flex-col gap-6">
+        {/* Ticker Tape */}
+        <div 
+          className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {markets.map((market) => {
+            const isActive = activeMarket.symbol === market.symbol;
+            const perf = marketPerfs[market.symbol];
+            return (
+              <button
+                key={market.symbol}
+                onClick={() => {
+                   setActiveMarket(market);
+                   setMobileView('details');
+                }}
+                className={cn(
+                  'relative flex-shrink-0 w-48 snap-start rounded-2xl border p-4 text-left transition-all duration-300 overflow-hidden',
+                  isActive 
+                    ? 'bg-background/80 backdrop-blur-md border-primary shadow-lg ring-1 ring-primary/50' 
+                    : 'bg-muted/30 border-border/40 hover:bg-muted/50 hover:border-border/80'
+                )}
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex flex-col">
+                     <span className="text-xs font-bold text-foreground">{market.name}</span>
+                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{market.symbol}</span>
+                  </div>
+                  <div className={cn('rounded-lg p-1.5', market.bg, market.color)}>
+                    {market.icon}
+                  </div>
+                </div>
+                {perf !== undefined && (
+                  <VariationContainer value={perf} entity="%" className="text-lg font-black p-0" background={false} />
+                )}
+                {isActive && (
+                  <motion.div 
+                    layoutId="active-indicator" 
+                    className="absolute bottom-0 left-0 right-0 h-1 bg-primary" 
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
 
-                    {perf !== undefined && (
-                      <div className="shrink-0 hidden md:block">
-                        <VariationContainer value={perf} entity="%" className="text-xs font-black p-0" background={false} />
-                      </div>
-                    )}
-
-                    {isActive && (
-                      <>
-                        <motion.div 
-                          layoutId="active-indicator-mobile" 
-                          className="absolute bottom-0 left-0 right-0 h-1 bg-primary md:hidden" 
-                          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                        />
-                        <motion.div 
-                          layoutId="active-indicator-desktop" 
-                          className="absolute right-0 top-0 bottom-0 w-1 bg-primary hidden md:block" 
-                          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                        />
-                      </>
-                    )}
-                  </button>
-                )
-              })}
-            </div>
-            
-            {/* Why Watch? Info Card */}
-            <div className="mt-4 rounded-2xl bg-muted/30 border border-border/50 p-5">
-              <div className="flex items-center gap-2 mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                <Zap className="h-3 w-3 text-amber-500" /> Le saviez-vous ?
-              </div>
-              <p className="text-xs leading-relaxed text-muted-foreground font-medium">
-                L'indice <strong>VIX</strong> monte quand la peur s'installe. Si le S&P 500 baisse et que le VIX explose, c'est un vent de panique. Surveiller le Top/Flop des actions américaines pendant ces périodes permet d'identifier les valeurs résilientes.
-              </p>
-            </div>
-          </div>
-
-          {/* Right Column: The Deep Dive */}
-          <div className={cn("md:col-span-8 flex flex-col h-full", mobileView === 'list' && "hidden md:flex")}>
+        {/* Right Column: The Deep Dive */}
+        <div className={cn("flex flex-col h-full", mobileView === 'list' && "hidden md:flex")}>
             {/* Mobile Back Button */}
             <button
               onClick={() => setMobileView('list')}
@@ -346,8 +299,6 @@ export default function MarketListingPage() {
               </motion.div>
             </AnimatePresence>
           </div>
-
-        </div>
       </SectionContainer>
     </div>
   )
