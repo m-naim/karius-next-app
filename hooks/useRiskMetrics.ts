@@ -20,7 +20,10 @@ export function useRiskMetrics(portfolioId: string) {
 
     async function loadMetrics() {
       if (!portfolioId) {
-        if (isMounted) setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+          setMetrics(null);
+        }
         return;
       }
 
@@ -28,6 +31,7 @@ export function useRiskMetrics(portfolioId: string) {
         if (isMounted) {
           setLoading(true);
           setError(null);
+          setMetrics(null);
         }
         
         const cacheKey = `risk-${portfolioId}`;
@@ -58,17 +62,21 @@ export function useRiskMetrics(portfolioId: string) {
           
           if (type === 'RESULT') {
             const calculatedMetrics = payload as RiskMetrics;
-            setMetrics(calculatedMetrics);
             
             await setCache(cacheKey, {
               timestamp: today,
               data: calculatedMetrics
             });
             
-            setLoading(false);
+            if (isMounted) {
+              setMetrics(calculatedMetrics);
+              setLoading(false);
+            }
+            if (worker) worker.terminate();
           } else if (type === 'ERROR') {
             setError(payload.error || 'Calculation error');
             setLoading(false);
+            if (worker) worker.terminate();
           }
         };
 

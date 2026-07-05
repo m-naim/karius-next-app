@@ -1,0 +1,82 @@
+<h2>Dashboard Mockup: The Horizontal Ticker</h2>
+<p class="subtitle">Does this structure and aesthetic feel right for the final page?</p>
+
+<div class="mockup" style="max-width: 800px;">
+  <div class="mockup-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>Pulse des Marchés</div>
+    <div style="background: var(--surface-1); border-radius: 20px; padding: 2px; display: flex; font-size: 10px;">
+      <div style="padding: 4px 12px; background: var(--primary); border-radius: 16px; color: white;">1D</div>
+      <div style="padding: 4px 12px; opacity: 0.7;">1W</div>
+      <div style="padding: 4px 12px; opacity: 0.7;">1M</div>
+    </div>
+  </div>
+  <div class="mockup-body" style="background: var(--surface-2); padding: 16px;">
+    
+    <!-- Ticker Tape -->
+    <div style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px;">
+      <!-- Active Card -->
+      <div style="flex-shrink: 0; width: 140px; background: var(--surface-1); border: 2px solid var(--primary); border-radius: 12px; padding: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <div style="font-size: 11px; opacity: 0.7; font-weight: bold;">S&P 500</div>
+        <div style="font-size: 18px; font-weight: 900; margin-top: 4px;">+1.24%</div>
+      </div>
+      <!-- Inactive Cards -->
+      <div style="flex-shrink: 0; width: 140px; background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 12px; opacity: 0.6;">
+        <div style="font-size: 11px; font-weight: bold;">Nasdaq 100</div>
+        <div style="font-size: 18px; font-weight: 900; margin-top: 4px;">+2.10%</div>
+      </div>
+      <div style="flex-shrink: 0; width: 140px; background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 12px; opacity: 0.6;">
+        <div style="font-size: 11px; font-weight: bold;">VIX</div>
+        <div style="font-size: 18px; font-weight: 900; margin-top: 4px; color: var(--danger);">-4.50%</div>
+      </div>
+    </div>
+
+    <div style="height: 1px; background: var(--border); margin: 16px 0;"></div>
+
+    <!-- Active Index Content -->
+    <div style="display: flex; justify-content: space-between; align-items: end; margin-bottom: 12px;">
+      <div>
+        <h3 style="margin: 0; font-size: 24px; font-weight: 900;">S&P 500</h3>
+        <p style="margin: 0; font-size: 12px; opacity: 0.7;">Les 500 plus grandes entreprises américaines.</p>
+      </div>
+      <button style="background: var(--primary); color: white; border: none; border-radius: 20px; padding: 6px 16px; font-size: 11px; font-weight: bold;">Analyse Complète &rarr;</button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <!-- Chart Area -->
+      <div style="height: 180px; background: var(--surface-1); border: 1px solid var(--border); border-radius: 16px; display: flex; align-items: center; justify-content: center;">
+        <div style="opacity: 0.5; font-size: 12px;">(Large Sparkline Chart Area)</div>
+      </div>
+      
+      <!-- Top / Flop Area -->
+      <div style="background: var(--surface-1); border: 1px solid var(--border); border-radius: 16px; padding: 16px;">
+        <div style="font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7; margin-bottom: 12px;">Moteurs & Freins</div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+          <div>Apple Inc.</div>
+          <div style="color: var(--success); font-weight: bold;">+3.4%</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding-top: 8px;">
+          <div>Microsoft</div>
+          <div style="color: var(--danger); font-weight: bold;">-1.2%</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="approve" onclick="toggleSelect(this)">
+    <div class="letter">✓</div>
+    <div class="content">
+      <h3>Looks Great</h3>
+      <p>This structure is exactly what I want. Proceed to implementation plan.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="revise" onclick="toggleSelect(this)">
+    <div class="letter">↺</div>
+    <div class="content">
+      <h3>Needs Changes</h3>
+      <p>I want to tweak something (tell me what in the terminal).</p>
+    </div>
+  </div>
+</div>

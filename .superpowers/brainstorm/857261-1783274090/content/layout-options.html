@@ -1,0 +1,70 @@
+<h2>Which new layout direction feels right?</h2>
+<p class="subtitle">Focusing on a unified dashboard instead of a list/detail split.</p>
+
+<div class="cards">
+  <!-- Option A -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: var(--surface-2); padding: 16px; border-bottom: 1px solid var(--border);">
+      <!-- Top ticker tape -->
+      <div style="display: flex; gap: 8px; margin-bottom: 16px; overflow: hidden;">
+        <div style="flex: 1; background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px; padding: 8px;">
+          <div style="font-size: 10px; opacity: 0.7;">S&P 500</div>
+          <div style="font-size: 14px; font-weight: bold;">+1.2%</div>
+        </div>
+        <div style="flex: 1; background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px; padding: 8px;">
+          <div style="font-size: 10px; opacity: 0.7;">Nasdaq</div>
+          <div style="font-size: 14px; font-weight: bold; color: var(--success);">+2.1%</div>
+        </div>
+        <div style="flex: 1; background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px; padding: 8px;">
+          <div style="font-size: 10px; opacity: 0.7;">VIX</div>
+          <div style="font-size: 14px; font-weight: bold; color: var(--danger);">-4.0%</div>
+        </div>
+      </div>
+      <!-- Body -->
+      <div style="display: flex; gap: 12px;">
+        <div style="flex: 2; height: 80px; background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px;"></div>
+        <div style="flex: 1; height: 80px; background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px;"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. Horizontal Ticker + Deep Dive</h3>
+      <p>Indices become a horizontal "ticker tape" at the top. The rest of the page expands to show full-width charts and Top/Flops for the active index.</p>
+    </div>
+  </div>
+
+  <!-- Option B -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: var(--surface-2); padding: 16px; border-bottom: 1px solid var(--border);">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px;">
+        <div style="height: 48px; background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px;"></div>
+        <div style="height: 48px; background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px;"></div>
+        <div style="height: 48px; background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px;"></div>
+        <div style="height: 48px; background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px;"></div>
+      </div>
+      <div style="height: 52px; background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px; margin-top: 12px;"></div>
+    </div>
+    <div class="card-body">
+      <h3>B. Grid of Mini-Charts</h3>
+      <p>Show all major indices at once in a grid of cards, each with its own mini sparkline chart. Clicking one expands it in a modal or navigates to a detail page.</p>
+    </div>
+  </div>
+
+  <!-- Option C -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: var(--surface-2); padding: 16px; border-bottom: 1px solid var(--border);">
+      <div style="display: flex; gap: 8px; height: 100%;">
+        <div style="flex: 2; display: flex; flex-direction: column; gap: 8px;">
+          <div style="flex: 1; background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px;"></div>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+          <div style="flex: 1; background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px;"></div>
+          <div style="flex: 1; background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. Asymmetric Command Center</h3>
+      <p>A "hero" section for the primary index (S&P 500) and smaller sidebar widgets for other indices/VIX. Feels like a pro Bloomberg terminal layout.</p>
+    </div>
+  </div>
+</div>
