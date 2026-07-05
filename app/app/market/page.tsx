@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import SectionContainer from '@/components/organismes/layout/SectionContainer'
-import { TrendingUp, Globe, ShieldCheck, PieChart, Landmark, ArrowRight, ArrowLeft, Activity, Zap } from 'lucide-react'
+import { TrendingUp, Globe, ShieldCheck, PieChart, Landmark, ArrowRight, Activity, Zap } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MarketPulse } from '@/components/molecules/market/MarketPulse'
 import { MarketIndexSparkline } from '@/components/molecules/market/MarketIndexSparkline'
@@ -175,7 +174,7 @@ export default function MarketListingPage() {
       <SectionContainer className="flex-1 flex flex-col gap-6">
         {/* Ticker Tape */}
         <div 
-          className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory"
+          className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {markets.map((market) => {
