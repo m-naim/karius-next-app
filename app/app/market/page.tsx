@@ -71,7 +71,6 @@ export default function MarketListingPage() {
   const [selectedPeriod, setSelectedPeriod] = useState('1d')
   const [marketPerfs, setMarketPerfs] = useState<Record<string, number>>({})
   const [marketQuotes, setMarketQuotes] = useState<Record<string, any>>({})
-  const [mobileView, setMobileView] = useState<'list' | 'details'>('list')
 
   useEffect(() => {
     const fetchQuotesAndVariations = async () => {
@@ -187,7 +186,6 @@ export default function MarketListingPage() {
                 key={market.symbol}
                 onClick={() => {
                    setActiveMarket(market);
-                   setMobileView('details');
                 }}
                 className={cn(
                   'relative flex-shrink-0 w-48 snap-start rounded-2xl border p-4 text-left transition-all duration-300 overflow-hidden',
@@ -220,85 +218,63 @@ export default function MarketListingPage() {
           })}
         </div>
 
-        {/* Right Column: The Deep Dive */}
-        <div className={cn("flex flex-col h-full", mobileView === 'list' && "hidden md:flex")}>
-            {/* Mobile Back Button */}
-            <button
-              onClick={() => setMobileView('list')}
-              className="flex items-center gap-2 rounded-full border border-border/50 bg-muted/40 px-4 py-2 text-xs font-bold text-muted-foreground transition-all hover:bg-muted hover:text-foreground mb-4 md:hidden max-w-max"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Retour aux indices</span>
-            </button>
+        {/* Active Index Deep Dive */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeMarket.symbol}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="flex flex-col gap-6"
+          >
+            {/* Header of Active View */}
+            <div className="flex items-end justify-between border-b border-border/50 pb-4">
+              <div>
+                <h2 className="text-3xl font-black text-foreground">{activeMarket.name}</h2>
+                <p className="text-sm font-medium text-muted-foreground mt-1 max-w-2xl">
+                  {activeMarket.description}
+                </p>
+              </div>
+              {activeMarket.symbol !== '^VIX' && (
+                <Link href={`/app/market/${encodeURIComponent(activeMarket.symbol)}`}>
+                  <button className="group flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-xs font-bold text-primary transition-all hover:bg-primary hover:text-primary-foreground">
+                    <span>Analyse Complète</span>
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </button>
+                </Link>
+              )}
+            </div>
 
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeMarket.symbol}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="flex flex-col h-full rounded-3xl border bg-background shadow-xl overflow-hidden"
-              >
-                {/* Header of Active View */}
-                <div className="flex items-start justify-between border-b p-6 bg-muted/10">
-                  <div className="flex items-center gap-4">
-                     <div className={cn('rounded-2xl p-4', activeMarket.bg, activeMarket.color)}>
-                        {activeMarket.icon}
-                     </div>
-                     <div>
-                       <h2 className="text-2xl font-black text-foreground">{activeMarket.name}</h2>
-                       <p className="text-xs font-medium text-muted-foreground mt-1 max-w-md">
-                         {activeMarket.description}
-                       </p>
-                     </div>
-                  </div>
-                  
-                  {activeMarket.symbol !== '^VIX' && (
-                    <Link href={`/app/market/${encodeURIComponent(activeMarket.symbol)}`}>
-                      <button className="group flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-bold text-primary-foreground transition-all hover:bg-primary/90 hover:shadow-md">
-                        <span>Analyse Complète</span>
-                        <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
-                      </button>
-                    </Link>
-                  )}
+            {/* Body of Active View (Vertical Stack) */}
+            <div className="flex flex-col gap-8">
+              {/* Sparkline Section */}
+              <div className="flex flex-col gap-3">
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                  <Activity className="h-3 w-3" /> Tendance Globale ({selectedPeriod})
+                </h3>
+                <div className="h-[250px] w-full rounded-2xl border bg-background p-4 relative shadow-sm">
+                  <MarketIndexSparkline 
+                    symbol={activeMarket.symbol} 
+                    period={selectedPeriod} 
+                  />
                 </div>
+              </div>
 
-                {/* Body of Active View */}
-                <div className="p-6 flex flex-col flex-1 gap-8">
-                  
-                  {/* Sparkline Section */}
-                  <div className="flex flex-col gap-2">
-                    <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                      Tendance Globale ({selectedPeriod})
-                    </h3>
-                    <div className="h-[200px] w-full rounded-xl border bg-muted/5 p-4 relative">
-                      {/* Pass mapped period to Sparkline so graph dynamically scales to selection */}
-                      <MarketIndexSparkline 
-                        symbol={activeMarket.symbol} 
-                        period={selectedPeriod} 
-                      />
-                    </div>
+              {/* Top / Flop Dynamics */}
+              {activeMarket.symbol !== '^VIX' && (
+                <div className="flex flex-col gap-3">
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                    <Zap className="h-3 w-3 text-amber-500" /> Moteurs & Freins ({selectedPeriod})
+                  </h3>
+                  <div className="w-full rounded-2xl border bg-background p-4 shadow-sm">
+                    <MarketTopFlop symbol={activeMarket.symbol} period={selectedPeriod} />
                   </div>
-
-                  {/* Top / Flop Dynamics */}
-                  {activeMarket.symbol !== '^VIX' && (
-                    <div className="flex flex-col gap-2 flex-1">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                          Moteurs & Freins ({selectedPeriod})
-                        </h3>
-                      </div>
-                      <div className="flex-1 rounded-xl border bg-muted/10 p-4">
-                        <MarketTopFlop symbol={activeMarket.symbol} period={selectedPeriod} />
-                      </div>
-                    </div>
-                  )}
-
                 </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
+              )}
+            </div>
+          </motion.div>
+        </AnimatePresence>
       </SectionContainer>
     </div>
   )
