@@ -174,15 +174,15 @@ export default function MarketListingPage() {
 
       {/* The Command Center */}
       <SectionContainer className="flex-1">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8 h-full">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-12 md:gap-8 h-full">
           
           {/* Left Column: Index Ribbon */}
-          <div className={cn("flex flex-col gap-3 lg:col-span-4", mobileView === 'details' && "hidden lg:flex")}>
+          <div className={cn("flex flex-col gap-3 md:col-span-4", mobileView === 'details' && "hidden md:flex")}>
             <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-2">
               Indices Majeurs
             </h2>
             <div 
-              className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0"
+              className="flex md:flex-col gap-3 overflow-x-auto md:overflow-x-visible pb-3 md:pb-0 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 md:mx-0 md:px-0"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {markets.map((market) => {
@@ -197,24 +197,32 @@ export default function MarketListingPage() {
                       setMobileView('details')
                     }}
                     className={cn(
-                      'group relative flex flex-col justify-between w-36 h-36 shrink-0 snap-start rounded-3xl border p-4 text-left transition-all duration-300 overflow-hidden',
+                      'group relative flex flex-col md:flex-row md:items-center justify-between w-36 md:w-full h-36 md:h-auto shrink-0 snap-start rounded-3xl border p-4 text-left transition-all duration-300 overflow-hidden',
                       isActive 
                         ? 'bg-background border-primary/30 shadow-lg ring-1 ring-primary/20 scale-[0.98]' 
                         : 'bg-muted/10 border-border/40 hover:bg-muted/30 hover:border-border/80'
                     )}
                   >
-                    <div className="flex items-center justify-between w-full">
+                    <div className="flex md:flex-1 items-center justify-between w-full md:w-auto">
                       <div className={cn('rounded-xl p-2 transition-colors shrink-0', isActive ? market.bg + ' ' + market.color : 'bg-muted/80 text-muted-foreground')}>
                         {market.icon}
                       </div>
+                      <div className="flex flex-col min-w-0 ml-3 hidden md:flex">
+                        <span className={cn('text-sm font-bold transition-colors truncate', isActive ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground')}>
+                          {market.name}
+                        </span>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 mt-0.5">
+                          {market.symbol}
+                        </span>
+                      </div>
                       {perf !== undefined && (
-                        <div className="shrink-0">
+                        <div className="shrink-0 ml-2 md:hidden">
                           <VariationContainer value={perf} entity="%" className="text-[10px] font-black p-0" background={false} />
                         </div>
                       )}
                     </div>
                     
-                    <div className="flex flex-col min-w-0 mt-3">
+                    <div className="flex flex-col min-w-0 mt-3 md:hidden">
                       <span className={cn('text-xs font-bold transition-colors truncate', isActive ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground')}>
                         {market.name}
                       </span>
@@ -223,12 +231,25 @@ export default function MarketListingPage() {
                       </span>
                     </div>
 
+                    {perf !== undefined && (
+                      <div className="shrink-0 hidden md:block">
+                        <VariationContainer value={perf} entity="%" className="text-xs font-black p-0" background={false} />
+                      </div>
+                    )}
+
                     {isActive && (
-                      <motion.div 
-                        layoutId="active-indicator" 
-                        className="absolute bottom-0 left-0 right-0 h-1 bg-primary" 
-                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                      />
+                      <>
+                        <motion.div 
+                          layoutId="active-indicator-mobile" 
+                          className="absolute bottom-0 left-0 right-0 h-1 bg-primary md:hidden" 
+                          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                        />
+                        <motion.div 
+                          layoutId="active-indicator-desktop" 
+                          className="absolute right-0 top-0 bottom-0 w-1 bg-primary hidden md:block" 
+                          transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                        />
+                      </>
                     )}
                   </button>
                 )
@@ -247,11 +268,11 @@ export default function MarketListingPage() {
           </div>
 
           {/* Right Column: The Deep Dive */}
-          <div className={cn("lg:col-span-8 flex flex-col h-full", mobileView === 'list' && "hidden lg:flex")}>
+          <div className={cn("md:col-span-8 flex flex-col h-full", mobileView === 'list' && "hidden md:flex")}>
             {/* Mobile Back Button */}
             <button
               onClick={() => setMobileView('list')}
-              className="flex items-center gap-2 rounded-full border border-border/50 bg-muted/40 px-4 py-2 text-xs font-bold text-muted-foreground transition-all hover:bg-muted hover:text-foreground mb-4 lg:hidden max-w-max"
+              className="flex items-center gap-2 rounded-full border border-border/50 bg-muted/40 px-4 py-2 text-xs font-bold text-muted-foreground transition-all hover:bg-muted hover:text-foreground mb-4 md:hidden max-w-max"
             >
               <ArrowLeft className="h-4 w-4" />
               <span>Retour aux indices</span>
