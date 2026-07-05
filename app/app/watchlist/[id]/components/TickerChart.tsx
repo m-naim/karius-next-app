@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { getStockHistory } from '@/services/stock.service'
+import { getStockHistory, search } from '@/services/stock.service'
 import { format } from 'date-fns'
 import { LineValue } from '@/components/molecules/charts/LineValue'
 import { Label } from '@/components/ui/label'
@@ -81,6 +81,26 @@ export function TickerChart({
     worstYearVariation: null,
     regressionCagr: null,
   })
+
+  const [compQuery, setCompQuery] = useState('')
+  const [compResults, setCompResults] = useState<any[]>([])
+  const [showCompDropdown, setShowCompDropdown] = useState(false)
+
+  useEffect(() => {
+    if (compQuery.trim().length < 2) {
+      setCompResults([])
+      return
+    }
+    const delayDebounce = setTimeout(async () => {
+      try {
+        const results = await search(compQuery)
+        setCompResults(results || [])
+      } catch (e) {
+        console.error('Comparison search error', e)
+      }
+    }, 300)
+    return () => clearTimeout(delayDebounce)
+  }, [compQuery])
 
   useEffect(() => {
     setLoading(true)
@@ -319,6 +339,60 @@ export function TickerChart({
                   </Label>
                 </div>
               ))}
+              {selectedBenchmarks
+                .filter(sym => !availableBenchmarks.some(b => b.symbol === sym))
+                .map((sym) => (
+                  <div key={sym} className="flex items-center space-x-1.5 bg-primary/10 rounded-md px-1.5 py-0.5 border border-primary/20">
+                    <Checkbox
+                      id={sym}
+                      checked={true}
+                      onCheckedChange={() => handleBenchmarkChange(sym)}
+                      className="h-3 w-3"
+                    />
+                    <Label htmlFor={sym} className="cursor-pointer text-[10px] font-bold uppercase text-primary">
+                      {sym}
+                    </Label>
+                  </div>
+                ))}
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Comparer..."
+                  value={compQuery}
+                  onChange={(e) => {
+                    setCompQuery(e.target.value)
+                    setShowCompDropdown(true)
+                  }}
+                  onFocus={() => setShowCompDropdown(true)}
+                  onBlur={() => setTimeout(() => setShowCompDropdown(false), 200)}
+                  className="h-7 w-24 rounded-md border border-border bg-background px-2 text-[10px] font-medium outline-none focus:ring-1 focus:ring-primary"
+                />
+                {showCompDropdown && compResults.length > 0 && (
+                  <div className="absolute right-0 top-8 z-50 w-48 rounded-md border bg-card p-1 shadow-lg max-h-48 overflow-y-auto">
+                    {compResults.map((res: any) => {
+                      const isAdded = selectedBenchmarks.includes(res.symbol)
+                      return (
+                        <button
+                          key={res.symbol}
+                          onClick={() => {
+                            if (!isAdded) {
+                              setSelectedBenchmarks(prev => [...prev, res.symbol])
+                            } else {
+                              setSelectedBenchmarks(prev => prev.filter(s => s !== res.symbol))
+                            }
+                            setCompQuery('')
+                            setShowCompDropdown(false)
+                          }}
+                          className="flex w-full items-center justify-between rounded px-2 py-1 text-left text-[10px] font-medium hover:bg-muted"
+                        >
+                          <span className="truncate flex-1 pr-1 text-foreground">{res.longname || res.symbol}</span>
+                          <span className="shrink-0 text-[8px] font-bold text-muted-foreground uppercase">{res.symbol}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
               <div className="flex gap-1 border-l pl-3">
                 <Button
                   variant={isLogarithmic ? 'default' : 'outline'}

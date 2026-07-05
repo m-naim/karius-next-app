@@ -79,7 +79,7 @@ const Header = () => {
           {user && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" asChild className="hidden sm:flex">
+                <Button variant="ghost" size="icon" asChild className="flex">
                   <Link href="/app/stocks">
                     <Search className="h-4 w-4" />
                   </Link>
