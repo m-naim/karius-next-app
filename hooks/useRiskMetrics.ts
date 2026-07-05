@@ -37,6 +37,8 @@ export function useRiskMetrics(portfolioId: string) {
         const cacheKey = `risk-${portfolioId}`;
         const cached = await getCache(cacheKey);
         
+        if (!isMounted) return;
+
         const today = new Date().toISOString().split('T')[0];
 
         if (cached && cached.timestamp === today && cached.data) {
@@ -53,34 +55,44 @@ export function useRiskMetrics(portfolioId: string) {
           throw new Error('Invalid performance data received');
         }
 
+        if (!isMounted) return;
+
         worker = new Worker(new URL('../workers/risk.worker.ts', import.meta.url));
 
         worker.onmessage = async (event) => {
-          if (!isMounted) return;
+          if (!isMounted) {
+            if (worker) worker.terminate();
+            return;
+          }
           
           const { type, payload } = event.data;
           
           if (type === 'RESULT') {
+            if (worker) worker.terminate();
             const calculatedMetrics = payload as RiskMetrics;
             
-            await setCache(cacheKey, {
-              timestamp: today,
-              data: calculatedMetrics
-            });
+            try {
+              await setCache(cacheKey, {
+                timestamp: today,
+                data: calculatedMetrics
+              });
+            } catch (err) {
+              console.error('Failed to save to cache', err);
+            }
             
             if (isMounted) {
               setMetrics(calculatedMetrics);
               setLoading(false);
             }
-            if (worker) worker.terminate();
           } else if (type === 'ERROR') {
+            if (worker) worker.terminate();
             setError(payload.error || 'Calculation error');
             setLoading(false);
-            if (worker) worker.terminate();
           }
         };
 
         worker.onerror = () => {
+          if (worker) worker.terminate();
           if (!isMounted) return;
           setError('Worker error');
           setLoading(false);
