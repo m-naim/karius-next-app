@@ -61,6 +61,19 @@ const MobileNav = () => {
             </>
           )}
 
+          {user && (
+            <div className="py-4">
+              <Link
+                data-umami-event="mobile-header-Search"
+                href="/app/stocks"
+                className="text-2xl font-bold tracking-widest text-gray-900 dark:text-gray-100"
+                onClick={onToggleNav}
+              >
+                Recherche
+              </Link>
+            </div>
+          )}
+
           {headerNavLinks
             .filter((link) => !link.draft)
             .map((link) => {

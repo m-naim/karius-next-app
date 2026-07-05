@@ -15,7 +15,7 @@ import {
 } from '../../ui/dropdown-menu'
 
 import { useAuth } from '@/hooks/useAuth'
-import { ChevronDown, Bell } from 'lucide-react'
+import { ChevronDown, Bell, Search } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/tooltip'
 
 const Header = () => {
@@ -76,6 +76,20 @@ const Header = () => {
                 </Button>
               )
             })}
+          {user && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" asChild className="hidden sm:flex">
+                  <Link href="/app/stocks">
+                    <Search className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Rechercher une action</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
           {user && (
             <Tooltip>
               <TooltipTrigger asChild>
