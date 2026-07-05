@@ -9,7 +9,6 @@ import {
 
 function runTests() {
   // Test daily returns
-  console.log('Testing calculateDailyReturns...');
   const values1 = [100, 101, 102.01];
   const returns1 = calculateDailyReturns(values1);
   assert.equal(returns1.length, 2);
@@ -19,7 +18,6 @@ function runTests() {
   assert.ok(Math.abs(returns1[1] - 0.01) < 1e-6);
 
   // Test calculateVolatility
-  console.log('Testing calculateVolatility...');
   const constReturns = [0.01, 0.01, 0.01];
   const vol1 = calculateVolatility(constReturns);
   // zero variance
@@ -36,7 +34,6 @@ function runTests() {
 
   // Test calculateSharpeRatio
   // Assuming riskFreeRate = 0
-  console.log('Testing calculateSharpeRatio...');
   const sharpe1 = calculateSharpeRatio(returns2);
   // mean = 0, so sharpe = 0
   assert.ok(Math.abs(sharpe1 - 0) < 1e-6);
@@ -57,8 +54,12 @@ function runTests() {
   const sharpe4 = calculateSharpeRatio(returns4);
   assert.ok(Math.abs(sharpe4 - 7.0993) < 1e-3);
 
+  // Test Sharpe with non-zero riskFreeRate
+  const sharpe4_nonzero = calculateSharpeRatio(returns4, 0.05);
+  // (1.26 - 0.05) / 0.17748 = 6.817
+  assert.ok(Math.abs(sharpe4_nonzero - 6.8176) < 1e-3);
+
   // Test calculateSortinoRatio
-  console.log('Testing calculateSortinoRatio...');
   const returns5 = [0.01, 0.02, -0.01, -0.02];
   // mean = 0
   // negative returns = [-0.01, -0.02]
@@ -81,8 +82,13 @@ function runTests() {
   const sortino6 = calculateSortinoRatio(returns6);
   assert.ok(Math.abs(sortino6 - 36.66) < 1e-1);
 
+  // Test Sortino with non-zero targetReturn
+  const targetReturn = 0.252; // annualized, daily = 0.001
+  const expectedSortino6NonZero = ( (0.04/3 * 252) - 0.252 ) / (Math.sqrt(Math.pow(-0.01 - 0.001, 2) / 3) * Math.sqrt(252));
+  const sortino6_nonzero = calculateSortinoRatio(returns6, targetReturn);
+  assert.ok(Math.abs(sortino6_nonzero - expectedSortino6NonZero) < 1e-3);
+
   // Test calculateMaxDrawdown
-  console.log('Testing calculateMaxDrawdown...');
   const values2 = [100, 110, 99, 88, 105, 120, 108];
   // peak starts at 100
   // peak 110, trough 88 -> drawdown = (110 - 88)/110 = 22/110 = 0.2 (20%)
@@ -91,7 +97,7 @@ function runTests() {
   const mdd2 = calculateMaxDrawdown(values2);
   assert.ok(Math.abs(mdd2 - 0.2) < 1e-6);
 
-  console.log('All tests passed.');
+
 }
 
 runTests();

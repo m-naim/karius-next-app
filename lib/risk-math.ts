@@ -32,10 +32,11 @@ export function calculateSortinoRatio(returns: number[], targetReturn: number = 
   const mean = returns.reduce((sum, r) => sum + r, 0) / returns.length;
   const annualizedReturn = mean * 252;
   
+  const dailyTargetReturn = targetReturn / 252;
   let downsideVariance = 0;
   for (const r of returns) {
-    if (r < targetReturn) {
-      downsideVariance += Math.pow(r - targetReturn, 2);
+    if (r < dailyTargetReturn) {
+      downsideVariance += Math.pow(r - dailyTargetReturn, 2);
     }
   }
   downsideVariance /= returns.length;
@@ -57,9 +58,11 @@ export function calculateMaxDrawdown(values: number[]): number {
     if (v > peak) {
       peak = v;
     } else {
-      const drawdown = (peak - v) / peak;
-      if (drawdown > maxDrawdown) {
-        maxDrawdown = drawdown;
+      if (peak !== 0) {
+        const drawdown = (peak - v) / peak;
+        if (drawdown > maxDrawdown) {
+          maxDrawdown = drawdown;
+        }
       }
     }
   }

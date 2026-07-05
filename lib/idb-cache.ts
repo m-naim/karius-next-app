@@ -2,8 +2,12 @@ const DB_NAME = 'BourseHorusCache';
 const STORE_NAME = 'riskMetrics';
 const DB_VERSION = 1;
 
+let dbPromise: Promise<IDBDatabase> | null = null;
+
 function getDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
+  if (dbPromise) return dbPromise;
+  
+  dbPromise = new Promise((resolve, reject) => {
     if (typeof window === 'undefined' || !window.indexedDB) {
       reject(new Error('IndexedDB is not available'));
       return;
@@ -12,6 +16,7 @@ function getDB(): Promise<IDBDatabase> {
     const request = window.indexedDB.open(DB_NAME, DB_VERSION);
     
     request.onerror = () => {
+      dbPromise = null;
       reject(request.error);
     };
     
@@ -26,6 +31,8 @@ function getDB(): Promise<IDBDatabase> {
       }
     };
   });
+  
+  return dbPromise;
 }
 
 export async function getCache(key: string): Promise<any> {
