@@ -13,7 +13,8 @@ import RiskAnalysisCard from './components/RiskAnalysisCard'
 function PagePerformance() {
   const id = usePathname().split('/')[3]
   const [selectedBenchmarks, setSelectedBenchmarks] = useState<string[]>([])
-  const { metrics, loading } = useRiskMetrics(id)
+  const [period, setPeriod] = useState<string>('1M')
+  const { metrics, loading } = useRiskMetrics(id, period)
 
   const handleAddBenchmark = (benchmark: string) => {
     if (!validateBenchmark(benchmark)) return
@@ -28,7 +29,7 @@ function PagePerformance() {
   return (
     <div className="flex flex-col gap-6">
       <SectionContainer className="w-full">
-        <RiskQuickStats metrics={metrics} loading={loading} />
+        <RiskQuickStats metrics={metrics} loading={loading} period={period} />
       </SectionContainer>
 
       <SectionContainer className="w-full">
@@ -37,11 +38,13 @@ function PagePerformance() {
           selectedBenchmarks={selectedBenchmarks}
           onAddBenchmark={handleAddBenchmark}
           onRemoveBenchmark={handleRemoveBenchmark}
+          period={period}
+          onPeriodChange={setPeriod}
         />
       </SectionContainer>
 
       <SectionContainer className="w-full">
-        <RiskAnalysisCard metrics={metrics} loading={loading} />
+        <RiskAnalysisCard metrics={metrics} loading={loading} period={period} />
       </SectionContainer>
 
       <SectionContainer className="w-full">

@@ -11,18 +11,40 @@ import {
 interface RiskAnalysisCardProps {
   metrics: RiskMetrics | null;
   loading: boolean;
+  period?: string;
 }
 
-export function RiskAnalysisCard({ metrics, loading }: RiskAnalysisCardProps) {
+export function RiskAnalysisCard({ metrics, loading, period }: RiskAnalysisCardProps) {
+  const isEligiblePeriod = period === '1Y' || period === '3Y';
+
+  if (!isEligiblePeriod) {
+    return (
+      <Card className="w-full backdrop-blur-md bg-background/80 border-border/50 text-foreground">
+        <CardHeader>
+          <CardTitle>Analyse de Risque</CardTitle>
+          <CardDescription>Indicateurs de risque avancés calculés en local</CardDescription>
+        </CardHeader>
+        <CardContent className="h-32 flex flex-col items-center justify-center text-center p-6">
+          <p className="text-sm text-muted-foreground max-w-lg">
+            Veuillez sélectionner une période de <strong>1 An (1Y)</strong> ou <strong>3 Ans (3Y)</strong> ci-dessus dans le graphique pour lancer les calculs du Sharpe, Sortino et le Max Drawdown en arrière-plan.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (loading) {
     return (
-      <Card className="w-full backdrop-blur-md bg-background/80 border-border/50 animate-pulse">
+      <Card className="w-full backdrop-blur-md bg-background/80 border-border/50 text-foreground">
         <CardHeader>
-          <div className="h-6 w-1/3 bg-muted rounded"></div>
-          <div className="h-4 w-1/4 bg-muted rounded mt-2"></div>
+          <CardTitle>Analyse de Risque</CardTitle>
+          <CardDescription>Indicateurs de risque avancés calculés en local</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="h-32 bg-muted rounded w-full"></div>
+        <CardContent className="h-36 flex flex-col items-center justify-center text-center p-6 space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <p className="text-sm text-muted-foreground">
+            Calcul en cours des métriques de risque en arrière-plan...
+          </p>
         </CardContent>
       </Card>
     );
@@ -66,25 +88,25 @@ export function RiskAnalysisCard({ metrics, loading }: RiskAnalysisCardProps) {
   return (
     <Card className="w-full backdrop-blur-md bg-background/80 border-border/50 text-foreground">
       <CardHeader>
-        <CardTitle>Risk Analysis</CardTitle>
-        <CardDescription>Deeper insights into portfolio risk</CardDescription>
+        <CardTitle>Analyse de Risque</CardTitle>
+        <CardDescription>Indicateurs de risque avancés calculés en local</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex flex-col space-y-2">
-            <span className="text-sm text-muted-foreground uppercase tracking-wider font-medium">Sortino Ratio</span>
+            <span className="text-sm text-muted-foreground uppercase tracking-wider font-medium">Ratio de Sortino</span>
             <div className="flex items-baseline space-x-2">
               <span className={`text-4xl font-bold ${getSortinoColor(metrics.sortino)}`}>
                 {formatNumber(metrics.sortino)}
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Measures risk-adjusted return relative to downside volatility. Higher is better.
+              Mesure le rendement ajusté au risque par rapport à la volatilité à la baisse. Plus il est élevé, mieux c'est.
             </p>
           </div>
 
           <div className="flex flex-col space-y-2">
-            <span className="text-sm text-muted-foreground uppercase tracking-wider font-medium">Max Drawdown</span>
+            <span className="text-sm text-muted-foreground uppercase tracking-wider font-medium">Chute Maximale (Max Drawdown)</span>
             <div className="flex items-baseline space-x-2">
               <span className={`text-4xl font-bold ${drawdownColors.text}`}>
                 {formatPercent(metrics.maxDrawdown)}
@@ -97,20 +119,20 @@ export function RiskAnalysisCard({ metrics, loading }: RiskAnalysisCardProps) {
               ></div>
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              The maximum observed loss from a peak to a trough of a portfolio. Lower absolute value is better.
+              La perte maximale observée entre le sommet et le creux de la valeur du portefeuille. Une valeur absolue plus faible est préférable.
             </p>
           </div>
 
           {metrics.calmar !== undefined && (
             <div className="flex flex-col space-y-2">
-              <span className="text-sm text-muted-foreground uppercase tracking-wider font-medium">Calmar Ratio</span>
+              <span className="text-sm text-muted-foreground uppercase tracking-wider font-medium">Ratio de Calmar</span>
               <div className="flex items-baseline space-x-2">
                 <span className="text-4xl font-bold">
                   {formatNumber(metrics.calmar)}
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Measures risk-adjusted return relative to maximum drawdown. Higher is better.
+                Mesure le rendement ajusté au risque par rapport à la perte maximale (max drawdown). Plus il est élevé, mieux c'est.
               </p>
             </div>
           )}

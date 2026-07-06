@@ -4,15 +4,20 @@ import type { RiskMetrics } from '@/hooks/useRiskMetrics';
 interface RiskQuickStatsProps {
   metrics: RiskMetrics | null;
   loading: boolean;
+  period?: string;
 }
 
-export function RiskQuickStats({ metrics, loading }: RiskQuickStatsProps) {
+export function RiskQuickStats({ metrics, loading, period }: RiskQuickStatsProps) {
+  const isEligiblePeriod = period === '1Y' || period === '3Y';
+  if (!isEligiblePeriod) {
+    return null;
+  }
+
   if (loading) {
     return (
-      <div className="flex flex-row gap-4 w-full p-4 rounded-xl backdrop-blur-md bg-background/80 border border-border/50 animate-pulse">
-        <div className="h-20 flex-1 bg-muted rounded-lg"></div>
-        <div className="h-20 flex-1 bg-muted rounded-lg"></div>
-        <div className="h-20 flex-1 bg-muted rounded-lg"></div>
+      <div className="flex items-center justify-center gap-3 w-full p-6 rounded-xl backdrop-blur-md bg-background/80 border border-border/50 shadow-sm text-foreground">
+        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+        <span className="text-sm text-muted-foreground">Calcul en cours des indicateurs de risque en arrière-plan...</span>
       </div>
     );
   }

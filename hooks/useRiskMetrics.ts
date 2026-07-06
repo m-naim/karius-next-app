@@ -10,9 +10,9 @@ export interface RiskMetrics {
   calmar?: number;
 }
 
-export function useRiskMetrics(portfolioId: string) {
+export function useRiskMetrics(portfolioId: string, period: string) {
   const [metrics, setMetrics] = useState<RiskMetrics | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -28,6 +28,15 @@ export function useRiskMetrics(portfolioId: string) {
         return;
       }
 
+      const isEligiblePeriod = period === '1Y' || period === '3Y';
+      if (!isEligiblePeriod) {
+        if (isMounted) {
+          setLoading(false);
+          setMetrics(null);
+        }
+        return;
+      }
+
       try {
         if (isMounted) {
           setLoading(true);
@@ -35,7 +44,7 @@ export function useRiskMetrics(portfolioId: string) {
           setMetrics(null);
         }
         
-        const cacheKey = `risk-${portfolioId}`;
+        const cacheKey = `risk-${portfolioId}-${period}`;
         const cached = await getCache(cacheKey);
         
         if (!isMounted) return;
@@ -50,7 +59,8 @@ export function useRiskMetrics(portfolioId: string) {
           return;
         }
 
-        const performanceData = await getPerformances(portfolioId, [], 0);
+        const days = period === '1Y' ? 365 : 1095;
+        const performanceData = await getPerformances(portfolioId, [], days);
         
         if (!performanceData || !performanceData.value) {
           throw new Error('Invalid performance data received');
@@ -72,6 +82,11 @@ export function useRiskMetrics(portfolioId: string) {
             if (worker) worker.terminate();
             const calculatedMetrics = payload as RiskMetrics;
             
+            if (isMounted) {
+              setMetrics(calculatedMetrics);
+              setLoading(false);
+            }
+
             try {
               await setCache(cacheKey, {
                 timestamp: today,
@@ -80,15 +95,12 @@ export function useRiskMetrics(portfolioId: string) {
             } catch (err) {
               console.error('Failed to save to cache', err);
             }
-            
-            if (isMounted) {
-              setMetrics(calculatedMetrics);
-              setLoading(false);
-            }
           } else if (type === 'ERROR') {
             if (worker) worker.terminate();
-            setError(payload.error || 'Calculation error');
-            setLoading(false);
+            if (isMounted) {
+              setError(payload.error || 'Calculation error');
+              setLoading(false);
+            }
           }
         };
 
@@ -122,7 +134,7 @@ export function useRiskMetrics(portfolioId: string) {
         worker.terminate();
       }
     };
-  }, [portfolioId]);
+  }, [portfolioId, period]);
 
   return { metrics, loading, error };
 }

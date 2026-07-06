@@ -78,6 +78,8 @@ interface PerformanceBoxProps {
   selectedBenchmarks: string[]
   onAddBenchmark: (benchmark: string) => void
   onRemoveBenchmark: (benchmark: string) => void
+  period: string
+  onPeriodChange: (period: string) => void
 }
 
 export default function PerformanceBox({
@@ -85,9 +87,10 @@ export default function PerformanceBox({
   selectedBenchmarks,
   onAddBenchmark,
   onRemoveBenchmark,
+  period,
+  onPeriodChange,
 }: PerformanceBoxProps) {
   const [chartType, setChartType] = useState(chartTypes[0].id)
-  const [period, setPeriod] = useState(chartTypes[0].defaultPeriod)
   const [dates, setDates] = useState<string[]>([])
   const [chartValues, setChartValues] = useState<number[]>([])
   const [benchValues, setBenchValues] = useState<{ [key: string]: number[] }>({})
@@ -134,7 +137,7 @@ export default function PerformanceBox({
   }, [id, period, selectedBenchmarks, chartType])
 
   const handlePeriodChange = (newPeriod: string) => {
-    setPeriod(newPeriod)
+    onPeriodChange(newPeriod)
     const chart = chartTypes.find((c) => c.id === chartType)
     if (chart) {
       setChartType(chart.id)
