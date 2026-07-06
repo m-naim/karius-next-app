@@ -158,3 +158,7 @@ export function initPortfolioSSE(id: string) {
 
   return eventSource
 }
+
+export function initPerformance(id: string) {
+  return http.get(`${host}/api/v1/portfolios/${id}/performance/init`)
+}

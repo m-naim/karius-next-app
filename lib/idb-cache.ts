@@ -67,3 +67,19 @@ export async function setCache(key: string, data: any): Promise<void> {
     console.error('Failed to set cache', err);
   }
 }
+
+export async function deleteCache(key: string): Promise<void> {
+  try {
+    const db = await getDB();
+    return await new Promise((resolve, reject) => {
+      const transaction = db.transaction([STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.delete(key);
+      
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve();
+    });
+  } catch (err) {
+    console.error('Failed to delete cache', err);
+  }
+}

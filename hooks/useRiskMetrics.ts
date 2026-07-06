@@ -19,7 +19,7 @@ export interface RiskMetrics {
   benchmarks?: { [symbol: string]: BenchmarkMetrics };
 }
 
-export function useRiskMetrics(portfolioId: string, period: string, selectedBenchmarks: string[] = []) {
+export function useRiskMetrics(portfolioId: string, period: string, selectedBenchmarks: string[] = [], refreshKey: number = 0) {
   const [metrics, setMetrics] = useState<RiskMetrics | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -145,7 +145,7 @@ export function useRiskMetrics(portfolioId: string, period: string, selectedBenc
         worker.terminate();
       }
     };
-  }, [portfolioId, period, selectedBenchmarks.join(',')]); // serialize benchmarks array for dependency tracking
+  }, [portfolioId, period, selectedBenchmarks.join(','), refreshKey]); // serialize benchmarks array for dependency tracking
 
   return { metrics, loading, error };
 }
