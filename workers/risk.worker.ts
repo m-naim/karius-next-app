@@ -29,23 +29,26 @@ self.addEventListener('message', (event: MessageEvent<CalculateMessage>) => {
         return;
       }
       
-      const returns = calculateDailyReturns(values);
+      // Convert cumulative performance percentages to virtual prices
+      const portfolioPrices = values.map(v => 100 + v);
+      const returns = calculateDailyReturns(portfolioPrices);
       
       const volatility = calculateVolatility(returns);
       const sharpe = calculateSharpeRatio(returns);
       const sortino = calculateSortinoRatio(returns);
-      const maxDrawdown = calculateMaxDrawdown(values);
+      const maxDrawdown = calculateMaxDrawdown(portfolioPrices);
       
       const benchmarkMetrics: { [symbol: string]: any } = {};
 
       if (benchmarks && typeof benchmarks === 'object') {
         for (const [symbol, benchValues] of Object.entries(benchmarks)) {
           if (Array.isArray(benchValues) && benchValues.length >= 2) {
-            const benchReturns = calculateDailyReturns(benchValues);
+            const benchPrices = benchValues.map(v => 100 + v);
+            const benchReturns = calculateDailyReturns(benchPrices);
             const benchVol = calculateVolatility(benchReturns);
             const benchSharpe = calculateSharpeRatio(benchReturns);
             const benchSortino = calculateSortinoRatio(benchReturns);
-            const benchDD = calculateMaxDrawdown(benchValues);
+            const benchDD = calculateMaxDrawdown(benchPrices);
             
             // Align returns to match length for Beta calculation
             const minLength = Math.min(returns.length, benchReturns.length);

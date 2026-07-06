@@ -124,7 +124,7 @@ export function useRiskMetrics(portfolioId: string, period: string, selectedBenc
         worker.postMessage({
           type: 'CALCULATE',
           payload: {
-            values: performanceData.value,
+            values: performanceData.CumulativePerformance,
             benchmarks: performanceData.benchmarks
           }
         });
