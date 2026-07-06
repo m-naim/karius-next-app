@@ -27,7 +27,9 @@ function PagePerformance() {
 
   return (
     <div className="flex flex-col gap-6">
-      <RiskQuickStats metrics={metrics} loading={loading} />
+      <SectionContainer className="w-full">
+        <RiskQuickStats metrics={metrics} loading={loading} />
+      </SectionContainer>
 
       <SectionContainer className="w-full">
         <PerformanceBox
@@ -38,7 +40,9 @@ function PagePerformance() {
         />
       </SectionContainer>
 
-      <RiskAnalysisCard metrics={metrics} loading={loading} />
+      <SectionContainer className="w-full">
+        <RiskAnalysisCard metrics={metrics} loading={loading} />
+      </SectionContainer>
 
       <SectionContainer className="w-full">
         <YearlyOverview id={id} selectedBenchmarks={selectedBenchmarks} />
