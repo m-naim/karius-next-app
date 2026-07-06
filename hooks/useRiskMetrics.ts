@@ -53,8 +53,8 @@ export function useRiskMetrics(portfolioId: string, period: string, selectedBenc
           setMetrics(null);
         }
         
-        // Include benchmarks in the cache key to separate metric results
-        const cacheKey = `risk-${portfolioId}-${period}-${selectedBenchmarks.join(',')}`;
+        // Include benchmarks in the cache key to separate metric results, prefix with v2 to invalidate old cache
+        const cacheKey = `risk-v2-${portfolioId}-${period}-${selectedBenchmarks.join(',')}`;
         const cached = await getCache(cacheKey);
         
         if (!isMounted) return;
