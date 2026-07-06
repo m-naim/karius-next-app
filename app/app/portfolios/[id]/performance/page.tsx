@@ -14,7 +14,7 @@ function PagePerformance() {
   const id = usePathname().split('/')[3]
   const [selectedBenchmarks, setSelectedBenchmarks] = useState<string[]>([])
   const [period, setPeriod] = useState<string>('1M')
-  const { metrics, loading } = useRiskMetrics(id, period)
+  const { metrics, loading } = useRiskMetrics(id, period, selectedBenchmarks)
 
   const handleAddBenchmark = (benchmark: string) => {
     if (!validateBenchmark(benchmark)) return

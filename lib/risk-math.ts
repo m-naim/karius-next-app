@@ -68,3 +68,24 @@ export function calculateMaxDrawdown(values: number[]): number {
   }
   return maxDrawdown;
 }
+
+export function calculateBeta(portfolioReturns: number[], benchmarkReturns: number[]): number {
+  if (portfolioReturns.length !== benchmarkReturns.length || portfolioReturns.length === 0) return 0;
+  
+  const meanPortfolio = portfolioReturns.reduce((sum, r) => sum + r, 0) / portfolioReturns.length;
+  const meanBenchmark = benchmarkReturns.reduce((sum, r) => sum + r, 0) / benchmarkReturns.length;
+  
+  let covariance = 0;
+  let varianceBenchmark = 0;
+  
+  for (let i = 0; i < portfolioReturns.length; i++) {
+    const diffPortfolio = portfolioReturns[i] - meanPortfolio;
+    const diffBenchmark = benchmarkReturns[i] - meanBenchmark;
+    
+    covariance += diffPortfolio * diffBenchmark;
+    varianceBenchmark += Math.pow(diffBenchmark, 2);
+  }
+  
+  if (varianceBenchmark === 0) return 0;
+  return covariance / varianceBenchmark;
+}

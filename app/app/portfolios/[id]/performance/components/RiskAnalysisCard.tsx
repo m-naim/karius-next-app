@@ -137,6 +137,61 @@ export function RiskAnalysisCard({ metrics, loading, period }: RiskAnalysisCardP
             </div>
           )}
         </div>
+        {metrics.benchmarks && Object.keys(metrics.benchmarks).length > 0 && (
+          <div className="mt-8 border-t border-border/50 pt-6">
+            <h3 className="text-lg font-bold tracking-tight mb-4 text-foreground">Comparaison avec les Benchmarks</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm border-collapse">
+                <thead>
+                  <tr className="border-b border-border/50 text-muted-foreground text-xs uppercase tracking-wider font-semibold">
+                    <th className="py-2">Indicateur</th>
+                    <th className="py-2 text-right">Portefeuille</th>
+                    {Object.keys(metrics.benchmarks).map((symbol) => (
+                      <th key={symbol} className="py-2 text-right">{symbol}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/30">
+                  <tr className="hover:bg-muted/10 transition-colors">
+                    <td className="py-3 font-medium text-muted-foreground">Ratio de Sharpe</td>
+                    <td className="py-3 text-right font-bold">{formatNumber(metrics.sharpe)}</td>
+                    {Object.entries(metrics.benchmarks).map(([symbol, m]) => (
+                      <td key={symbol} className="py-3 text-right text-muted-foreground">{formatNumber(m.sharpe)}</td>
+                    ))}
+                  </tr>
+                  <tr className="hover:bg-muted/10 transition-colors">
+                    <td className="py-3 font-medium text-muted-foreground">Ratio de Sortino</td>
+                    <td className="py-3 text-right font-bold">{formatNumber(metrics.sortino)}</td>
+                    {Object.entries(metrics.benchmarks).map(([symbol, m]) => (
+                      <td key={symbol} className="py-3 text-right text-muted-foreground">{formatNumber(m.sortino)}</td>
+                    ))}
+                  </tr>
+                  <tr className="hover:bg-muted/10 transition-colors">
+                    <td className="py-3 font-medium text-muted-foreground">Volatilité (Annualisée)</td>
+                    <td className="py-3 text-right font-bold">{formatPercent(metrics.volatility)}</td>
+                    {Object.entries(metrics.benchmarks).map(([symbol, m]) => (
+                      <td key={symbol} className="py-3 text-right text-muted-foreground">{formatPercent(m.volatility)}</td>
+                    ))}
+                  </tr>
+                  <tr className="hover:bg-muted/10 transition-colors">
+                    <td className="py-3 font-medium text-muted-foreground">Chute Maximale (Drawdown)</td>
+                    <td className="py-3 text-right font-bold">{formatPercent(metrics.maxDrawdown)}</td>
+                    {Object.entries(metrics.benchmarks).map(([symbol, m]) => (
+                      <td key={symbol} className="py-3 text-right text-muted-foreground">{formatPercent(m.maxDrawdown)}</td>
+                    ))}
+                  </tr>
+                  <tr className="hover:bg-muted/10 transition-colors">
+                    <td className="py-3 font-medium text-muted-foreground">Bêta (sensibilité)</td>
+                    <td className="py-3 text-right font-bold text-primary">—</td>
+                    {Object.entries(metrics.benchmarks).map(([symbol, m]) => (
+                      <td key={symbol} className="py-3 text-right font-bold text-primary">{formatNumber(m.beta)}</td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

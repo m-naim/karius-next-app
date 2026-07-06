@@ -2,15 +2,24 @@ import { useState, useEffect } from 'react';
 import { getCache, setCache } from '../lib/idb-cache';
 import { getPerformances } from '../services/portfolioService';
 
+export interface BenchmarkMetrics {
+  volatility: number;
+  sharpe: number;
+  sortino: number;
+  maxDrawdown: number;
+  beta: number;
+}
+
 export interface RiskMetrics {
   sharpe: number;
   sortino: number;
   maxDrawdown: number;
   volatility: number;
   calmar?: number;
+  benchmarks?: { [symbol: string]: BenchmarkMetrics };
 }
 
-export function useRiskMetrics(portfolioId: string, period: string) {
+export function useRiskMetrics(portfolioId: string, period: string, selectedBenchmarks: string[] = []) {
   const [metrics, setMetrics] = useState<RiskMetrics | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +53,8 @@ export function useRiskMetrics(portfolioId: string, period: string) {
           setMetrics(null);
         }
         
-        const cacheKey = `risk-${portfolioId}-${period}`;
+        // Include benchmarks in the cache key to separate metric results
+        const cacheKey = `risk-${portfolioId}-${period}-${selectedBenchmarks.join(',')}`;
         const cached = await getCache(cacheKey);
         
         if (!isMounted) return;
@@ -60,7 +70,7 @@ export function useRiskMetrics(portfolioId: string, period: string) {
         }
 
         const days = period === '1Y' ? 365 : 1095;
-        const performanceData = await getPerformances(portfolioId, [], days);
+        const performanceData = await getPerformances(portfolioId, selectedBenchmarks, days);
         
         if (!performanceData || !performanceData.value) {
           throw new Error('Invalid performance data received');
@@ -114,7 +124,8 @@ export function useRiskMetrics(portfolioId: string, period: string) {
         worker.postMessage({
           type: 'CALCULATE',
           payload: {
-            values: performanceData.value
+            values: performanceData.value,
+            benchmarks: performanceData.benchmarks
           }
         });
 
@@ -134,7 +145,7 @@ export function useRiskMetrics(portfolioId: string, period: string) {
         worker.terminate();
       }
     };
-  }, [portfolioId, period]);
+  }, [portfolioId, period, selectedBenchmarks.join(',')]); // serialize benchmarks array for dependency tracking
 
   return { metrics, loading, error };
 }

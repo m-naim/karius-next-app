@@ -4,7 +4,8 @@ import {
   calculateVolatility,
   calculateSharpeRatio,
   calculateSortinoRatio,
-  calculateMaxDrawdown
+  calculateMaxDrawdown,
+  calculateBeta
 } from '../lib/risk-math.ts';
 
 function runTests() {
@@ -97,7 +98,12 @@ function runTests() {
   const mdd2 = calculateMaxDrawdown(values2);
   assert.ok(Math.abs(mdd2 - 0.2) < 1e-6);
 
-
+  // Test calculateBeta
+  const portfolioRet = [0.01, 0.02, -0.01];
+  const benchmarkRet = [0.005, 0.01, -0.005];
+  // returns are perfectly correlated, beta should be 2.0
+  const beta1 = calculateBeta(portfolioRet, benchmarkRet);
+  assert.ok(Math.abs(beta1 - 2.0) < 1e-6);
 }
 
 runTests();
