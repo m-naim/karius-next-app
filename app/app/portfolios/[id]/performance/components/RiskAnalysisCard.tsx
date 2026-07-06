@@ -47,10 +47,10 @@ export function RiskAnalysisCard({ metrics, loading }: RiskAnalysisCardProps) {
     }).format(val);
   };
 
-  const getDrawdownColor = (val: number) => {
-    if (val > -0.1) return 'text-green-500';
-    if (val > -0.2) return 'text-yellow-500';
-    return 'text-red-500';
+  const getDrawdownColors = (val: number) => {
+    if (val > -0.1) return { text: 'text-green-500', bg: 'bg-green-500' };
+    if (val > -0.2) return { text: 'text-yellow-500', bg: 'bg-yellow-500' };
+    return { text: 'text-red-500', bg: 'bg-red-500' };
   };
 
   const getSortinoColor = (val: number) => {
@@ -61,6 +61,7 @@ export function RiskAnalysisCard({ metrics, loading }: RiskAnalysisCardProps) {
 
   // Create a visual representation of the drawdown (progress bar inverted)
   const drawdownPercentage = Math.min(Math.abs(metrics.maxDrawdown * 100), 100);
+  const drawdownColors = getDrawdownColors(metrics.maxDrawdown);
 
   return (
     <Card className="w-full backdrop-blur-md bg-background/80 border-border/50 text-foreground">
@@ -85,15 +86,13 @@ export function RiskAnalysisCard({ metrics, loading }: RiskAnalysisCardProps) {
           <div className="flex flex-col space-y-2">
             <span className="text-sm text-muted-foreground uppercase tracking-wider font-medium">Max Drawdown</span>
             <div className="flex items-baseline space-x-2">
-              <span className={`text-4xl font-bold ${getDrawdownColor(metrics.maxDrawdown)}`}>
+              <span className={`text-4xl font-bold ${drawdownColors.text}`}>
                 {formatPercent(metrics.maxDrawdown)}
               </span>
             </div>
             <div className="w-full bg-secondary rounded-full h-2.5 mt-2 overflow-hidden flex">
               <div
-                className={`h-2.5 rounded-full ${
-                  metrics.maxDrawdown > -0.1 ? 'bg-green-500' : metrics.maxDrawdown > -0.2 ? 'bg-yellow-500' : 'bg-red-500'
-                }`}
+                className={`h-2.5 rounded-full ${drawdownColors.bg}`}
                 style={{ width: `${drawdownPercentage}%` }}
               ></div>
             </div>
@@ -101,6 +100,20 @@ export function RiskAnalysisCard({ metrics, loading }: RiskAnalysisCardProps) {
               The maximum observed loss from a peak to a trough of a portfolio. Lower absolute value is better.
             </p>
           </div>
+
+          {metrics.calmar !== undefined && (
+            <div className="flex flex-col space-y-2">
+              <span className="text-sm text-muted-foreground uppercase tracking-wider font-medium">Calmar Ratio</span>
+              <div className="flex items-baseline space-x-2">
+                <span className="text-4xl font-bold">
+                  {formatNumber(metrics.calmar)}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Measures risk-adjusted return relative to maximum drawdown. Higher is better.
+              </p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

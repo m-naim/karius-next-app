@@ -7,6 +7,7 @@ export interface RiskMetrics {
   sortino: number;
   maxDrawdown: number;
   volatility: number;
+  calmar?: number;
 }
 
 export function useRiskMetrics(portfolioId: string) {
