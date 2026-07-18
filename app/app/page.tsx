@@ -6,13 +6,13 @@ import { MarketPulse } from '@/components/molecules/market/MarketPulse'
 import authService from '@/services/authService'
 import { getAll as getPortfolios } from '@/services/portfolioService'
 import { getAll as getWatchlists } from '@/services/watchListService'
-import { PortfolioCard, PortfolioSummery } from './portfolios/portfolioCard'
+import { PortfolioCard, PortfolioSummery } from './portfolios/PortfolioCard'
 import { WatchCard } from './watchlist/watchlistCard'
 import { WatchListInfos } from './watchlist/page'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { ArrowRight, Briefcase, ListTodo, GraduationCap, Telescope, Play, Activity } from 'lucide-react'
+import { ArrowRight, Briefcase, ListTodo, GraduationCap, Telescope, Play, Activity, AlertCircle } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export default function AppDashboard() {
@@ -20,25 +20,30 @@ export default function AppDashboard() {
   const [portfolios, setPortfolios] = useState<PortfolioSummery[]>([])
   const [watchlists, setWatchlists] = useState<WatchListInfos[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   
   const user = authService.getCurrentUser()?.user
 
+  const fetchData = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const [portRes, watchRes] = await Promise.all([
+        getPortfolios(),
+        getWatchlists()
+      ])
+      setPortfolios(portRes.ownPortfolios || [])
+      setWatchlists(watchRes || [])
+    } catch (e: any) {
+      console.error('Failed to fetch dashboard data', e)
+      setError(e.message || 'Impossible de charger les données. Veuillez réessayer.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
     setMounted(true)
-    const fetchData = async () => {
-      try {
-        const [portRes, watchRes] = await Promise.all([
-          getPortfolios(),
-          getWatchlists()
-        ])
-        setPortfolios(portRes.ownPortfolios || [])
-        setWatchlists(watchRes || [])
-      } catch (e) {
-        console.error('Failed to fetch dashboard data', e)
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchData()
   }, [])
 
@@ -96,6 +101,14 @@ export default function AppDashboard() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {loading ? (
                 Array(2).fill(0).map((_, i) => <Skeleton key={i} className="h-32 w-full rounded-2xl" />)
+              ) : error ? (
+                <div className="col-span-2 flex flex-col items-center justify-center rounded-2xl border border-dashed border-destructive/25 bg-destructive/5 py-8 text-center px-4">
+                  <AlertCircle className="mb-2 h-6 w-6 text-destructive" />
+                  <p className="text-xs font-medium text-muted-foreground">{error}</p>
+                  <Button onClick={fetchData} variant="outline" size="sm" className="mt-3 rounded-full">
+                    Réessayer
+                  </Button>
+                </div>
               ) : portfolios.length > 0 ? (
                 portfolios.slice(0, 4).map((p) => (
                   <PortfolioCard key={p.id} {...p} />
@@ -129,6 +142,14 @@ export default function AppDashboard() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {loading ? (
                 Array(2).fill(0).map((_, i) => <Skeleton key={i} className="h-32 w-full rounded-2xl" />)
+              ) : error ? (
+                <div className="col-span-2 flex flex-col items-center justify-center rounded-2xl border border-dashed border-destructive/25 bg-destructive/5 py-8 text-center px-4">
+                  <AlertCircle className="mb-2 h-6 w-6 text-destructive" />
+                  <p className="text-xs font-medium text-muted-foreground">{error}</p>
+                  <Button onClick={fetchData} variant="outline" size="sm" className="mt-3 rounded-full">
+                    Réessayer
+                  </Button>
+                </div>
               ) : watchlists.length > 0 ? (
                 watchlists.slice(0, 4).map((w, index) => (
                   <WatchCard key={w._id || w.id || index} data={w} displayContent={true} />

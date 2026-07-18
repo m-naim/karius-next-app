@@ -21,7 +21,7 @@ import {
   WalletMinimal,
   Search,
 } from 'lucide-react'
-import TransactionDialogue from './transactionDialogue'
+import TransactionDialogue from './TransactionDialogue'
 import Link from 'next/link'
 import {
   AddTransaction,
@@ -30,11 +30,11 @@ import {
   initPortfolioSSE,
 } from '@/services/portfolioService'
 import { v4 as uuidv4 } from 'uuid'
-import StatsCard from './statsCard'
-import AccountsMouvements from './accountsMouvements'
+import StatsCard from './StatsCard'
+import AccountsMouvements from './AccountsMouvements'
 import Loader from '@/components/molecules/loader/loader'
 import { round10 } from '@/lib/decimalAjustement'
-import AllocationPie from './allocationPie'
+import AllocationPie from './AllocationPie'
 import PortfolioTable from '@/components/molecules/table/PortfolioTable'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
@@ -186,16 +186,21 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
         <div className="w-full flex-grow lg:w-8/12">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-1">
-              <h2 className="text-xl font-bold tracking-tight">Investissements</h2>
+              <h2 className="text-xl font-bold tracking-tight text-balance">Investissements</h2>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">{data.length} actifs détenus</span>
-                <div className="flex items-center gap-1 rounded-md bg-muted/50 p-1">
+                <div 
+                  role="group" 
+                  aria-label="Période de performance" 
+                  className="flex items-center gap-1 rounded-md bg-muted/50 p-1"
+                >
                   {['1w', '1m', '1y', '5y'].map((p) => (
                     <button
                       key={p}
                       onClick={() => setSelectedPeriod(p)}
+                      aria-pressed={selectedPeriod === p}
                       className={cn(
-                        'rounded px-2 py-0.5 text-[10px] font-bold uppercase transition-all',
+                        'rounded px-2 py-0.5 text-[10px] font-bold uppercase transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                         selectedPeriod === p
                           ? 'bg-background text-foreground shadow-sm'
                           : 'text-muted-foreground hover:text-foreground'
@@ -296,7 +301,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
         </div>
 
         {/* RIGHT COLUMN: Allocation */}
-        <div className="w-fill flex flex-grow flex-col gap-6 lg:max-w-xs">
+        <div className="w-full flex flex-grow flex-col gap-6 lg:max-w-xs">
           {data.length > 0 && (
             <Card className="overflow-hidden border-border bg-card shadow-sm">
               <CardHeader className="px-4 py-3 border-b border-border/50">

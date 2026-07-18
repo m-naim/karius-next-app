@@ -57,7 +57,7 @@ function DividendsView({ id, loading, dates, values }) {
         {/* <MultiSelect list={['Mensuel', 'Annuel']} active={period} select={handlePeriodClick} /> */}
       </CardHeader>
       <CardContent>
-        <div className="m-2  max-h-[32rem] ">
+        <div className="m-2 h-[50vh] min-h-[300px] w-full">
           {dates.length > 0 ? (
             <Bar
               id={'Dividends'}

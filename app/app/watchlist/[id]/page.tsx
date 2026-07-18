@@ -61,7 +61,7 @@ export default function Watchlist() {
   const [view, setView] = React.useState<'table' | 'analysis'>('table')
   const [allWatchlists, setAllWatchlists] = React.useState<watchList[]>([])
   const [owned, setOwned] = React.useState(false)
-  const [loading, setloading] = React.useState(true)
+  const [loading, setLoading] = React.useState(true)
   const [selectedTicker, setSelectedTicker] = React.useState<string | null>(null)
   const [showChart, setShowChart] = React.useState(false)
 
@@ -227,23 +227,20 @@ export default function Watchlist() {
     setItem(globalTagsKey, JSON.stringify(tags))
   }
 
-  const useDynamicTableData = (securities: security[]) => {
-    return useMemo(() => {
-      return securities.map((security) => ({
-        ...security,
-        variation: security.variations?.[selectedPeriod] ?? security.regularMarketChangePercent,
-      }))
-    }, [data, selectedPeriod])
-  }
+  const tableData = useMemo(() => {
+    return (data?.securities || []).map((security) => ({
+      ...security,
+      variation: security.variations?.[selectedPeriod] ?? security.regularMarketChangePercent,
+    }))
+  }, [data, selectedPeriod])
 
-  const useDynamicColumns = () =>
-    useMemo(() => {
-      return columns(id, owned, data.benchMark, deleteRow, selectedPeriod, allWatchlists)
-    }, [id, owned, data.benchMark, deleteRow, selectedPeriod, allWatchlists])
+  const tableColumns = useMemo(() => {
+    return columns(id, owned, data?.benchMark, deleteRow, selectedPeriod, allWatchlists)
+  }, [id, owned, data?.benchMark, deleteRow, selectedPeriod, allWatchlists])
 
   const table = useReactTable<security>({
-    data: useDynamicTableData(data!.securities),
-    columns: useDynamicColumns(),
+    data: tableData,
+    columns: tableColumns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
@@ -272,7 +269,7 @@ export default function Watchlist() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setloading(true)
+        setLoading(true)
         const [listResponse, allResponse] = await Promise.all([
           watchListService.get(id),
           watchListService.getAll(),
@@ -314,7 +311,7 @@ export default function Watchlist() {
           description: 'Impossible de récupérer les données de la watchlist.',
         })
       } finally {
-        setloading(false)
+        setLoading(false)
       }
     }
     fetchData()
@@ -323,7 +320,7 @@ export default function Watchlist() {
   return loading ? (
     <Loader />
   ) : (
-    <div className="flex h-[calc(100vh-20px)] flex-col space-y-2 p-2">
+    <div className="flex h-[calc(100dvh-60px)] flex-col gap-2 p-2">
       <div className="bg-dark flex shrink-0 items-center justify-between gap-4 rounded-lg border p-4">
         <div className="flex min-w-0 items-center gap-3">
           <Link href="/app/watchlist" className="inline-flex shrink-0">
@@ -342,6 +339,7 @@ export default function Watchlist() {
             size="icon"
             className="h-8 w-8 shrink-0"
             onClick={downloadCSV}
+            aria-label="Télécharger en CSV"
             title="Télécharger en CSV"
           >
             <Download className="h-4 w-4" />
@@ -351,6 +349,7 @@ export default function Watchlist() {
             size="icon"
             className="h-8 w-8 shrink-0"
             onClick={() => setView(view === 'table' ? 'analysis' : 'table')}
+            aria-label={view === 'table' ? 'Vue Analyse' : 'Vue Tableau'}
             title={view === 'table' ? 'Vue Analyse' : 'Vue Tableau'}
           >
             {view === 'table' ? (
@@ -362,8 +361,16 @@ export default function Watchlist() {
 
           {owned && (
             <Link href={`/app/watchlist/${id}/settings`}>
-              <Settings className="mr-2 h-4 w-4" strokeWidth={1.5} />
-              <span className="sr-only">Paramètres</span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0"
+                aria-label="Paramètres de la watchlist"
+                title="Paramètres"
+                asChild={false}
+              >
+                <Settings className="h-4 w-4" strokeWidth={1.5} />
+              </Button>
             </Link>
           )}
         </div>
@@ -423,9 +430,10 @@ export default function Watchlist() {
               onDeleteGlobalTag={onDeleteGlobalTag}
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-gray-500">
-              Select a security to view chart
-            </div>
+          <div className="flex h-full flex-col items-center justify-center gap-3 text-muted-foreground">
+            <LineChart className="h-8 w-8 opacity-30" />
+            <p className="text-sm font-medium">Cliquez sur une valeur pour afficher son analyse</p>
+          </div>
           )}
         </RightSidebar>
       </div>

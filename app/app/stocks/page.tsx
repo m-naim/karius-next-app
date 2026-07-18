@@ -90,7 +90,7 @@ export default function StockSearchPage() {
           className="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl"
         >
           Rechercher une{' '}
-          <span className="bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">
+          <span className="text-primary">
             Valeur
           </span>
         </motion.h1>

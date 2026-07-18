@@ -218,17 +218,17 @@ export const Actions = ({ symbol, id, deleteRow, allWatchlists = [], security }:
         onOpenChange={(open) => !open && setActiveDialog(null)}
       >
         <DialogContent className="gap-0 overflow-hidden border-none p-0 shadow-2xl sm:max-w-[480px]">
-          <div className="bg-slate-900 p-6 text-white">
+          <div className="bg-foreground p-6 text-background">
             <div className="flex items-center gap-4">
-              <Avatar className="h-12 w-12 border-2 border-slate-700 bg-white">
+              <Avatar className="h-12 w-12 border-2 border-border bg-background">
                 <AvatarImage src={security?.logo} alt={symbol} />
-                <AvatarFallback className="font-bold text-slate-900">
+                <AvatarFallback className="font-bold text-foreground">
                   {symbol.slice(0, 2)}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <DialogTitle className="text-xl font-bold">{symbol}</DialogTitle>
-                <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                <p className="text-xs font-medium uppercase tracking-wider text-background/60">
                   {security?.longname || 'Security'}
                 </p>
               </div>
@@ -241,18 +241,18 @@ export const Actions = ({ symbol, id, deleteRow, allWatchlists = [], security }:
               <div className="space-y-4">
                 <div className="mb-2 flex items-center gap-2">
                   <div className="h-4 w-1 rounded-full bg-primary" />
-                  <h3 className="text-sm font-bold uppercase tracking-tight text-slate-500">
+                  <h3 className="text-sm font-bold uppercase tracking-tight text-muted-foreground">
                     Condition
                   </h3>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-bold uppercase text-slate-400">
+                    <Label className="text-[10px] font-bold uppercase text-muted-foreground">
                       Type d'indicateur
                     </Label>
                     <Select value={alertType} onValueChange={setAlertType}>
-                      <SelectTrigger className="h-10 border-slate-200">
+                      <SelectTrigger className="h-10 border-border">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -262,11 +262,11 @@ export const Actions = ({ symbol, id, deleteRow, allWatchlists = [], security }:
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-bold uppercase text-slate-400">
+                    <Label className="text-[10px] font-bold uppercase text-muted-foreground">
                       Croisement
                     </Label>
                     <Select value={operator} onValueChange={setOperator}>
-                      <SelectTrigger className="h-10 border-slate-200">
+                      <SelectTrigger className="h-10 border-border">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -280,7 +280,7 @@ export const Actions = ({ symbol, id, deleteRow, allWatchlists = [], security }:
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase text-slate-400">
+                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">
                     Valeur cible
                   </Label>
                   <div className="relative">
@@ -289,9 +289,9 @@ export const Actions = ({ symbol, id, deleteRow, allWatchlists = [], security }:
                       value={value}
                       onChange={(e) => setValue(e.target.value)}
                       placeholder="Ex: 150.50"
-                      className="h-10 border-slate-200 pl-8 font-bold"
+                      className="h-10 border-border pl-8 font-bold"
                     />
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-400">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-muted-foreground">
                       $
                     </span>
                   </div>
@@ -302,7 +302,7 @@ export const Actions = ({ symbol, id, deleteRow, allWatchlists = [], security }:
               <div className="space-y-4">
                 <div className="mb-2 flex items-center gap-2">
                   <div className="h-4 w-1 rounded-full bg-primary" />
-                  <h3 className="text-sm font-bold uppercase tracking-tight text-slate-500">
+                  <h3 className="text-sm font-bold uppercase tracking-tight text-muted-foreground">
                     Options
                   </h3>
                 </div>
@@ -317,7 +317,7 @@ export const Actions = ({ symbol, id, deleteRow, allWatchlists = [], security }:
                     className={`flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 transition-all hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-primary ${option === 'once' ? 'border-primary bg-primary/5' : ''}`}
                   >
                     <RadioGroupItem value="once" id="once" className="sr-only" />
-                    <Clock className="mb-2 h-5 w-5 text-slate-400" />
+                    <Clock className="mb-2 h-5 w-5 text-muted-foreground" />
                     <span className="text-[10px] font-bold uppercase">Une seule fois</span>
                   </Label>
                   <Label
@@ -325,19 +325,19 @@ export const Actions = ({ symbol, id, deleteRow, allWatchlists = [], security }:
                     className={`flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 transition-all hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-primary ${option === 'every' ? 'border-primary bg-primary/5' : ''}`}
                   >
                     <RadioGroupItem value="every" id="every" className="sr-only" />
-                    <Activity className="mb-2 h-5 w-5 text-slate-400" />
+                    <Activity className="mb-2 h-5 w-5 text-muted-foreground" />
                     <span className="text-[10px] font-bold uppercase">À chaque fois</span>
                   </Label>
                 </RadioGroup>
 
                 <div className="pt-2">
-                  <Label className="mb-2 block text-[10px] font-bold uppercase text-slate-400">
+                  <Label className="mb-2 block text-[10px] font-bold uppercase text-muted-foreground">
                     Expiration
                   </Label>
                   <Select value={expiration} onValueChange={setExpiration}>
-                    <SelectTrigger className="h-10 border-slate-200">
+                    <SelectTrigger className="h-10 border-border">
                       <div className="flex items-center gap-2">
-                        <CalendarIcon className="h-4 w-4 text-slate-400" />
+                        <CalendarIcon className="h-4 w-4 text-muted-foreground" />
                         <SelectValue />
                       </div>
                     </SelectTrigger>
@@ -355,18 +355,18 @@ export const Actions = ({ symbol, id, deleteRow, allWatchlists = [], security }:
               <div className="space-y-4">
                 <div className="mb-2 flex items-center gap-2">
                   <div className="h-4 w-1 rounded-full bg-primary" />
-                  <h3 className="text-sm font-bold uppercase tracking-tight text-slate-500">
+                  <h3 className="text-sm font-bold uppercase tracking-tight text-muted-foreground">
                     Actions
                   </h3>
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 p-3">
+                  <div className="flex items-center justify-between rounded-lg border border-border bg-muted p-3">
                     <div className="flex items-center gap-3">
-                      <div className="rounded-md bg-blue-500 p-1.5 text-white">
+                      <div className="rounded-md bg-primary p-1.5 text-primary-foreground">
                         <Send className="h-3.5 w-3.5" />
                       </div>
-                      <span className="text-xs font-bold text-slate-700">
+                      <span className="text-xs font-bold text-foreground">
                         Notification Telegram
                       </span>
                     </div>
@@ -375,16 +375,16 @@ export const Actions = ({ symbol, id, deleteRow, allWatchlists = [], security }:
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 p-3 opacity-50">
+                  <div className="flex items-center justify-between rounded-lg border border-border bg-muted p-3 opacity-50">
                     <div className="flex items-center gap-3">
-                      <div className="rounded-md bg-slate-400 p-1.5 text-white">
+                      <div className="rounded-md bg-muted-foreground p-1.5 text-background">
                         <Smartphone className="h-3.5 w-3.5" />
                       </div>
-                      <span className="text-xs font-bold text-slate-700">
+                      <span className="text-xs font-bold text-foreground">
                         App Push (Indisponible)
                       </span>
                     </div>
-                    <div className="relative h-5 w-10 cursor-not-allowed rounded-full bg-slate-200">
+                    <div className="relative h-5 w-10 cursor-not-allowed rounded-full bg-muted">
                       <div className="absolute left-1 top-1 h-3 w-3 rounded-full bg-white shadow-sm" />
                     </div>
                   </div>
@@ -392,19 +392,19 @@ export const Actions = ({ symbol, id, deleteRow, allWatchlists = [], security }:
               </div>
 
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase text-slate-400">
+                <Label className="text-[10px] font-bold uppercase text-muted-foreground">
                   Message d'alerte
                 </Label>
                 <Textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  className="min-h-[80px] border-slate-200 text-sm italic"
+                  className="min-h-[80px] border-border text-sm italic"
                 />
               </div>
             </div>
           </ScrollArea>
 
-          <div className="flex gap-3 border-t bg-slate-50 p-6">
+          <div className="flex gap-3 border-t bg-muted p-6">
             <Button
               variant="outline"
               className="h-11 flex-1 font-bold uppercase tracking-tight"

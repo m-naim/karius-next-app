@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import TransactionDialogue from '../transactionDialogue'
+import TransactionDialogue from '../TransactionDialogue'
 import { deleteTransaction, modifyTransactionApi } from '@/services/portfolioService'
 import { formatDate } from '@/lib/formatDate'
 

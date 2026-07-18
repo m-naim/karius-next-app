@@ -8,24 +8,41 @@ import VariationContainer from '@/components/molecules/portfolio/variationContai
 import { round10 } from '@/lib/decimalAjustement'
 import { percentVariation } from '@/lib/math'
 import { security } from 'app/app/watchlist/[id]/data/security'
+import { cn } from '@/lib/utils'
 
 type FiltrProps = {
   column: Column<security, string>
 }
 
-const SortingButton = (title) => {
+const SortingButton = (title, alignRight = false) => {
   return function GhostButton({ column }: FiltrProps) {
     return (
-      <Button
-        className="text-xs capitalize "
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-      >
-        {title}
-        {column.getIsSorted() === 'asc' ? <ChevronUp className="ml-2 h-4 w-4" /> : null}
-        {column.getIsSorted() === 'desc' ? <ChevronDown className="ml-2 h-4 w-4" /> : null}
-        {!column.getIsSorted() ? <ArrowUpDown className="ml-2 h-4 w-4" /> : null}
-      </Button>
+      <div className={cn("flex w-full items-center", alignRight ? "justify-end" : "justify-start")}>
+        <Button
+          className={cn(
+            "text-xs capitalize px-2 h-8 font-semibold",
+            alignRight ? "-mr-2 text-right" : "-ml-2 text-left"
+          )}
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          {alignRight ? (
+            <>
+              {column.getIsSorted() === 'asc' ? <ChevronUp className="mr-1.5 h-3.5 w-3.5 shrink-0" /> : null}
+              {column.getIsSorted() === 'desc' ? <ChevronDown className="mr-1.5 h-3.5 w-3.5 shrink-0" /> : null}
+              {!column.getIsSorted() ? <ArrowUpDown className="mr-1.5 h-3.5 w-3.5 shrink-0" /> : null}
+              {title}
+            </>
+          ) : (
+            <>
+              {title}
+              {column.getIsSorted() === 'asc' ? <ChevronUp className="ml-1.5 h-3.5 w-3.5 shrink-0" /> : null}
+              {column.getIsSorted() === 'desc' ? <ChevronDown className="ml-1.5 h-3.5 w-3.5 shrink-0" /> : null}
+              {!column.getIsSorted() ? <ArrowUpDown className="ml-1.5 h-3.5 w-3.5 shrink-0" /> : null}
+            </>
+          )}
+        </Button>
+      </div>
     )
   }
 }
@@ -65,6 +82,7 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
                 href={`https://www.gurufocus.com/stock/${ticker}`}
                 className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 title="Voir sur GuruFocus"
+                aria-label="Voir sur GuruFocus"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
               </a>
@@ -76,25 +94,30 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
 
     {
       accessorKey: 'weight',
-      header: SortingButton('Poids'),
+      header: SortingButton('Poids', true),
       cell: ({ row }) => (
-        <div className="font-medium">{round10((row.getValue('weight') as number) * 100, -4)}%</div>
+        <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm font-medium">
+          {round10((row.getValue('weight') as number) * 100, -4)}%
+        </div>
       ),
     },
     {
       accessorKey: 'regularMarketPrice',
-      header: SortingButton('Prix'),
+      header: SortingButton('Prix', true),
       cell: ({ row }) => {
         const prix = parseFloat(row.getValue('regularMarketPrice'))
 
-        // Format the prix as a dollar prix
         const formatted = new Intl.NumberFormat('fr-Fr', {
           style: 'currency',
           currency: row.original.currency || 'EUR',
           currencyDisplay: 'narrowSymbol',
         }).format(prix)
 
-        return <div className="font-medium">{formatted}</div>
+        return (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm font-medium">
+            {formatted}
+          </div>
+        )
       },
     },
     {
@@ -111,7 +134,7 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
         return chg
       },
       id: 'variation',
-      header: SortingButton('Variation'),
+      header: SortingButton('Variation', true),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
         const avg =
@@ -120,12 +143,14 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
             return isNaN(val) || val === -10000 ? acc : acc + val
           }, 0) / rows.filter((r) => !isNaN(r.getValue('variation') as number)).length
         return (
-          <VariationContainer
-            value={avg}
-            entity="%"
-            background={false}
-            className="m-0 p-0 text-[10px]"
-          />
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
+            <VariationContainer
+              value={avg}
+              entity="%"
+              background={false}
+              className="m-0 p-0 text-[10px]"
+            />
+          </div>
         )
       },
       cell: ({ row }) => {
@@ -137,12 +162,14 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
         }
 
         return (
-          <VariationContainer
-            value={chg}
-            entity="%"
-            background={false}
-            className="m-0 p-0 py-1 text-[11px]"
-          />
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
+            <VariationContainer
+              value={chg}
+              entity="%"
+              background={false}
+              className="m-0 p-0 text-[11px]"
+            />
+          </div>
         )
       },
       filterFn: (row, id, value) => {
@@ -168,17 +195,19 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
 
     {
       accessorKey: 'trailingPE',
-      header: SortingButton('P/E'),
+      header: SortingButton('P/E', true),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
         const validRows = rows.filter((r) => !!r.getValue('trailingPE'))
         const avg =
           rows.reduce((acc, row) => acc + ((row.getValue('trailingPE') as number) || 0), 0) /
           validRows.length
-        return <div className="text-[10px]">{round10(avg, -2) || ''}</div>
+        return <div className="text-right font-mono tabular-nums px-2 py-1 text-[10px]">{round10(avg, -2) || ''}</div>
       },
       cell: ({ row }) => (
-        <div className="lowercase">{round10(row.getValue('trailingPE'), -2) || 'N/A'}</div>
+        <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm lowercase">
+          {round10(row.getValue('trailingPE'), -2) || 'N/A'}
+        </div>
       ),
       filterFn: (row, id, value) => {
         const val = row.getValue(id) as number
@@ -202,17 +231,19 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
     },
     {
       accessorKey: 'forwardPE',
-      header: SortingButton('P/E Fwd'),
+      header: SortingButton('P/E Fwd', true),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
         const validRows = rows.filter((r) => !!r.getValue('forwardPE'))
         const avg =
           rows.reduce((acc, row) => acc + ((row.getValue('forwardPE') as number) || 0), 0) /
           validRows.length
-        return <div className="text-[10px]">{round10(avg, -2) || ''}</div>
+        return <div className="text-right font-mono tabular-nums px-2 py-1 text-[10px]">{round10(avg, -2) || ''}</div>
       },
       cell: ({ row }) => (
-        <div className="lowercase">{round10(row.getValue('forwardPE'), -2) || 'N/A'}</div>
+        <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm lowercase">
+          {round10(row.getValue('forwardPE'), -2) || 'N/A'}
+        </div>
       ),
       filterFn: (row, id, value) => {
         if (!value) return true
@@ -229,7 +260,7 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
 
     {
       accessorKey: 'dividendYield',
-      header: SortingButton('Rendement Div.'),
+      header: SortingButton('Rendement Div.', true),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
         const validRows = rows.filter((r) => !!r.getValue('dividendYield'))
@@ -237,23 +268,27 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
           rows.reduce((acc, row) => acc + ((row.getValue('dividendYield') as number) || 0), 0) /
           validRows.length
         return (
-          <VariationContainer
-            value={round10(avg, -2) || 0}
-            entity="%"
-            background={false}
-            vaiationColor={false}
-            className="m-0 p-0 text-[10px]"
-          />
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-[10px]">
+            <VariationContainer
+              value={round10(avg, -2) || 0}
+              entity="%"
+              background={false}
+              vaiationColor={false}
+              className="m-0 p-0"
+            />
+          </div>
         )
       },
       cell: ({ row }) => (
-        <VariationContainer
-          value={round10(row.getValue('dividendYield'), -2) || 0}
-          entity="%"
-          background={false}
-          vaiationColor={false}
-          className="m-0 p-0 py-1 text-[11px]"
-        />
+        <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
+          <VariationContainer
+            value={round10(row.getValue('dividendYield'), -2) || 0}
+            entity="%"
+            background={false}
+            vaiationColor={false}
+            className="m-0 p-0 text-[11px]"
+          />
+        </div>
       ),
       filterFn: (row, id, value) => {
         const val = row.getValue(id) as number
@@ -277,24 +312,26 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
     },
     {
       accessorKey: 'linearity10y',
-      header: SortingButton('Linéarité'),
+      header: SortingButton('Linéarité', true),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
         const validRows = rows.filter((r) => !!r.getValue('linearity10y'))
         const avg =
           rows.reduce((acc, row) => acc + ((row.getValue('linearity10y') as number) || 0), 0) /
           validRows.length
-        return <div className="text-[10px]">{round10(avg, -2) || ''}</div>
+        return <div className="text-right font-mono tabular-nums px-2 py-1 text-[10px]">{round10(avg, -2) || ''}</div>
       },
       cell: ({ row }) => (
-        <VariationContainer
-          value={(row.getValue('linearity10y') as number) * 100 || 0}
-          entity="%"
-          background={false}
-          vaiationColor={false}
-          sign={false}
-          className="m-0 p-0 text-[10px]"
-        />
+        <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
+          <VariationContainer
+            value={(row.getValue('linearity10y') as number) * 100 || 0}
+            entity="%"
+            background={false}
+            vaiationColor={false}
+            sign={false}
+            className="m-0 p-0 text-[10px]"
+          />
+        </div>
       ),
       filterFn: (row, id, value) => {
         const val = (row.getValue(id) as number) * 100
@@ -332,7 +369,7 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
         return chg * lin
       },
       id: 'ret_lin',
-      header: SortingButton('Score (Ret×Lin)'),
+      header: SortingButton('Score (Ret×Lin)', true),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
         const filteredRows = rows.filter(
@@ -344,33 +381,37 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
             return isNaN(val) || val === -10000 ? acc : acc + val
           }, 0) / filteredRows.length
         return (
-          <VariationContainer
-            value={avg}
-            entity="%"
-            background={false}
-            className="m-0 p-0 text-[10px]"
-          />
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
+            <VariationContainer
+              value={avg}
+              entity="%"
+              background={false}
+              className="m-0 p-0 text-[10px]"
+            />
+          </div>
         )
       },
       cell: ({ row }) => {
         const val = row.getValue('ret_lin') as number
         return (
-          <VariationContainer
-            value={val}
-            entity="%"
-            background={false}
-            className="m-0 p-0 py-1 text-[11px]"
-          />
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
+            <VariationContainer
+              value={val}
+              entity="%"
+              background={false}
+              className="m-0 p-0 text-[11px]"
+            />
+          </div>
         )
       },
     },
     {
       accessorKey: 'marketCap',
-      header: SortingButton('Capitalisation'),
+      header: SortingButton('Capitalisation', true),
       cell: ({ row }) => {
         const cap = parseFloat(row.getValue('marketCap'))
         return (
-          <div className="lowercase">
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm lowercase">
             {new Intl.NumberFormat('fr-Fr', {
               style: 'decimal',
               maximumFractionDigits: 0,
@@ -387,15 +428,17 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
         return row?.lastYearFundamental?.roa || 0
       },
       id: 'roa',
-      header: SortingButton('ROA'),
+      header: SortingButton('ROA', true),
       cell: ({ row }) => (
-        <VariationContainer
-          value={(row.original?.lastYearFundamental?.roa || 0) * 100}
-          entity="%"
-          background={false}
-          vaiationColor={false}
-          className="m-0 p-0 py-1 text-[11px]"
-        />
+        <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
+          <VariationContainer
+            value={(row.original?.lastYearFundamental?.roa || 0) * 100}
+            entity="%"
+            background={false}
+            vaiationColor={false}
+            className="m-0 p-0 text-[11px]"
+          />
+        </div>
       ),
       filterFn: (row, id, value) => {
         const val = (row.original?.lastYearFundamental?.roa || 0) * 100
@@ -423,15 +466,17 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
         return row?.lastYearFundamental?.roe || 0
       },
       id: 'roe',
-      header: SortingButton('ROE'),
+      header: SortingButton('ROE', true),
       cell: ({ row }) => (
-        <VariationContainer
-          value={(row.original?.lastYearFundamental?.roe || 0) * 100}
-          entity="%"
-          background={false}
-          vaiationColor={false}
-          className="m-0 p-0 py-1 text-[11px]"
-        />
+        <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
+          <VariationContainer
+            value={(row.original?.lastYearFundamental?.roe || 0) * 100}
+            entity="%"
+            background={false}
+            vaiationColor={false}
+            className="m-0 p-0 text-[11px]"
+          />
+        </div>
       ),
       filterFn: (row, id, value) => {
         const val = (row.original?.lastYearFundamental?.roe || 0) * 100
@@ -492,14 +537,16 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
         return percentVariation(row.forwardPE, row.trailingPE)
       },
       id: 'growth',
-      header: SortingButton('Croiss. Est.'),
+      header: SortingButton('Croiss. Est.', true),
       cell: ({ row }) => (
-        <VariationContainer
-          value={percentVariation(row.getValue('forwardPE'), row.getValue('trailingPE'))}
-          entity="%"
-          background={false}
-          className="m-0 p-0 py-1 text-[11px]"
-        />
+        <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
+          <VariationContainer
+            value={percentVariation(row.getValue('forwardPE'), row.getValue('trailingPE'))}
+            entity="%"
+            background={false}
+            className="m-0 p-0 text-[11px]"
+          />
+        </div>
       ),
 
       filterFn: (row, id, value) => {

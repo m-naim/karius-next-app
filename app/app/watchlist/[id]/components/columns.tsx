@@ -60,7 +60,7 @@ export const columns = (
               <img
                 className="h-5 w-5 shrink-0 rounded-full bg-white/10 p-0.5 ring-1 ring-white/20"
                 src={`https://financialmodelingprep.com/image-stock/${row.original.symbol.toLocaleUpperCase()}.png`}
-                alt=""
+                alt={row.original.symbol}
               />
               <div className="flex flex-col">
                 <span className="max-w-[80px] truncate text-xs font-semibold md:max-w-[150px]">

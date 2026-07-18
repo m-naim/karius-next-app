@@ -61,6 +61,7 @@ interface NotificationSettings {
 export default function AlertsPage() {
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [settings, setSettings] = useState<NotificationSettings>({ channel: 'telegram' })
   const [tempChatId, setTempChatId] = useState('')
   const [updatingSettings, setUpdatingSettings] = useState(false)
@@ -84,6 +85,8 @@ export default function AlertsPage() {
   const [savingReports, setSavingReports] = useState(false)
 
   const fetchData = async () => {
+    setLoading(true)
+    setError(null)
     try {
       const [alertsData, settingsData, profileData, disabled, pfts, wls] = await Promise.all([
         alertService.getMyAlerts(),
@@ -103,8 +106,9 @@ export default function AlertsPage() {
       setDisabledEntities(Array.isArray(disabled) ? disabled : [])
       setPortfolios(Array.isArray(pfts) ? pfts : [])
       setWatchlists(Array.isArray(wls) ? wls : [])
-    } catch (error) {
-      console.error('Failed to fetch data', error)
+    } catch (err: any) {
+      console.error('Failed to fetch data', err)
+      setError(err.message || 'Une erreur est survenue lors de la récupération des données. Veuillez réessayer.')
     } finally {
       setLoading(false)
     }
@@ -272,7 +276,7 @@ export default function AlertsPage() {
     <div className="container mx-auto max-w-6xl px-4 py-8">
       <div className="mb-8 flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>
-          <h1 className="text-4xl font-black tracking-tighter uppercase italic bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-extrabold tracking-tight uppercase text-foreground">
             Centre d'Alertes
           </h1>
           <p className="font-medium text-muted-foreground mt-1">
@@ -386,6 +390,15 @@ export default function AlertsPage() {
                 {loading ? (
                   <div className="flex flex-col items-center justify-center gap-4 py-20">
                     <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                  </div>
+                ) : error ? (
+                  <div className="flex flex-col items-center justify-center gap-4 py-16 text-center border border-dashed border-destructive/30 rounded-2xl bg-destructive/5 px-6">
+                    <AlertCircle className="h-8 w-8 text-destructive" />
+                    <h3 className="text-lg font-bold text-foreground">Échec du chargement</h3>
+                    <p className="max-w-md text-sm text-muted-foreground">{error}</p>
+                    <Button onClick={fetchData} variant="outline" className="mt-2">
+                      Réessayer
+                    </Button>
                   </div>
                 ) : (
                   <div className="max-h-[600px] overflow-y-auto pr-2 pb-4 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
@@ -687,36 +700,29 @@ function AlertCard({
 
   // Styles based on state
   const isTriggered = alert.isTriggered;
-  const gradientBorder = isTriggered 
-    ? 'bg-gradient-to-b from-orange-400 to-red-500' 
-    : 'bg-gradient-to-b from-emerald-400 to-blue-500';
-    
+  
+  const cardBorder = isTriggered
+    ? 'border-orange-500/30 dark:border-orange-500/20'
+    : 'border-border/50';
+
   const badgeColors = isTriggered
     ? 'border-orange-500/30 bg-orange-500/10 text-orange-600 dark:text-orange-400'
     : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400';
 
   const cardBg = isTriggered
-    ? 'bg-background/80 hover:bg-orange-50/30 dark:hover:bg-orange-950/20'
-    : 'bg-background/80 hover:bg-slate-50/50 dark:hover:bg-slate-900/40';
+    ? 'bg-orange-500/[0.02] dark:bg-orange-500/[0.01]'
+    : 'bg-background/80';
 
   return (
     <Card
-      className={`group relative overflow-hidden border border-border/50 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md ${cardBg}`}
+      className={`group relative overflow-hidden border transition-colors hover:bg-muted/10 ${cardBorder} ${cardBg}`}
     >
-      {/* Avant-Garde Glowing Gradient Border on the left */}
-      <div className={`absolute left-0 top-0 bottom-0 w-1 ${gradientBorder} transition-all duration-300 group-hover:w-1.5`} />
-      
-      {/* Background glow effect for triggered alerts */}
-      {isTriggered && (
-        <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-orange-500/10 blur-3xl pointer-events-none" />
-      )}
-
-      <CardContent className="p-0 relative z-10 pl-1.5">
+      <CardContent className="p-0 relative z-10">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4">
           
           <div className="flex items-center gap-4">
             <div
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl shadow-inner transition-transform group-hover:scale-105 ${isTriggered ? 'bg-orange-100 dark:bg-orange-900/50' : 'bg-slate-100 dark:bg-slate-800'}`}
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl shadow-inner transition-colors ${isTriggered ? 'bg-orange-100 dark:bg-orange-900/50' : 'bg-slate-100 dark:bg-slate-800'}`}
             >
               {isTriggered ? (
                 <CheckCircle2 className="h-5 w-5 text-orange-600 dark:text-orange-400" />

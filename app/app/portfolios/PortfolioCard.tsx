@@ -90,7 +90,7 @@ export function PortfolioCard(p: PortfolioSummery) {
         </CardContent>
         
         {/* Bottom accent line */}
-        <div className="h-0.5 w-0 bg-primary transition-all duration-500 group-hover:w-full" />
+        <div className="h-0.5 w-full bg-primary origin-left transition-transform duration-500 scale-x-0 group-hover:scale-x-100" />
       </Card>
     </Link>
   )

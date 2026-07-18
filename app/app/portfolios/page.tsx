@@ -10,7 +10,7 @@ import { getAll } from '@/services/portfolioService'
 import { Flame, Star, StarIcon, TrendingUp, Users, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import React, { useEffect } from 'react'
-import { PortfolioCard, PortfolioSummery } from './portfolioCard'
+import { PortfolioCard, PortfolioSummery } from './PortfolioCard'
 
 interface PortfoliosPresentation {
   ownPortfolios: PortfolioSummery[]

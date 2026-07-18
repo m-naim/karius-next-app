@@ -87,12 +87,12 @@ export default function ExplorePortfoliosPage() {
         <h1 className="text-4xl font-black tracking-tighter text-foreground sm:text-5xl">
           Découvrir les <span className="text-primary">Stratégies</span>
         </h1>
-        <p className="mt-4 max-w-2xl text-sm text-gray-500">
+        <p className="mt-4 max-w-2xl text-sm text-muted-foreground">
           Analysez les performances et la composition des meilleurs portefeuilles publics de la communauté.
         </p>
       </div>
 
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-card p-4 rounded-2xl border shadow-sm">
         <div className="relative w-full max-w-xs">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -104,7 +104,7 @@ export default function ExplorePortfoliosPage() {
         </div>
 
         <div className="flex items-center gap-4 text-xs font-bold">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 rounded-full text-gray-500">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted/50 rounded-full text-muted-foreground">
             <span className="text-primary">{data?.totalElements || 0}</span>
             <span>Portefeuilles</span>
           </div>
@@ -120,9 +120,9 @@ export default function ExplorePortfoliosPage() {
         </div>
       </div>
 
-      <Card className="border-none shadow-xl shadow-gray-200/50 overflow-hidden rounded-3xl bg-white">
+      <Card className="shadow-sm overflow-hidden rounded-3xl bg-card border">
         <Table>
-          <TableHeader className="bg-gray-50/50">
+          <TableHeader className="bg-muted/30">
             <TableRow>
               <TableHead 
                 className="cursor-pointer hover:text-primary transition-colors font-black text-[10px] uppercase tracking-widest py-4"
@@ -154,7 +154,7 @@ export default function ExplorePortfoliosPage() {
             {loading ? (
               [...Array(limit)].map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell colSpan={5} className="h-16 animate-pulse bg-gray-50/20" />
+                  <TableCell colSpan={5} className="h-16 animate-pulse motion-reduce:animate-none bg-muted/20" />
                 </TableRow>
               ))
             ) : filteredContent.length > 0 ? (
@@ -163,12 +163,12 @@ export default function ExplorePortfoliosPage() {
                 <TableCell className="font-bold py-4">
                   <Link href={`/app/portfolios/${p.id}`} className="hover:text-primary transition-colors flex flex-col">
                     <span>{p.name}</span>
-                    <span className="text-[9px] text-gray-400 font-medium uppercase tracking-tight">Public Portfolio</span>
+                    <span className="text-[9px] text-muted-foreground/70 font-medium uppercase tracking-tight">Public Portfolio</span>
                   </Link>
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-50 text-xs font-bold text-gray-600">
-                    <Users size={12} className="text-gray-400" />
+                  <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg bg-muted/50 text-xs font-bold text-foreground">
+                    <Users size={12} className="text-muted-foreground/70" />
                     {p.followersSize || 0}
                   </div>
                 </TableCell>
@@ -183,17 +183,17 @@ export default function ExplorePortfoliosPage() {
                 <TableCell>
                    <div className="flex justify-center gap-1">
                     {p.allocation?.slice(0, 3).map((symbol) => (
-                      <span key={symbol} className="text-[9px] font-black px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 uppercase">
+                      <span key={symbol} className="text-[9px] font-black px-1.5 py-0.5 rounded bg-muted text-muted-foreground uppercase">
                         {symbol}
                       </span>
                     ))}
                     {p.allocation?.length > 3 && (
-                      <span className="text-[9px] font-bold text-gray-400">+{p.allocation.length - 3}</span>
+                      <span className="text-[9px] font-bold text-muted-foreground/70">+{p.allocation.length - 3}</span>
                     )}
                    </div>
                 </TableCell>
                 <TableCell className="text-right pr-6">
-                  <Button asChild variant="ghost" size="sm" className="rounded-full h-8 w-8 p-0 group-hover:bg-primary group-hover:text-white transition-all">
+                  <Button asChild variant="ghost" size="sm" className="rounded-full h-8 w-8 p-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                     <Link href={`/app/portfolios/${p.id}`}><TrendingUp size={14} /></Link>
                   </Button>
                 </TableCell>
@@ -201,7 +201,7 @@ export default function ExplorePortfoliosPage() {
             ))
             ) : (
                 <TableRow>
-                    <TableCell colSpan={5} className="h-32 text-center text-gray-400 italic">
+                    <TableCell colSpan={5} className="h-32 text-center text-muted-foreground/70 italic">
                         Aucun portefeuille trouvé
                     </TableCell>
                 </TableRow>
@@ -213,8 +213,8 @@ export default function ExplorePortfoliosPage() {
       {/* Pagination Controls */}
       {data && data.totalPages > 1 && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 px-2">
-          <p className="text-xs text-gray-500 font-medium">
-            Page <span className="text-gray-900 font-bold">{page + 1}</span> sur <span className="text-gray-900 font-bold">{data.totalPages}</span>
+          <p className="text-xs text-muted-foreground font-medium">
+            Page <span className="text-foreground font-bold">{page + 1}</span> sur <span className="text-foreground font-bold">{data.totalPages}</span>
           </p>
           
           <div className="flex items-center gap-2">
@@ -249,7 +249,7 @@ export default function ExplorePortfoliosPage() {
                     </Button>
                   )
                 } else if (i === page - 2 || i === page + 2) {
-                  return <span key={i} className="text-gray-300">...</span>
+                  return <span key={i} className="text-muted-foreground/40">...</span>
                 }
                 return null
               })}

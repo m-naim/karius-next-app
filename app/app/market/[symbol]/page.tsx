@@ -180,8 +180,8 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
   return loading ? (
     <Loader />
   ) : (
-    <div className="flex h-[calc(100vh-100px)] flex-col space-y-4 p-4 md:p-6">
-      <div className="bg-dark flex shrink-0 items-center justify-between gap-4 rounded-lg border p-4">
+    <div className="flex h-[calc(100dvh-60px)] md:h-[calc(100vh-80px)] flex-col gap-3 p-3 md:gap-6 md:p-6 md:py-8">
+      <div className="bg-dark flex shrink-0 items-center justify-between gap-2 rounded-xl border px-3 py-2 md:p-4">
         <div className="flex min-w-0 items-center gap-3">
           <Link href="/app/market" className="inline-flex shrink-0">
             <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -189,7 +189,7 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
             </Button>
           </Link>
           <div className="min-w-0 truncate">
-            <h1 className="truncate text-lg font-bold text-foreground">{indexInfo.name}</h1>
+            <h1 className="truncate text-sm font-bold text-foreground md:text-lg">{indexInfo.name}</h1>
           </div>
         </div>
 
@@ -210,7 +210,7 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
           <Button
             variant="ghost"
             size="icon"
-            className={`h-8 w-8 shrink-0 rounded-full ${showChart ? 'bg-gray-100' : ''}`}
+            className={cn('h-8 w-8 shrink-0 rounded-full', showChart ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground')}
             onClick={() => setShowChart(!showChart)}
           >
             <LineChart className="h-4 w-4" />
@@ -220,7 +220,7 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
       </div>
 
       {view === 'table' && (
-        <div className="flex flex-col gap-2 rounded-xl border bg-card/50 p-3 shadow-sm backdrop-blur-sm border-border/40">
+        <div className="flex shrink-0 flex-col gap-2 rounded-xl border bg-card p-2 shadow-sm border-border/60 md:p-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mr-2">
               Filtres de Marché:
@@ -232,6 +232,7 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
                   key={scr.id}
                   onClick={() => setActiveScreener(isActive ? null : scr.id)}
                   title={scr.desc}
+                  aria-pressed={isActive}
                   className={cn(
                     "rounded-full px-3.5 py-1 text-xs font-bold transition-all border",
                     isActive
@@ -260,8 +261,8 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
         </div>
       )}
 
-      <div className="flex min-h-0 flex-1 gap-4">
-        <div className="bg-dark flex-1 overflow-hidden rounded-lg border">
+      <div className="flex min-h-0 flex-1 gap-3 md:gap-4">
+        <div className="bg-dark flex-1 overflow-hidden rounded-xl border">
           {!loading && (
             <div className="flex h-full flex-col">
               {view === 'table' ? (

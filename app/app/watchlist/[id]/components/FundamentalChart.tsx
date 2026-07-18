@@ -309,7 +309,7 @@ export function FundamentalChart({ symbol }: { symbol: string }) {
 
       <div className="space-y-8">
         {loading ? (
-          <div className="flex h-[300px] items-center justify-center text-sm font-medium text-muted-foreground animate-pulse">Chargement des données...</div>
+          <div className="flex h-[300px] items-center justify-center text-sm font-medium text-muted-foreground animate-pulse motion-reduce:animate-none">Chargement des données...</div>
         ) : filteredPoints.length > 0 ? (
           Object.entries(selectedMetricsByCategory).map(([category, categoryMetrics]) =>
             renderChart(category as MetricCategory, categoryMetrics)

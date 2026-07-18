@@ -45,13 +45,13 @@ export function WatchlistSelector({ watchlists, currentId }: WatchlistSelectorPr
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between border-transparent text-xl"
+          className="w-full max-w-[300px] justify-between border-transparent text-lg font-bold sm:text-xl truncate"
         >
-          {currentValue || 'Select a watchlist...'}
+          <span className="truncate">{currentValue || 'Select a watchlist...'}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] min-w-[200px] p-0">
         <Command>
           <CommandInput placeholder="Search watchlist..." />
           <CommandList>

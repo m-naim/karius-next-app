@@ -62,8 +62,8 @@ export const TableContextHeader = ({
   const isFiltered = table.getState().columnFilters.length > 0 || !!table.getState().globalFilter
 
   return (
-    <div className="flex flex-col gap-4 p-4 sm:gap-6">
-      <div className="flex items-center justify-between gap-4">
+    <div className="flex flex-col gap-2 p-2 sm:gap-4 sm:p-4">
+      <div className="flex items-center justify-between gap-2 sm:gap-4">
         <div className="flex flex-1 items-center gap-2">
           {owned && <AddStockButton addRow={addRow} />}
 

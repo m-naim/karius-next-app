@@ -1,5 +1,5 @@
 import React from 'react'
-import TransactionDialogue from '../transactionDialogue'
+import TransactionDialogue from '../TransactionDialogue'
 import { Pencil, Trash2 } from 'lucide-react'
 
 export const Transactions = ({ id, transactionState }) => {

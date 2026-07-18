@@ -261,7 +261,7 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
               key={p}
               onClick={() => onPeriodChange?.(p)}
               className={cn(
-                'rounded px-2.5 py-1 text-[9px] font-black uppercase transition-all',
+                'rounded px-3 py-1.5 text-[10px] font-black uppercase transition-all',
                 selectedPeriod === p
                   ? 'bg-background text-primary shadow-sm ring-1 ring-border/50'
                   : 'text-muted-foreground hover:text-foreground'
@@ -289,7 +289,7 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
                   size="sm"
                   onClick={() => setSort('perf')}
                   className={cn(
-                    'h-7 px-2 text-[10px] font-bold uppercase',
+                    'h-8 px-3 text-[11px] font-bold uppercase',
                     sort === 'perf' ? 'bg-muted text-foreground' : 'text-muted-foreground'
                   )}
                 >
@@ -300,7 +300,7 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
                   size="sm"
                   onClick={() => setSort('weight')}
                   className={cn(
-                    'h-7 px-2 text-[10px] font-bold uppercase',
+                    'h-8 px-3 text-[11px] font-bold uppercase',
                     sort === 'weight' ? 'bg-muted text-foreground' : 'text-muted-foreground'
                   )}
                 >
@@ -327,13 +327,23 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
             </Tabs>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="scrollbar-hide max-h-[550px] divide-y overflow-y-auto">
+            <div className="scrollbar-hide max-h-[60vh] divide-y overflow-y-auto">
               {allocationData.map((item, i) => (
                 <div
                   key={i}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setSelectedGroup(selectedGroup === item.name ? null : item.name)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setSelectedGroup(selectedGroup === item.name ? null : item.name);
+                    }
+                  }}
+                  aria-expanded={selectedGroup === item.name}
+                  aria-label={`Détails de l'allocation pour ${item.name}`}
                   className={cn(
-                    'flex cursor-pointer flex-col p-4 transition-colors hover:bg-muted/30',
+                    'flex cursor-pointer flex-col p-4 transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:bg-primary/5',
                     selectedGroup === item.name ? 'bg-primary/5 ring-1 ring-inset ring-primary/20' : ''
                   )}
                 >
@@ -755,7 +765,7 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
                 {stats.top5.map((s) => (
                   <div
                     key={s.symbol}
-                    className="flex items-center justify-between rounded-lg border-l-4 border-green-500 bg-green-50/30 p-2.5 text-xs shadow-sm"
+                    className="flex items-center justify-between rounded-lg border border-green-500/20 bg-green-500/10 p-3 text-xs shadow-sm"
                   >
                     <span className="font-black">{s.symbol}</span>
                     <VariationContainer
@@ -774,7 +784,7 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
                 {stats.bottom5.map((s) => (
                   <div
                     key={s.symbol}
-                    className="flex items-center justify-between rounded-lg border-l-4 border-red-500 bg-red-50/30 p-2.5 text-xs shadow-sm"
+                    className="flex items-center justify-between rounded-lg border border-red-500/20 bg-red-500/10 p-3 text-xs shadow-sm"
                   >
                     <span className="font-black">{s.symbol}</span>
                     <VariationContainer

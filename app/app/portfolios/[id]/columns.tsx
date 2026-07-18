@@ -45,7 +45,7 @@ type FiltrProps = {
 const FilterButton = ({ column }: FiltrProps) => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
-      <Button variant="ghost" className="mx-1 p-0">
+      <Button variant="ghost" className="mx-1 p-0" aria-label="Filtrer cette colonne">
         <ListFilterIcon
           className={cn(' h-4 w-4', column?.getFilterValue() != null ? 'text-primary' : '')}
         />
@@ -69,6 +69,7 @@ const SortingButton = (title, activateFilter = true) => {
         <Button
           className="p-0 capitalize"
           variant="ghost"
+          aria-label={`Trier par ${title}`}
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           {title}
@@ -96,7 +97,7 @@ export const columns = (selectedPeriod): any[] => {
             <img
               className="h-6 w-6"
               src={`https://financialmodelingprep.com/image-stock/${row.original.symbol.toLocaleUpperCase()}.png`}
-              alt=""
+              alt={row.original.symbol}
             />
             <div className="flex flex-col">
               <span className="font-medium">
