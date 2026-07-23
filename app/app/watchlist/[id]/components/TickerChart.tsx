@@ -54,6 +54,7 @@ export function TickerChart({
   onTagsChange,
   onAddGlobalTag,
   onDeleteGlobalTag,
+  transactions = [],
 }: {
   symbol: string
   tags?: string[]
@@ -61,6 +62,7 @@ export function TickerChart({
   onTagsChange?: (newTags: string[]) => void
   onAddGlobalTag?: (newTag: string) => void
   onDeleteGlobalTag?: (tag: string) => void
+  transactions?: any[]
 }) {
   const [chartData, setChartData] = useState<ChartData>({ labels: [], datasets: [] })
   const [period, setPeriod] = useState('1y')
@@ -430,6 +432,7 @@ export function TickerChart({
                 data={chartData}
                 unit={isDrawdown || selectedBenchmarks.length > 0 ? '%' : '€'}
                 isLogarithmic={isLogarithmic && !isDrawdown}
+                transactions={transactions}
               />
             )}
           </div>

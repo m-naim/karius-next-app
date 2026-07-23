@@ -39,6 +39,7 @@ export interface PortfolioSecurity {
   qualityMetrics?: any
   currency?: string
   nativeBep?: number
+  shortname?: string
 }
 
 type FiltrProps = {

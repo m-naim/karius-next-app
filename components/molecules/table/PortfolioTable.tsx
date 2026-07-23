@@ -14,9 +14,11 @@ import { useEffect, useState } from 'react'
 interface PortfolioTableProps {
   table: TableType<any>
   colSpan: number
+  onRowClick?: (security: any) => void
+  selectedSymbol?: string | null
 }
 
-const PortfolioTable = ({ table, colSpan }: PortfolioTableProps) => {
+const PortfolioTable = ({ table, colSpan, onRowClick, selectedSymbol }: PortfolioTableProps) => {
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
@@ -67,8 +69,12 @@ const PortfolioTable = ({ table, colSpan }: PortfolioTableProps) => {
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  className="border-b border-border/30 transition-colors hover:bg-accent/30 data-[state=selected]:bg-accent"
+                  data-state={(selectedSymbol === row.original.symbol || row.getIsSelected()) && 'selected'}
+                  onClick={() => onRowClick?.(row.original)}
+                  className={cn(
+                    "border-b border-border/30 transition-colors hover:bg-accent/40 data-[state=selected]:bg-accent/60",
+                    onRowClick && "cursor-pointer"
+                  )}
                 >
                   {row.getVisibleCells().map((cell) => {
                     if (isMobile && !visibleColumns.includes(cell.column.id)) {

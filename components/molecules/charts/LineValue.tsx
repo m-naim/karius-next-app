@@ -9,6 +9,7 @@ import {
   ResponsiveContainer,
   Legend,
   ReferenceLine,
+  ReferenceDot,
 } from 'recharts'
 
 interface LineValueProps {
@@ -23,10 +24,13 @@ interface LineValueProps {
   }
   unit?: string
   isLogarithmic?: boolean
+  transactions?: any[]
 }
 
-const CustomTooltip = ({ active, payload, label, unit }: any) => {
+const CustomTooltip = ({ active, payload, label, unit, markers }: any) => {
   if (active && payload && payload.length) {
+    const txsForLabel = markers?.filter((m: any) => m.xLabel === label)
+
     return (
       <div className="rounded-lg border border-border bg-background bg-opacity-95 p-3 shadow-xl backdrop-blur-sm">
         <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -49,13 +53,25 @@ const CustomTooltip = ({ active, payload, label, unit }: any) => {
             </div>
           ))}
         </div>
+
+        {txsForLabel && txsForLabel.length > 0 && (
+          <div className="mt-2 pt-2 border-t border-border space-y-1">
+            {txsForLabel.map((tx: any, i: number) => (
+              <div key={i} className="flex items-center justify-between text-[11px] font-bold">
+                <span className={tx.isBuy ? 'text-emerald-500' : 'text-rose-500'}>
+                  {tx.isBuy ? '▲ ACHAT' : '▼ VENTE'} : {tx.qty} unit. @ {tx.price?.toLocaleString('fr-FR')} {unit}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     )
   }
   return null
 }
 
-export function LineValue({ data, unit = '€', isLogarithmic = false }: LineValueProps) {
+export function LineValue({ data, unit = '€', isLogarithmic = false, transactions = [] }: LineValueProps) {
   const chartData = data.labels.map((label, index) => ({
     name: label,
     ...data.datasets.reduce(
@@ -67,9 +83,56 @@ export function LineValue({ data, unit = '€', isLogarithmic = false }: LineVal
     ),
   }))
 
+  const markers = React.useMemo(() => {
+    if (!transactions || transactions.length === 0 || !data.labels || data.labels.length === 0) return []
+
+    const primaryDataset = data.datasets[0]
+    if (!primaryDataset) return []
+
+    return transactions
+      .map((tx) => {
+        if (!tx.date) return null
+        const txDate = new Date(tx.date)
+        if (isNaN(txDate.getTime())) return null
+
+        let closestLabel: string | null = null
+        let closestIndex = -1
+        let minDiff = Infinity
+
+        data.labels.forEach((label, idx) => {
+          const parts = label.split('/')
+          if (parts.length === 3) {
+            const d = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]))
+            const diff = Math.abs(d.getTime() - txDate.getTime())
+            if (diff < minDiff) {
+              minDiff = diff
+              closestLabel = label
+              closestIndex = idx
+            }
+          }
+        })
+
+        if (minDiff < 7 * 24 * 60 * 60 * 1000 && closestLabel && closestIndex !== -1) {
+          const yVal = primaryDataset.data[closestIndex]
+          if (yVal != null && !isNaN(yVal)) {
+            const isBuy = (tx.qty ?? 0) > 0 || tx.type === 'Acheter' || tx.type === 'buy'
+            return {
+              xLabel: closestLabel,
+              yVal,
+              isBuy,
+              qty: Math.abs(tx.qty || 0),
+              price: tx.price || yVal,
+              date: tx.date,
+            }
+          }
+        }
+        return null
+      })
+      .filter(Boolean) as any[]
+  }, [transactions, data.labels, data.datasets])
+
   const allYValues = data.datasets.flatMap((set) => set.data).filter((v) => v != null)
   const minValue = Math.min(...allYValues)
-  const maxValue = Math.max(...allYValues)
 
   // Domain handling
   const domain = isLogarithmic
@@ -81,7 +144,7 @@ export function LineValue({ data, unit = '€', isLogarithmic = false }: LineVal
   return (
     <div className="h-full w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={chartData} margin={{ top: 20, right: 10, left: 0, bottom: 10 }}>
+        <LineChart data={chartData} margin={{ top: 25, right: 10, left: 0, bottom: 10 }}>
           <defs>
             <linearGradient id="colorPortfolio" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.1} />
@@ -128,7 +191,7 @@ export function LineValue({ data, unit = '€', isLogarithmic = false }: LineVal
             width={60}
           />
           <Tooltip
-            content={<CustomTooltip unit={unit} />}
+            content={<CustomTooltip unit={unit} markers={markers} />}
             cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '4 4' }}
           />
 
@@ -181,6 +244,37 @@ export function LineValue({ data, unit = '€', isLogarithmic = false }: LineVal
               />
             )
           })}
+
+          {/* Marqueurs d'achats / ventes sur le graphique */}
+          {markers.map((m: any, idx: number) => (
+            <ReferenceDot
+              key={idx}
+              x={m.xLabel}
+              y={m.yVal}
+              r={6}
+              shape={(props: any) => {
+                const { cx, cy } = props
+                if (cx == null || cy == null) return <g key={idx} />
+                const color = m.isBuy ? '#10b981' : '#ef4444'
+                return (
+                  <g key={idx} className="cursor-pointer">
+                    <circle cx={cx} cy={cy} r={9} fill={color} opacity={0.25} />
+                    <circle cx={cx} cy={cy} r={5} fill={color} stroke="#ffffff" strokeWidth={1.5} />
+                    <text
+                      x={cx}
+                      y={cy - 10}
+                      textAnchor="middle"
+                      fill={color}
+                      fontSize={10}
+                      fontWeight="bold"
+                    >
+                      {m.isBuy ? `▲` : `▼`}
+                    </text>
+                  </g>
+                )
+              }}
+            />
+          ))}
         </LineChart>
       </ResponsiveContainer>
     </div>

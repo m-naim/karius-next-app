@@ -36,6 +36,7 @@ import Loader from '@/components/molecules/loader/loader'
 import { round10 } from '@/lib/decimalAjustement'
 import AllocationPie from './AllocationPie'
 import PortfolioTable from '@/components/molecules/table/PortfolioTable'
+import PortfolioAssetDrawer from './PortfolioAssetDrawer'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 
@@ -44,6 +45,8 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
   const { toast } = useToast()
   const [data, setData] = React.useState<PortfolioSecurity[]>([])
   const [loading, setLoading] = React.useState(true)
+  const [selectedSecurity, setSelectedSecurity] = useState<PortfolioSecurity | null>(null)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   const [portfolio, setPortfolio] = useState<any>({
     _id: '',
     allocation: [],
@@ -359,7 +362,15 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
                 </div>
               ) : (
                 <div className="w-full">
-                  <PortfolioTable table={table} colSpan={columns.length} />
+                  <PortfolioTable
+                    table={table}
+                    colSpan={columns.length}
+                    selectedSymbol={selectedSecurity?.symbol}
+                    onRowClick={(sec) => {
+                      setSelectedSecurity(sec)
+                      setIsDrawerOpen(true)
+                    }}
+                  />
                 </div>
               )}
             </CardContent>
@@ -380,6 +391,14 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
           )}
         </div>
       </div>
+
+      {/* SIDE DRAWER RICHESSE DES ACHATS & TRANSACTIONS */}
+      <PortfolioAssetDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        security={selectedSecurity}
+        portfolio={portfolio}
+      />
     </div>
   )
 }
