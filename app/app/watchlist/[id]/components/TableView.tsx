@@ -15,6 +15,8 @@ export function TableView({
   selectedTicker,
   allAvailableTags = [],
   allWatchlists = [],
+  showMetrics,
+  setShowMetrics,
 }: {
   table: any
   id: string
@@ -27,9 +29,11 @@ export function TableView({
   selectedTicker?: string | null
   allAvailableTags?: string[]
   allWatchlists?: any[]
+  showMetrics?: boolean
+  setShowMetrics?: any
 }) {
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-full w-full flex-col min-h-0 overflow-hidden">
       <div className="shrink-0">
         <TableContextHeader
           table={table}
@@ -39,9 +43,11 @@ export function TableView({
           selectedPeriod={selectedPeriod}
           setSelectedPeriod={setSelectedPeriod}
           allAvailableTags={allAvailableTags}
+          showMetrics={showMetrics}
+          setShowMetrics={setShowMetrics}
         />
       </div>
-      <div className="min-h-0 flex-1 overflow-auto">
+      <div className="flex-1 min-h-0 overflow-hidden">
         <SimpleDataTable
           table={table}
           colSpan={columns.length}

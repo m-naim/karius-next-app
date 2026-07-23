@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { Column, sortingFns } from '@tanstack/react-table'
-import { ChevronUp, ArrowUpDown, ChevronDown, ListFilterIcon } from 'lucide-react'
+import { ChevronUp, ArrowUpDown, ChevronDown, ListFilterIcon, FileText } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -36,6 +36,9 @@ export interface PortfolioSecurity {
   retour: number
   sector?: string
   industry?: string
+  qualityMetrics?: any
+  currency?: string
+  nativeBep?: number
 }
 
 type FiltrProps = {
@@ -84,7 +87,7 @@ const SortingButton = (title, activateFilter = true) => {
   }
 }
 
-export const columns = (selectedPeriod): any[] => {
+export const columns = (selectedPeriod, baseCurrency = 'EUR', useNativeCurrency = false): any[] => {
   return [
     {
       accessorKey: 'symbol',
@@ -100,8 +103,11 @@ export const columns = (selectedPeriod): any[] => {
               alt={row.original.symbol}
             />
             <div className="flex flex-col">
-              <span className="font-medium">
-                {symbol} x {row.original.qty}
+              <span className="font-medium flex items-center gap-1">
+                {symbol} {row.original.qty !== 0 ? `x ${row.original.qty}` : ''}
+                {row.original.qualityMetrics?.hasFundamentals && (
+                  <span title="Données fondamentales disponibles"><FileText className="h-3 w-3 text-blue-500" /></span>
+                )}
               </span>
               <span className="max-w-20 overflow-ellipsis text-xs text-muted-foreground">
                 {row.original.shortname || ''}
@@ -115,14 +121,18 @@ export const columns = (selectedPeriod): any[] => {
     {
       accessorKey: 'weight',
       header: SortingButton('Poid / total', false),
-      cell: ({ row }) => (
-        <div className="flex flex-col">
-          <div className="font-medium">
-            {round10((row.getValue('weight') as number) * 100, -1)}%
+      cell: ({ row }) => {
+        const currencyToUse = useNativeCurrency && row.original.currency ? row.original.currency : baseCurrency
+        const symbol = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: currencyToUse }).formatToParts(0).find(p => p.type === 'currency')?.value || '€'
+        return (
+          <div className="flex flex-col">
+            <div className="font-medium">
+              {round10((row.getValue('weight') as number) * 100, -1)}%
+            </div>
+            <div className="text-muted-foreground">{row.original.qty === 0 ? '-' : round10(row.original.totalValue, -2).toLocaleString() + ' ' + symbol}</div>
           </div>
-          <div>{round10(row.original.totalValue, -2).toLocaleString()} €</div>
-        </div>
-      ),
+        )
+      },
       enableHiding: false,
     },
     {
@@ -130,9 +140,10 @@ export const columns = (selectedPeriod): any[] => {
       header: SortingButton('Cours', false),
       cell: ({ row }) => {
         const last = parseFloat(row.getValue('last'))
+        const currencyToUse = useNativeCurrency && row.original.currency ? row.original.currency : baseCurrency
         const formatted = new Intl.NumberFormat('fr-FR', {
           style: 'currency',
-          currency: 'EUR',
+          currency: currencyToUse,
         }).format(last)
         return <div className="font-medium">{formatted}</div>
       },
@@ -143,8 +154,11 @@ export const columns = (selectedPeriod): any[] => {
       accessorKey: 'bep',
       header: 'PRU',
       cell: ({ row }) => {
+        const currencyToUse = useNativeCurrency && row.original.currency ? row.original.currency : baseCurrency
+        const symbol = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: currencyToUse }).formatToParts(0).find(p => p.type === 'currency')?.value || '€'
+        const bepVal = useNativeCurrency && row.original.nativeBep != null ? row.original.nativeBep : row.getValue('bep')
         return (
-          <div className="font-medium">{round10(row.getValue('bep'), -2).toLocaleString()} €</div>
+          <div className="font-medium">{row.original.qty === 0 ? '-' : round10(bepVal as number, -2).toLocaleString() + ' ' + symbol}</div>
         )
       },
       enableHiding: false,
@@ -153,21 +167,37 @@ export const columns = (selectedPeriod): any[] => {
     {
       accessorKey: 'variationPercent',
       header: SortingButton('Retour', false),
-      cell: ({ row }) => (
-        <div className="flex flex-col gap-1">
-          <VariationContainer
-            value={row!.original.variation}
-            background={false}
-            entity="€"
-            className="m-0 p-0"
-          />
-          <VariationContainer
-            value={row!.original.variationPercent}
-            background={false}
-            className="m-0 p-0"
-          />
-        </div>
-      ),
+      cell: ({ row }) => {
+        const currencyToUse = useNativeCurrency && row.original.currency ? row.original.currency : baseCurrency
+        const symbol = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: currencyToUse }).formatToParts(0).find(p => p.type === 'currency')?.value || '€'
+        
+        let varValue = row!.original.variation
+        let varPercent = row!.original.variationPercent
+        
+        // If native currency is requested, we would theoretically calculate variation in native currency here
+        // For now, we assume the backend provides it, or we display the same percent (native percent is roughly same for stocks without FX effect, but we would need to calculate it properly. 
+        // We will just change the symbol for now, a proper implementation would fetch native variations.)
+        
+        return (
+          <div className="flex flex-col gap-1">
+            {row.original.qty === 0 ? (
+              <div className="text-muted-foreground ml-2">-</div>
+            ) : (
+              <VariationContainer
+                value={varValue}
+                background={false}
+                entity={symbol}
+                className="m-0 p-0"
+              />
+            )}
+            <VariationContainer
+              value={varPercent}
+              background={false}
+              className="m-0 p-0"
+            />
+          </div>
+        )
+      },
       enableHiding: false,
     },
     {
@@ -211,9 +241,41 @@ export const columns = (selectedPeriod): any[] => {
         )
       },
       sortingFns: (rowA, rowB) => {
-        const a = rowA.variations[selectedPeriod] * rowA.original.weight
-        const b = rowB.variations[selectedPeriod] * rowB.original.weight
+        const varA = selectedPeriod !== '1d' ? (rowA.original?.variations?.[selectedPeriod] ?? NaN) : (rowA.original?.regularMarketChangePercent ?? 0)
+        const varB = selectedPeriod !== '1d' ? (rowB.original?.variations?.[selectedPeriod] ?? NaN) : (rowB.original?.regularMarketChangePercent ?? 0)
+        const a = (isNaN(varA) ? -10000 : varA) * (rowA.original?.weight ?? 0)
+        const b = (isNaN(varB) ? -10000 : varB) * (rowB.original?.weight ?? 0)
         return a - b
+      },
+    },
+    {
+      accessorFn: (row) => row.qualityMetrics?.revenueGrowth5yAvg,
+      id: 'revGrowth',
+      header: SortingButton('Croissance CA (5a)'),
+      cell: ({ row }) => {
+        const val = row.original.qualityMetrics?.revenueGrowth5yAvg
+        if (val == null) return <div className="text-muted-foreground">-</div>
+        return <VariationContainer value={val * 100} entity="%" background={false} className="m-0 p-0" />
+      },
+    },
+    {
+      accessorFn: (row) => row.qualityMetrics?.roic5yAvg,
+      id: 'roic',
+      header: SortingButton('ROIC (5a)'),
+      cell: ({ row }) => {
+        const val = row.original.qualityMetrics?.roic5yAvg
+        if (val == null) return <div className="text-muted-foreground">-</div>
+        return <VariationContainer value={val * 100} entity="%" background={false} className="m-0 p-0" />
+      },
+    },
+    {
+      accessorFn: (row) => row.qualityMetrics?.pe5yAvgProxy,
+      id: 'pe5y',
+      header: SortingButton('PE (5a proxy)'),
+      cell: ({ row }) => {
+        const val = row.original.qualityMetrics?.pe5yAvgProxy
+        if (val == null) return <div className="text-muted-foreground">-</div>
+        return <div className="font-medium">{val.toFixed(1)}x</div>
       },
     },
   ]

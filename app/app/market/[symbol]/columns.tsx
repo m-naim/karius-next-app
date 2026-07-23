@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { Column, ColumnDef, GroupColumnDef } from '@tanstack/react-table'
-import { ChevronUp, ArrowUpDown, ChevronDown, ExternalLink } from 'lucide-react'
+import { ChevronUp, ArrowUpDown, ChevronDown, ExternalLink, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { round10 } from '@/lib/decimalAjustement'
@@ -69,8 +69,11 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
                 alt=""
               />
               <div className="flex flex-col">
-                <span className="max-w-[80px] truncate text-xs font-semibold md:max-w-[150px]">
+                <span className="max-w-[80px] truncate text-xs font-semibold md:max-w-[150px] flex items-center gap-1">
                   {row.original.longname}
+                  {row.original.qualityMetrics?.hasFundamentals && (
+                    <span title="Données fondamentales disponibles"><FileText className="h-3 w-3 text-blue-500" /></span>
+                  )}
                 </span>
                 <span className="text-[10px] font-bold uppercase text-muted-foreground">{row.original.symbol}</span>
               </div>
@@ -567,6 +570,44 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
         })
 
         return mode === 'is' ? matches : !matches
+      },
+    },
+    {
+      accessorFn: (row) => row.qualityMetrics?.revenueGrowth5yAvg,
+      id: 'revGrowth',
+      header: SortingButton('Croissance CA (5a)', true),
+      cell: ({ row }) => {
+        const val = row.original.qualityMetrics?.revenueGrowth5yAvg
+        if (val == null) return <div className="font-mono tabular-nums text-right px-2 py-1 text-[11px] text-muted-foreground">N/A</div>
+        return (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
+            <VariationContainer value={val * 100} entity="%" background={false} className="m-0 p-0 text-[11px]" />
+          </div>
+        )
+      },
+    },
+    {
+      accessorFn: (row) => row.qualityMetrics?.roic5yAvg,
+      id: 'roic',
+      header: SortingButton('ROIC (5a)', true),
+      cell: ({ row }) => {
+        const val = row.original.qualityMetrics?.roic5yAvg
+        if (val == null) return <div className="font-mono tabular-nums text-right px-2 py-1 text-[11px] text-muted-foreground">N/A</div>
+        return (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
+            <VariationContainer value={val * 100} entity="%" background={false} className="m-0 p-0 text-[11px]" />
+          </div>
+        )
+      },
+    },
+    {
+      accessorFn: (row) => row.qualityMetrics?.pe5yAvgProxy,
+      id: 'pe5y',
+      header: SortingButton('PE (5a proxy)', true),
+      cell: ({ row }) => {
+        const val = row.original.qualityMetrics?.pe5yAvgProxy
+        if (val == null) return <div className="font-mono tabular-nums text-right px-2 py-1 text-[11px] text-muted-foreground">N/A</div>
+        return <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm lowercase font-medium">{val.toFixed(1)}x</div>
       },
     },
   ]

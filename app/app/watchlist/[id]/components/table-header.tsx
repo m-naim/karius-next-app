@@ -33,6 +33,8 @@ interface TableContextHeaderProps {
   selectedPeriod: string
   setSelectedPeriod: (period: string) => void
   allAvailableTags?: string[]
+  showMetrics?: boolean
+  setShowMetrics?: (val: boolean) => void
 }
 
 export const TableContextHeader = ({
@@ -43,6 +45,8 @@ export const TableContextHeader = ({
   selectedPeriod,
   setSelectedPeriod,
   allAvailableTags = [],
+  showMetrics,
+  setShowMetrics,
 }: TableContextHeaderProps) => {
   const [showFilters, setShowFilters] = React.useState(false)
 
@@ -136,6 +140,17 @@ export const TableContextHeader = ({
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {setShowMetrics && (
+            <Button
+              size="sm"
+              variant={showMetrics ? "default" : "outline"}
+              className="h-8 whitespace-nowrap"
+              onClick={() => setShowMetrics(!showMetrics)}
+            >
+              Metrics 5A
+            </Button>
+          )}
 
           <div className="hidden text-sm text-muted-foreground md:block">
             {table.getRowModel().rows.length} actions

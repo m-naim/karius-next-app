@@ -51,38 +51,38 @@ const SimpleDataTable = ({ table, colSpan, onRowClick, selectedId }: SimpleDataT
   ]
 
   return (
-    <div className="w-full overflow-x-auto">
-        <Table containerClassName="overflow-visible">
-          <TableHeader className="sticky top-0 z-30 bg-background/95 backdrop-blur shadow-[0_1px_0_0_hsl(var(--border))]">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="border-b-0 hover:bg-transparent">
-                {headerGroup.headers.map((header, index) => {
-                  if (isMobile && !visibleColumns.includes(header.id)) {
-                    return null
-                  }
-                  const isFirst = index === 0;
-                  return (
-                    <TableHead
-                      key={header.id}
-                      className={cn(
-                        'py-2 text-xs font-semibold text-muted-foreground whitespace-nowrap',
-                        isFirst && "sticky left-0 z-40 bg-background/95 backdrop-blur",
-                        isMobile && header.id === 'symbol' && 'w-[50%]',
-                        isMobile && header.id === 'regularMarketPrice' && 'w-[25%]',
-                        isMobile && header.id === 'variation' && 'w-[20%]',
-                        !isMobile && 'px-4'
-                      )}
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  )
-                })}
-                {isMobile && <TableHead className="w-[5%] px-0 text-xs"></TableHead>}
-              </TableRow>
-            ))}
-          </TableHeader>
+    <div className="flex h-full w-full flex-col min-h-0">
+      <Table containerClassName="w-full flex-1 min-h-0 overflow-auto">
+        <TableHeader className="sticky top-0 z-30 bg-background shadow-[0_1px_0_0_hsl(var(--border))]">
+        {table.getHeaderGroups().map((headerGroup) => (
+          <TableRow key={headerGroup.id} className="border-b-0 hover:bg-transparent">
+            {headerGroup.headers.map((header, index) => {
+              if (isMobile && !visibleColumns.includes(header.id)) {
+                return null
+              }
+              const isFirst = index === 0;
+              return (
+                <TableHead
+                  key={header.id}
+                  className={cn(
+                    'sticky top-0 z-30 bg-background py-2 text-xs font-semibold text-muted-foreground whitespace-nowrap shadow-[0_1px_0_0_hsl(var(--border))]',
+                    isFirst && "sticky left-0 top-0 z-40 bg-background",
+                    isMobile && header.id === 'symbol' && 'w-[50%]',
+                    isMobile && header.id === 'regularMarketPrice' && 'w-[25%]',
+                    isMobile && header.id === 'variation' && 'w-[20%]',
+                    !isMobile && 'px-4'
+                  )}
+                >
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(header.column.columnDef.header, header.getContext())}
+                </TableHead>
+              )
+            })}
+            {isMobile && <TableHead className="sticky top-0 z-30 bg-background w-[5%] px-0 text-xs"></TableHead>}
+          </TableRow>
+        ))}
+      </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (

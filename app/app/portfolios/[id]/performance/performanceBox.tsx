@@ -95,8 +95,13 @@ export default function PerformanceBox({
   const [chartValues, setChartValues] = useState<number[]>([])
   const [benchValues, setBenchValues] = useState<{ [key: string]: number[] }>({})
   const [loading, setLoading] = useState(false)
+  const [isMasked, setIsMasked] = useState(false)
 
-  const selectedChart = chartTypes.find((c) => c.id === chartType)
+  const availableChartTypes = isMasked 
+    ? chartTypes.filter((c) => c.id === 'CumulativePerformance') 
+    : chartTypes
+
+  const selectedChart = availableChartTypes.find((c) => c.id === chartType) || availableChartTypes[0]
 
   const fetchData = async () => {
     try {
@@ -112,9 +117,16 @@ export default function PerformanceBox({
       const formattedDates = res.timestamp.map((t) =>
         new Date(t * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR')
       )
+      
+      const masked = res.value && res.value.length === 0 && res.CumulativePerformance && res.CumulativePerformance.length > 0
+      setIsMasked(masked)
+      
+      if (masked && chartType !== 'CumulativePerformance') {
+        setChartType('CumulativePerformance')
+      }
 
       setDates(formattedDates)
-      setChartValues(res[chartType])
+      setChartValues(res[chartType === 'value' && masked ? 'CumulativePerformance' : chartType] || [])
 
       if (selectedChart?.showBenchmarks) {
         const benchmarkData = {}
@@ -138,7 +150,7 @@ export default function PerformanceBox({
 
   const handlePeriodChange = (newPeriod: string) => {
     onPeriodChange(newPeriod)
-    const chart = chartTypes.find((c) => c.id === chartType)
+    const chart = availableChartTypes.find((c) => c.id === chartType)
     if (chart) {
       setChartType(chart.id)
     }
@@ -181,7 +193,7 @@ export default function PerformanceBox({
 
         <Tabs value={chartType} onValueChange={setChartType} className="w-full px-2">
           <TabsList className="flex h-auto w-full flex-wrap justify-start gap-2 bg-transparent p-0">
-            {chartTypes.map((chart) => (
+            {availableChartTypes.map((chart) => (
               <TabsTrigger
                 key={chart.id}
                 value={chart.id}

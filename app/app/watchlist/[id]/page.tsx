@@ -143,9 +143,61 @@ export default function Watchlist() {
     forwardPE: false,
     industry: false,
     relativePerformances: false,
+    revGrowth: false,
+    roic: false,
+    pe5y: false,
   })
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
+  const [showMetrics, setShowMetrics] = React.useState(false)
+
+  React.useEffect(() => {
+    if (showMetrics) {
+      setColumnVisibility({
+        actions: true,
+        symbol: true,
+        regularMarketPrice: false,
+        variation: false,
+        sector: false,
+        trailingPE: false,
+        dividendYield: false,
+        growth: false,
+        tags: true,
+        roa: false,
+        roe: false,
+        linearity10y: false,
+        ret_lin: false,
+        forwardPE: false,
+        industry: false,
+        relativePerformances: false,
+        revGrowth: true,
+        roic: true,
+        pe5y: true,
+      })
+    } else {
+      setColumnVisibility({
+        actions: true,
+        symbol: true,
+        regularMarketPrice: true,
+        variation: true,
+        sector: true,
+        trailingPE: true,
+        dividendYield: true,
+        growth: true,
+        tags: true,
+        roa: false,
+        roe: false,
+        linearity10y: false,
+        ret_lin: false,
+        forwardPE: false,
+        industry: false,
+        relativePerformances: false,
+        revGrowth: false,
+        roic: false,
+        pe5y: false,
+      })
+    }
+  }, [showMetrics])
 
   const deleteRow = (symbol: string) => {
     setData((prevData) => ({
@@ -250,12 +302,11 @@ export default function Watchlist() {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     globalFilterFn: (row, columnId, filterValue) => {
-      const value = filterValue.toLowerCase()
-      return (
-        row.original.symbol.toLowerCase().includes(value) ||
-        row.original.longname.toLowerCase().includes(value) ||
-        row.original.shortname.toLowerCase().includes(value)
-      )
+      const value = (filterValue || '').toLowerCase()
+      const symbol = (row.original.symbol || '').toLowerCase()
+      const longname = (row.original.longname || '').toLowerCase()
+      const shortname = (row.original.shortname || '').toLowerCase()
+      return symbol.includes(value) || longname.includes(value) || shortname.includes(value)
     },
     state: {
       sorting,
@@ -320,7 +371,7 @@ export default function Watchlist() {
   return loading ? (
     <Loader />
   ) : (
-    <div className="flex h-[calc(100dvh-60px)] flex-col gap-2 p-2">
+    <div className="flex h-full w-full flex-col gap-2 p-2 min-h-0 overflow-hidden">
       <div className="bg-dark flex shrink-0 items-center justify-between gap-4 rounded-lg border p-4">
         <div className="flex min-w-0 items-center gap-3">
           <Link href="/app/watchlist" className="inline-flex shrink-0">
@@ -377,9 +428,9 @@ export default function Watchlist() {
       </div>
 
       <div className="flex min-h-0 flex-1 gap-4">
-        <div className="bg-dark flex-1 overflow-hidden rounded-lg border">
+        <div className="bg-dark flex-1 min-h-0 overflow-hidden rounded-lg border">
           {!loading && data!.securities != null && (
-            <div className="flex h-full flex-col">
+            <div className="flex h-full flex-col min-h-0 overflow-hidden">
               {view === 'table' ? (
                 <TableView
                   table={table}
@@ -403,6 +454,8 @@ export default function Watchlist() {
                   selectedTicker={selectedTicker}
                   allAvailableTags={allAvailableTags}
                   allWatchlists={allWatchlists}
+                  showMetrics={showMetrics}
+                  setShowMetrics={setShowMetrics}
                 />
               ) : (
                 <AnalysisView
@@ -418,7 +471,6 @@ export default function Watchlist() {
           isOpen={showChart}
           onClose={() => setShowChart(false)}
           title={selectedTicker ? `ANALYSE : ${selectedTicker}` : 'ANALYSE'}
-          className="md:relative md:shadow-none"
         >
           {selectedTicker ? (
             <TickerChart

@@ -32,7 +32,7 @@ export function RightSidebar({
   return (
     <div
       className={cn(
-        'fixed inset-y-0 right-0 z-[60] flex flex-col border-l bg-background shadow-2xl duration-300 animate-in slide-in-from-right md:shadow-none',
+        'fixed inset-y-0 right-0 z-[60] flex flex-col border-l bg-background shadow-2xl duration-300 animate-in slide-in-from-right',
         'w-full', // mobile full width
         width,
         className
@@ -58,7 +58,7 @@ export function RightSidebar({
         </Button>
       </div>
 
-      <div className="flex flex-1 flex-col overflow-hidden">{children}</div>
+      <div className="min-h-0 flex-1 flex flex-col overflow-hidden">{children}</div>
     </div>
   )
 }

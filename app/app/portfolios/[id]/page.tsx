@@ -44,12 +44,13 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
   const { toast } = useToast()
   const [data, setData] = React.useState<PortfolioSecurity[]>([])
   const [loading, setLoading] = React.useState(true)
-  const [portfolio, setPortfolio] = useState({
+  const [portfolio, setPortfolio] = useState<any>({
     _id: '',
     allocation: [],
     transactions: [],
     cashValue: 0,
     totalValue: 0,
+    baseCurrency: 'EUR',
   })
   const [own, setOwn] = React.useState(false)
   const [sorting, setSorting] = React.useState<SortingState>([])
@@ -60,15 +61,49 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
     weight: true,
     last: true,
     bep: true,
-    retour: true,
+    variationPercent: true,
+    variation: true,
+    revGrowth: false,
+    roic: false,
+    pe5y: false,
   })
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
+  const [useNativeCurrency, setUseNativeCurrency] = React.useState(false)
+  const [showMetrics, setShowMetrics] = React.useState(false)
+
+  useEffect(() => {
+    if (showMetrics) {
+      setColumnVisibility({
+        symbol: true,
+        weight: false,
+        last: false,
+        bep: false,
+        variationPercent: false,
+        variation: false,
+        revGrowth: true,
+        roic: true,
+        pe5y: true,
+      })
+    } else {
+      setColumnVisibility({
+        symbol: true,
+        weight: true,
+        last: true,
+        bep: true,
+        variationPercent: true,
+        variation: true,
+        revGrowth: false,
+        roic: false,
+        pe5y: false,
+      })
+    }
+  }, [showMetrics])
 
   const useDynamicColumns = () =>
     useMemo(() => {
-      return columns(selectedPeriod)
-    }, [selectedPeriod])
+      return columns(selectedPeriod, portfolio.baseCurrency, useNativeCurrency)
+    }, [selectedPeriod, portfolio.baseCurrency, useNativeCurrency])
 
   const fetchData = async (id: string) => {
     try {
@@ -178,7 +213,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
     <div className="flex w-full flex-col gap-8 pb-12">
       {/* HERO SECTION: Stats at the top */}
       <div className="w-full">
-        <StatsCard pftData={portfolio} />
+        <StatsCard pftData={portfolio} own={own} />
       </div>
 
       <div className="flex w-full flex-wrap-reverse gap-6">
@@ -194,7 +229,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
                   aria-label="Période de performance" 
                   className="flex items-center gap-1 rounded-md bg-muted/50 p-1"
                 >
-                  {['1w', '1m', '1y', '5y'].map((p) => (
+                  {['1d', '1w', '1m', '3m', '6m', '1y', '5y'].map((p) => (
                     <button
                       key={p}
                       onClick={() => setSelectedPeriod(p)}
@@ -209,6 +244,37 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
                       {p}
                     </button>
                   ))}
+                </div>
+                <div className="flex items-center gap-1 rounded-md bg-muted/50 p-1 ml-2">
+                  <button
+                    onClick={() => setUseNativeCurrency(false)}
+                    className={cn(
+                      'rounded px-2 py-0.5 text-[10px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      !useNativeCurrency ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    Devise de base
+                  </button>
+                  <button
+                    onClick={() => setUseNativeCurrency(true)}
+                    className={cn(
+                      'rounded px-2 py-0.5 text-[10px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      useNativeCurrency ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    Devise locale
+                  </button>
+                </div>
+                <div className="flex items-center gap-1 rounded-md bg-muted/50 p-1 ml-2">
+                  <button
+                    onClick={() => setShowMetrics(!showMetrics)}
+                    className={cn(
+                      'rounded px-2 py-0.5 text-[10px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      showMetrics ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    Metrics 5A
+                  </button>
                 </div>
               </div>
             </div>
@@ -259,7 +325,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
                   <div className="flex items-center gap-1.5">
                     <span className="text-muted-foreground">Cash :</span>
                     <span className="font-semibold text-foreground tabular-nums">
-                      {round10(portfolio.cashValue, -2).toLocaleString()} €
+                      {round10(portfolio.cashValue, -2).toLocaleString()} {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: portfolio.baseCurrency || 'EUR' }).formatToParts(0).find(p => p.type === 'currency')?.value || '€'}
                     </span>
                   </div>
                 </div>

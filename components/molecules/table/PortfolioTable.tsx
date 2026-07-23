@@ -45,7 +45,7 @@ const PortfolioTable = ({ table, colSpan }: PortfolioTableProps) => {
                     <TableHead
                       key={header.id}
                       className={cn(
-                        'whitespace-nowrap py-3 font-semibold text-muted-foreground',
+                        'sticky top-0 z-30 bg-background/95 backdrop-blur shadow-[0_1px_0_0_hsl(var(--border))] whitespace-nowrap py-3 font-semibold text-muted-foreground',
                         isMobile && header.id === 'symbol' && 'w-[25%]',
                         isMobile && header.id === 'averagePrice' && 'w-[20%]',
                         isMobile && header.id === 'currentValue' && 'w-[20%]',

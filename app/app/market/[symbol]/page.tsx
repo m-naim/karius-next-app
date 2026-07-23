@@ -113,24 +113,70 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
   })
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
+  const [showMetrics, setShowMetrics] = React.useState(false)
 
-  const useDynamicTableData = (securities: security[]) => {
-    return useMemo(() => {
-      return securities.map((security) => ({
-        ...security,
-        variation: security.variations?.[selectedPeriod] ?? security.regularMarketChangePercent,
-      }))
-    }, [securities, selectedPeriod])
-  }
+  React.useEffect(() => {
+    if (showMetrics) {
+      setColumnVisibility({
+        actions: true,
+        symbol: true,
+        weight: true,
+        regularMarketPrice: false,
+        variation: false,
+        sector: false,
+        trailingPE: false,
+        dividendYield: false,
+        marketCap: false,
+        roa: false,
+        roe: false,
+        linearity10y: false,
+        ret_lin: false,
+        forwardPE: false,
+        industry: false,
+        growth: false,
+        revGrowth: true,
+        roic: true,
+        pe5y: true,
+      })
+    } else {
+      setColumnVisibility({
+        actions: true,
+        symbol: true,
+        weight: true,
+        regularMarketPrice: true,
+        variation: true,
+        sector: true,
+        trailingPE: true,
+        dividendYield: true,
+        marketCap: true,
+        roa: false,
+        roe: false,
+        linearity10y: false,
+        ret_lin: false,
+        forwardPE: false,
+        industry: false,
+        growth: false,
+        revGrowth: false,
+        roic: false,
+        pe5y: false,
+      })
+    }
+  }, [showMetrics])
 
-  const useDynamicColumns = () =>
-    useMemo(() => {
-      return columns(selectedPeriod)
-    }, [symbol, selectedPeriod])
+  const tableData = useMemo(() => {
+    return filteredSecurities.map((security) => ({
+      ...security,
+      variation: security.variations?.[selectedPeriod] ?? security.regularMarketChangePercent,
+    }))
+  }, [filteredSecurities, selectedPeriod])
+
+  const tableColumns = useMemo(() => {
+    return columns(selectedPeriod)
+  }, [selectedPeriod])
 
   const table = useReactTable<security>({
-    data: useDynamicTableData(filteredSecurities),
-    columns: useDynamicColumns(),
+    data: tableData,
+    columns: tableColumns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
@@ -140,12 +186,11 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     globalFilterFn: (row, columnId, filterValue) => {
-      const value = filterValue.toLowerCase()
-      return (
-        row.original.symbol.toLowerCase().includes(value) ||
-        row.original.longname.toLowerCase().includes(value) ||
-        row.original.shortname?.toLowerCase().includes(value)
-      )
+      const value = (filterValue || '').toLowerCase()
+      const symbol = (row.original.symbol || '').toLowerCase()
+      const longname = (row.original.longname || '').toLowerCase()
+      const shortname = (row.original.shortname || '').toLowerCase()
+      return symbol.includes(value) || longname.includes(value) || shortname.includes(value)
     },
     state: {
       sorting,
@@ -180,7 +225,7 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
   return loading ? (
     <Loader />
   ) : (
-    <div className="flex h-[calc(100dvh-60px)] md:h-[calc(100vh-80px)] flex-col gap-3 p-3 md:gap-6 md:p-6 md:py-8">
+    <div className="flex w-full flex-col gap-3 p-3 md:gap-6 md:p-6 md:py-8">
       <div className="bg-dark flex shrink-0 items-center justify-between gap-2 rounded-xl border px-3 py-2 md:p-4">
         <div className="flex min-w-0 items-center gap-3">
           <Link href="/app/market" className="inline-flex shrink-0">
@@ -261,10 +306,10 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
         </div>
       )}
 
-      <div className="flex min-h-0 flex-1 gap-3 md:gap-4">
-        <div className="bg-dark flex-1 overflow-hidden rounded-xl border">
+      <div className="flex w-full gap-3 md:gap-4">
+        <div className="bg-dark w-full rounded-xl border">
           {!loading && (
-            <div className="flex h-full flex-col">
+            <div className="flex w-full flex-col">
               {view === 'table' ? (
                 <TableView
                   table={table}
@@ -279,6 +324,8 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
                     if (!showChart) setShowChart(true)
                   }}
                   selectedTicker={selectedTicker}
+                  showMetrics={showMetrics}
+                  setShowMetrics={setShowMetrics}
                 />
               ) : (
                 <AnalysisView
@@ -294,7 +341,6 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
           isOpen={showChart}
           onClose={() => setShowChart(false)}
           title={selectedTicker ? `ANALYSE : ${selectedTicker}` : 'ANALYSE'}
-          className="md:relative md:shadow-none"
         >
           {selectedTicker ? (
             <TickerChart symbol={selectedTicker} />

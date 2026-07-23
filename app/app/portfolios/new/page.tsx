@@ -4,14 +4,16 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { add } from '@/services/portfolioService'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Info, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import React, { useState } from 'react'
 
 function AddPortfolio() {
   const [name, setName] = useState('')
   const [visibility, setVisibility] = useState(true)
+  const [baseCurrency, setBaseCurrency] = useState('EUR')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -30,6 +32,7 @@ function AddPortfolio() {
       const res = await add({
         name: name.trim(),
         visibility,
+        baseCurrency,
       })
       router.push(`/app/portfolios/${res.data.id}`, { scroll: false })
     } catch (err) {
@@ -74,6 +77,25 @@ function AddPortfolio() {
             )}
           </div>
 
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="baseCurrency">Devise de base</Label>
+            <Select value={baseCurrency} onValueChange={setBaseCurrency}>
+              <SelectTrigger id="baseCurrency">
+                <SelectValue placeholder="Sélectionnez une devise" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="EUR">Euro (€)</SelectItem>
+                <SelectItem value="USD">Dollar Américain ($)</SelectItem>
+                <SelectItem value="GBP">Livre Sterling (£)</SelectItem>
+                <SelectItem value="CHF">Franc Suisse (CHF)</SelectItem>
+                <SelectItem value="CAD">Dollar Canadien (CAD)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Toutes les performances de votre portefeuille seront calculées et affichées dans cette devise, avec conversion automatique.
+            </p>
+          </div>
+
           <div className="flex items-center space-x-4 rounded-md border border-border p-4">
             <div className="flex-1 space-y-1">
               <p className="text-sm font-medium leading-none">Visibilité publique</p>
@@ -87,6 +109,23 @@ function AddPortfolio() {
               aria-label="Basculer la visibilité publique"
             />
           </div>
+
+          {visibility && (
+            <div className="flex flex-col gap-2 rounded-md bg-blue-500/10 p-4 text-sm text-blue-700 dark:text-blue-400">
+              <div className="flex items-center gap-2 font-semibold">
+                <Info className="h-4 w-4" /> Partagez votre stratégie avec la communauté ! 🌍
+              </div>
+              <p>
+                Rendre votre portefeuille public permet aux autres investisseurs de s'inspirer de vos allocations et de découvrir de nouvelles actions.
+              </p>
+              <div className="mt-1 flex items-start gap-2 font-medium">
+                <Lock className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>
+                  <strong>Confidentialité garantie</strong> : Vos montants exacts (capital, liquidités, gains en devises) sont totalement masqués. Seuls les pourcentages de performance et le poids de chaque action sont visibles.
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         <Button 

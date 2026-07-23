@@ -32,6 +32,7 @@ export interface security {
     roe: number
   }
   tags?: string[]
+  qualityMetrics?: any
 }
 
 export interface score {

@@ -71,7 +71,7 @@ const WatchlistTable = ({ table, colSpan, onPeriodChange }: WatchlistTableProps)
                     <TableHead
                       key={header.id}
                       className={cn(
-                        'whitespace-nowrap py-3',
+                        'sticky top-0 z-30 bg-background/95 backdrop-blur shadow-[0_1px_0_0_hsl(var(--border))] whitespace-nowrap py-3',
                         isMobile && header.id === 'symbol' && 'w-[50%]',
                         isMobile && header.id === 'regularMarketPrice' && 'w-[25%]',
                         isMobile && header.id === 'regularMarketChangePercent' && 'w-[20%]',

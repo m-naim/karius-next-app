@@ -15,7 +15,7 @@ const markets = [
     symbol: 'SPY',
     name: 'S&P 500',
     description: 'Les 500 plus grandes entreprises américaines. Le poumon de la finance mondiale.',
-    icon: <TrendingUp className="h-5 w-5" />,
+    icon: TrendingUp,
     color: 'text-blue-500',
     bg: 'bg-blue-500/10',
   },
@@ -23,7 +23,7 @@ const markets = [
     symbol: 'QQQ',
     name: 'Nasdaq 100',
     description: "Le cœur de l'innovation technologique et de la croissance agressive.",
-    icon: <PieChart className="h-5 w-5" />,
+    icon: PieChart,
     color: 'text-purple-500',
     bg: 'bg-purple-500/10',
   },
@@ -31,7 +31,7 @@ const markets = [
     symbol: 'QWLD',
     name: 'MSCI World Quality',
     description: "Sélection mondiale d'entreprises aux fondamentaux financiers irréprochables.",
-    icon: <ShieldCheck className="h-5 w-5" />,
+    icon: ShieldCheck,
     color: 'text-emerald-500',
     bg: 'bg-emerald-500/10',
   },
@@ -39,7 +39,7 @@ const markets = [
     symbol: 'URTH',
     name: 'MSCI World',
     description: 'Le marché mondial global couvrant 23 pays développés.',
-    icon: <Globe className="h-5 w-5" />,
+    icon: Globe,
     color: 'text-cyan-500',
     bg: 'bg-cyan-500/10',
   },
@@ -47,7 +47,7 @@ const markets = [
     symbol: 'MEUD.PAR',
     name: 'STOXX Europe 600',
     description: 'La référence majeure du marché actions européen.',
-    icon: <Landmark className="h-5 w-5" />,
+    icon: Landmark,
     color: 'text-amber-500',
     bg: 'bg-amber-500/10',
   },
@@ -55,7 +55,7 @@ const markets = [
     symbol: '^VIX',
     name: 'VIX Volatility',
     description: "L'indice de la peur. Mesure la volatilité attendue du S&P 500.",
-    icon: <Activity className="h-5 w-5" />,
+    icon: Activity,
     color: 'text-rose-500',
     bg: 'bg-rose-500/10',
   },
@@ -70,49 +70,41 @@ export default function MarketListingPage() {
 
   useEffect(() => {
     const fetchQuotesAndVariations = async () => {
+      const symbols = markets.map((m) => m.symbol)
+      const quotesMap: Record<string, any> = {}
+      const variationsMap: Record<string, Record<string, number>> = {}
+
       try {
-        const symbols = markets.map((m) => m.symbol)
-
         const quotesData = await getQuotes(symbols)
-        const quotesMap: Record<string, any> = {}
-        quotesData.forEach((q: any) => {
-          quotesMap[q.symbol] = q
-        })
-
-        const variationsData = await getStocksVariations(symbols)
-        const variationsMap: Record<string, Record<string, number>> = {}
-        variationsData.forEach((v: any) => {
-          variationsMap[v.symbol] = v.variations
-        })
-
-        const perfs: Record<string, number> = {}
-        symbols.forEach((sym) => {
-          if (selectedPeriod === '1d') {
-            perfs[sym] = quotesMap[sym]?.regularMarketChangePercent ?? 0
-          } else {
-            perfs[sym] = variationsMap[sym]?.[selectedPeriod] ?? 0
-          }
-        })
-        setMarketPerfs(perfs)
-      } catch (e) {
-        console.error('Failed to fetch market metrics', e)
-        try {
-          const symbols = markets.map((m) => m.symbol)
-          const history = await getStockHistory(symbols, selectedPeriod)
-          const perfs: Record<string, number> = {}
-          symbols.forEach((sym) => {
-            const data = history[sym]
-            if (data && data.length > 0) {
-              const first = data[0].close
-              const last = data[data.length - 1].close
-              perfs[sym] = ((last - first) / first) * 100
-            }
+        if (Array.isArray(quotesData)) {
+          quotesData.forEach((q: any) => {
+            if (q?.symbol) quotesMap[q.symbol] = q
           })
-          setMarketPerfs(perfs)
-        } catch (err) {
-          console.error('Fallback history calculation failed', err)
         }
+      } catch (err) {
+        console.error('Failed to load market quotes', err)
       }
+
+      try {
+        const variationsData = await getStocksVariations(symbols)
+        if (Array.isArray(variationsData)) {
+          variationsData.forEach((v: any) => {
+            if (v?.symbol) variationsMap[v.symbol] = v.variations
+          })
+        }
+      } catch (err) {
+        console.error('Failed to load market variations', err)
+      }
+
+      const perfs: Record<string, number> = {}
+      symbols.forEach((sym) => {
+        if (selectedPeriod === '1d') {
+          perfs[sym] = quotesMap[sym]?.regularMarketChangePercent ?? 0
+        } else {
+          perfs[sym] = variationsMap[sym]?.[selectedPeriod] ?? 0
+        }
+      })
+      setMarketPerfs(perfs)
     }
 
     fetchQuotesAndVariations()
@@ -161,43 +153,43 @@ export default function MarketListingPage() {
 
       {/* Ticker Tape — scroll horizontal, cartes compactes sur mobile */}
       <div
-        className="flex gap-2.5 overflow-x-auto pb-1 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden md:gap-4"
+        className="flex gap-2.5 overflow-x-auto pb-2 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden md:gap-4 shrink-0"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {markets.map((market) => {
           const isActive = activeMarket.symbol === market.symbol
           const perf = marketPerfs[market.symbol]
+          const Icon = market.icon
+
           return (
             <button
               key={market.symbol}
               onClick={() => setActiveMarket(market)}
               className={cn(
-                'relative flex-shrink-0 w-[120px] snap-start rounded-xl border p-2.5 text-left transition-colors duration-300 overflow-hidden md:w-44 md:rounded-2xl md:p-4',
+                'relative flex flex-col justify-between shrink-0 min-h-[76px] w-[140px] snap-start rounded-xl border p-3 text-left transition-all duration-200 md:min-h-[92px] md:w-48 md:rounded-2xl md:p-4',
                 isActive
-                  ? 'bg-background border-primary shadow-sm ring-1 ring-primary/30'
-                  : 'bg-muted/40 border-border/60 hover:bg-muted/60 hover:border-border/80'
+                  ? 'bg-card border-primary shadow-sm ring-1 ring-primary/30'
+                  : 'bg-card/40 border-border/60 hover:bg-card/80 hover:border-border/80'
               )}
             >
-              <div className="flex justify-between items-start mb-1.5">
+              <div className="flex justify-between items-start w-full gap-2">
                 <div className="flex min-w-0 flex-col">
-                  <span className="truncate text-[11px] font-bold leading-tight text-foreground">{market.name}</span>
+                  <span className="truncate text-xs font-bold leading-tight text-foreground md:text-sm">{market.name}</span>
                   <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{market.symbol}</span>
                 </div>
                 <div className={cn('shrink-0 rounded-md p-1 md:rounded-lg md:p-1.5', market.bg, market.color)}>
-                  <span className="[&_svg]:h-3.5 [&_svg]:w-3.5 md:[&_svg]:h-5 md:[&_svg]:w-5">
-                    {market.icon}
-                  </span>
+                  <Icon className="h-3.5 w-3.5 md:h-4 md:w-4" />
                 </div>
               </div>
-              {perf !== undefined && (
-                <VariationContainer value={perf} entity="%" className="text-sm font-black p-0 md:text-lg" background={false} />
-              )}
+              <div className="mt-2">
+                {perf !== undefined ? (
+                  <VariationContainer value={perf} entity="%" className="text-xs font-black p-0 md:text-base" background={false} />
+                ) : (
+                  <span className="text-xs text-muted-foreground">--</span>
+                )}
+              </div>
               {isActive && (
-                <motion.div
-                  layoutId="active-indicator"
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                />
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-b-xl" />
               )}
             </button>
           )

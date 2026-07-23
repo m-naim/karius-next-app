@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { Trash2, AlertTriangle, Save, Loader2 } from 'lucide-react'
+import { Trash2, AlertTriangle, Save, Loader2, Info, Lock } from 'lucide-react'
 import { deletePortfolio, getMetadata, updatePortfolio } from '@/services/portfolioService'
 import { toast } from 'sonner'
 import SectionContainer from '@/components/organismes/layout/SectionContainer'
@@ -105,6 +105,23 @@ export default function PortfolioSettings() {
             </div>
             <Switch checked={isPublic} onCheckedChange={setIsPublic} />
           </div>
+
+          {isPublic && (
+            <div className="flex flex-col gap-2 rounded-md bg-blue-500/10 p-4 text-sm text-blue-700 dark:text-blue-400">
+              <div className="flex items-center gap-2 font-semibold">
+                <Info className="h-4 w-4" /> Partagez votre stratégie avec la communauté ! 🌍
+              </div>
+              <p>
+                Rendre votre portefeuille public permet aux autres investisseurs de s'inspirer de vos allocations et de découvrir de nouvelles actions.
+              </p>
+              <div className="mt-1 flex items-start gap-2 font-medium">
+                <Lock className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>
+                  <strong>Confidentialité garantie</strong> : Vos montants exacts (capital, liquidités, gains en devises) sont totalement masqués. Seuls les pourcentages de performance et le poids de chaque action sont visibles.
+                </span>
+              </div>
+            </div>
+          )}
 
           <Button onClick={handleSave} disabled={saving} className="gap-2 rounded-full">
             {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} 
