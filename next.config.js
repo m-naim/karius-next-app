@@ -62,6 +62,9 @@ module.exports = () => {
   const plugins = [withContentlayer, withBundleAnalyzer]
   return plugins.reduce((acc, next) => next(acc), {
     reactStrictMode: true,
+    turbopack: {
+      root: __dirname,
+    },
     pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
     images: {
       remotePatterns: [
@@ -71,6 +74,15 @@ module.exports = () => {
         },
       ],
     },
+    webpack: (config, { dev }) => {
+      if (dev) {
+        config.watchOptions = {
+          ...config.watchOptions,
+          ignored: ['**/node_modules/**', '**/.git/**', '**/logs/**', '**/.next/**'],
+        }
+      }
+      return config
+    },
     async headers() {
       return [
         {
@@ -79,6 +91,5 @@ module.exports = () => {
         },
       ]
     }
-
   })
 }

@@ -160,6 +160,17 @@ export const TableContextHeader = ({
 
       {showFilters && (
         <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/5 p-2 transition-all">
+          {table.getColumn('hasFundamentals') && (
+            <DataTableFacetedFilter
+              column={table.getColumn('hasFundamentals')}
+              title="Fondamentaux"
+              options={[
+                { label: 'Disponible', value: 'yes' },
+                { label: 'Non disponible', value: 'no' },
+              ]}
+            />
+          )}
+
           {table.getColumn('sector') && (
             <DataTableFacetedFilter
               column={table.getColumn('sector')}

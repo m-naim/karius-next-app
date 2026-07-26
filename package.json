@@ -3,8 +3,8 @@
   "version": "2.1.0",
   "private": true,
   "scripts": {
-    "start": "next dev --turbo",
-    "dev": "cross-env next dev --turbo",
+    "start": "next dev --webpack",
+    "dev": "cross-env next dev --webpack",
     "build": "contentlayer2 build && cross-env NODE_OPTIONS='--experimental-json-modules' node ./scripts/postbuild.mjs && cross-env INIT_CWD=$PWD next build --turbo",
     "prebuild": "contentlayer2 build",
     "postbuild": "cross-env NODE_OPTIONS='--experimental-json-modules' node ./scripts/postbuild.mjs",

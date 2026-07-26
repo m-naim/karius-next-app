@@ -27,6 +27,8 @@ import { WatchlistSelector } from './components/WatchlistSelector'
 import { AnalysisView } from '@/components/organismes/market/AnalysisView'
 import { LayoutDashboard, Table as TableIcon } from 'lucide-react'
 import { RightSidebar } from '@/components/organismes/layout/RightSidebar'
+import { SplitScreenLayout } from '@/components/organismes/layout/SplitScreenLayout'
+import { cn } from '@/lib/utils'
 
 export interface watchList {
   _id?: string
@@ -371,124 +373,130 @@ export default function Watchlist() {
   return loading ? (
     <Loader />
   ) : (
-    <div className="flex h-full w-full flex-col gap-2 p-2 min-h-0 overflow-hidden">
-      <div className="bg-dark flex shrink-0 items-center justify-between gap-4 rounded-lg border p-4">
-        <div className="flex min-w-0 items-center gap-3">
-          <Link href="/app/watchlist" className="inline-flex shrink-0">
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <div className="min-w-0 truncate">
-            <WatchlistSelector watchlists={allWatchlists} currentId={id} />
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 shrink-0"
-            onClick={downloadCSV}
-            aria-label="Télécharger en CSV"
-            title="Télécharger en CSV"
-          >
-            <Download className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 shrink-0"
-            onClick={() => setView(view === 'table' ? 'analysis' : 'table')}
-            aria-label={view === 'table' ? 'Vue Analyse' : 'Vue Tableau'}
-            title={view === 'table' ? 'Vue Analyse' : 'Vue Tableau'}
-          >
-            {view === 'table' ? (
-              <LayoutDashboard className="h-4 w-4" />
-            ) : (
-              <TableIcon className="h-4 w-4" />
-            )}
-          </Button>
-
-          {owned && (
-            <Link href={`/app/watchlist/${id}/settings`}>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 shrink-0"
-                aria-label="Paramètres de la watchlist"
-                title="Paramètres"
-                asChild={false}
-              >
-                <Settings className="h-4 w-4" strokeWidth={1.5} />
+    <SplitScreenLayout
+      header={
+        <div className="bg-dark flex shrink-0 items-center justify-between gap-4 rounded-lg border p-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <Link href="/app/watchlist" className="inline-flex shrink-0">
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>
-          )}
-        </div>
-      </div>
-
-      <div className="flex min-h-0 flex-1 gap-4">
-        <div className="bg-dark flex-1 min-h-0 overflow-hidden rounded-lg border">
-          {!loading && data!.securities != null && (
-            <div className="flex h-full flex-col min-h-0 overflow-hidden">
-              {view === 'table' ? (
-                <TableView
-                  table={table}
-                  id={id}
-                  owned={owned}
-                  setData={setData}
-                  selectedPeriod={selectedPeriod}
-                  setSelectedPeriod={setSelectedPeriod}
-                  columns={columns(
-                    id,
-                    owned,
-                    data.benchMark,
-                    deleteRow,
-                    selectedPeriod,
-                    allWatchlists
-                  )}
-                  onRowClick={(row) => {
-                    setSelectedTicker(row.symbol)
-                    if (!showChart) setShowChart(true)
-                  }}
-                  selectedTicker={selectedTicker}
-                  allAvailableTags={allAvailableTags}
-                  allWatchlists={allWatchlists}
-                  showMetrics={showMetrics}
-                  setShowMetrics={setShowMetrics}
-                />
-              ) : (
-                <AnalysisView
-                  securities={data.securities}
-                  selectedPeriod={selectedPeriod}
-                  onPeriodChange={setSelectedPeriod}
-                />
-              )}
+            <div className="min-w-0 truncate">
+              <WatchlistSelector watchlists={allWatchlists} currentId={id} />
             </div>
-          )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0"
+              onClick={downloadCSV}
+              aria-label="Télécharger en CSV"
+              title="Télécharger en CSV"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0"
+              onClick={() => setView(view === 'table' ? 'analysis' : 'table')}
+              title={view === 'table' ? 'Vue Analyse' : 'Vue Tableau'}
+            >
+              {view === 'table' ? (
+                <LayoutDashboard className="h-4 w-4" />
+              ) : (
+                <TableIcon className="h-4 w-4" />
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                'h-8 w-8 shrink-0 rounded-full',
+                showChart ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground'
+              )}
+              onClick={() => setShowChart(!showChart)}
+            >
+              <LineChart className="h-4 w-4" />
+              <span className="sr-only">Afficher/Masquer le graphique</span>
+            </Button>
+
+            {owned && (
+              <Link href={`/app/watchlist/${id}/settings`}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 shrink-0"
+                  aria-label="Paramètres de la watchlist"
+                  title="Paramètres"
+                  asChild={false}
+                >
+                  <Settings className="h-4 w-4" strokeWidth={1.5} />
+                </Button>
+              </Link>
+            )}
+          </div>
         </div>
-        <RightSidebar
-          isOpen={showChart}
-          onClose={() => setShowChart(false)}
-          title={selectedTicker ? `ANALYSE : ${selectedTicker}` : 'ANALYSE'}
-        >
-          {selectedTicker ? (
-            <TickerChart
-              symbol={selectedTicker}
-              tags={data?.securities.find((sec) => sec.symbol === selectedTicker)?.tags || []}
-              allAvailableTags={allAvailableTags}
-              onTagsChange={(newTags) => onTagsChangeForSymbol(selectedTicker, newTags)}
-              onAddGlobalTag={onAddGlobalTag}
-              onDeleteGlobalTag={onDeleteGlobalTag}
-            />
-          ) : (
+      }
+      showDrawer={showChart}
+      onCloseDrawer={() => setShowChart(false)}
+      drawerTitle={selectedTicker ? `ANALYSE : ${selectedTicker}` : 'ANALYSE'}
+      drawerContent={
+        selectedTicker ? (
+          <TickerChart
+            symbol={selectedTicker}
+            tags={data?.securities.find((sec) => sec.symbol === selectedTicker)?.tags || []}
+            allAvailableTags={allAvailableTags}
+            onTagsChange={(newTags) => onTagsChangeForSymbol(selectedTicker, newTags)}
+            onAddGlobalTag={onAddGlobalTag}
+            onDeleteGlobalTag={onDeleteGlobalTag}
+          />
+        ) : (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-muted-foreground">
             <LineChart className="h-8 w-8 opacity-30" />
             <p className="text-sm font-medium">Cliquez sur une valeur pour afficher son analyse</p>
           </div>
-          )}
-        </RightSidebar>
-      </div>
-    </div>
+        )
+      }
+    >
+      {!loading && data!.securities != null && (
+        view === 'table' ? (
+          <TableView
+            table={table}
+            id={id}
+            owned={owned}
+            setData={setData}
+            selectedPeriod={selectedPeriod}
+            setSelectedPeriod={setSelectedPeriod}
+            columns={columns(
+              id,
+              owned,
+              data.benchMark,
+              deleteRow,
+              selectedPeriod,
+              allWatchlists
+            )}
+            onRowClick={(row) => {
+              setSelectedTicker(row.symbol)
+              if (!showChart) setShowChart(true)
+            }}
+            selectedTicker={selectedTicker}
+            allAvailableTags={allAvailableTags}
+            allWatchlists={allWatchlists}
+            showMetrics={showMetrics}
+            setShowMetrics={setShowMetrics}
+          />
+        ) : (
+          <AnalysisView
+            securities={data.securities}
+            selectedPeriod={selectedPeriod}
+            onPeriodChange={setSelectedPeriod}
+          />
+        )
+      )}
+    </SplitScreenLayout>
   )
 }

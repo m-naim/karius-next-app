@@ -551,6 +551,36 @@ export const columns = (
       },
     },
     {
+      accessorFn: (row) => (row.qualityMetrics?.hasFundamentals || !!row.lastYearFundamental) ? 'yes' : 'no',
+      id: 'hasFundamentals',
+      header: SortingButton('Fondamentaux'),
+      cell: ({ row }) => {
+        const hasFund = row.original.qualityMetrics?.hasFundamentals || !!row.original.lastYearFundamental
+        return (
+          <div className="flex items-center gap-1">
+            {hasFund ? (
+              <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                <FileText className="h-3.5 w-3.5" /> Dispo
+              </span>
+            ) : (
+              <span className="text-[11px] text-muted-foreground">Non</span>
+            )}
+          </div>
+        )
+      },
+      filterFn: (row, id, value) => {
+        if (!value) return true
+        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
+          values: string[]
+          mode: 'is' | 'isnot'
+        }
+        if (!values || values.length === 0) return true
+        const val = row.getValue(id) as string
+        const matches = values.includes(val)
+        return mode === 'is' ? matches : !matches
+      },
+    },
+    {
       accessorFn: (row) => {
         return row?.lastYearFundamental?.roa || 0
       },

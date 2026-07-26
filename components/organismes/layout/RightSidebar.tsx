@@ -16,8 +16,8 @@ interface RightSidebarProps {
 
 /**
  * Reusable Right Sidebar component.
- * On mobile, it behaves like an overlay (fixed).
- * On desktop (md+), it can be used inside a flex container to push content or stay fixed.
+ * On mobile, it behaves like an overlay drawer (fixed).
+ * On desktop (md+), it sits inline in a split-screen flex layout next to the main content panel.
  */
 export function RightSidebar({
   isOpen,
@@ -25,15 +25,18 @@ export function RightSidebar({
   title,
   children,
   className,
-  width = 'md:w-[500px] lg:w-[600px]',
+  width = 'md:w-[480px] lg:w-[560px] xl:w-[620px]',
 }: RightSidebarProps) {
   if (!isOpen) return null
 
   return (
     <div
       className={cn(
-        'fixed inset-y-0 right-0 z-[60] flex flex-col border-l bg-background shadow-2xl duration-300 animate-in slide-in-from-right',
-        'w-full', // mobile full width
+        'flex flex-col bg-background border-l transition-all duration-300',
+        // Mobile layout: fixed overlay drawer
+        'fixed inset-y-0 right-0 z-50 w-full shadow-2xl animate-in slide-in-from-right',
+        // Desktop layout: relative panel in split screen layout
+        'md:relative md:inset-auto md:z-10 md:h-full md:shrink-0 md:shadow-none md:animate-in md:fade-in-50 md:slide-in-from-right-5',
         width,
         className
       )}
@@ -58,7 +61,7 @@ export function RightSidebar({
         </Button>
       </div>
 
-      <div className="min-h-0 flex-1 flex flex-col overflow-hidden">{children}</div>
+      <div className="min-h-0 flex-1 flex flex-col overflow-y-auto">{children}</div>
     </div>
   )
 }

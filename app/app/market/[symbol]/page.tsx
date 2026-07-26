@@ -26,6 +26,7 @@ import { AnalysisView } from '@/components/organismes/market/AnalysisView'
 import { columns } from './columns'
 import { LayoutDashboard, Table as TableIcon } from 'lucide-react'
 import { RightSidebar } from '@/components/organismes/layout/RightSidebar'
+import { SplitScreenLayout } from '@/components/organismes/layout/SplitScreenLayout'
 
 interface IndexData {
   symbol: string
@@ -48,6 +49,7 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
   const [activeScreener, setActiveScreener] = React.useState<string | null>(null)
 
   const screeners = [
+    { id: 'fundamentals', label: '📊 Fondamentaux Dispos', desc: 'Affiche uniquement les actions avec données fondamentales disponibles' },
     { id: 'dividend', label: '💰 Rendement Élevé', desc: 'Rendement > 3% & P/E raisonnable (< 22)' },
     { id: 'value', label: '🏷️ Super Value', desc: 'P/E < 15 & Rentabilité (ROE > 12%)' },
     { id: 'garp', label: '🚀 Croissance GARP', desc: 'Forte croissance (Score > 60%) & P/E < 25' },
@@ -60,6 +62,8 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
 
     return securities.filter((s) => {
       switch (activeScreener) {
+        case 'fundamentals':
+          return !!s.qualityMetrics?.hasFundamentals || !!s.lastYearFundamental
         case 'dividend': {
           const dy = s.dividendYield ?? 0
           const dyPercent = dy >= 1 ? dy : dy * 100
@@ -225,132 +229,128 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
   return loading ? (
     <Loader />
   ) : (
-    <div className="flex w-full flex-col gap-3 p-3 md:gap-6 md:p-6 md:py-8">
-      <div className="bg-dark flex shrink-0 items-center justify-between gap-2 rounded-xl border px-3 py-2 md:p-4">
-        <div className="flex min-w-0 items-center gap-3">
-          <Link href="/app/market" className="inline-flex shrink-0">
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <div className="min-w-0 truncate">
-            <h1 className="truncate text-sm font-bold text-foreground md:text-lg">{indexInfo.name}</h1>
+    <SplitScreenLayout
+      header={
+        <div className="bg-dark flex shrink-0 items-center justify-between gap-2 rounded-xl border px-3 py-2 md:p-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <Link href="/app/market" className="inline-flex shrink-0">
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </Link>
+            <div className="min-w-0 truncate">
+              <h1 className="truncate text-sm font-bold text-foreground md:text-lg">{indexInfo.name}</h1>
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 shrink-0"
-            onClick={() => setView(view === 'table' ? 'analysis' : 'table')}
-            title={view === 'table' ? 'Vue Analyse' : 'Vue Tableau'}
-          >
-            {view === 'table' ? (
-              <LayoutDashboard className="h-4 w-4" />
-            ) : (
-              <TableIcon className="h-4 w-4" />
-            )}
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn('h-8 w-8 shrink-0 rounded-full', showChart ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground')}
-            onClick={() => setShowChart(!showChart)}
-          >
-            <LineChart className="h-4 w-4" />
-            <span className="sr-only">Afficher/Masquer le graphique</span>
-          </Button>
-        </div>
-      </div>
-
-      {view === 'table' && (
-        <div className="flex shrink-0 flex-col gap-2 rounded-xl border bg-card p-2 shadow-sm border-border/60 md:p-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mr-2">
-              Filtres de Marché:
-            </span>
-            {screeners.map((scr) => {
-              const isActive = activeScreener === scr.id
-              return (
-                <button
-                  key={scr.id}
-                  onClick={() => setActiveScreener(isActive ? null : scr.id)}
-                  title={scr.desc}
-                  aria-pressed={isActive}
-                  className={cn(
-                    "rounded-full px-3.5 py-1 text-xs font-bold transition-all border",
-                    isActive
-                      ? "bg-primary border-primary text-primary-foreground shadow-md ring-1 ring-primary/20"
-                      : "bg-muted/40 text-muted-foreground border-border/50 hover:bg-muted hover:text-foreground"
-                  )}
-                >
-                  {scr.label}
-                  {isActive && (
-                    <span className="ml-1.5 rounded-full bg-primary-foreground/20 px-1.5 py-0.5 text-[9px] font-black">
-                      {table.getFilteredRowModel().rows.length}
-                    </span>
-                  )}
-                </button>
-              )
-            })}
-            {activeScreener && (
-              <button
-                onClick={() => setActiveScreener(null)}
-                className="text-[10px] font-black uppercase tracking-widest text-destructive hover:underline ml-auto"
-              >
-                Réinitialiser
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      <div className="flex w-full gap-3 md:gap-4">
-        <div className="bg-dark w-full rounded-xl border">
-          {!loading && (
-            <div className="flex w-full flex-col">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0"
+              onClick={() => setView(view === 'table' ? 'analysis' : 'table')}
+              title={view === 'table' ? 'Vue Analyse' : 'Vue Tableau'}
+            >
               {view === 'table' ? (
-                <TableView
-                  table={table}
-                  id={symbol}
-                  owned={false}
-                  setData={() => {}}
-                  selectedPeriod={selectedPeriod}
-                  setSelectedPeriod={setSelectedPeriod}
-                  columns={columns(selectedPeriod)}
-                  onRowClick={(row) => {
-                    setSelectedTicker(row.symbol)
-                    if (!showChart) setShowChart(true)
-                  }}
-                  selectedTicker={selectedTicker}
-                  showMetrics={showMetrics}
-                  setShowMetrics={setShowMetrics}
-                />
+                <LayoutDashboard className="h-4 w-4" />
               ) : (
-                <AnalysisView
-                  securities={securities}
-                  selectedPeriod={selectedPeriod}
-                  onPeriodChange={setSelectedPeriod}
-                />
+                <TableIcon className="h-4 w-4" />
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn('h-8 w-8 shrink-0 rounded-full', showChart ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground')}
+              onClick={() => setShowChart(!showChart)}
+            >
+              <LineChart className="h-4 w-4" />
+              <span className="sr-only">Afficher/Masquer le graphique</span>
+            </Button>
+          </div>
+        </div>
+      }
+      filters={
+        view === 'table' && (
+          <div className="flex shrink-0 flex-col gap-2 rounded-xl border bg-card p-2 shadow-sm border-border/60 md:p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mr-2">
+                Filtres de Marché:
+              </span>
+              {screeners.map((scr) => {
+                const isActive = activeScreener === scr.id
+                return (
+                  <button
+                    key={scr.id}
+                    onClick={() => setActiveScreener(isActive ? null : scr.id)}
+                    title={scr.desc}
+                    aria-pressed={isActive}
+                    className={cn(
+                      "rounded-full px-3.5 py-1 text-xs font-bold transition-all border",
+                      isActive
+                        ? "bg-primary border-primary text-primary-foreground shadow-md ring-1 ring-primary/20"
+                        : "bg-muted/40 text-muted-foreground border-border/50 hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    {scr.label}
+                    {isActive && (
+                      <span className="ml-1.5 rounded-full bg-primary-foreground/20 px-1.5 py-0.5 text-[9px] font-black">
+                        {table.getFilteredRowModel().rows.length}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+              {activeScreener && (
+                <button
+                  onClick={() => setActiveScreener(null)}
+                  className="text-[10px] font-black uppercase tracking-widest text-destructive hover:underline ml-auto"
+                >
+                  Réinitialiser
+                </button>
               )}
             </div>
-          )}
-        </div>
-        <RightSidebar
-          isOpen={showChart}
-          onClose={() => setShowChart(false)}
-          title={selectedTicker ? `ANALYSE : ${selectedTicker}` : 'ANALYSE'}
-        >
-          {selectedTicker ? (
-            <TickerChart symbol={selectedTicker} />
-          ) : (
-            <div className="flex h-full items-center justify-center text-gray-500">
-              Select a security to view chart
-            </div>
-          )}
-        </RightSidebar>
-      </div>
-    </div>
+          </div>
+        )
+      }
+      showDrawer={showChart}
+      onCloseDrawer={() => setShowChart(false)}
+      drawerTitle={selectedTicker ? `ANALYSE : ${selectedTicker}` : 'ANALYSE'}
+      drawerContent={
+        selectedTicker ? (
+          <TickerChart symbol={selectedTicker} />
+        ) : (
+          <div className="flex h-full items-center justify-center text-gray-500">
+            Select a security to view chart
+          </div>
+        )
+      }
+    >
+      {!loading && (
+        view === 'table' ? (
+          <TableView
+            table={table}
+            id={symbol}
+            owned={false}
+            setData={() => {}}
+            selectedPeriod={selectedPeriod}
+            setSelectedPeriod={setSelectedPeriod}
+            columns={columns(selectedPeriod)}
+            onRowClick={(row) => {
+              setSelectedTicker(row.symbol)
+              if (!showChart) setShowChart(true)
+            }}
+            selectedTicker={selectedTicker}
+            showMetrics={showMetrics}
+            setShowMetrics={setShowMetrics}
+          />
+        ) : (
+          <AnalysisView
+            securities={securities}
+            selectedPeriod={selectedPeriod}
+            onPeriodChange={setSelectedPeriod}
+          />
+        )
+      )}
+    </SplitScreenLayout>
   )
 }

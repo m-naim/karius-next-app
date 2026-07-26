@@ -311,20 +311,50 @@ export function TickerChart({
 
         <TabsContent value="technical" className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex flex-wrap gap-1">
-              {periodes.map((p) => (
-                <button
-                  key={p.value}
-                  onClick={() => setPeriod(p.value)}
-                  className={`rounded-md px-2 py-1 text-xs font-medium transition-colors ${
-                    period === p.value
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted hover:bg-muted/80'
-                  }`}
-                >
-                  {p.label}
-                </button>
-              ))}
+            <div className="flex flex-wrap items-center gap-1">
+              {periodes.map((p) => {
+                const primaryHistory = fullHistory[symbol] || []
+                const totalAvailableDays =
+                  primaryHistory.length > 1
+                    ? primaryHistory[primaryHistory.length - 1].day - primaryHistory[0].day
+                    : 0
+                const periodMinDays: Record<string, number> = {
+                  '1w': 5,
+                  '1m': 20,
+                  '3m': 70,
+                  '6m': 140,
+                  '1y': 300,
+                  '5y': 1400,
+                  '10y': 3000,
+                  max: 0,
+                }
+                const isExceeding =
+                  totalAvailableDays > 0 &&
+                  p.value !== 'max' &&
+                  periodMinDays[p.value] > totalAvailableDays
+
+                return (
+                  <button
+                    key={p.value}
+                    onClick={() => setPeriod(p.value)}
+                    title={
+                      isExceeding
+                        ? `Seulement ~${Math.round(totalAvailableDays)} jours d'historique disponibles`
+                        : undefined
+                    }
+                    className={`rounded-md px-2 py-1 text-xs font-medium transition-colors ${
+                      period === p.value
+                        ? 'bg-primary text-primary-foreground'
+                        : isExceeding
+                        ? 'bg-muted/40 text-muted-foreground/60 hover:bg-muted/60'
+                        : 'bg-muted hover:bg-muted/80'
+                    }`}
+                  >
+                    {p.label}
+                    {isExceeding && period === p.value && ' (Max)'}
+                  </button>
+                )
+              })}
             </div>
 
             <div className="flex items-center gap-4 border-l pl-3">
@@ -423,6 +453,47 @@ export function TickerChart({
               </div>
             </div>
           </div>
+
+          {(() => {
+            const primaryHistory = fullHistory[symbol] || []
+            const totalAvailableDays =
+              primaryHistory.length > 1
+                ? primaryHistory[primaryHistory.length - 1].day - primaryHistory[0].day
+                : 0
+            const periodMinDays: Record<string, number> = {
+              '1w': 5,
+              '1m': 20,
+              '3m': 70,
+              '6m': 140,
+              '1y': 300,
+              '5y': 1400,
+              '10y': 3000,
+              max: 0,
+            }
+            if (
+              !loading &&
+              totalAvailableDays > 0 &&
+              period !== 'max' &&
+              periodMinDays[period] > totalAvailableDays
+            ) {
+              const startDate = format(
+                new Date(primaryHistory[0].day * 24 * 60 * 60 * 1000),
+                'dd/MM/yyyy'
+              )
+              const endDate = format(
+                new Date(primaryHistory[primaryHistory.length - 1].day * 24 * 60 * 60 * 1000),
+                'dd/MM/yyyy'
+              )
+              return (
+                <div className="flex items-center gap-1.5 rounded-md border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                  <span>
+                    ℹ️ Historique limité : cet actif dispose de ~{Math.round(totalAvailableDays)} jours de données (du {startDate} au {endDate}). Plage maximale affichée.
+                  </span>
+                </div>
+              )
+            }
+            return null
+          })()}
 
           <div className="h-[250px] w-full rounded-lg border bg-card/30 p-1">
             {loading ? (
