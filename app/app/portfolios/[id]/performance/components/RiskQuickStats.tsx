@@ -61,7 +61,7 @@ export function RiskQuickStats({ metrics, loading, period }: RiskQuickStatsProps
   };
 
   return (
-    <div className="flex flex-row flex-wrap gap-4 w-full p-4 rounded-xl backdrop-blur-md bg-background/80 border border-border/50 shadow-sm text-foreground">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full p-4 rounded-xl backdrop-blur-md bg-background/80 border border-border/50 shadow-sm text-foreground">
       <StatBadge 
         label="Sharpe Ratio" 
         value={formatNumber(metrics.sharpe)} 

@@ -22,6 +22,19 @@ interface HoveredData {
   weight: number
 }
 
+const PALETTE = [
+  'hsl(var(--primary))',
+  '#6366f1',
+  '#10b981',
+  '#f59e0b',
+  '#06b6d4',
+  '#ec4899',
+  '#8b5cf6',
+  '#3b82f6',
+  '#f97316',
+]
+const getItemColor = (index: number) => PALETTE[index % PALETTE.length]
+
 const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
   const [view, setView] = useState<ViewType>('assets')
   const [hoveredData, setHoveredData] = useState<HoveredData | null>(null)
@@ -52,7 +65,7 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
         acc[key].weight += item.weight * 100
         return acc
       },
-      {} as Record<string, { name: string; value: number; weight: number }>
+      {} as Record<string, HoveredData>
     )
     return Object.values(groupedData).sort((a, b) => b.value - a.value)
   }, [data, view])
@@ -64,25 +77,26 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <Tabs value={view} onValueChange={(v) => setView(v as ViewType)} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1">
-            <TabsTrigger value="assets" className="text-[10px] font-bold uppercase sm:text-xs">
+    <div className="flex w-full flex-col gap-4 rounded-xl border border-border bg-card p-4 shadow-sm">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-bold text-foreground">Allocation</h3>
+        <Tabs value={view} onValueChange={(v) => setView(v as ViewType)}>
+          <TabsList className="h-7 bg-muted/50 p-0.5">
+            <TabsTrigger value="assets" className="h-6 px-2 text-xs">
               Actifs
             </TabsTrigger>
-            <TabsTrigger value="sectors" className="text-[10px] font-bold uppercase sm:text-xs">
+            <TabsTrigger value="sectors" className="h-6 px-2 text-xs">
               Secteurs
             </TabsTrigger>
-            <TabsTrigger value="industries" className="text-[10px] font-bold uppercase sm:text-xs">
+            <TabsTrigger value="industries" className="h-6 px-2 text-xs">
               Métiers
             </TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
 
-      <div className="relative h-[200px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="relative flex items-center justify-center">
+        <ResponsiveContainer width="100%" height={200}>
           <PieChart>
             <Pie
               data={pieData}
@@ -101,7 +115,7 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
               {pieData.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  fill={stringToColor(entry.name)}
+                  fill={getItemColor(index)}
                   className="outline-none transition-opacity hover:opacity-80"
                   style={{ cursor: 'pointer' }}
                 />
@@ -112,21 +126,21 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
           {hoveredData ? (
             <div className="duration-200 animate-in fade-in zoom-in-95">
-              <div className="max-w-[120px] truncate text-[10px] font-bold uppercase text-muted-foreground">
+              <div className="max-w-[120px] truncate text-xs font-semibold uppercase text-muted-foreground">
                 {hoveredData.name}
               </div>
               <div className="text-xl font-black">{hoveredData.weight.toFixed(1)}%</div>
-              <div className="text-[10px] font-medium text-muted-foreground">
+              <div className="text-xs font-medium text-muted-foreground">
                 {hoveredData.value.toLocaleString()} €
               </div>
             </div>
           ) : (
             <div className="duration-200 animate-in fade-in zoom-in-95">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Total
               </div>
               <div className="text-xl font-black">{totalValue.toLocaleString()} €</div>
-              <div className="text-[10px] font-medium text-muted-foreground">
+              <div className="text-xs font-medium text-muted-foreground">
                 {pieData.length} catégories
               </div>
             </div>
@@ -135,7 +149,7 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
       </div>
 
       <div className="mt-2 space-y-3">
-        <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Principales positions
         </h4>
         <div className="space-y-2">
@@ -144,19 +158,19 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
               <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2 overflow-hidden">
                   <div
-                    className="h-1.5 w-1.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: stringToColor(item.name) }}
+                    className="h-2 w-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: getItemColor(i) }}
                   />
-                  <span className="truncate font-bold text-foreground/80">{item.name}</span>
+                  <span className="truncate font-medium text-foreground">{item.name}</span>
                 </div>
-                <span className="font-black tabular-nums">{item.weight.toFixed(1)}%</span>
+                <span className="font-bold tabular-nums">{item.weight.toFixed(1)}%</span>
               </div>
               <div className="h-1 w-full overflow-hidden rounded-full bg-muted/50">
                 <div
                   className="h-full rounded-full transition-all duration-500 ease-out"
                   style={{
                     width: `${item.weight}%`,
-                    backgroundColor: stringToColor(item.name),
+                    backgroundColor: getItemColor(i),
                   }}
                 />
               </div>

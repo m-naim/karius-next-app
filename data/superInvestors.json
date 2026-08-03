@@ -1,0 +1,212 @@
+[
+  {
+    "id": "francois-rochon",
+    "cik": "0001712211",
+    "name": "François Rochon",
+    "fundName": "Giverny Capital",
+    "style": "Quality & Compounders Long-Term (Règle des 3)",
+    "description": "Disciple québécois de Warren Buffett, François Rochon applique la stratégie des 'Compounding Machines'. Il recherche des entreprises d'exception avec un ROIC élevé, un management intègre et une croissance prévisible des bénéfices à long terme.",
+    "aum": 2450000000,
+    "lastFilingDate": "2026-02-14",
+    "notableHoldings": ["Berkshire Hathaway", "Constellation Software", "Heico Corp", "Alphabet", "CarMax"],
+    "avatarUrl": "/static/images/investors/rochon.jpg",
+    "secFilingUrl": "https://www.sec.gov/edgar/browse/?CIK=0001712211",
+    "holdings": [
+      { "symbol": "BRK.B", "name": "Berkshire Hathaway Inc", "cusip": "084670702", "shares": 1250000, "valueUsd": 562500000, "weightPercent": 22.9, "changePercent": 2.5, "changeType": "ADDED", "sector": "Finance" },
+      { "symbol": "CSU.TO", "name": "Constellation Software", "cusip": "21037X100", "shares": 85000, "valueUsd": 345000000, "weightPercent": 13.8, "changePercent": 0, "changeType": "UNCHANGED", "sector": "Tech" },
+      { "symbol": "HEI", "name": "Heico Corp", "cusip": "422806109", "shares": 1100000, "valueUsd": 255200000, "weightPercent": 10.2, "changePercent": 5.0, "changeType": "ADDED", "sector": "Aéronautique" },
+      { "symbol": "GOOGL", "name": "Alphabet Inc", "cusip": "02079K305", "shares": 1200000, "valueUsd": 227500000, "weightPercent": 9.1, "changePercent": 12.4, "changeType": "NEW", "sector": "Tech" },
+      { "symbol": "KMX", "name": "CarMax Inc", "cusip": "143130102", "shares": 2100000, "valueUsd": 180600000, "weightPercent": 7.2, "changePercent": -3.2, "changeType": "REDUCED", "sector": "Consumer" }
+    ],
+    "quarterlyHistory": [
+      {
+        "quarterLabel": "Q4 2025 (Février 2026)",
+        "reportDate": "2025-12-31",
+        "filingDate": "2026-02-14",
+        "totalValueUsd": 2450000000,
+        "positions": [
+          { "symbol": "BRK.B", "name": "Berkshire Hathaway Inc", "shares": 1250000, "valueUsd": 562500000, "weightPercent": 22.9, "changePercent": 2.5, "changeType": "ADDED", "sector": "Finance" },
+          { "symbol": "CSU.TO", "name": "Constellation Software", "shares": 85000, "valueUsd": 345000000, "weightPercent": 13.8, "changePercent": 0, "changeType": "UNCHANGED", "sector": "Tech" },
+          { "symbol": "HEI", "name": "Heico Corp", "shares": 1100000, "valueUsd": 255200000, "weightPercent": 10.2, "changePercent": 5.0, "changeType": "ADDED", "sector": "Aéronautique" },
+          { "symbol": "GOOGL", "name": "Alphabet Inc", "shares": 1200000, "valueUsd": 227500000, "weightPercent": 9.1, "changePercent": 12.4, "changeType": "NEW", "sector": "Tech" }
+        ]
+      },
+      {
+        "quarterLabel": "Q3 2025 (Novembre 2025)",
+        "reportDate": "2025-09-30",
+        "filingDate": "2025-11-14",
+        "totalValueUsd": 2320000000,
+        "positions": [
+          { "symbol": "BRK.B", "name": "Berkshire Hathaway Inc", "shares": 1220000, "valueUsd": 536800000, "weightPercent": 23.1, "changePercent": 1.8, "changeType": "ADDED", "sector": "Finance" },
+          { "symbol": "CSU.TO", "name": "Constellation Software", "shares": 85000, "valueUsd": 331500000, "weightPercent": 14.2, "changePercent": 0, "changeType": "UNCHANGED", "sector": "Tech" },
+          { "symbol": "HEI", "name": "Heico Corp", "shares": 1047000, "valueUsd": 235575000, "weightPercent": 10.1, "changePercent": 3.2, "changeType": "ADDED", "sector": "Aéronautique" }
+        ]
+      },
+      {
+        "quarterLabel": "Q2 2025 (Août 2025)",
+        "reportDate": "2025-06-30",
+        "filingDate": "2025-08-14",
+        "totalValueUsd": 2210000000,
+        "positions": [
+          { "symbol": "BRK.B", "name": "Berkshire Hathaway Inc", "shares": 1198000, "valueUsd": 515140000, "weightPercent": 23.3, "changePercent": 0, "changeType": "UNCHANGED", "sector": "Finance" },
+          { "symbol": "CSU.TO", "name": "Constellation Software", "shares": 85000, "valueUsd": 314500000, "weightPercent": 14.2, "changePercent": 0, "changeType": "UNCHANGED", "sector": "Tech" }
+        ]
+      },
+      {
+        "quarterLabel": "Q1 2025 (Mai 2025)",
+        "reportDate": "2025-03-31",
+        "filingDate": "2025-05-15",
+        "totalValueUsd": 2150000000,
+        "positions": [
+          { "symbol": "BRK.B", "name": "Berkshire Hathaway Inc", "shares": 1198000, "valueUsd": 491180000, "weightPercent": 22.8, "changePercent": 1.2, "changeType": "ADDED", "sector": "Finance" }
+        ]
+      },
+      {
+        "quarterLabel": "Q4 2024 (Février 2025)",
+        "reportDate": "2024-12-31",
+        "filingDate": "2025-02-14",
+        "totalValueUsd": 2080000000,
+        "positions": [
+          { "symbol": "BRK.B", "name": "Berkshire Hathaway Inc", "shares": 1183000, "valueUsd": 473200000, "weightPercent": 22.7, "changePercent": 0, "changeType": "UNCHANGED", "sector": "Finance" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "chuck-akre",
+    "cik": "0001099281",
+    "name": "Chuck Akre",
+    "fundName": "Akre Capital Management",
+    "style": "Three-Legged Stool (Tabouret à 3 pieds)",
+    "description": "Créateur du concept du 'Tabouret à 3 pieds' : 1) Une activité d'exception avec un fort pricing power, 2) Un management de premier ordre, 3) Une capacité avérée à réinvestir le free cash-flow à des taux de rendement très élevés.",
+    "aum": 13800000000,
+    "lastFilingDate": "2026-02-14",
+    "notableHoldings": ["Mastercard", "Visa", "American Tower", "Roper Technologies", "Moody's"],
+    "avatarUrl": "/static/images/investors/akre.jpg",
+    "secFilingUrl": "https://www.sec.gov/edgar/browse/?CIK=0001099281",
+    "holdings": [
+      { "symbol": "MA", "name": "Mastercard Inc", "cusip": "57636Q104", "shares": 5800000, "valueUsd": 2668000000, "weightPercent": 19.3, "changePercent": 0, "changeType": "UNCHANGED", "sector": "Finance" },
+      { "symbol": "V", "name": "Visa Inc", "cusip": "92826C839", "shares": 8200000, "valueUsd": 2214000000, "weightPercent": 16.0, "changePercent": 1.2, "changeType": "ADDED", "sector": "Finance" },
+      { "symbol": "AMT", "name": "American Tower Corp", "cusip": "03027X101", "shares": 9500000, "valueUsd": 1900000000, "weightPercent": 13.7, "changePercent": 0, "changeType": "UNCHANGED", "sector": "Immobilier" },
+      { "symbol": "ROP", "name": "Roper Technologies", "cusip": "776696106", "shares": 3100000, "valueUsd": 1705000000, "weightPercent": 12.3, "changePercent": 3.5, "changeType": "ADDED", "sector": "Tech" }
+    ],
+    "quarterlyHistory": [
+      {
+        "quarterLabel": "Q4 2025 (Février 2026)",
+        "reportDate": "2025-12-31",
+        "filingDate": "2026-02-14",
+        "totalValueUsd": 13800000000,
+        "positions": [
+          { "symbol": "MA", "name": "Mastercard Inc", "shares": 5800000, "valueUsd": 2668000000, "weightPercent": 19.3, "changePercent": 0, "changeType": "UNCHANGED", "sector": "Finance" },
+          { "symbol": "V", "name": "Visa Inc", "shares": 8200000, "valueUsd": 2214000000, "weightPercent": 16.0, "changePercent": 1.2, "changeType": "ADDED", "sector": "Finance" }
+        ]
+      },
+      {
+        "quarterLabel": "Q3 2025 (Novembre 2025)",
+        "reportDate": "2025-09-30",
+        "filingDate": "2025-11-14",
+        "totalValueUsd": 13400000000,
+        "positions": [
+          { "symbol": "MA", "name": "Mastercard Inc", "shares": 5800000, "valueUsd": 2552000000, "weightPercent": 19.0, "changePercent": 0, "changeType": "UNCHANGED", "sector": "Finance" },
+          { "symbol": "V", "name": "Visa Inc", "shares": 8100000, "valueUsd": 2106000000, "weightPercent": 15.7, "changePercent": 0, "changeType": "UNCHANGED", "sector": "Finance" }
+        ]
+      },
+      {
+        "quarterLabel": "Q2 2025 (Août 2025)",
+        "reportDate": "2025-06-30",
+        "filingDate": "2025-08-14",
+        "totalValueUsd": 12900000000,
+        "positions": [
+          { "symbol": "MA", "name": "Mastercard Inc", "shares": 5800000, "valueUsd": 2436000000, "weightPercent": 18.8, "changePercent": 0, "changeType": "UNCHANGED", "sector": "Finance" }
+        ]
+      },
+      {
+        "quarterLabel": "Q1 2025 (Mai 2025)",
+        "reportDate": "2025-03-31",
+        "filingDate": "2025-05-15",
+        "totalValueUsd": 12500000000,
+        "positions": [
+          { "symbol": "MA", "name": "Mastercard Inc", "shares": 5750000, "valueUsd": 2357500000, "weightPercent": 18.8, "changePercent": 1.1, "changeType": "ADDED", "sector": "Finance" }
+        ]
+      },
+      {
+        "quarterLabel": "Q4 2024 (Février 2025)",
+        "reportDate": "2024-12-31",
+        "filingDate": "2025-02-14",
+        "totalValueUsd": 12100000000,
+        "positions": [
+          { "symbol": "MA", "name": "Mastercard Inc", "shares": 5680000, "valueUsd": 2272000000, "weightPercent": 18.7, "changePercent": 0, "changeType": "UNCHANGED", "sector": "Finance" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "warren-buffett",
+    "cik": "0001067983",
+    "name": "Warren Buffett",
+    "fundName": "Berkshire Hathaway",
+    "style": "Value & Quality Moat (Le Père Spirituel)",
+    "description": "Pionnier de l'investissement dans les entreprises d'exception avec un avantage concurrentiel durable (economic moat) et un retour sur capital élevé.",
+    "aum": 285000000000,
+    "lastFilingDate": "2026-02-14",
+    "notableHoldings": ["Apple", "American Express", "Coca-Cola", "Bank of America", "Chevron"],
+    "avatarUrl": "/static/images/investors/buffett.jpg",
+    "secFilingUrl": "https://www.sec.gov/edgar/browse/?CIK=0001067983",
+    "holdings": [
+      { "symbol": "AAPL", "name": "Apple Inc", "cusip": "037833100", "shares": 300000000, "valueUsd": 67290000000, "weightPercent": 23.6, "changePercent": -14.5, "changeType": "REDUCED", "sector": "Tech" },
+      { "symbol": "AXP", "name": "American Express", "cusip": "025816109", "shares": 151610700, "valueUsd": 37902000000, "weightPercent": 13.3, "changePercent": 0, "changeType": "UNCHANGED", "sector": "Finance" },
+      { "symbol": "BAC", "name": "Bank of America", "cusip": "060505104", "shares": 800000000, "valueUsd": 32000000000, "weightPercent": 11.2, "changePercent": -6.8, "changeType": "REDUCED", "sector": "Finance" },
+      { "symbol": "KO", "name": "The Coca-Cola Co", "cusip": "191216100", "shares": 400000000, "valueUsd": 25200000000, "weightPercent": 8.8, "changePercent": 0, "changeType": "UNCHANGED", "sector": "Consumer" },
+      { "symbol": "CVX", "name": "Chevron Corp", "cusip": "166764100", "shares": 125000000, "valueUsd": 18750000000, "weightPercent": 6.5, "changePercent": 3.2, "changeType": "ADDED", "sector": "Énergie" }
+    ],
+    "quarterlyHistory": [
+      {
+        "quarterLabel": "Q4 2025 (Février 2026)",
+        "reportDate": "2025-12-31",
+        "filingDate": "2026-02-14",
+        "totalValueUsd": 285000000000,
+        "positions": [
+          { "symbol": "AAPL", "name": "Apple Inc", "shares": 300000000, "valueUsd": 67290000000, "weightPercent": 23.6, "changePercent": -14.5, "changeType": "REDUCED", "sector": "Tech" },
+          { "symbol": "AXP", "name": "American Express", "shares": 151610700, "valueUsd": 37902000000, "weightPercent": 13.3, "changePercent": 0, "changeType": "UNCHANGED", "sector": "Finance" }
+        ]
+      },
+      {
+        "quarterLabel": "Q3 2025 (Novembre 2025)",
+        "reportDate": "2025-09-30",
+        "filingDate": "2025-11-14",
+        "totalValueUsd": 310000000000,
+        "positions": [
+          { "symbol": "AAPL", "name": "Apple Inc", "shares": 350800000, "valueUsd": 77176000000, "weightPercent": 24.8, "changePercent": -12.3, "changeType": "REDUCED", "sector": "Tech" },
+          { "symbol": "AXP", "name": "American Express", "shares": 151610700, "valueUsd": 36386000000, "weightPercent": 11.7, "changePercent": 0, "changeType": "UNCHANGED", "sector": "Finance" }
+        ]
+      },
+      {
+        "quarterLabel": "Q2 2025 (Août 2025)",
+        "reportDate": "2025-06-30",
+        "filingDate": "2025-08-14",
+        "totalValueUsd": 345000000000,
+        "positions": [
+          { "symbol": "AAPL", "name": "Apple Inc", "shares": 400000000, "valueUsd": 84000000000, "weightPercent": 24.3, "changePercent": -49.3, "changeType": "REDUCED", "sector": "Tech" }
+        ]
+      },
+      {
+        "quarterLabel": "Q1 2025 (Mai 2025)",
+        "reportDate": "2025-03-31",
+        "filingDate": "2025-05-15",
+        "totalValueUsd": 380000000000,
+        "positions": [
+          { "symbol": "AAPL", "name": "Apple Inc", "shares": 789378000, "valueUsd": 135000000000, "weightPercent": 35.5, "changePercent": -12.9, "changeType": "REDUCED", "sector": "Tech" }
+        ]
+      },
+      {
+        "quarterLabel": "Q4 2024 (Février 2025)",
+        "reportDate": "2024-12-31",
+        "filingDate": "2025-02-14",
+        "totalValueUsd": 412000000000,
+        "positions": [
+          { "symbol": "AAPL", "name": "Apple Inc", "shares": 905560000, "valueUsd": 174000000000, "weightPercent": 42.2, "changePercent": 0, "changeType": "UNCHANGED", "sector": "Tech" }
+        ]
+      }
+    ]
+  }
+]

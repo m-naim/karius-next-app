@@ -1,0 +1,49 @@
+fragment BlogParts on Blog {
+  __typename
+  title
+  date
+  summary
+  description
+  tags
+  draft
+  images
+  authors
+  layout
+  canonicalUrl
+  body
+}
+
+fragment GuideParts on Guide {
+  __typename
+  title
+  date
+  summary
+  description
+  tags
+  draft
+  body
+}
+
+fragment AnalyseParts on Analyse {
+  __typename
+  title
+  date
+  summary
+  description
+  tags
+  draft
+  body
+}
+
+fragment AuthorsParts on Authors {
+  __typename
+  name
+  avatar
+  occupation
+  company
+  email
+  twitter
+  linkedin
+  github
+  body
+}

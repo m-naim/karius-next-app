@@ -558,29 +558,90 @@ export default function AlertsPage() {
                   <Separator />
 
                   {settings.channel === 'telegram' && (
-                    <div className="space-y-4 animate-in fade-in slide-in-from-left-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="chatId" className="text-[10px] font-black uppercase text-slate-500">
-                          Chat ID Telegram
-                        </Label>
-                        <div className="flex gap-2">
-                          <Input
-                            id="chatId"
-                            placeholder="Ex: 12345678"
-                            value={tempChatId}
-                            onChange={(e) => setTempChatId(e.target.value)}
-                            className="h-9 border-slate-200 text-sm font-bold"
-                          />
-                          <Button size="sm" onClick={handleUpdateTelegram} disabled={updatingSettings || !tempChatId} className="font-bold">
-                            {updatingSettings ? '...' : 'SAVE'}
-                          </Button>
+                    <div className="space-y-4 animate-in fade-in slide-in-from-left-2 pt-1">
+                      <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-xs font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+                            <MessageSquare className="h-4 w-4" />
+                            Procédure d&apos;activation Telegram
+                          </h4>
+                          {settings.telegramChatId && (
+                            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[10px] font-bold gap-1">
+                              <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                              Compte Lié
+                            </Badge>
+                          )}
                         </div>
-                      </div>
-                      <div className="flex gap-3 rounded-lg border border-blue-100 bg-blue-50/50 p-3">
-                        <Info className="h-4 w-4 shrink-0 text-blue-500" />
-                        <p className="text-[10px] font-medium leading-relaxed text-blue-700">
-                          Obtenez votre ID via @userinfobot et envoyez /start à notre bot.
-                        </p>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {/* Left Column: Direct Link & QR Code */}
+                          <div className="flex flex-col items-center justify-center p-3 rounded-lg border border-border/50 bg-background text-center space-y-3">
+                            <span className="text-[11px] font-bold text-muted-foreground">
+                              Étape 1 : Ouvrez notre Bot Telegram
+                            </span>
+
+                            <a
+                              href={process.env.NEXT_PUBLIC_TELEGRAM_BOT_URL || 'https://t.me/boursehorus_bot'}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full"
+                            >
+                              <Button size="sm" className="w-full font-bold bg-[#24A1DE] hover:bg-[#2092ca] text-white gap-2 h-9 shadow-sm">
+                                <ExternalLink className="h-3.5 w-3.5" />
+                                Ouvrir dans Telegram
+                              </Button>
+                            </a>
+
+                            <div className="flex flex-col items-center pt-1">
+                              <img
+                                src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(
+                                  process.env.NEXT_PUBLIC_TELEGRAM_BOT_URL || 'https://t.me/boursehorus_bot'
+                                )}`}
+                                alt="QR Code Telegram Bot"
+                                className="h-28 w-28 rounded-lg border p-1 bg-white shadow-sm object-contain"
+                              />
+                              <span className="text-[9px] font-medium text-muted-foreground mt-1">
+                                Scannez pour ouvrir sur mobile
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Right Column: Step 2 & 3 */}
+                          <div className="flex flex-col justify-between space-y-3 p-3 rounded-lg border border-border/50 bg-background">
+                            <div className="space-y-1.5">
+                              <span className="text-[11px] font-bold text-muted-foreground">
+                                Étape 2 : Envoyez <code className="bg-primary/10 text-primary px-1 rounded text-xs font-mono">/start</code>
+                              </span>
+                              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                Dans l&apos;application Telegram, cliquez sur <strong>Démarrer</strong> (ou tapez <code>/start</code>).
+                                Le bot vous enverra instantanément votre <strong>Code d&apos;activation</strong>.
+                              </p>
+                            </div>
+
+                            <div className="space-y-2 pt-2 border-t border-border/40">
+                              <Label htmlFor="chatId" className="text-[11px] font-bold text-foreground">
+                                Étape 3 : Collez votre Code d&apos;Activation
+                              </Label>
+                              <div className="flex gap-2">
+                                <Input
+                                  id="chatId"
+                                  placeholder="Ex: 12345678"
+                                  value={tempChatId}
+                                  onChange={(e) => setTempChatId(e.target.value)}
+                                  className="h-9 border-slate-200 text-xs font-bold tabular-nums"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={handleUpdateTelegram}
+                                  disabled={updatingSettings || !tempChatId}
+                                  className="font-bold shrink-0 h-9"
+                                >
+                                  {updatingSettings ? '...' : settings.telegramChatId ? 'Modifier' : 'Lier le compte'}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}

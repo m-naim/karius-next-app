@@ -62,12 +62,18 @@ const SortingButton = (title, activateFilter = true) => {
 export const columns: ColumnDef<unknown>[] = [
   {
     accessorKey: 'date',
-    header: SortingButton('date', false),
-    cell: ({ row }) => (
-      <div className="">
-        {format(new Date((row.getValue('date') as number) * 1000), 'yyyy-MM-dd')}
-      </div>
-    ),
+    header: SortingButton('Date', false),
+    cell: ({ row }) => {
+      const rawDate = row.getValue('date')
+      if (!rawDate) return <div className="text-muted-foreground">—</div>
+      try {
+        const timestamp = typeof rawDate === 'number' ? rawDate * 1000 : new Date(rawDate as string).getTime()
+        if (isNaN(timestamp)) return <div className="text-muted-foreground">{String(rawDate)}</div>
+        return <div className="font-medium tabular-nums">{format(new Date(timestamp), 'yyyy-MM-dd')}</div>
+      } catch {
+        return <div className="text-muted-foreground">{String(rawDate)}</div>
+      }
+    },
   },
 
   {

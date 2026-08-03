@@ -164,14 +164,14 @@ export default function PerformanceBox({
             <h2 className="text-2xl font-bold tracking-tight">{selectedChart?.label}</h2>
             <p className="text-sm text-muted-foreground">{selectedChart?.description}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="mr-2 flex items-center gap-1 rounded-full bg-muted/50 p-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1 rounded-full bg-muted/50 p-1 overflow-x-auto max-w-full no-scrollbar">
               {Object.keys(periodsConvert).map((p) => (
                 <button
                   key={p}
                   onClick={() => handlePeriodChange(p)}
                   className={cn(
-                    'rounded-full px-3 py-1.5 text-[11px] font-bold uppercase transition-all',
+                    'rounded-full px-2.5 py-1 text-[10px] sm:text-[11px] font-bold uppercase transition-all shrink-0',
                     period === p
                       ? 'bg-background text-foreground shadow-sm'
                       : 'text-muted-foreground hover:text-foreground'
@@ -226,7 +226,7 @@ export default function PerformanceBox({
       </div>
 
       <div className="mt-4 px-2">
-        <div className="relative h-[400px] sm:h-[500px]">
+        <div className="relative h-[260px] sm:h-[450px]">
           {loading ? (
             <div className="absolute inset-0 flex items-center justify-center bg-background/80">
               <div className="text-sm text-muted-foreground">Chargement des données...</div>

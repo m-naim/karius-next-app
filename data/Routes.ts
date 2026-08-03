@@ -21,6 +21,22 @@ const routesData = [
     href: '/fr/simulation-portefeuille-bourse',
     lastMod: new Date(2024, 1, 25).toISOString().split('T')[0],
   },
+  {
+    href: 'gestion-portefeuille-bourse',
+    lastMod: new Date().toISOString().split('T')[0],
+  },
+  {
+    href: 'notification-telegram-bourse',
+    lastMod: new Date().toISOString().split('T')[0],
+  },
+  {
+    href: 'super-investisseurs-bourse',
+    lastMod: new Date().toISOString().split('T')[0],
+  },
+  {
+    href: 'watchlist-bourse',
+    lastMod: new Date().toISOString().split('T')[0],
+  },
 ]
 
 const footerRoutes = [
@@ -28,6 +44,22 @@ const footerRoutes = [
     key: 1,
     category: '',
     routes: [
+      {
+        href: '/super-investisseurs-bourse',
+        title: 'Super Investisseurs 13F SEC',
+      },
+      {
+        href: '/gestion-portefeuille-bourse',
+        title: 'Gestion de Portefeuille Boursier',
+      },
+      {
+        href: '/watchlist-bourse',
+        title: 'Watchlists Bourse & Suivi d\'Actions',
+      },
+      {
+        href: '/notification-telegram-bourse',
+        title: 'Notifications Telegram Bourse',
+      },
       {
         href: '/fr/simulation-portefeuille-bourse',
         title: 'Simulation portefeuille boursier',

@@ -4,6 +4,7 @@ const headerNavLinks = [
   { href: '/', title: 'Home' },
   { draft: false, href: '/app/portfolios', title: 'Portefeuilles' },
   { draft: false, href: '/app/watchlist', title: 'Watchlists' },
+  { draft: false, href: '/app/super-investors', title: 'Super Investisseurs' },
   {
     draft: false,
     title: 'Marchés',

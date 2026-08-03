@@ -1,5 +1,5 @@
 import { allCoreContent } from '@/lib/contentlayer'
-import { allGuides } from 'contentlayer/generated'
+import { getAllGuides } from '@/lib/tina'
 import { genPageMetadata } from 'app/seo'
 import Link from 'next/link'
 import { BookOpen, GraduationCap, ArrowRight, PlayCircle, ShieldCheck, Rocket, Trophy, Target } from 'lucide-react'
@@ -57,7 +57,8 @@ const CURRICULUM = [
 ]
 
 export default async function GuidePage() {
-  const allPosts = allCoreContent(allGuides)
+  const rawGuides = await getAllGuides()
+  const allPosts = allCoreContent(rawGuides)
 
   // Hydratation du curriculum avec les vrais articles
   const hydratedCurriculum = CURRICULUM.map(phase => ({

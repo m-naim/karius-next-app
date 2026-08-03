@@ -33,6 +33,7 @@ interface PortfolioAssetDrawerProps {
   onClose: () => void
   security: PortfolioSecurity | null
   portfolio: any
+  own?: boolean
 }
 
 export default function PortfolioAssetDrawer({
@@ -40,6 +41,7 @@ export default function PortfolioAssetDrawer({
   onClose,
   security,
   portfolio,
+  own = true,
 }: PortfolioAssetDrawerProps) {
   if (!security) return null
 
@@ -59,11 +61,11 @@ export default function PortfolioAssetDrawer({
 
   // Filtrer les transactions pour cet actif
   const assetTransactions = useMemo(() => {
-    if (!portfolio?.transactions) return []
+    if (!portfolio?.transactions || !own) return []
     return portfolio.transactions
       .filter((t: any) => t.symbol === security.symbol || t.ticker === security.symbol)
       .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
-  }, [portfolio, security])
+  }, [portfolio, security, own])
 
   // Filtrer uniquement les achats
   const buyTransactions = useMemo(() => {
@@ -72,7 +74,7 @@ export default function PortfolioAssetDrawer({
 
   // Métriques avancées sur chacun des achats
   const purchaseMetrics = useMemo(() => {
-    if (buyTransactions.length === 0) return null
+    if (buyTransactions.length === 0 || !own) return null
 
     const currentPrice = security.last || 0
 
@@ -123,7 +125,7 @@ export default function PortfolioAssetDrawer({
       globalGainLoss,
       currentPrice,
     }
-  }, [buyTransactions, security])
+  }, [buyTransactions, security, own])
 
   const totalReturnPercent = security.bep
     ? ((security.last - security.bep) / security.bep) * 100
@@ -148,7 +150,7 @@ export default function PortfolioAssetDrawer({
             <div className="flex items-center gap-2">
               <span className="font-black text-lg tracking-tight">{security.symbol}</span>
               {security.currency && (
-                <Badge variant="outline" className="text-[10px] py-0 h-4">
+                <Badge variant="outline" className="text-xs py-0 h-5">
                   {security.currency}
                 </Badge>
               )}
@@ -160,13 +162,15 @@ export default function PortfolioAssetDrawer({
         </div>
       }
     >
-      <Tabs defaultValue="achats" className="flex h-full flex-col min-h-0">
+      <Tabs defaultValue={own ? "achats" : "technical"} className="flex h-full flex-col min-h-0">
         <div className="border-b bg-muted/20 px-4 py-2 shrink-0">
-          <TabsList className="grid w-full grid-cols-4 h-9 bg-muted/60 p-1">
-            <TabsTrigger value="achats" className="text-xs font-bold gap-1.5 px-2">
-              <ShoppingBag className="h-3.5 w-3.5" />
-              Mes Achats
-            </TabsTrigger>
+          <TabsList className={cn("grid w-full h-9 bg-muted/60 p-1", own ? "grid-cols-4" : "grid-cols-3")}>
+            {own && (
+              <TabsTrigger value="achats" className="text-xs font-bold gap-1.5 px-2">
+                <ShoppingBag className="h-3.5 w-3.5" />
+                Mes Achats
+              </TabsTrigger>
+            )}
             <TabsTrigger value="technical" className="text-xs font-bold gap-1.5 px-2">
               <LineChart className="h-3.5 w-3.5" />
               Technique
@@ -183,30 +187,31 @@ export default function PortfolioAssetDrawer({
         </div>
 
         {/* TAB 1: ACHATS & SYNTHÈSE DES POSITIONS */}
-        <TabsContent value="achats" className="flex-1 overflow-y-auto p-4 space-y-6 m-0">
-          {/* CARTE DE SYNTHÈSE GLOBALE */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-card border rounded-xl p-3 shadow-sm">
-            <div className="space-y-0.5">
-              <span className="text-[11px] font-medium text-muted-foreground">Cours Actuel</span>
-              <div className="text-base font-bold tabular-nums">{formatMoney(security.last)}</div>
+        {own && (
+          <TabsContent value="achats" className="flex-1 overflow-y-auto p-4 space-y-6 m-0">
+            {/* CARTE DE SYNTHÈSE GLOBALE */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-card border rounded-xl p-3 shadow-sm">
+              <div className="space-y-0.5">
+                <span className="text-xs font-semibold text-muted-foreground">Cours Actuel</span>
+                <div className="text-base font-bold tabular-nums">{formatMoney(security.last)}</div>
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-xs font-semibold text-muted-foreground">PRU Moyen</span>
+                <div className="text-base font-bold tabular-nums">{formatMoney(security.bep)}</div>
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-xs font-semibold text-muted-foreground">Valeur Totale</span>
+                <div className="text-base font-bold tabular-nums">{formatMoney(security.totalValue)}</div>
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-xs font-semibold text-muted-foreground">Retour Global</span>
+                <VariationContainer
+                  value={totalReturnPercent}
+                  background={true}
+                  className="text-xs font-bold py-0.5 px-2 w-fit"
+                />
+              </div>
             </div>
-            <div className="space-y-0.5">
-              <span className="text-[11px] font-medium text-muted-foreground">PRU Moyen</span>
-              <div className="text-base font-bold tabular-nums">{formatMoney(security.bep)}</div>
-            </div>
-            <div className="space-y-0.5">
-              <span className="text-[11px] font-medium text-muted-foreground">Valeur Totale</span>
-              <div className="text-base font-bold tabular-nums">{formatMoney(security.totalValue)}</div>
-            </div>
-            <div className="space-y-0.5">
-              <span className="text-[11px] font-medium text-muted-foreground">Retour Global</span>
-              <VariationContainer
-                value={totalReturnPercent}
-                background={true}
-                className="text-xs font-bold py-0.5 px-2 w-fit"
-              />
-            </div>
-          </div>
 
           {/* SECTION INDICES & METRIQUES CHACUN DES ACHATS */}
           <div className="space-y-3">
@@ -216,7 +221,7 @@ export default function PortfolioAssetDrawer({
                 Indices & Analyse de vos Achats ({buyTransactions.length})
               </h3>
               {purchaseMetrics && (
-                <Badge variant="secondary" className="text-[10px]">
+                <Badge variant="secondary" className="text-xs">
                   {purchaseMetrics.totalBoughtQty} actions achetées au total
                 </Badge>
               )}
@@ -242,12 +247,12 @@ export default function PortfolioAssetDrawer({
                           <div className="text-sm font-extrabold tabular-nums">
                             {formatMoney(purchaseMetrics.bestBuy.buyPrice)}
                           </div>
-                          <div className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                          <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                             <Calendar className="h-3 w-3" />
                             {new Date(purchaseMetrics.bestBuy.date).toLocaleDateString('fr-FR')}
                           </div>
                         </div>
-                        <div className="text-right text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
+                        <div className="text-right text-xs font-medium text-emerald-700 dark:text-emerald-300">
                           {purchaseMetrics.bestBuy.qty} unit. ({formatMoney(purchaseMetrics.bestBuy.totalCost)})
                         </div>
                       </div>
@@ -273,12 +278,12 @@ export default function PortfolioAssetDrawer({
                           <div className="text-sm font-extrabold tabular-nums">
                             {formatMoney(purchaseMetrics.worstBuy.buyPrice)}
                           </div>
-                          <div className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                          <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                             <Calendar className="h-3 w-3" />
                             {new Date(purchaseMetrics.worstBuy.date).toLocaleDateString('fr-FR')}
                           </div>
                         </div>
-                        <div className="text-right text-[11px] font-medium text-amber-700 dark:text-amber-300">
+                        <div className="text-right text-xs font-medium text-amber-700 dark:text-amber-300">
                           {purchaseMetrics.worstBuy.qty} unit. ({formatMoney(purchaseMetrics.worstBuy.totalCost)})
                         </div>
                       </div>
@@ -303,7 +308,7 @@ export default function PortfolioAssetDrawer({
                       <div className="h-2 w-full bg-muted rounded-full overflow-hidden relative">
                         <div className="absolute inset-0 bg-primary/20 rounded-full" />
                       </div>
-                      <div className="flex justify-between items-center text-[11px] mt-1.5">
+                      <div className="flex justify-between items-center text-xs mt-1.5">
                         <span className="text-emerald-500 font-semibold">
                           Achat Min: {formatMoney(purchaseMetrics.minBuyPrice)}
                         </span>
@@ -409,6 +414,7 @@ export default function PortfolioAssetDrawer({
             )}
           </div>
         </TabsContent>
+        )}
 
         {/* TAB 2: TECHNIQUE (Graphique historique avec marqueurs d'achats/ventes, benchmarks, CAGR, DD, etc.) */}
         <TabsContent value="technical" className="flex-1 overflow-y-auto m-0 p-0">

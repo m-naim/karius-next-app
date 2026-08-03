@@ -61,7 +61,7 @@ function PagePerformance() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 w-full pb-12">
       <SectionContainer className="w-full">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-2">
           <div className="space-y-1">

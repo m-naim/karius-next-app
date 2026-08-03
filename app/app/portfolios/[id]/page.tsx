@@ -20,7 +20,17 @@ import {
   PlusIcon,
   WalletMinimal,
   Search,
+  SlidersHorizontal,
+  Check,
 } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import TransactionDialogue from './TransactionDialogue'
 import Link from 'next/link'
 import {
@@ -105,8 +115,8 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
 
   const useDynamicColumns = () =>
     useMemo(() => {
-      return columns(selectedPeriod, portfolio.baseCurrency, useNativeCurrency)
-    }, [selectedPeriod, portfolio.baseCurrency, useNativeCurrency])
+      return columns(selectedPeriod, portfolio.baseCurrency, useNativeCurrency, own)
+    }, [selectedPeriod, portfolio.baseCurrency, useNativeCurrency, own])
 
   const fetchData = async (id: string) => {
     try {
@@ -213,26 +223,26 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
   return loading ? (
     <Loader />
   ) : (
-    <div className="flex h-full w-full min-h-0 flex-1 overflow-hidden">
+    <div className="flex w-full min-h-screen flex-1 flex-col overflow-y-auto bg-background">
       {/* LEFT PANE: Stats, Table & Allocation */}
-      <div className="flex flex-1 min-w-0 flex-col gap-8 p-4 md:p-8 pb-12 overflow-y-auto">
+      <div className="flex flex-1 min-w-0 flex-col gap-8 p-4 md:p-8 pb-12">
         {/* HERO SECTION: Stats at the top */}
         <div className="w-full">
           <StatsCard pftData={portfolio} own={own} />
         </div>
 
-        <div className="flex w-full flex-wrap-reverse gap-6">
+        <div className="flex w-full flex-col lg:flex-row gap-6">
           {/* LEFT COLUMN: Table */}
           <div className="w-full flex-grow lg:w-8/12">
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-1">
                 <h2 className="text-xl font-bold tracking-tight text-balance">Investissements</h2>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">{data.length} actifs détenus</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs sm:text-sm text-muted-foreground">{data.length} actifs</span>
                   <div 
                     role="group" 
                     aria-label="Période de performance" 
-                    className="flex items-center gap-1 rounded-md bg-muted/50 p-1"
+                    className="flex items-center gap-0.5 rounded-full bg-muted/50 p-1 overflow-x-auto max-w-full no-scrollbar"
                   >
                     {['1d', '1w', '1m', '3m', '6m', '1y', '5y'].map((p) => (
                       <button
@@ -240,7 +250,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
                         onClick={() => setSelectedPeriod(p)}
                         aria-pressed={selectedPeriod === p}
                         className={cn(
-                          'rounded px-2 py-0.5 text-[10px] font-bold uppercase transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                          'rounded-full px-2 py-0.5 text-[10px] font-bold uppercase transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0',
                           selectedPeriod === p
                             ? 'bg-background text-foreground shadow-sm'
                             : 'text-muted-foreground hover:text-foreground'
@@ -250,37 +260,34 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
                       </button>
                     ))}
                   </div>
-                  <div className="flex items-center gap-1 rounded-md bg-muted/50 p-1 ml-2">
-                    <button
-                      onClick={() => setUseNativeCurrency(false)}
-                      className={cn(
-                        'rounded px-2 py-0.5 text-[10px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                        !useNativeCurrency ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                      )}
-                    >
-                      Devise de base
-                    </button>
-                    <button
-                      onClick={() => setUseNativeCurrency(true)}
-                      className={cn(
-                        'rounded px-2 py-0.5 text-[10px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                        useNativeCurrency ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                      )}
-                    >
-                      Devise locale
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-1 rounded-md bg-muted/50 p-1 ml-2">
-                    <button
-                      onClick={() => setShowMetrics(!showMetrics)}
-                      className={cn(
-                        'rounded px-2 py-0.5 text-[10px] font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                        showMetrics ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                      )}
-                    >
-                      Metrics 5A
-                    </button>
-                  </div>
+
+                  {/* Distilled View Options Dropdown */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-7 gap-1.5 rounded-full border-border/50 text-xs px-2.5">
+                        <SlidersHorizontal className="h-3.5 w-3.5" />
+                        <span>Affichage</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-56">
+                      <DropdownMenuLabel className="text-xs">Options d'affichage</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => setUseNativeCurrency(!useNativeCurrency)}
+                        className="flex items-center justify-between text-xs cursor-pointer"
+                      >
+                        <span>Devise locale ({useNativeCurrency ? 'Oui' : 'Non'})</span>
+                        {useNativeCurrency && <Check className="h-4 w-4 text-primary" />}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => setShowMetrics(!showMetrics)}
+                        className="flex items-center justify-between text-xs cursor-pointer"
+                      >
+                        <span>Métriques 5 ans (ROIC, PE)</span>
+                        {showMetrics && <Check className="h-4 w-4 text-primary" />}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
 
@@ -291,7 +298,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
                     Trigger={(props) => (
                       <Button {...props} variant="outline" size="sm" className="h-9 gap-2">
                         <WalletMinimal className="h-4 w-4" />
-                        <span>Espèces</span>
+                        <span className="hidden sm:inline">Espèces</span>
                       </Button>
                     )}
                   />
@@ -299,7 +306,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
                     totalPortfolioValue={portfolio.totalValue}
                     submitHandler={addTransaction}
                     Trigger={(props) => (
-                      <Button {...props} size="sm" className="h-9 gap-2 shadow-lg shadow-primary/20">
+                      <Button {...props} size="sm" className="h-9 gap-2 shadow-sm">
                         <PlusIcon className="h-4 w-4" />
                         <span>Transaction</span>
                       </Button>
@@ -393,6 +400,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
             )}
           </div>
         </div>
+      </div>
 
       {/* SIDE DRAWER RICHESSE DES ACHATS & TRANSACTIONS */}
       <PortfolioAssetDrawer
@@ -400,6 +408,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
         onClose={() => setIsDrawerOpen(false)}
         security={selectedSecurity}
         portfolio={portfolio}
+        own={own}
       />
     </div>
   )

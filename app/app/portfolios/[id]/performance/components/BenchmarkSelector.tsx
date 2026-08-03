@@ -92,7 +92,7 @@ export default function BenchmarkSelector({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <div className="hidden items-center gap-1.5 md:flex">
+      <div className="flex flex-wrap items-center gap-1.5">
         {selectedBenchmarks.map((benchmark) => (
           <Badge
             key={benchmark}

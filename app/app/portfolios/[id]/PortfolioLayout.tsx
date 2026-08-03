@@ -70,21 +70,21 @@ const PortfolioLayout = ({
   ]
 
   return (
-    <div>
-      <div className="border-b border-border/50 bg-background/95 pb-0 pt-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
+    <div className="flex w-full max-w-full min-w-0 min-h-screen flex-1 flex-col overflow-y-auto overflow-x-hidden bg-background">
+      <div className="border-b border-border/50 bg-background/95 pb-0 pt-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40 w-full max-w-full min-w-0">
         <SectionContainer>
-          <div className="flex w-full flex-col">
+          <div className="flex w-full max-w-full min-w-0 flex-col">
             <div className="flex w-full items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <Link href={`/app/portfolios`} className="h-fit">
+              <div className="flex items-center gap-3 min-w-0">
+                <Link href={`/app/portfolios`} className="h-fit shrink-0">
                   <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-accent/50">
                     <ArrowLeft size={16} />
                   </Button>
                 </Link>
-                <h1 className="text-2xl font-black capitalize tracking-tight text-foreground">{name}</h1>
+                <h1 className="text-xl sm:text-2xl font-black capitalize tracking-tight text-foreground truncate">{name}</h1>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 shrink-0">
                 {isOwn ? (
                   <Link href={`/app/portfolios/${id}/settings`}>
                     <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full hover:bg-accent/50" aria-label="Paramètres">
@@ -107,14 +107,14 @@ const PortfolioLayout = ({
             </div>
 
             {/* Horizontal Navigation for Desktop & Mobile */}
-            <div className="flex w-full items-center gap-1 overflow-x-auto no-scrollbar border-b border-transparent">
+            <div className="flex w-full max-w-full min-w-0 items-center gap-1 overflow-x-auto no-scrollbar border-b border-transparent">
               {navItems.map((item) => {
                 const isActive = pathname === item.url || pathname === `${item.url}/`
                 return (
-                  <Link key={item.name} href={item.url}>
+                  <Link key={item.name} href={item.url} className="shrink-0">
                     <div
-                      className={`relative flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors hover:text-foreground ${
-                        isActive ? 'text-foreground' : 'text-muted-foreground'
+                      className={`relative flex items-center gap-2 px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium transition-colors hover:text-foreground whitespace-nowrap ${
+                        isActive ? 'text-foreground font-bold' : 'text-muted-foreground'
                       }`}
                     >
                       <item.icon size={16} className="hidden sm:block" />
@@ -132,8 +132,8 @@ const PortfolioLayout = ({
       </div>
 
       <SectionContainer>
-        <div className="mb-20 mt-6 flex w-full flex-col">
-          <div className="w-full flex-grow rounded-md">{children}</div>
+        <div className="mb-20 mt-6 flex w-full max-w-full min-w-0 flex-col">
+          <div className="w-full max-w-full min-w-0 flex-grow rounded-md">{children}</div>
         </div>
       </SectionContainer>
     </div>

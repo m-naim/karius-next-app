@@ -87,69 +87,71 @@ export const columns = (
   owned,
   modifyTransactionHandler,
   deleteTransactionHandler
-): ColumnDef<Transaction, string>[] => [
-  {
-    accessorKey: 'date',
-    header: SortingButton('Date effectif', false),
-    cell: ({ row }) => <div className="">{row.getValue('date')}</div>,
-  },
-  {
-    accessorKey: 'entryDate',
-    header: SortingButton('Ajouté le', false),
-    cell: ({ row }) => {
-      const val = row.getValue('entryDate')
-      return (
-        <div className="text-xs italic text-muted-foreground">
-          {val ? formatDate(val as string) : '-'}
-        </div>
-      )
+): ColumnDef<Transaction, string>[] => {
+  const colList: ColumnDef<Transaction, string>[] = [
+    {
+      accessorKey: 'date',
+      header: SortingButton('Date effectif', false),
+      cell: ({ row }) => <div className="">{row.getValue('date')}</div>,
     },
-  },
-
-  {
-    accessorKey: 'symbol',
-    header: SortingButton('Produit'),
-    cell: ({ row }) => <div className="capitalize">{row.getValue('symbol')}</div>,
-  },
-
-  {
-    accessorKey: 'price',
-    header: SortingButton('Prix', false),
-    cell: ({ row }) => {
-      const last = parseFloat(row.getValue('price'))
-
-      // Format the prix as a dollar prix
-      const formatted = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'EUR',
-      }).format(last)
-
-      return <div className="font-medium ">{formatted}</div>
+    {
+      accessorKey: 'entryDate',
+      header: SortingButton('Ajouté le', false),
+      cell: ({ row }) => {
+        const val = row.getValue('entryDate')
+        return (
+          <div className="text-xs italic text-muted-foreground">
+            {val ? formatDate(val as string) : '-'}
+          </div>
+        )
+      },
     },
-  },
 
-  {
-    accessorKey: 'qty',
-    header: SortingButton('Quantité', false),
-    cell: ({ row }) => {
-      const qty = parseFloat(row.getValue('qty'))
-
-      // Format the prix as a dollar prix
-      const formatted = new Intl.NumberFormat('en-US', {
-        style: 'decimal',
-        signDisplay: 'always',
-      }).format(qty)
-
-      return <div className="font-medium ">{formatted}</div>
+    {
+      accessorKey: 'symbol',
+      header: SortingButton('Produit'),
+      cell: ({ row }) => <div className="capitalize">{row.getValue('symbol')}</div>,
     },
-  },
 
-  {
-    accessorKey: 'actions',
-    header: '',
-    cell: ({ row }) => {
-      return (
-        owned && (
+    {
+      accessorKey: 'price',
+      header: SortingButton('Prix', false),
+      cell: ({ row }) => {
+        const last = parseFloat(row.getValue('price'))
+
+        // Format the prix as a dollar prix
+        const formatted = new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'EUR',
+        }).format(last)
+
+        return <div className="font-medium ">{formatted}</div>
+      },
+    },
+
+    {
+      accessorKey: 'qty',
+      header: SortingButton('Quantité', false),
+      cell: ({ row }) => {
+        const qty = parseFloat(row.getValue('qty'))
+
+        // Format the prix as a dollar prix
+        const formatted = new Intl.NumberFormat('en-US', {
+          style: 'decimal',
+          signDisplay: 'always',
+        }).format(qty)
+
+        return <div className="font-medium ">{formatted}</div>
+      },
+    },
+  ]
+
+  if (owned) {
+    colList.push({
+      accessorKey: 'actions',
+      header: '',
+      cell: ({ row }) => {
+        return (
           <div className="flex">
             <TransactionDialogue
               key={row!.original.id}
@@ -173,7 +175,9 @@ export const columns = (
             />
           </div>
         )
-      )
-    },
-  },
-]
+      },
+    })
+  }
+
+  return colList
+}

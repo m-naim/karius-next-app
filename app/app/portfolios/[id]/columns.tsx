@@ -88,11 +88,11 @@ const SortingButton = (title, activateFilter = true) => {
   }
 }
 
-export const columns = (selectedPeriod, baseCurrency = 'EUR', useNativeCurrency = false): any[] => {
-  return [
+export const columns = (selectedPeriod, baseCurrency = 'EUR', useNativeCurrency = false, own = true): any[] => {
+  const colList: any[] = [
     {
       accessorKey: 'symbol',
-      header: SortingButton('Produit x Quantité'),
+      header: SortingButton(own ? 'Produit x Quantité' : 'Produit'),
       cell: ({ row }) => {
         const symbol = row.getValue('symbol') as string
 
@@ -105,7 +105,7 @@ export const columns = (selectedPeriod, baseCurrency = 'EUR', useNativeCurrency 
             />
             <div className="flex flex-col">
               <span className="font-medium flex items-center gap-1">
-                {symbol} {row.original.qty !== 0 ? `x ${row.original.qty}` : ''}
+                {symbol} {own && row.original.qty ? `x ${row.original.qty}` : ''}
                 {row.original.qualityMetrics?.hasFundamentals && (
                   <span title="Données fondamentales disponibles"><FileText className="h-3 w-3 text-blue-500" /></span>
                 )}
@@ -121,7 +121,7 @@ export const columns = (selectedPeriod, baseCurrency = 'EUR', useNativeCurrency 
     },
     {
       accessorKey: 'weight',
-      header: SortingButton('Poid / total', false),
+      header: SortingButton('Poids', false),
       cell: ({ row }) => {
         const currencyToUse = useNativeCurrency && row.original.currency ? row.original.currency : baseCurrency
         const symbol = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: currencyToUse }).formatToParts(0).find(p => p.type === 'currency')?.value || '€'
@@ -130,7 +130,9 @@ export const columns = (selectedPeriod, baseCurrency = 'EUR', useNativeCurrency 
             <div className="font-medium">
               {round10((row.getValue('weight') as number) * 100, -1)}%
             </div>
-            <div className="text-muted-foreground">{row.original.qty === 0 ? '-' : round10(row.original.totalValue, -2).toLocaleString() + ' ' + symbol}</div>
+            {own && row.original.totalValue != null && row.original.qty !== 0 && (
+              <div className="text-muted-foreground">{round10(row.original.totalValue, -2).toLocaleString() + ' ' + symbol}</div>
+            )}
           </div>
         )
       },
@@ -150,8 +152,10 @@ export const columns = (selectedPeriod, baseCurrency = 'EUR', useNativeCurrency 
       },
       enableHiding: true,
     },
+  ]
 
-    {
+  if (own) {
+    colList.push({
       accessorKey: 'bep',
       header: 'PRU',
       cell: ({ row }) => {
@@ -159,48 +163,46 @@ export const columns = (selectedPeriod, baseCurrency = 'EUR', useNativeCurrency 
         const symbol = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: currencyToUse }).formatToParts(0).find(p => p.type === 'currency')?.value || '€'
         const bepVal = useNativeCurrency && row.original.nativeBep != null ? row.original.nativeBep : row.getValue('bep')
         return (
-          <div className="font-medium">{row.original.qty === 0 ? '-' : round10(bepVal as number, -2).toLocaleString() + ' ' + symbol}</div>
+          <div className="font-medium">{row.original.qty === 0 || bepVal == null ? '-' : round10(bepVal as number, -2).toLocaleString() + ' ' + symbol}</div>
         )
       },
       enableHiding: false,
-    },
+    })
+  }
 
-    {
-      accessorKey: 'variationPercent',
-      header: SortingButton('Retour', false),
-      cell: ({ row }) => {
-        const currencyToUse = useNativeCurrency && row.original.currency ? row.original.currency : baseCurrency
-        const symbol = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: currencyToUse }).formatToParts(0).find(p => p.type === 'currency')?.value || '€'
-        
-        let varValue = row!.original.variation
-        let varPercent = row!.original.variationPercent
-        
-        // If native currency is requested, we would theoretically calculate variation in native currency here
-        // For now, we assume the backend provides it, or we display the same percent (native percent is roughly same for stocks without FX effect, but we would need to calculate it properly. 
-        // We will just change the symbol for now, a proper implementation would fetch native variations.)
-        
-        return (
-          <div className="flex flex-col gap-1">
-            {row.original.qty === 0 ? (
-              <div className="text-muted-foreground ml-2">-</div>
-            ) : (
-              <VariationContainer
-                value={varValue}
-                background={false}
-                entity={symbol}
-                className="m-0 p-0"
-              />
-            )}
+  colList.push({
+    accessorKey: 'variationPercent',
+    header: SortingButton('Retour', false),
+    cell: ({ row }) => {
+      const currencyToUse = useNativeCurrency && row.original.currency ? row.original.currency : baseCurrency
+      const symbol = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: currencyToUse }).formatToParts(0).find(p => p.type === 'currency')?.value || '€'
+      
+      let varValue = row!.original.variation
+      let varPercent = row!.original.variationPercent
+      
+      return (
+        <div className="flex flex-col gap-1">
+          {own && varValue != null && row.original.qty !== 0 && (
+            <VariationContainer
+              value={varValue}
+              background={false}
+              entity={symbol}
+              className="m-0 p-0"
+            />
+          )}
+          {varPercent != null && (
             <VariationContainer
               value={varPercent}
               background={false}
               className="m-0 p-0"
             />
-          </div>
-        )
-      },
-      enableHiding: false,
+          )}
+        </div>
+      )
     },
+    enableHiding: false,
+  })
+  colList.push(
     {
       accessorFn: (row) => {
         let chg = row.regularMarketChangePercent
@@ -232,12 +234,14 @@ export const columns = (selectedPeriod, baseCurrency = 'EUR', useNativeCurrency 
               background={false}
               className="m-0 p-0 py-0"
             />
-            <VariationContainer
-              value={chg * row.original.weight}
-              entity="%"
-              background={false}
-              className="m-0 p-0 py-0"
-            />
+            {own && (
+              <VariationContainer
+                value={chg * row.original.weight}
+                entity="%"
+                background={false}
+                className="m-0 p-0 py-0"
+              />
+            )}
           </div>
         )
       },
@@ -278,6 +282,8 @@ export const columns = (selectedPeriod, baseCurrency = 'EUR', useNativeCurrency 
         if (val == null) return <div className="text-muted-foreground">-</div>
         return <div className="font-medium">{val.toFixed(1)}x</div>
       },
-    },
-  ]
+    }
+  )
+
+  return colList
 }

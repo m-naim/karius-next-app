@@ -2,8 +2,6 @@ import 'css/globals.css'
 
 import { Analytics } from '@vercel/analytics/react'
 import Script from 'next/script'
-import Header from '@/components/organismes/layout/Header'
-import Footer from '@/components/organismes/layout/Footer'
 import siteMetadata from '@/data/siteMetadata'
 import { ThemeProviders } from './theme-providers'
 import { Metadata } from 'next'
@@ -53,6 +51,8 @@ export const metadata: Metadata = {
   },
 }
 
+import AppLayoutContainer from '@/components/organismes/layout/AppLayoutContainer'
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang={siteMetadata.language} className={`scroll-smooth`} suppressHydrationWarning>
@@ -80,10 +80,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <SpeedInsights />
             <Toaster />
 
-            <div className="flex h-screen flex-col overflow-hidden">
-              <Header />
-              <main className="flex-1 min-h-0 flex flex-col overflow-y-auto">{children}</main>
-            </div>
+            <AppLayoutContainer>{children}</AppLayoutContainer>
             <SupportBubble />
           </ThemeProviders>
         </Providers>

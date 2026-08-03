@@ -39,6 +39,9 @@
       "@/lib/*": [
         "lib/*"
       ],
+      "@/tina/*": [
+        "tina/*"
+      ],
       "@/assets/*": [
         "assets/*"
       ],
