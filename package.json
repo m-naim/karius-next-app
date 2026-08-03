@@ -5,8 +5,8 @@
   "scripts": {
     "start": "next dev --webpack",
     "dev": "cross-env next dev --webpack",
-    "build": "tinacms build --datalayer-port 9001 --local --skip-cloud-checks && cross-env NODE_OPTIONS='--experimental-json-modules' node ./scripts/postbuild.mjs && cross-env INIT_CWD=$PWD next build --turbo",
-    "prebuild": "tinacms build --datalayer-port 9001 --local --skip-cloud-checks",
+    "build": "dotenv -e .env.local -- tinacms build --datalayer-port 29000 && cross-env NODE_OPTIONS='--experimental-json-modules' node ./scripts/postbuild.mjs && cross-env INIT_CWD=$PWD next build --turbo",
+    "prebuild": "dotenv -e .env.local -- tinacms build --datalayer-port 29000",
     "postbuild": "cross-env NODE_OPTIONS='--experimental-json-modules' node ./scripts/postbuild.mjs",
     "localbuild": "npm run build",
     "serve": "next start",
@@ -99,6 +99,7 @@
     "@types/node": "^26.1.1",
     "@types/react": "^19.2.17",
     "cross-env": "^7.0.3",
+    "dotenv-cli": "^11.0.0",
     "es-abstract": "^1.23.9",
     "husky": "^8.0.0",
     "lint-staged": "^13.0.0",
