@@ -1,6 +1,5 @@
 import { ReactNode } from 'react'
 import { coreContent } from '@/lib/contentlayer'
-import type { Blog, Authors } from 'contentlayer/generated'
 import Link from '@/components/atoms/Link'
 import PageTitle from '@/components/molecules/article/PageTitle'
 import SectionContainer from '@/components/organismes/layout/SectionContainer'

@@ -1,11 +1,22 @@
 import { ReactNode } from 'react'
-import type { Authors } from 'contentlayer/generated'
 import SocialIcon from '@/components/icons/social-icons'
 import Image from 'next/image'
 
+interface AuthorContent {
+  name: string
+  avatar?: string
+  occupation?: string
+  company?: string
+  email?: string
+  twitter?: string
+  linkedin?: string
+  github?: string
+  [key: string]: any
+}
+
 interface Props {
   children: ReactNode
-  content: Omit<Authors, '_id' | '_raw' | 'body'>
+  content: AuthorContent
 }
 
 export default function AuthorLayout({ children, content }: Props) {

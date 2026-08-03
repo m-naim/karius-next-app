@@ -1,7 +1,6 @@
 import { ReactNode } from 'react'
 import Bleed from '@/components/atoms/Bleed'
 import { coreContent } from '@/lib/contentlayer'
-import type { Blog } from 'contentlayer/generated'
 import Comments from '@/components/molecules/article/Comments'
 import Link from '@/components/atoms/Link'
 import PageTitle from '@/components/molecules/article/PageTitle'

@@ -1,11 +1,10 @@
 import { coreContent } from '@/lib/contentlayer'
-import type { Blog, Analyse, Guide } from 'contentlayer/generated'
 import Link from '@/components/atoms/Link'
 import { groupBy } from '@/lib/arrays'
 import { Card, CardContent, CardDescription, CardFooter, CardTitle } from '@/components/ui/card'
 import SectionContainer from '@/components/organismes/layout/SectionContainer'
 
-type Content = Blog | Analyse | Guide
+type Content = any
 
 interface PaginationProps {
   totalPages: number
@@ -29,7 +28,7 @@ export default function ListLayoutWithTags({ posts, initialDisplayPosts = [] }: 
     <SectionContainer>
       <div className="flex sm:space-x-24">
         <div>
-          {Object.entries(groupByTag).map(([tag, posts]: [string, Guide[]]) => (
+          {Object.entries(groupByTag).map(([tag, posts]: [string, any[]]) => (
             <div key={tag}>
               <h2 className="capitalize leading-8 text-primary">{tag}</h2>
               <ul className="flex flex-wrap gap-4">

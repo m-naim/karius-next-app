@@ -4,13 +4,12 @@ import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { formatDate } from '@/lib/formatDate'
 import { coreContent } from '@/lib/contentlayer'
-import type { Analyse, Blog, Guide } from 'contentlayer/generated'
 import Link from '@/components/atoms/Link'
 import Tag from '@/components/molecules/article/Tag'
 import siteMetadata from '@/data/siteMetadata'
 import SectionContainer from '@/components/organismes/layout/SectionContainer'
 
-type Content = Blog | Analyse | Guide
+type Content = any
 interface PaginationProps {
   totalPages: number
   currentPage: number

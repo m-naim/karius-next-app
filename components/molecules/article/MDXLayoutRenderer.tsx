@@ -1,7 +1,5 @@
-'use client'
-
-import { useMDXComponent } from 'next-contentlayer2/hooks'
-import { components } from './MDXComponents'
+import { components as defaultComponents } from './MDXComponents'
+import { MDXRemote } from 'next-mdx-remote/rsc'
 
 interface MDXLayoutRendererProps {
   code: string
@@ -10,7 +8,15 @@ interface MDXLayoutRendererProps {
 }
 
 export const MDXLayoutRenderer = ({ code, components: MDXComponents, ...rest }: MDXLayoutRendererProps) => {
-  const MDXComponent = useMDXComponent(code)
+  const mergedComponents = { ...defaultComponents, ...MDXComponents }
 
-  return <MDXComponent components={{ ...components, ...MDXComponents }} {...rest} />
+  if (!code || typeof code === 'object') {
+    return null
+  }
+
+  return (
+    <div className="prose dark:prose-invert max-w-none">
+      <MDXRemote source={code} components={mergedComponents as any} {...rest} />
+    </div>
+  )
 }

@@ -1,9 +1,29 @@
-import { writeFileSync, mkdirSync } from 'fs'
+import { writeFileSync, mkdirSync, readdirSync, readFileSync, existsSync } from 'fs'
 import path from 'path'
 import { slug } from 'github-slugger'
+import matter from 'gray-matter'
 import siteMetadata from '../data/siteMetadata.js'
 import tagData from '../app/tag-data.json' with { type: 'json' }
-import { allBlogs } from '../.contentlayer/generated/index.mjs'
+
+function getBlogsFromFiles() {
+  const dirPath = path.resolve(process.cwd(), 'data/blog')
+  if (!existsSync(dirPath)) return []
+  
+  const files = readdirSync(dirPath).filter((f) => f.endsWith('.mdx') || f.endsWith('.md'))
+  return files.map((file) => {
+    const raw = readFileSync(path.join(dirPath, file), 'utf-8')
+    const { data } = matter(raw)
+    const fileName = file.replace(/\.(mdx|md)$/, '')
+    return {
+      slug: data.slug || fileName,
+      title: data.title || fileName,
+      summary: data.summary || '',
+      date: data.date ? new Date(data.date).toISOString() : new Date().toISOString(),
+      draft: Boolean(data.draft),
+      tags: data.tags || [],
+    }
+  })
+}
 
 const escape = (str) =>
   str
@@ -42,7 +62,7 @@ const generateRss = (config, posts, page = 'feed.xml') => `
       <language>${config.language}</language>
       <managingEditor>${config.email} (${config.author})</managingEditor>
       <webMaster>${config.email} (${config.author})</webMaster>
-      <lastBuildDate>${new Date(posts[0]?.date).toUTCString()}</lastBuildDate>
+      <lastBuildDate>${posts.length > 0 ? new Date(posts[0].date).toUTCString() : new Date().toUTCString()}</lastBuildDate>
       <atom:link href="${config.siteUrl}/${page}" rel="self" type="application/rss+xml"/>
       ${posts.map((post) => generateRssItem(config, post)).join('')}
     </channel>
@@ -51,7 +71,6 @@ const generateRss = (config, posts, page = 'feed.xml') => `
 
 async function generateRSS(config, allBlogs, page = 'feed.xml') {
   const publishPosts = allBlogs.filter((post) => post.draft !== true)
-  // RSS for blog post
   if (publishPosts.length > 0) {
     const rss = generateRss(config, sortPosts(publishPosts))
     writeFileSync(`./public/${page}`, rss)
@@ -69,7 +88,8 @@ async function generateRSS(config, allBlogs, page = 'feed.xml') {
 }
 
 const rss = () => {
-  generateRSS(siteMetadata, allBlogs)
+  const blogs = getBlogsFromFiles()
+  generateRSS(siteMetadata, blogs)
   console.log('RSS feed generated...')
 }
 export default rss
