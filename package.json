@@ -5,8 +5,8 @@
   "scripts": {
     "start": "next dev --webpack",
     "dev": "cross-env next dev --webpack",
-    "build": "dotenv -e .env.local -- tinacms build --datalayer-port 29000 && cross-env NODE_OPTIONS='--experimental-json-modules' node ./scripts/postbuild.mjs && cross-env INIT_CWD=$PWD next build --turbo",
-    "prebuild": "dotenv -e .env.local -- tinacms build --datalayer-port 29000",
+    "build": "dotenv -e .env.local -- tinacms build --datalayer-port 29000 --skip-cloud-checks && cross-env NODE_OPTIONS='--experimental-json-modules' node ./scripts/postbuild.mjs && cross-env INIT_CWD=$PWD next build --turbo",
+    "prebuild": "dotenv -e .env.local -- tinacms build --datalayer-port 29000 --skip-cloud-checks",
     "postbuild": "cross-env NODE_OPTIONS='--experimental-json-modules' node ./scripts/postbuild.mjs",
     "localbuild": "npm run build",
     "serve": "next start",
