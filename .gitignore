@@ -46,3 +46,6 @@ yarn-error.log*
 # Contentlayer
 .contentlayer
 .qodo
+
+# TinaCMS generated files
+tina/__generated__
