@@ -36,12 +36,12 @@ const SortingButton = (title) => {
 }
 
 export const columns = (
-  id,
-  owned,
-  benchmark,
-  deleteRow,
-  selectedPeriod,
-  allWatchlists
+  id?: any,
+  owned?: any,
+  benchmark?: any,
+  deleteRow?: any,
+  selectedPeriod?: any,
+  allWatchlists: any[] = []
 ): ColumnDef<security, any>[] => {
   const cols: ColumnDef<security, any>[] = [
     {

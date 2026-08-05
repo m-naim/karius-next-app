@@ -50,7 +50,7 @@ const SortingButton = (title, alignRight = false) => {
 
 import { Actions } from 'app/app/watchlist/[id]/components/Actions'
 
-export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security, any>[] => {
+export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnDef<security, any>[] => {
   const cols: ColumnDef<security, any>[] = [
     {
       accessorKey: 'symbol',

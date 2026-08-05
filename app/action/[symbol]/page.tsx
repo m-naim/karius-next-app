@@ -7,9 +7,9 @@ import { Metadata } from 'next'
 export async function generateMetadata({
   params,
 }: {
-  params: { symbol: string }
+  params: Promise<{ symbol: string }>
 }): Promise<Metadata | undefined> {
-  const { symbol } = params
+  const { symbol } = await params
 
   const stock = await stockService.getStock(symbol.toUpperCase())
 
@@ -50,8 +50,9 @@ export async function generateMetadata({
   }
 }
 
-async function page({ params }: { params: { symbol: string } }) {
-  const stock = await stockService.getStock(params.symbol.toUpperCase())
+async function page({ params }: { params: Promise<{ symbol: string }> }) {
+  const { symbol } = await params
+  const stock = await stockService.getStock(symbol.toUpperCase())
   if (stock == null) return <NotFound />
   return (
     <div>
@@ -60,7 +61,7 @@ async function page({ params }: { params: { symbol: string } }) {
       <div className="flex w-full flex-col place-items-center">
         <h1>Cours de l'Action {stock.longname}</h1>
         <h2 className="uppercase">
-          {params.symbol} | {stock.exchange}
+          {symbol} | {stock.exchange}
         </h2>
         <div className="flex gap-4">
           <span className="text-2xl">300 €</span>

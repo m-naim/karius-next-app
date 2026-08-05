@@ -88,7 +88,7 @@ const SortingButton = (title, activateFilter = true) => {
   }
 }
 
-export const columns = (selectedPeriod, baseCurrency = 'EUR', useNativeCurrency = false, own = true): any[] => {
+export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCurrency = false, own = true): any[] => {
   const colList: any[] = [
     {
       accessorKey: 'symbol',

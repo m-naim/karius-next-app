@@ -73,6 +73,10 @@ module.exports = () => {
       ],
     },
     webpack: (config, { dev }) => {
+      config.resolve.extensionAlias = {
+        ...config.resolve.extensionAlias,
+        '.js': ['.js', '.mjs', '.ts', '.tsx'],
+      }
       if (dev) {
         config.watchOptions = {
           ...config.watchOptions,
