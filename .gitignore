@@ -49,3 +49,6 @@ yarn-error.log*
 
 # TinaCMS generated files
 tina/__generated__
+
+# TypeScript build info cache
+tsconfig.tsbuildinfo
