@@ -1,5 +1,3 @@
-import localInvestors from '@/data/superInvestors.json'
-
 export interface SuperInvestorPosition {
   symbol: string
   name: string
@@ -54,12 +52,12 @@ export async function getSuperInvestors(): Promise<SuperInvestor[]> {
     })
     if (res.ok) {
       const data = await res.json()
-      if (Array.isArray(data) && data.length > 0) return data
+      if (Array.isArray(data)) return data
     }
   } catch (e) {
-    console.warn('API connection error, falling back to local superInvestors dataset:', e)
+    console.error('API error fetching super investors:', e)
   }
-  return localInvestors as SuperInvestor[]
+  return []
 }
 
 export async function getSuperInvestorById(idOrCik: string): Promise<SuperInvestor | null> {
@@ -76,7 +74,7 @@ export async function getSuperInvestorById(idOrCik: string): Promise<SuperInvest
       if (data && data.id) return data
     }
   } catch (e) {
-    console.warn('API connection error, falling back to local superInvestors dataset:', e)
+    console.error('API error fetching super investor details:', e)
   }
-  return (localInvestors as SuperInvestor[]).find(i => i.id === idOrCik || i.cik === idOrCik) || null
+  return null
 }
