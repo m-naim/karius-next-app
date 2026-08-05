@@ -48,6 +48,8 @@ const SortingButton = (title, alignRight = false) => {
   }
 }
 
+import { Actions } from 'app/app/watchlist/[id]/components/Actions'
+
 export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security, any>[] => {
   const cols: ColumnDef<security, any>[] = [
     {
@@ -81,6 +83,12 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
             </div>
             
             <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover/row:opacity-100">
+              <Actions
+                id=""
+                symbol={row.original.symbol}
+                allWatchlists={allWatchlists}
+                security={row.original}
+              />
               <a 
                 target="_blank" 
                 href={`https://www.gurufocus.com/stock/${ticker}`}
@@ -446,6 +454,20 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
         return <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm lowercase font-medium">{val.toFixed(1)}x</div>
       },
       filterFn: genericNumericFilterFn,
+    },
+    {
+      id: 'actions',
+      header: '',
+      cell: ({ row }) => (
+        <div className="flex justify-end">
+          <Actions
+            id=""
+            symbol={row.original.symbol}
+            allWatchlists={allWatchlists}
+            security={row.original}
+          />
+        </div>
+      ),
     },
   ]
 

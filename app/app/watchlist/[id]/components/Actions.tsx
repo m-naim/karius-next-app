@@ -54,12 +54,12 @@ import { security } from '../data/security'
 interface ActionsProps {
   allWatchlists: watchList[]
   symbol: string
-  id: string
-  deleteRow: (symbol: string) => void
+  id?: string
+  deleteRow?: (symbol: string) => void
   security?: security
 }
 
-export const Actions = ({ symbol, id, deleteRow, allWatchlists = [], security }: ActionsProps) => {
+export const Actions = ({ symbol, id = '', deleteRow, allWatchlists = [], security }: ActionsProps) => {
   const { toast } = useToast()
   const [activeDialog, setActiveDialog] = React.useState<'copy' | 'alert' | null>(null)
 
@@ -82,7 +82,7 @@ export const Actions = ({ symbol, id, deleteRow, allWatchlists = [], security }:
     )
   }, [alertType, operator, value, symbol])
 
-  const otherWatchlists = allWatchlists.filter((w) => (w._id || w.id) !== id)
+  const otherWatchlists = id ? allWatchlists.filter((w) => (w._id || w.id) !== id) : allWatchlists
 
   const handleAction = async (targetId: string, targetName: string, isMove: boolean) => {
     try {
@@ -90,7 +90,7 @@ export const Actions = ({ symbol, id, deleteRow, allWatchlists = [], security }:
         security: { symbol: symbol, date: new Date().toISOString().split('T')[0] },
       })
 
-      if (isMove) {
+      if (isMove && id && deleteRow) {
         await watchListService.removeStock(id, symbol)
         deleteRow(symbol)
         toast({
@@ -103,6 +103,11 @@ export const Actions = ({ symbol, id, deleteRow, allWatchlists = [], security }:
       setActiveDialog(null)
     } catch (error) {
       console.error('Failed to perform action:', error)
+      toast({
+        title: 'Erreur',
+        description: `Impossible d'ajouter ${symbol} à ${targetName}`,
+        variant: 'destructive',
+      })
     }
   }
 
@@ -144,19 +149,23 @@ export const Actions = ({ symbol, id, deleteRow, allWatchlists = [], security }:
           </DropdownMenuItem>
 
           <DropdownMenuItem onSelect={() => setTimeout(() => setActiveDialog('copy'), 100)}>
-            <Copy className="mr-2 h-4 w-4" /> Copier/Déplacer vers...
+            <Plus className="mr-2 h-4 w-4" /> {id ? 'Copier/Déplacer vers...' : 'Ajouter à une Watchlist...'}
           </DropdownMenuItem>
 
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="text-destructive focus:bg-destructive focus:text-destructive-foreground"
-            onClick={() => {
-              watchListService.removeStock(id, symbol)
-              deleteRow(symbol)
-            }}
-          >
-            <Trash2 className="mr-2 h-4 w-4" /> Retirer de la liste
-          </DropdownMenuItem>
+          {id && deleteRow && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-destructive focus:bg-destructive focus:text-destructive-foreground"
+                onClick={() => {
+                  watchListService.removeStock(id, symbol)
+                  deleteRow(symbol)
+                }}
+              >
+                <Trash2 className="mr-2 h-4 w-4" /> Retirer de la liste
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 

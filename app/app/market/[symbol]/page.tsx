@@ -28,6 +28,8 @@ import { LayoutDashboard, Table as TableIcon } from 'lucide-react'
 import { RightSidebar } from '@/components/organismes/layout/RightSidebar'
 import { SplitScreenLayout } from '@/components/organismes/layout/SplitScreenLayout'
 
+import watchListService from '@/services/watchListService'
+
 interface IndexData {
   symbol: string
   name: string
@@ -46,6 +48,7 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
   })
 
   const [securities, setSecurities] = React.useState<security[]>([])
+  const [watchlists, setWatchlists] = React.useState<any[]>([])
   const [activeScreener, setActiveScreener] = React.useState<string | null>(null)
 
   const screeners = [
@@ -178,8 +181,8 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
   }, [filteredSecurities, selectedPeriod])
 
   const tableColumns = useMemo(() => {
-    return columns(selectedPeriod)
-  }, [selectedPeriod])
+    return columns(selectedPeriod, watchlists)
+  }, [selectedPeriod, watchlists])
 
   const table = useReactTable<security>({
     data: tableData,
@@ -212,9 +215,13 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
     const fetchData = async () => {
       try {
         setLoading(true)
-        const infos = await marketService.get(symbol)
+        const [infos, userWatchlists] = await Promise.all([
+          marketService.get(symbol),
+          watchListService.getAll().catch(() => []),
+        ])
         setIndexInfo(infos)
         setSecurities(infos.holdings)
+        setWatchlists(userWatchlists || [])
       } catch (error) {
         console.error(error)
         toast({
