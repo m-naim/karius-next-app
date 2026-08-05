@@ -10,6 +10,7 @@ import { security } from '../data/security'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { round10 } from '@/lib/decimalAjustement'
 import { percentVariation, cagrFromVariation } from '@/lib/math'
+import { genericNumericFilterFn } from '@/app/app/market/[symbol]/columns'
 
 type FiltrProps = {
   column: Column<security, string>
@@ -667,57 +668,13 @@ export const columns = (
         />
       ),
 
-      filterFn: (row, id, value) => {
-        const val = row.getValue(id) as number
-        if (!value) return true
-        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
-          values: string[]
-          mode: 'is' | 'isnot'
-        }
-
-        if (!values || values.length === 0) return true
-
-        const matches = values.some((filter: string) => {
-          if (filter === 'hyper') return val > 20
-          if (filter === 'steady') return val >= 10 && val <= 20
-          if (filter === 'slow') return val < 10
-          return true
-        })
-
-        return mode === 'is' ? matches : !matches
-      },
+      filterFn: genericNumericFilterFn,
     },
     {
-      accessorKey: 'tags',
-      header: 'Tags',
-      cell: ({ row }) => (
-        <div className="flex items-center gap-1">
-          <div className="flex flex-wrap gap-1">
-            {row.original.tags?.map((tag) => (
-              <Badge key={tag} variant="secondary" className="px-2 py-0.5 text-xs">
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      ),
-      filterFn: (row, id, value) => {
-        const rowValue = row.getValue(id) as string[] | undefined
-        if (!value) return true
-        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
-          values: string[]
-          mode: 'is' | 'isnot'
-        }
-
-        if (!values || values.length === 0) return true
-        if (!rowValue) return mode === 'isnot' // If no tags, matches if mode is 'isnot'
-
-        const matches = values.some((val: string) => rowValue.includes(val))
-        return mode === 'is' ? matches : !matches
+      accessorFn: (row) => {
+        const val = row.qualityMetrics?.revenueGrowth5yAvg
+        return val != null ? val * 100 : null
       },
-    },
-    {
-      accessorFn: (row) => row.qualityMetrics?.revenueGrowth5yAvg,
       id: 'revGrowth',
       header: SortingButton('Croissance CA (5a)'),
       cell: ({ row }) => {
@@ -725,9 +682,13 @@ export const columns = (
         if (val == null) return <div className="text-[11px] text-muted-foreground">N/A</div>
         return <VariationContainer value={val * 100} entity="%" background={false} className="m-0 p-0 py-1 text-[11px]" />
       },
+      filterFn: genericNumericFilterFn,
     },
     {
-      accessorFn: (row) => row.qualityMetrics?.roic5yAvg,
+      accessorFn: (row) => {
+        const val = row.qualityMetrics?.roic5yAvg
+        return val != null ? val * 100 : null
+      },
       id: 'roic',
       header: SortingButton('ROIC (5a)'),
       cell: ({ row }) => {
@@ -735,6 +696,7 @@ export const columns = (
         if (val == null) return <div className="text-[11px] text-muted-foreground">N/A</div>
         return <VariationContainer value={val * 100} entity="%" background={false} className="m-0 p-0 py-1 text-[11px]" />
       },
+      filterFn: genericNumericFilterFn,
     },
     {
       accessorFn: (row) => row.qualityMetrics?.pe5yAvgProxy,
@@ -745,6 +707,7 @@ export const columns = (
         if (val == null) return <div className="text-[11px] text-muted-foreground">N/A</div>
         return <div className="lowercase text-[11px] font-medium">{val.toFixed(1)}x</div>
       },
+      filterFn: genericNumericFilterFn,
     },
   ]
 

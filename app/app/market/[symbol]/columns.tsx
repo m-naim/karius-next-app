@@ -175,113 +175,33 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
           </div>
         )
       },
-      filterFn: (row, id, value) => {
-        const val = row.getValue(id) as number
-        if (!value) return true
-        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
-          values: string[]
-          mode: 'is' | 'isnot'
-        }
-
-        if (!values || values.length === 0) return true
-
-        const matches = values.some((filter: string) => {
-          if (filter === 'positive') return val > 0
-          if (filter === 'negative') return val < 0
-          if (filter === 'flat') return val === 0
-          return true
-        })
-
-        return mode === 'is' ? matches : !matches
-      },
+      filterFn: genericNumericFilterFn,
     },
 
     {
       accessorKey: 'trailingPE',
       header: SortingButton('P/E', true),
-      footer: (info) => {
-        const rows = info.table.getFilteredRowModel().rows
-        const validRows = rows.filter((r) => !!r.getValue('trailingPE'))
-        const avg =
-          rows.reduce((acc, row) => acc + ((row.getValue('trailingPE') as number) || 0), 0) /
-          validRows.length
-        return <div className="text-right font-mono tabular-nums px-2 py-1 text-[10px]">{round10(avg, -2) || ''}</div>
-      },
       cell: ({ row }) => (
         <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm lowercase">
           {round10(row.getValue('trailingPE'), -2) || 'N/A'}
         </div>
       ),
-      filterFn: (row, id, value) => {
-        const val = row.getValue(id) as number
-        if (!value) return true
-        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
-          values: string[]
-          mode: 'is' | 'isnot'
-        }
-
-        if (!values || values.length === 0) return true
-
-        const matches = values.some((filter: string) => {
-          if (filter === 'value') return val < 15
-          if (filter === 'fair') return val >= 15 && val <= 25
-          if (filter === 'growth') return val > 25
-          return true
-        })
-
-        return mode === 'is' ? matches : !matches
-      },
+      filterFn: genericNumericFilterFn,
     },
     {
       accessorKey: 'forwardPE',
       header: SortingButton('P/E Fwd', true),
-      footer: (info) => {
-        const rows = info.table.getFilteredRowModel().rows
-        const validRows = rows.filter((r) => !!r.getValue('forwardPE'))
-        const avg =
-          rows.reduce((acc, row) => acc + ((row.getValue('forwardPE') as number) || 0), 0) /
-          validRows.length
-        return <div className="text-right font-mono tabular-nums px-2 py-1 text-[10px]">{round10(avg, -2) || ''}</div>
-      },
       cell: ({ row }) => (
         <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm lowercase">
           {round10(row.getValue('forwardPE'), -2) || 'N/A'}
         </div>
       ),
-      filterFn: (row, id, value) => {
-        if (!value) return true
-        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
-          values: string[]
-          mode: 'is' | 'isnot'
-        }
-
-        if (!values || values.length === 0) return true
-        const matches = values.includes(row.getValue(id))
-        return mode === 'is' ? matches : !matches
-      },
+      filterFn: genericNumericFilterFn,
     },
 
     {
       accessorKey: 'dividendYield',
       header: SortingButton('Rendement Div.', true),
-      footer: (info) => {
-        const rows = info.table.getFilteredRowModel().rows
-        const validRows = rows.filter((r) => !!r.getValue('dividendYield'))
-        const avg =
-          rows.reduce((acc, row) => acc + ((row.getValue('dividendYield') as number) || 0), 0) /
-          validRows.length
-        return (
-          <div className="font-mono tabular-nums text-right px-2 py-1 text-[10px]">
-            <VariationContainer
-              value={round10(avg, -2) || 0}
-              entity="%"
-              background={false}
-              vaiationColor={false}
-              className="m-0 p-0"
-            />
-          </div>
-        )
-      },
       cell: ({ row }) => (
         <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
           <VariationContainer
@@ -293,37 +213,11 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
           />
         </div>
       ),
-      filterFn: (row, id, value) => {
-        const val = row.getValue(id) as number
-        if (!value) return true
-        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
-          values: string[]
-          mode: 'is' | 'isnot'
-        }
-
-        if (!values || values.length === 0) return true
-
-        const matches = values.some((filter: string) => {
-          if (filter === 'high') return val >= 4
-          if (filter === 'medium') return val >= 2 && val < 4
-          if (filter === 'low') return val < 2
-          return true
-        })
-
-        return mode === 'is' ? matches : !matches
-      },
+      filterFn: genericNumericFilterFn,
     },
     {
       accessorKey: 'linearity10y',
       header: SortingButton('Linéarité', true),
-      footer: (info) => {
-        const rows = info.table.getFilteredRowModel().rows
-        const validRows = rows.filter((r) => !!r.getValue('linearity10y'))
-        const avg =
-          rows.reduce((acc, row) => acc + ((row.getValue('linearity10y') as number) || 0), 0) /
-          validRows.length
-        return <div className="text-right font-mono tabular-nums px-2 py-1 text-[10px]">{round10(avg, -2) || ''}</div>
-      },
       cell: ({ row }) => (
         <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
           <VariationContainer
@@ -336,25 +230,7 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
           />
         </div>
       ),
-      filterFn: (row, id, value) => {
-        const val = (row.getValue(id) as number) * 100
-        if (!value) return true
-        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
-          values: string[]
-          mode: 'is' | 'isnot'
-        }
-
-        if (!values || values.length === 0) return true
-
-        const matches = values.some((filter: string) => {
-          if (filter === 'high') return val >= 90
-          if (filter === 'good') return val >= 70 && val < 90
-          if (filter === 'low') return val < 70
-          return true
-        })
-
-        return mode === 'is' ? matches : !matches
-      },
+      filterFn: genericNumericFilterFn,
     },
     {
       accessorFn: (row) => {
@@ -373,27 +249,6 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
       },
       id: 'ret_lin',
       header: SortingButton('Score (Ret×Lin)', true),
-      footer: (info) => {
-        const rows = info.table.getFilteredRowModel().rows
-        const filteredRows = rows.filter(
-          (r) => !isNaN(r.getValue('ret_lin') as number) && r.getValue('ret_lin') !== -10000
-        )
-        const avg =
-          rows.reduce((acc, row) => {
-            const val = row.getValue('ret_lin') as number
-            return isNaN(val) || val === -10000 ? acc : acc + val
-          }, 0) / filteredRows.length
-        return (
-          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
-            <VariationContainer
-              value={avg}
-              entity="%"
-              background={false}
-              className="m-0 p-0 text-[10px]"
-            />
-          </div>
-        )
-      },
       cell: ({ row }) => {
         const val = row.getValue('ret_lin') as number
         return (
@@ -407,6 +262,7 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
           </div>
         )
       },
+      filterFn: genericNumericFilterFn,
     },
     {
       accessorKey: 'marketCap',
@@ -425,6 +281,7 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
           </div>
         )
       },
+      filterFn: genericNumericFilterFn,
     },
     {
       accessorFn: (row) => {
@@ -443,25 +300,7 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
           />
         </div>
       ),
-      filterFn: (row, id, value) => {
-        const val = (row.original?.lastYearFundamental?.roa || 0) * 100
-        if (!value) return true
-        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
-          values: string[]
-          mode: 'is' | 'isnot'
-        }
-
-        if (!values || values.length === 0) return true
-
-        const matches = values.some((filter: string) => {
-          if (filter === 'high') return val >= 15
-          if (filter === 'good') return val >= 5 && val < 15
-          if (filter === 'low') return val < 5
-          return true
-        })
-
-        return mode === 'is' ? matches : !matches
-      },
+      filterFn: genericNumericFilterFn,
     },
 
     {
@@ -481,25 +320,7 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
           />
         </div>
       ),
-      filterFn: (row, id, value) => {
-        const val = (row.original?.lastYearFundamental?.roe || 0) * 100
-        if (!value) return true
-        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
-          values: string[]
-          mode: 'is' | 'isnot'
-        }
-
-        if (!values || values.length === 0) return true
-
-        const matches = values.some((filter: string) => {
-          if (filter === 'high') return val >= 15
-          if (filter === 'good') return val >= 5 && val < 15
-          if (filter === 'low') return val < 5
-          return true
-        })
-
-        return mode === 'is' ? matches : !matches
-      },
+      filterFn: genericNumericFilterFn,
     },
 
     {
@@ -567,14 +388,14 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
 
     {
       accessorFn: (row) => {
-        return percentVariation(row.forwardPE, row.trailingPE)
+        return row.forwardPE != null && row.trailingPE != null ? ((row.forwardPE - row.trailingPE) / row.trailingPE) * 100 : 0
       },
       id: 'growth',
       header: SortingButton('Croiss. Est.', true),
       cell: ({ row }) => (
         <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
           <VariationContainer
-            value={percentVariation(row.getValue('forwardPE'), row.getValue('trailingPE'))}
+            value={(row.getValue('growth') as number)}
             entity="%"
             background={false}
             className="m-0 p-0 text-[11px]"
@@ -582,25 +403,7 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
         </div>
       ),
 
-      filterFn: (row, id, value) => {
-        const val = row.getValue(id) as number
-        if (!value) return true
-        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
-          values: string[]
-          mode: 'is' | 'isnot'
-        }
-
-        if (!values || values.length === 0) return true
-
-        const matches = values.some((filter: string) => {
-          if (filter === 'hyper') return val > 20
-          if (filter === 'steady') return val >= 10 && val <= 20
-          if (filter === 'slow') return val < 10
-          return true
-        })
-
-        return mode === 'is' ? matches : !matches
-      },
+      filterFn: genericNumericFilterFn,
     },
     {
       accessorFn: (row) => row.qualityMetrics?.revenueGrowth5yAvg,
@@ -615,6 +418,7 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
           </div>
         )
       },
+      filterFn: genericNumericFilterFn,
     },
     {
       accessorFn: (row) => row.qualityMetrics?.roic5yAvg,
@@ -629,6 +433,7 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
           </div>
         )
       },
+      filterFn: genericNumericFilterFn,
     },
     {
       accessorFn: (row) => row.qualityMetrics?.pe5yAvgProxy,
@@ -639,6 +444,7 @@ export const columns = (selectedPeriod, allWatchlists = []): ColumnDef<security,
         if (val == null) return <div className="font-mono tabular-nums text-right px-2 py-1 text-[11px] text-muted-foreground">N/A</div>
         return <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm lowercase font-medium">{val.toFixed(1)}x</div>
       },
+      filterFn: genericNumericFilterFn,
     },
   ]
 

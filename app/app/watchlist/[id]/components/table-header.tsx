@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { ChevronDown, Cross, Filter, Search, Settings2, XCircleIcon } from 'lucide-react'
 import watchListService from '@/services/watchListService'
 import { DataTableFacetedFilter } from './data-table-filter'
+import { DataTableRangeFilter } from './data-table-range-filter'
 import { industries, sectors } from '../data/data'
 import { Table } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
@@ -195,88 +196,65 @@ export const TableContextHeader = ({
             />
           )}
 
+          {/* Numerical Range Filters */}
           {table.getColumn('trailingPE') && (
-            <DataTableFacetedFilter
-              column={table.getColumn('trailingPE')}
-              title="P/E"
-              options={[
-                { label: 'Value (< 15)', value: 'value' },
-                { label: 'Fair (15-25)', value: 'fair' },
-                { label: 'Growth (> 25)', value: 'growth' },
-              ]}
-            />
+            <DataTableRangeFilter column={table.getColumn('trailingPE')} title="P/E" step={1} />
+          )}
+
+          {table.getColumn('forwardPE') && (
+            <DataTableRangeFilter column={table.getColumn('forwardPE')} title="P/E Fwd" step={1} />
+          )}
+
+          {table.getColumn('pe5y') && (
+            <DataTableRangeFilter column={table.getColumn('pe5y')} title="P/E (5a)" step={1} />
           )}
 
           {table.getColumn('dividendYield') && (
-            <DataTableFacetedFilter
-              column={table.getColumn('dividendYield')}
-              title="Yield"
-              options={[
-                { label: 'High (> 4%)', value: 'high' },
-                { label: 'Medium (2-4%)', value: 'medium' },
-                { label: 'Low (< 2%)', value: 'low' },
-              ]}
-            />
+            <DataTableRangeFilter column={table.getColumn('dividendYield')} title="Yield" unit="%" step={0.5} />
           )}
 
-          {table.getColumn('growth') && (
-            <DataTableFacetedFilter
-              column={table.getColumn('growth')}
-              title="Growth"
-              options={[
-                { label: 'Hyper (> 20%)', value: 'hyper' },
-                { label: 'Steady (10-20%)', value: 'steady' },
-                { label: 'Slow (< 10%)', value: 'slow' },
-              ]}
-            />
+          {table.getColumn('roic') && (
+            <DataTableRangeFilter column={table.getColumn('roic')} title="ROIC (5a)" unit="%" step={1} />
           )}
 
           {table.getColumn('roa') && (
-            <DataTableFacetedFilter
-              column={table.getColumn('roa')}
-              title="ROA"
-              options={[
-                { label: 'High (> 15%)', value: 'high' },
-                { label: 'Good (5-15%)', value: 'good' },
-                { label: 'Low (< 5%)', value: 'low' },
-              ]}
-            />
+            <DataTableRangeFilter column={table.getColumn('roa')} title="ROA" unit="%" step={1} />
           )}
 
           {table.getColumn('roe') && (
-            <DataTableFacetedFilter
-              column={table.getColumn('roe')}
-              title="ROE"
-              options={[
-                { label: 'High (> 15%)', value: 'high' },
-                { label: 'Good (5-15%)', value: 'good' },
-                { label: 'Low (< 5%)', value: 'low' },
-              ]}
-            />
+            <DataTableRangeFilter column={table.getColumn('roe')} title="ROE" unit="%" step={1} />
+          )}
+
+          {table.getColumn('growth') && (
+            <DataTableRangeFilter column={table.getColumn('growth')} title="Croissance CA" unit="%" step={1} />
+          )}
+
+          {table.getColumn('revGrowth') && (
+            <DataTableRangeFilter column={table.getColumn('revGrowth')} title="Croissance CA (5a)" unit="%" step={1} />
           )}
 
           {table.getColumn('linearity10y') && (
-            <DataTableFacetedFilter
-              column={table.getColumn('linearity10y')}
-              title="Linearity"
-              options={[
-                { label: 'High (> 90%)', value: 'high' },
-                { label: 'Good (70-90%)', value: 'good' },
-                { label: 'Low (< 70%)', value: 'low' },
-              ]}
-            />
+            <DataTableRangeFilter column={table.getColumn('linearity10y')} title="Linéarité" unit="%" step={5} />
+          )}
+
+          {table.getColumn('ret_lin') && (
+            <DataTableRangeFilter column={table.getColumn('ret_lin')} title="Score (Ret×Lin)" unit="%" step={5} />
           )}
 
           {table.getColumn('variation') && (
-            <DataTableFacetedFilter
-              column={table.getColumn('variation')}
-              title="Performance"
-              options={[
-                { label: 'Positive', value: 'positive' },
-                { label: 'Negative', value: 'negative' },
-                { label: 'Flat', value: 'flat' },
-              ]}
-            />
+            <DataTableRangeFilter column={table.getColumn('variation')} title="Var. (%)" unit="%" step={0.5} />
+          )}
+
+          {table.getColumn('regularMarketPrice') && (
+            <DataTableRangeFilter column={table.getColumn('regularMarketPrice')} title="Prix" step={1} />
+          )}
+
+          {table.getColumn('marketCap') && (
+            <DataTableRangeFilter column={table.getColumn('marketCap')} title="Cap. Boursière" step={1000000} />
+          )}
+
+          {table.getColumn('weight') && (
+            <DataTableRangeFilter column={table.getColumn('weight')} title="Pondération" unit="%" step={1} />
           )}
 
           {isFiltered && (
