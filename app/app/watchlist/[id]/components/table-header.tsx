@@ -198,51 +198,173 @@ export const TableContextHeader = ({
 
           {/* Numerical Range Filters */}
           {table.getColumn('trailingPE') && (
-            <DataTableRangeFilter column={table.getColumn('trailingPE')} title="P/E" step={1} />
+            <DataTableRangeFilter
+              column={table.getColumn('trailingPE')}
+              title="P/E"
+              step={1}
+              presets={[
+                { label: '< 15 (Value)', max: 15 },
+                { label: '15 - 25 (Fair)', min: 15, max: 25 },
+                { label: '> 25 (Growth)', min: 25 },
+              ]}
+            />
           )}
 
           {table.getColumn('forwardPE') && (
-            <DataTableRangeFilter column={table.getColumn('forwardPE')} title="P/E Fwd" step={1} />
+            <DataTableRangeFilter
+              column={table.getColumn('forwardPE')}
+              title="P/E Fwd"
+              step={1}
+              presets={[
+                { label: '< 15', max: 15 },
+                { label: '15 - 25', min: 15, max: 25 },
+                { label: '> 25', min: 25 },
+              ]}
+            />
           )}
 
           {table.getColumn('pe5y') && (
-            <DataTableRangeFilter column={table.getColumn('pe5y')} title="P/E (5a)" step={1} />
+            <DataTableRangeFilter
+              column={table.getColumn('pe5y')}
+              title="P/E (5a)"
+              step={1}
+              presets={[
+                { label: '< 15', max: 15 },
+                { label: '15 - 25', min: 15, max: 25 },
+                { label: '> 25', min: 25 },
+              ]}
+            />
           )}
 
           {table.getColumn('dividendYield') && (
-            <DataTableRangeFilter column={table.getColumn('dividendYield')} title="Yield" unit="%" step={0.5} />
+            <DataTableRangeFilter
+              column={table.getColumn('dividendYield')}
+              title="Yield"
+              unit="%"
+              step={0.5}
+              presets={[
+                { label: '> 4%', min: 4 },
+                { label: '2% - 4%', min: 2, max: 4 },
+                { label: '< 2%', max: 2 },
+              ]}
+            />
           )}
 
           {table.getColumn('roic') && (
-            <DataTableRangeFilter column={table.getColumn('roic')} title="ROIC (5a)" unit="%" step={1} />
+            <DataTableRangeFilter
+              column={table.getColumn('roic')}
+              title="ROIC (5a)"
+              unit="%"
+              step={1}
+              presets={[
+                { label: '> 20%', min: 20 },
+                { label: '> 15%', min: 15 },
+                { label: '> 10%', min: 10 },
+              ]}
+            />
           )}
 
           {table.getColumn('roa') && (
-            <DataTableRangeFilter column={table.getColumn('roa')} title="ROA" unit="%" step={1} />
+            <DataTableRangeFilter
+              column={table.getColumn('roa')}
+              title="ROA"
+              unit="%"
+              step={1}
+              presets={[
+                { label: '> 15%', min: 15 },
+                { label: '> 5%', min: 5 },
+              ]}
+            />
           )}
 
           {table.getColumn('roe') && (
-            <DataTableRangeFilter column={table.getColumn('roe')} title="ROE" unit="%" step={1} />
+            <DataTableRangeFilter
+              column={table.getColumn('roe')}
+              title="ROE"
+              unit="%"
+              step={1}
+              presets={[
+                { label: '> 20%', min: 20 },
+                { label: '> 15%', min: 15 },
+                { label: '> 10%', min: 10 },
+              ]}
+            />
           )}
 
           {table.getColumn('growth') && (
-            <DataTableRangeFilter column={table.getColumn('growth')} title="Croissance CA" unit="%" step={1} />
+            <DataTableRangeFilter
+              column={table.getColumn('growth')}
+              title="Croissance CA"
+              unit="%"
+              step={1}
+              presets={[
+                { label: '> 20%', min: 20 },
+                { label: '10% - 20%', min: 10, max: 20 },
+                { label: '< 10%', max: 10 },
+              ]}
+            />
           )}
 
           {table.getColumn('revGrowth') && (
-            <DataTableRangeFilter column={table.getColumn('revGrowth')} title="Croissance CA (5a)" unit="%" step={1} />
+            <DataTableRangeFilter
+              column={table.getColumn('revGrowth')}
+              title="Croissance CA (5a)"
+              unit="%"
+              step={1}
+              presets={[
+                { label: '> 20%', min: 20 },
+                { label: '10% - 20%', min: 10, max: 20 },
+                { label: '< 10%', max: 10 },
+              ]}
+            />
           )}
 
           {table.getColumn('linearity10y') && (
-            <DataTableRangeFilter column={table.getColumn('linearity10y')} title="Linéarité" unit="%" step={5} />
+            <DataTableRangeFilter
+              column={table.getColumn('linearity10y')}
+              title="Linéarité"
+              unit="%"
+              step={5}
+              presets={[
+                { label: '> 90%', min: 90 },
+                { label: '> 70%', min: 70 },
+              ]}
+            />
           )}
 
           {table.getColumn('ret_lin') && (
-            <DataTableRangeFilter column={table.getColumn('ret_lin')} title="Score (Ret×Lin)" unit="%" step={5} />
+            <DataTableRangeFilter
+              column={table.getColumn('ret_lin')}
+              title="Score (Ret×Lin)"
+              unit="%"
+              step={5}
+            />
           )}
 
           {table.getColumn('variation') && (
-            <DataTableRangeFilter column={table.getColumn('variation')} title="Var. (%)" unit="%" step={0.5} />
+            <DataTableRangeFilter
+              column={table.getColumn('variation')}
+              title="Var. (%)"
+              unit="%"
+              step={0.5}
+              presets={[
+                { label: 'Positive (> 0%)', min: 0 },
+                { label: 'Négative (< 0%)', max: 0 },
+              ]}
+            />
+          )}
+
+          {table.getColumn('cagr5y') && (
+            <DataTableRangeFilter
+              column={table.getColumn('cagr5y')}
+              title="TCAC 5a"
+              unit="%"
+              step={1}
+              presets={[
+                { label: '> 15%', min: 15 },
+                { label: '> 10%', min: 10 },
+              ]}
+            />
           )}
 
           {table.getColumn('regularMarketPrice') && (
