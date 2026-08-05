@@ -1,0 +1,5 @@
+# Antigravity (AGY) Rules for boursehorus-front
+
+- Ne JAMAIS relancer ni exécuter de serveurs en arrière-plan ou dans le terminal (Node, npm, Next.js, Spring Boot, dev.sh, etc.). La gestion et le lancement des serveurs et builds sont exclusivement gérés par l'utilisateur.
+- Ne JAMAIS exécuter de commandes de build (`npm run build`, `pnpm build`, etc.) sans demande explicite de l'utilisateur.
+- Ne JAMAIS exécuter de `git push` automatiquement. Conserver tous les commits uniquement en local sauf demande explicite de l'utilisateur.

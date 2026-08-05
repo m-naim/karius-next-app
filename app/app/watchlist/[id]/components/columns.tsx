@@ -10,7 +10,7 @@ import { security } from '../data/security'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { round10 } from '@/lib/decimalAjustement'
 import { percentVariation, cagrFromVariation } from '@/lib/math'
-import { genericNumericFilterFn } from '@/app/app/market/[symbol]/columns'
+import { genericNumericFilterFn } from '@/lib/table-filters'
 
 type FiltrProps = {
   column: Column<security, string>
