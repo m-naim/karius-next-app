@@ -2,7 +2,7 @@
   "name": "boursehorus",
   "version": "2.1.0",
   "private": true,
-  "packageManager": "pnpm@9.15.0",
+  "packageManager": "pnpm@11.3.0",
   "scripts": {
     "start": "next dev --webpack",
     "dev": "cross-env next dev --webpack",
