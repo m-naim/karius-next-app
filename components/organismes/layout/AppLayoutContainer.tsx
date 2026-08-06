@@ -11,9 +11,9 @@ export default function AppLayoutContainer({ children }: { children: React.React
 
   if (isAppRoute) {
     return (
-      <div className="flex h-screen flex-col overflow-hidden bg-background">
+      <div className="flex min-h-screen md:h-screen w-full flex-col overflow-y-auto md:overflow-hidden bg-background">
         <Header />
-        <main className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        <main className="flex-1 min-h-0 flex flex-col overflow-y-auto md:overflow-hidden">
           {children}
         </main>
       </div>

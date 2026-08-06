@@ -33,7 +33,7 @@ export function TableView({
   setShowMetrics?: any
 }) {
   return (
-    <div className="flex h-full w-full flex-col min-h-0 overflow-hidden">
+    <div className="flex h-full w-full flex-col min-h-0 overflow-visible md:overflow-hidden">
       <div className="shrink-0">
         <TableContextHeader
           table={table}
@@ -47,7 +47,7 @@ export function TableView({
           setShowMetrics={setShowMetrics}
         />
       </div>
-      <div className="flex-1 min-h-0 overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-visible md:overflow-hidden">
         <SimpleDataTable
           table={table}
           colSpan={columns.length}
