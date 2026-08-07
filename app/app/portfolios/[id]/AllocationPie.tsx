@@ -1,7 +1,6 @@
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useState, useMemo } from 'react'
-import { stringToColor } from '@/lib/colors'
 
 interface AllocationPieProps {
   data: Array<{
@@ -77,26 +76,28 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
   }
 
   return (
-    <div className="flex w-full flex-col gap-4 rounded-xl border border-border bg-card p-4 shadow-sm">
+    <div className="flex w-full flex-col gap-4">
+      {/* FILTER TABS HEADER */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-foreground">Allocation</h3>
+        <span className="text-xs font-medium text-muted-foreground">Catégorisation</span>
         <Tabs value={view} onValueChange={(v) => setView(v as ViewType)}>
-          <TabsList className="h-7 bg-muted/50 p-0.5">
-            <TabsTrigger value="assets" className="h-6 px-2 text-xs">
+          <TabsList className="h-7 bg-muted/60 p-0.5">
+            <TabsTrigger value="assets" className="h-6 px-2 text-[11px]">
               Actifs
             </TabsTrigger>
-            <TabsTrigger value="sectors" className="h-6 px-2 text-xs">
+            <TabsTrigger value="sectors" className="h-6 px-2 text-[11px]">
               Secteurs
             </TabsTrigger>
-            <TabsTrigger value="industries" className="h-6 px-2 text-xs">
+            <TabsTrigger value="industries" className="h-6 px-2 text-[11px]">
               Métiers
             </TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
 
+      {/* DONUT CHART */}
       <div className="relative flex items-center justify-center">
-        <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={190}>
           <PieChart>
             <Pie
               data={pieData}
@@ -129,18 +130,18 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
               <div className="max-w-[120px] truncate text-xs font-semibold uppercase text-muted-foreground">
                 {hoveredData.name}
               </div>
-              <div className="text-xl font-black">{hoveredData.weight.toFixed(1)}%</div>
+              <div className="text-lg font-black">{hoveredData.weight.toFixed(1)}%</div>
               <div className="text-xs font-medium text-muted-foreground">
                 {hoveredData.value.toLocaleString()} €
               </div>
             </div>
           ) : (
             <div className="duration-200 animate-in fade-in zoom-in-95">
-              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Total
               </div>
-              <div className="text-xl font-black">{totalValue.toLocaleString()} €</div>
-              <div className="text-xs font-medium text-muted-foreground">
+              <div className="text-lg font-black">{totalValue.toLocaleString()} €</div>
+              <div className="text-[11px] font-medium text-muted-foreground">
                 {pieData.length} catégories
               </div>
             </div>
@@ -148,8 +149,9 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
         </div>
       </div>
 
-      <div className="mt-2 space-y-3">
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+      {/* TOP POSITIONS LIST */}
+      <div className="space-y-2.5 pt-1">
+        <h4 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           Principales positions
         </h4>
         <div className="space-y-2">

@@ -22,8 +22,7 @@ import { columns as transactionColumns } from './columns'
 import { MovementsColumns } from './movementsColumns'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
-import { Search, History, ArrowLeftRight, Wallet, CalendarDays } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { Search, History, Wallet, CalendarDays } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -94,6 +93,7 @@ function PageTransactions() {
     if (selectedYear === 'all') return movements || []
     return (movements || []).filter((m: any) => new Date(m.date).getFullYear().toString() === selectedYear)
   }, [movements, selectedYear])
+
   const transactionsTable = useReactTable({
     data: filteredTransactions,
     columns: transactionColumns(id, own, modifyTransactionHandler, deleteTransactionHandler),
@@ -168,111 +168,84 @@ function PageTransactions() {
   return loading ? (
     <Loader />
   ) : (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">Activité</h1>
-          <p className="text-sm text-muted-foreground">
-            Historique complet de vos transactions et flux de trésorerie.
-          </p>
+    <div className="flex flex-col gap-4">
+      {/* TOP SUMMARY STRIP (Distilled from 5 cards into 1 sleek horizontal bar) */}
+      <div className="flex w-full items-center justify-between gap-3 sm:gap-6 py-2 px-3.5 sm:px-4 rounded-xl border border-border/60 bg-card/40 backdrop-blur-sm shadow-2xs overflow-x-auto no-scrollbar text-xs">
+        <div className="flex items-center gap-1.5 whitespace-nowrap">
+          <span className="text-[11px] font-medium text-muted-foreground">Investi:</span>
+          <span className="font-bold text-foreground tabular-nums">{stats.totalInvested.toLocaleString()} €</span>
         </div>
+        <div className="h-3.5 w-px bg-border/60 shrink-0" />
+        <div className="flex items-center gap-1.5 whitespace-nowrap">
+          <span className="text-[11px] font-medium text-muted-foreground">Vendu:</span>
+          <span className="font-bold text-foreground tabular-nums">{stats.totalSold.toLocaleString()} €</span>
+        </div>
+        <div className="h-3.5 w-px bg-border/60 shrink-0" />
+        <div className="flex items-center gap-1.5 whitespace-nowrap">
+          <span className="text-[11px] font-medium text-muted-foreground">Flux Cash:</span>
+          <span className="font-bold text-foreground tabular-nums">{stats.netMovements.toLocaleString()} €</span>
+        </div>
+        <div className="h-3.5 w-px bg-border/60 shrink-0 hidden sm:block" />
+        <div className="items-center gap-1.5 whitespace-nowrap hidden sm:flex">
+          <span className="text-[11px] font-medium text-muted-foreground">Début:</span>
+          <span className="font-bold text-foreground">{stats.firstTxDate}</span>
+        </div>
+        <div className="h-3.5 w-px bg-border/60 shrink-0 hidden md:block" />
+        <div className="items-center gap-1.5 whitespace-nowrap hidden md:flex">
+          <span className="text-[11px] font-medium text-muted-foreground">Moyenne:</span>
+          <span className="font-bold text-foreground">{stats.avgMovementsPerYear} trans./an</span>
+        </div>
+      </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-            <CalendarDays className="h-4 w-4" />
-            Année :
+      {/* UNIFIED TABS & FILTERS HEADER */}
+      <Tabs defaultValue="transactions" className="w-full space-y-3" onValueChange={setActiveTab}>
+        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <TabsList className="h-8 bg-muted/60 p-0.5">
+              <TabsTrigger value="transactions" className="gap-1.5 px-3 text-xs h-7">
+                <History className="h-3.5 w-3.5" />
+                Transactions ({filteredTransactions.length})
+              </TabsTrigger>
+              <TabsTrigger value="movements" className="gap-1.5 px-3 text-xs h-7">
+                <Wallet className="h-3.5 w-3.5" />
+                Flux Cash ({filteredMovements.length})
+              </TabsTrigger>
+            </TabsList>
           </div>
-          <Select value={selectedYear} onValueChange={setSelectedYear}>
-            <SelectTrigger className="w-[140px] bg-background">
-              <SelectValue placeholder="Toutes les années" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Toutes les années</SelectItem>
-              {availableYears.map((year) => (
-                <SelectItem key={year} value={year}>
-                  {year}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-        <Card className="bg-muted/30">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              <ArrowLeftRight className="h-3 w-3" />
-              Investi ({selectedYear === 'all' ? 'Total' : selectedYear})
-            </div>
-            <div className="mt-1 text-xl font-bold">{stats.totalInvested.toLocaleString()} €</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-muted/30">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              <ArrowLeftRight className="h-3 w-3 rotate-180" />
-              Vendu ({selectedYear === 'all' ? 'Total' : selectedYear})
-            </div>
-            <div className="mt-1 text-xl font-bold">{stats.totalSold.toLocaleString()} €</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-muted/30">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              <Wallet className="h-3 w-3" />
-              Flux Net Cash ({selectedYear === 'all' ? 'Total' : selectedYear})
-            </div>
-            <div className="mt-1 text-xl font-bold">{stats.netMovements.toLocaleString()} €</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-muted/30">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              <CalendarDays className="h-3 w-3" />
-              Début d'activité
-            </div>
-            <div className="mt-1 text-xl font-bold">{stats.firstTxDate}</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-muted/30">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              <History className="h-3 w-3" />
-              Moy. Mouvements / an
-            </div>
-            <div className="mt-1 text-xl font-bold">{stats.avgMovementsPerYear} trans.</div>
-          </CardContent>
-        </Card>
-      </div>
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            {activeTab === 'transactions' && (
+              <div className="relative flex-1 min-w-[140px] sm:w-[200px]">
+                <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Rechercher..."
+                  value={globalFilter ?? ''}
+                  onChange={(e) => setGlobalFilter(e.target.value)}
+                  className="h-8 bg-background pl-8 text-xs border-border/70"
+                />
+              </div>
+            )}
 
-      <Tabs defaultValue="transactions" className="w-full" onValueChange={setActiveTab}>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <TabsList className="bg-muted/50 p-1">
-            <TabsTrigger value="transactions" className="gap-2 px-4">
-              <History className="h-4 w-4" />
-              Transactions
-            </TabsTrigger>
-            <TabsTrigger value="movements" className="gap-2 px-4">
-              <Wallet className="h-4 w-4" />
-              Flux Cash
-            </TabsTrigger>
-          </TabsList>
-
-          {activeTab === 'transactions' && (
-            <div className="relative max-w-sm flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Filtrer par symbole..."
-                value={globalFilter ?? ''}
-                onChange={(e) => setGlobalFilter(e.target.value)}
-                className="h-9 bg-background pl-9"
-              />
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
+              <CalendarDays className="h-3.5 w-3.5" />
+              <Select value={selectedYear} onValueChange={setSelectedYear}>
+                <SelectTrigger className="h-8 w-[130px] bg-background text-xs border-border/70">
+                  <SelectValue placeholder="Toutes années" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toutes années</SelectItem>
+                  {availableYears.map((year) => (
+                    <SelectItem key={year} value={year}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          )}
+          </div>
         </div>
 
-        <TabsContent value="transactions" className="mt-4 border-none p-0">
+        <TabsContent value="transactions" className="mt-2 border-none p-0">
           <Card className="overflow-hidden border-border bg-card shadow-sm">
             <CardContent className="p-0">
               <SimpleDataTable table={transactionsTable} colSpan={transactionColumns.length} />
@@ -280,7 +253,7 @@ function PageTransactions() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="movements" className="mt-4 border-none p-0">
+        <TabsContent value="movements" className="mt-2 border-none p-0">
           <Card className="overflow-hidden border-border bg-card shadow-sm">
             <CardContent className="p-0">
               <SimpleDataTable table={movementsTable} colSpan={MovementsColumns.length} />

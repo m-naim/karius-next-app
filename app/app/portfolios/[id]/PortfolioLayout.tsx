@@ -71,30 +71,30 @@ const PortfolioLayout = ({
 
   return (
     <div className="flex w-full max-w-full min-w-0 min-h-screen flex-1 flex-col overflow-y-auto overflow-x-hidden bg-background">
-      <div className="border-b border-border/50 bg-background/95 pb-0 pt-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40 w-full max-w-full min-w-0">
+      <div className="border-b border-border/50 bg-background/95 pb-0 pt-2 sm:pt-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40 w-full max-w-full min-w-0">
         <SectionContainer>
           <div className="flex w-full max-w-full min-w-0 flex-col">
-            <div className="flex w-full items-center justify-between mb-4">
-              <div className="flex items-center gap-3 min-w-0">
+            <div className="flex w-full items-center justify-between mb-2 sm:mb-3">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <Link href={`/app/portfolios`} className="h-fit shrink-0">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-accent/50">
+                  <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 rounded-full hover:bg-accent/50">
                     <ArrowLeft size={16} />
                   </Button>
                 </Link>
-                <h1 className="text-xl sm:text-2xl font-black capitalize tracking-tight text-foreground truncate">{name}</h1>
+                <h1 className="text-lg sm:text-2xl font-black capitalize tracking-tight text-foreground truncate">{name}</h1>
               </div>
 
-              <div className="flex items-center gap-4 shrink-0">
+              <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                 {isOwn ? (
                   <Link href={`/app/portfolios/${id}/settings`}>
-                    <Button size="icon" variant="ghost" className="h-8 w-8 rounded-full hover:bg-accent/50" aria-label="Paramètres">
+                    <Button size="icon" variant="ghost" className="h-7 w-7 sm:h-8 sm:w-8 rounded-full hover:bg-accent/50" aria-label="Paramètres">
                       <Settings size={16} />
                     </Button>
                   </Link>
                 ) : (
-                  <Button onClick={handleFollowClick} size="sm" variant="outline" className="h-8 gap-2 rounded-full border-border/50 bg-background hover:bg-accent/50">
+                  <Button onClick={handleFollowClick} size="sm" variant="outline" className="h-7 sm:h-8 gap-1.5 sm:gap-2 rounded-full border-border/50 bg-background text-xs hover:bg-accent/50">
                     <StarIcon
-                      className="h-4 w-4"
+                      className="h-3.5 w-3.5 sm:h-4 sm:w-4"
                       fill={followed ? '#eac54f' : 'transparent'}
                       strokeWidth={followed ? 0 : 2}
                       color={followed ? '#eac54f' : 'currentColor'}
@@ -113,11 +113,11 @@ const PortfolioLayout = ({
                 return (
                   <Link key={item.name} href={item.url} className="shrink-0">
                     <div
-                      className={`relative flex items-center gap-2 px-3 sm:px-4 py-3 text-xs sm:text-sm font-medium transition-colors hover:text-foreground whitespace-nowrap ${
+                      className={`relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium transition-colors hover:text-foreground whitespace-nowrap ${
                         isActive ? 'text-foreground font-bold' : 'text-muted-foreground'
                       }`}
                     >
-                      <item.icon size={16} className="hidden sm:block" />
+                      <item.icon size={15} className="hidden sm:block" />
                       {item.name}
                       {isActive && (
                         <div className="absolute bottom-0 left-0 h-0.5 w-full bg-primary" />
@@ -132,7 +132,7 @@ const PortfolioLayout = ({
       </div>
 
       <SectionContainer>
-        <div className="mb-20 mt-6 flex w-full max-w-full min-w-0 flex-col">
+        <div className="mb-6 sm:mb-12 mt-2 sm:mt-4 flex w-full max-w-full min-w-0 flex-col">
           <div className="w-full max-w-full min-w-0 flex-grow rounded-md">{children}</div>
         </div>
       </SectionContainer>

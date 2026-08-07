@@ -1,13 +1,11 @@
-import { Card, CardContent } from '@/components/ui/card'
 import { round10 } from '@/lib/decimalAjustement'
 import VariationContainer from '../../../../components/molecules/portfolio/variationContainer'
-import { Separator } from '@/components/ui/separator'
-import { TrendingUp, Clock, Activity, Lock } from 'lucide-react'
+import { Clock, Globe } from 'lucide-react'
 
 const StatsCard = ({ pftData, own = true }) => {
   const currencySymbol = new Intl.NumberFormat('fr-FR', { 
     style: 'currency', 
-    currency: pftData.baseCurrency || 'EUR' 
+    currency: pftData?.baseCurrency || 'EUR' 
   }).formatToParts(0).find(p => p.type === 'currency')?.value || '€'
 
   const formatCompactValue = (val: number) => {
@@ -23,102 +21,95 @@ const StatsCard = ({ pftData, own = true }) => {
     return `${round10(val, -2).toLocaleString()} ${currencySymbol}`
   }
 
-  const fullFormattedValue = `${round10(pftData.totalValue || 0, -2).toLocaleString()} ${currencySymbol}`
+  const fullFormattedValue = `${round10(pftData?.totalValue || 0, -2).toLocaleString()} ${currencySymbol}`
 
   return (
-    <Card className="border-none bg-transparent shadow-none">
-      <CardContent className="p-0">
-        <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-          {/* Main Value */}
-          <div className="space-y-1 w-full md:w-auto">
-            <span className="text-xs font-semibold text-muted-foreground">Valeur du portefeuille</span>
-            <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4">
-              {own ? (
-                <>
-                  <h1 className="text-3xl sm:text-4xl md:text-6xl font-black tracking-tighter text-foreground tabular-nums break-all" title={fullFormattedValue}>
-                    {formatCompactValue(pftData.totalValue)}
-                  </h1>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <VariationContainer
-                      value={pftData.dayChangeValue}
-                      entity={currencySymbol}
-                      className="text-base sm:text-lg font-bold p-0"
-                      background={false}
-                    />
-                    <VariationContainer 
-                      value={pftData.dayChangePercent} 
-                      entity="%" 
-                      className="text-xs sm:text-sm px-2 py-0.5 rounded-full" 
-                    />
-                  </div>
-                </>
-              ) : (
-                <div className="flex items-center gap-3 flex-wrap">
-                  <div className="flex items-center gap-2 rounded-xl bg-muted/40 px-3.5 py-1.5 border border-border/50 text-muted-foreground">
-                    <Lock className="h-4 w-4 text-primary" />
-                    <span className="text-lg sm:text-xl font-bold tracking-tight text-foreground">Portefeuille Public</span>
-                  </div>
-                  {pftData.dayChangePercent != null && (
-                    <VariationContainer 
-                      value={pftData.dayChangePercent} 
-                      entity="%" 
-                      className="text-xs sm:text-sm px-2 py-0.5 rounded-full" 
-                    />
-                  )}
-                </div>
-              )}
-            </div>
-            <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-              <Clock className="h-3.5 w-3.5" />
-              <span>Dernière mise à jour : {pftData.last_perfs_update || 'N/A'}</span>
+    <div className="flex w-full items-center justify-between gap-3 sm:gap-6 flex-wrap py-2 px-3.5 sm:px-4 rounded-xl border border-border/60 bg-card/40 backdrop-blur-sm shadow-2xs">
+      {/* LEFT: Main Balance + Day Variation */}
+      <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+        {own ? (
+          <div className="flex items-baseline gap-2">
+            <h1 
+              className="text-xl sm:text-2xl font-black tracking-tight text-foreground tabular-nums" 
+              title={fullFormattedValue}
+            >
+              {formatCompactValue(pftData?.totalValue)}
+            </h1>
+            <div className="flex items-center gap-1.5">
+              <VariationContainer
+                value={pftData?.dayChangeValue}
+                entity={currencySymbol}
+                className="text-xs font-bold p-0"
+                background={false}
+              />
+              <VariationContainer 
+                value={pftData?.dayChangePercent} 
+                entity="%" 
+                className="text-[11px] font-bold px-1.5 py-0.2 rounded-full" 
+              />
             </div>
           </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Globe className="h-4 w-4 text-primary shrink-0" />
+            <span className="text-sm sm:text-base font-bold text-foreground">Portefeuille Public</span>
+            {pftData?.dayChangePercent != null && (
+              <VariationContainer 
+                value={pftData?.dayChangePercent} 
+                entity="%" 
+                className="text-[11px] font-bold px-1.5 py-0.2 rounded-full" 
+              />
+            )}
+          </div>
+        )}
+      </div>
 
-          {/* Global Performance Metrics */}
-          <div className="flex w-full flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm md:w-auto md:min-w-[320px]">
-            <div className="flex items-center gap-2 border-b border-border/50 pb-3">
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-bold text-foreground">Performance Globale</span>
-            </div>
-
-            <div className="grid gap-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">Gains Totaux</span>
-                <div className="flex items-center gap-2 tabular-nums">
-                  {own && (
-                    <>
-                      <VariationContainer
-                        value={pftData.cumulativeReturn}
-                        entity={currencySymbol}
-                        background={false}
-                        className="p-0 text-sm font-bold"
-                      />
-                      <span className="text-muted-foreground/30">|</span>
-                    </>
-                  )}
-                  <VariationContainer
-                    value={pftData.cumulativePerformance}
-                    entity="%"
-                    className="px-1.5 py-0.5 text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">Rendement Annuel</span>
-                <VariationContainer
-                  vaiationColor={false}
-                  value={pftData.annualizedReturn}
-                  entity=" %/an"
-                  background={false}
-                  className="p-0 text-sm font-bold tabular-nums text-foreground"
-                />
-              </div>
-            </div>
+      {/* RIGHT: Gains, Annual Return & Timestamp in one continuous horizontal line */}
+      <div className="flex items-center gap-3 sm:gap-5 text-xs text-muted-foreground flex-wrap">
+        {/* Gains Totaux */}
+        <div className="flex items-center gap-1.5 font-medium">
+          <span className="text-[11px]">Gains:</span>
+          <div className="flex items-center gap-1 tabular-nums font-bold">
+            {own && pftData?.cumulativeReturn != null && (
+              <VariationContainer
+                value={pftData?.cumulativeReturn}
+                entity={currencySymbol}
+                background={false}
+                className="p-0 text-xs font-bold"
+              />
+            )}
+            <VariationContainer
+              value={pftData?.cumulativePerformance}
+              entity="%"
+              className="px-1.5 py-0.2 text-[11px] rounded-md font-bold"
+            />
           </div>
         </div>
-      </CardContent>
-    </Card>
+
+        <div className="h-3.5 w-px bg-border/60 shrink-0 hidden sm:block" />
+
+        {/* Rendement Annuel */}
+        <div className="flex items-center gap-1.5 font-medium">
+          <span className="text-[11px]">Annuel:</span>
+          <VariationContainer
+            value={pftData?.annualizedReturn}
+            entity=" %/an"
+            background={false}
+            className="p-0 text-xs font-bold tabular-nums"
+          />
+        </div>
+
+        {pftData?.last_perfs_update && (
+          <>
+            <div className="h-3.5 w-px bg-border/60 shrink-0 hidden md:block" />
+            <div className="items-center gap-1 text-[11px] text-muted-foreground/70 hidden md:flex">
+              <Clock className="h-3 w-3" />
+              <span>{pftData.last_perfs_update}</span>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   )
 }
 

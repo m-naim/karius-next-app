@@ -97,20 +97,20 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
         const symbol = row.getValue('symbol') as string
 
         return (
-          <div className="flex max-w-20 items-center gap-3 overflow-hidden md:max-w-40">
+          <div className="flex max-w-[110px] sm:max-w-[160px] md:max-w-[220px] min-w-0 items-center gap-1.5 overflow-hidden">
             <img
-              className="h-6 w-6"
+              className="h-5 w-5 shrink-0 rounded-full bg-white/10 p-0.5 ring-1 ring-white/20"
               src={`https://financialmodelingprep.com/image-stock/${row.original.symbol.toLocaleUpperCase()}.png`}
               alt={row.original.symbol}
             />
-            <div className="flex flex-col">
-              <span className="font-medium flex items-center gap-1">
-                {symbol} {own && row.original.qty ? `x ${row.original.qty}` : ''}
+            <div className="flex flex-col min-w-0 overflow-hidden">
+              <span className="truncate text-xs font-semibold flex items-center gap-1">
+                <span className="truncate">{symbol} {own && row.original.qty ? `x ${row.original.qty}` : ''}</span>
                 {row.original.qualityMetrics?.hasFundamentals && (
-                  <span title="Données fondamentales disponibles"><FileText className="h-3 w-3 text-blue-500" /></span>
+                  <span title="Données fondamentales disponibles" className="shrink-0"><FileText className="h-3 w-3 text-blue-500" /></span>
                 )}
               </span>
-              <span className="max-w-20 overflow-ellipsis text-xs text-muted-foreground">
+              <span className="truncate text-[10px] text-muted-foreground">
                 {row.original.shortname || ''}
               </span>
             </div>

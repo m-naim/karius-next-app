@@ -225,24 +225,76 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
   ) : (
     <div className="flex w-full min-h-screen flex-1 flex-col overflow-y-auto bg-background">
       {/* LEFT PANE: Stats, Table & Allocation */}
-      <div className="flex flex-1 min-w-0 flex-col gap-8 p-4 md:p-8 pb-12">
+      <div className="flex flex-1 min-w-0 flex-col gap-3 sm:gap-6 p-2 sm:p-4 pb-4 sm:pb-8">
         {/* HERO SECTION: Stats at the top */}
         <div className="w-full">
           <StatsCard pftData={portfolio} own={own} />
         </div>
 
-        <div className="flex w-full flex-col lg:flex-row gap-6">
+        <div className="flex w-full flex-col lg:flex-row gap-3 sm:gap-6">
           {/* LEFT COLUMN: Table */}
           <div className="w-full flex-grow lg:w-8/12">
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="space-y-1">
-                <h2 className="text-xl font-bold tracking-tight text-balance">Investissements</h2>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs sm:text-sm text-muted-foreground">{data.length} actifs</span>
+            <Card className="overflow-hidden border-border bg-card shadow-sm">
+              <CardHeader className="border-b border-border bg-muted/30 p-3 sm:p-4 space-y-3">
+                {/* ROW 1: Title, Cash & Primary Actions */}
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base sm:text-lg font-bold tracking-tight text-foreground">Investissements</h2>
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">{data.length}</span>
+                    <div className="hidden sm:flex items-center gap-1.5 text-xs ml-2">
+                      <span className="text-muted-foreground">Cash:</span>
+                      <span className="font-semibold text-foreground tabular-nums">
+                        {round10(portfolio.cashValue, -2).toLocaleString()} {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: portfolio.baseCurrency || 'EUR' }).formatToParts(0).find(p => p.type === 'currency')?.value || '€'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {own && (
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <AccountsMouvements
+                        submitHandler={addMouvement}
+                        Trigger={(props) => (
+                          <Button {...props} variant="outline" size="sm" className="h-8 px-2 sm:px-3 gap-1.5 text-xs">
+                            <WalletMinimal className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">Espèces</span>
+                          </Button>
+                        )}
+                      />
+                      <TransactionDialogue
+                        totalPortfolioValue={portfolio.totalValue}
+                        submitHandler={addTransaction}
+                        Trigger={(props) => (
+                          <Button {...props} size="sm" className="h-8 px-3 sm:px-4 gap-1.5 text-xs font-bold shadow-sm">
+                            <PlusIcon className="h-3.5 w-3.5" />
+                            <span>Transaction</span>
+                          </Button>
+                        )}
+                      />
+                      <Link href={`${id}/import`}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 border border-border">
+                          <FileScan className="h-3.5 w-3.5" />
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+
+                {/* ROW 2: Search Input, Period Selector & Display Options */}
+                <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                  <div className="relative flex-1 min-w-[140px]">
+                    <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
+                    <Input
+                      placeholder="Rechercher..."
+                      value={globalFilter ?? ''}
+                      onChange={(e) => setGlobalFilter(e.target.value)}
+                      className="h-8 bg-background pl-8 text-xs border-border/70"
+                    />
+                  </div>
+
                   <div 
                     role="group" 
                     aria-label="Période de performance" 
-                    className="flex items-center gap-0.5 rounded-full bg-muted/50 p-1 overflow-x-auto max-w-full no-scrollbar"
+                    className="flex items-center gap-0.5 rounded-full bg-background/80 border border-border/60 p-0.5 overflow-x-auto max-w-full no-scrollbar shrink-0"
                   >
                     {['1d', '1w', '1m', '3m', '6m', '1y', '5y'].map((p) => (
                       <button
@@ -252,7 +304,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
                         className={cn(
                           'rounded-full px-2 py-0.5 text-[10px] font-bold uppercase transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0',
                           selectedPeriod === p
-                            ? 'bg-background text-foreground shadow-sm'
+                            ? 'bg-primary text-primary-foreground shadow-xs'
                             : 'text-muted-foreground hover:text-foreground'
                         )}
                       >
@@ -264,12 +316,12 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
                   {/* Distilled View Options Dropdown */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="h-7 gap-1.5 rounded-full border-border/50 text-xs px-2.5">
-                        <SlidersHorizontal className="h-3.5 w-3.5" />
-                        <span>Affichage</span>
+                      <Button variant="outline" size="sm" className="h-8 gap-1 rounded-full border-border/60 bg-background text-[11px] px-2.5 shrink-0">
+                        <SlidersHorizontal className="h-3 w-3" />
+                        <span className="hidden sm:inline">Affichage</span>
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-56">
+                    <DropdownMenuContent align="end" className="w-56">
                       <DropdownMenuLabel className="text-xs">Options d'affichage</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
@@ -288,59 +340,6 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                </div>
-              </div>
-
-              {own && (
-                <div className="flex items-center gap-2">
-                  <AccountsMouvements
-                    submitHandler={addMouvement}
-                    Trigger={(props) => (
-                      <Button {...props} variant="outline" size="sm" className="h-9 gap-2">
-                        <WalletMinimal className="h-4 w-4" />
-                        <span className="hidden sm:inline">Espèces</span>
-                      </Button>
-                    )}
-                  />
-                  <TransactionDialogue
-                    totalPortfolioValue={portfolio.totalValue}
-                    submitHandler={addTransaction}
-                    Trigger={(props) => (
-                      <Button {...props} size="sm" className="h-9 gap-2 shadow-sm">
-                        <PlusIcon className="h-4 w-4" />
-                        <span>Transaction</span>
-                      </Button>
-                    )}
-                  />
-                  <Link href={`${id}/import`}>
-                    <Button variant="ghost" size="icon" className="h-9 w-9 border border-border">
-                      <FileScan className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              )}
-            </div>
-
-            <Card className="overflow-hidden border-border bg-card shadow-sm">
-              <CardHeader className="border-b border-border bg-muted/30 px-4 py-3">
-                <div className="flex items-center gap-4">
-                  <div className="relative max-w-sm flex-1">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Rechercher par nom ou symbole..."
-                      value={globalFilter ?? ''}
-                      onChange={(e) => setGlobalFilter(e.target.value)}
-                      className="h-9 bg-background pl-9 border-border"
-                    />
-                  </div>
-                  <div className="hidden flex-1 items-center justify-end gap-4 text-xs sm:flex">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-muted-foreground">Cash :</span>
-                      <span className="font-semibold text-foreground tabular-nums">
-                        {round10(portfolio.cashValue, -2).toLocaleString()} {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: portfolio.baseCurrency || 'EUR' }).formatToParts(0).find(p => p.type === 'currency')?.value || '€'}
-                      </span>
-                    </div>
-                  </div>
                 </div>
               </CardHeader>
               <CardContent className="p-0">

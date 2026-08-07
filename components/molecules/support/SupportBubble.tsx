@@ -56,9 +56,9 @@ export default function SupportBubble() {
     }
   }, [])
 
-  // SSE connection for replies
+  // SSE connection for replies (only when support chat bubble is open)
   useEffect(() => {
-    if (!userId) return
+    if (!userId || !isOpen) return
 
     setConnectionStatus('connecting')
     const eventSource = new EventSource(`${host}/api/v1/support/stream?userId=${userId}`)
@@ -67,9 +67,9 @@ export default function SupportBubble() {
       setConnectionStatus('connected')
     }
 
-    eventSource.onerror = (error) => {
-      console.error('Support SSE connection error:', error)
+    eventSource.onerror = () => {
       setConnectionStatus('error')
+      eventSource.close()
     }
 
     eventSource.addEventListener('reply', (event) => {
@@ -87,7 +87,7 @@ export default function SupportBubble() {
     })
 
     return () => eventSource.close()
-  }, [userId, host])
+  }, [userId, host, isOpen])
 
   useEffect(() => {
     if (scrollRef.current) {

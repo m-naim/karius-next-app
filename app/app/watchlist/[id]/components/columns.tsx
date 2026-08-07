@@ -56,25 +56,25 @@ export const columns = (
         if (t[1] == 'PA') ticker = 'xpar:' + ticker
 
         return (
-          <div className="flex items-center justify-between pr-2">
-            <div className="flex gap-2 items-center">
+          <div className="flex max-w-[110px] sm:max-w-[160px] md:max-w-[220px] min-w-0 items-center justify-between gap-1.5 pr-1">
+            <div className="flex min-w-0 items-center gap-1.5 overflow-hidden">
               <img
                 className="h-5 w-5 shrink-0 rounded-full bg-white/10 p-0.5 ring-1 ring-white/20"
                 src={`https://financialmodelingprep.com/image-stock/${row.original.symbol.toLocaleUpperCase()}.png`}
                 alt={row.original.symbol}
               />
-              <div className="flex flex-col">
-                <span className="max-w-[80px] truncate text-xs font-semibold md:max-w-[150px] flex items-center gap-1">
-                  {row.original.longname}
+              <div className="flex flex-col min-w-0 overflow-hidden">
+                <span className="truncate text-xs font-semibold flex items-center gap-1">
+                  <span className="truncate">{row.original.longname}</span>
                   {row.original.qualityMetrics?.hasFundamentals && (
-                    <span title="Données fondamentales disponibles"><FileText className="h-3 w-3 text-blue-500" /></span>
+                    <span title="Données fondamentales disponibles" className="shrink-0"><FileText className="h-3 w-3 text-blue-500" /></span>
                   )}
                 </span>
-                <span className="text-[10px] font-bold uppercase text-muted-foreground">{row.original.symbol}</span>
+                <span className="text-[10px] font-bold uppercase text-muted-foreground truncate">{row.original.symbol}</span>
               </div>
             </div>
             
-            <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover/row:opacity-100">
+            <div className="hidden sm:flex items-center gap-1 opacity-0 transition-opacity group-hover/row:opacity-100 shrink-0">
               <a 
                 target="_blank" 
                 href={`https://www.gurufocus.com/stock/${ticker}`}

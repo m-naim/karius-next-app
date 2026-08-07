@@ -15,7 +15,7 @@ import {
 } from '@tanstack/react-table'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, LineChart } from 'lucide-react'
+import { ArrowLeft, LineChart, SlidersHorizontal, ChevronDown, Check, X, Filter } from 'lucide-react'
 import Loader from '@/components/molecules/loader/loader'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
@@ -122,6 +122,7 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
   const [showMetrics, setShowMetrics] = React.useState(false)
+  const [isFilterOpen, setIsFilterOpen] = React.useState(false)
 
   React.useEffect(() => {
     if (showMetrics) {
@@ -254,6 +255,35 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
           </div>
 
           <div className="flex items-center gap-2">
+            {view === 'table' && (
+              <Button
+                variant={isFilterOpen ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                className={cn(
+                  'h-8 gap-1.5 rounded-full text-xs font-bold transition-all border border-border/70',
+                  isFilterOpen
+                    ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                    : activeScreener
+                    ? 'bg-primary/10 text-primary border-primary/40'
+                    : 'bg-background text-foreground hover:bg-muted'
+                )}
+              >
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                <span>Filtres</span>
+                {activeScreener && (
+                  <span className="rounded-full bg-primary-foreground/20 px-1.5 py-0.2 text-[10px] font-black">
+                    1
+                  </span>
+                )}
+                <ChevronDown
+                  className={cn(
+                    'h-3.5 w-3.5 transition-transform duration-200',
+                    isFilterOpen && 'rotate-180'
+                  )}
+                />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -280,45 +310,71 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
         </div>
       }
       filters={
-        view === 'table' && (
-          <div className="flex shrink-0 flex-col gap-2 rounded-xl border bg-card p-2 shadow-sm border-border/60 md:p-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mr-2">
-                Filtres de Marché:
-              </span>
-              {screeners.map((scr) => {
-                const isActive = activeScreener === scr.id
-                return (
+        view === 'table' && (isFilterOpen || activeScreener) && (
+          <div className="flex shrink-0 flex-col gap-2.5 rounded-xl border bg-card p-3 shadow-md border-border/70 duration-200 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-border/40 pb-2">
+              <div className="flex items-center gap-2">
+                <Filter className="h-3.5 w-3.5 text-primary" />
+                <span className="text-xs font-bold text-foreground">Filtres de Marché</span>
+                <span className={cn(
+                  "rounded-full px-2 py-0.5 text-[10px] font-bold",
+                  isFilterOpen ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-muted text-muted-foreground"
+                )}>
+                  {isFilterOpen ? "● Panneau Ouvert" : "Filtre Actif"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {activeScreener && (
                   <button
-                    key={scr.id}
-                    onClick={() => setActiveScreener(isActive ? null : scr.id)}
-                    title={scr.desc}
-                    aria-pressed={isActive}
-                    className={cn(
-                      "rounded-full px-3.5 py-1 text-xs font-bold transition-all border",
-                      isActive
-                        ? "bg-primary border-primary text-primary-foreground shadow-md ring-1 ring-primary/20"
-                        : "bg-muted/40 text-muted-foreground border-border/50 hover:bg-muted hover:text-foreground"
-                    )}
+                    onClick={() => setActiveScreener(null)}
+                    className="text-xs font-semibold text-destructive hover:underline flex items-center gap-1"
                   >
-                    {scr.label}
-                    {isActive && (
-                      <span className="ml-1.5 rounded-full bg-primary-foreground/20 px-1.5 py-0.5 text-[9px] font-black">
-                        {table.getFilteredRowModel().rows.length}
-                      </span>
-                    )}
+                    <X className="h-3 w-3" />
+                    <span>Réinitialiser</span>
                   </button>
-                )
-              })}
-              {activeScreener && (
-                <button
-                  onClick={() => setActiveScreener(null)}
-                  className="text-[10px] font-black uppercase tracking-widest text-destructive hover:underline ml-auto"
-                >
-                  Réinitialiser
-                </button>
-              )}
+                )}
+                {isFilterOpen && (
+                  <button
+                    onClick={() => setIsFilterOpen(false)}
+                    className="rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                    aria-label="Fermer les filtres"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
             </div>
+
+            {/* SCREENERS LIST (ACCORDION BODY) */}
+            {isFilterOpen && (
+              <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                {screeners.map((scr) => {
+                  const isActive = activeScreener === scr.id
+                  return (
+                    <button
+                      key={scr.id}
+                      onClick={() => setActiveScreener(isActive ? null : scr.id)}
+                      title={scr.desc}
+                      aria-pressed={isActive}
+                      className={cn(
+                        "flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition-all border",
+                        isActive
+                          ? "bg-primary border-primary text-primary-foreground shadow-xs ring-2 ring-primary/20"
+                          : "bg-muted/40 text-muted-foreground border-border/60 hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      {isActive && <Check className="h-3 w-3" />}
+                      <span>{scr.label}</span>
+                      {isActive && (
+                        <span className="ml-1 rounded-full bg-primary-foreground/20 px-1.5 py-0.2 text-[10px] font-black">
+                          {table.getFilteredRowModel().rows.length}
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
           </div>
         )
       }
