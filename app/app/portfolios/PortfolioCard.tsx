@@ -13,6 +13,8 @@ export interface PortfolioSummery {
   cumulativePerformance: number
   allocation: string[]
   annualizedReturn: number
+  totalValue?: number
+  variation?: number
 }
 
 export function PortfolioCard(p: PortfolioSummery) {

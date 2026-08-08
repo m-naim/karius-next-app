@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import alertService from '@/services/alertService'
 import authService from '@/services/authService'
+import { PushNotificationToggle } from '@/components/PushNotificationToggle'
 import { getAll as getPortfolios } from '@/services/portfolioService'
 import { getAll as getWatchlists } from '@/services/watchListService'
 import { Button } from '@/components/ui/button'
@@ -296,6 +297,10 @@ export default function AlertsPage() {
             <span className="text-2xl font-black text-orange-500 drop-shadow-sm">{triggeredAlerts.length}</span>
           </div>
         </div>
+      </div>
+
+      <div className="mb-6">
+        <PushNotificationToggle />
       </div>
 
       <Tabs defaultValue="price-alerts" className="w-full">

@@ -144,7 +144,7 @@ export default function SuperInvestorDetailPage() {
   }))
 
   return (
-    <div className="flex h-auto md:h-full w-full min-h-0 flex-1 overflow-y-auto md:overflow-hidden bg-background">
+    <div className="flex h-auto min-h-screen w-full flex-1 overflow-y-auto bg-background">
       <div className="flex flex-1 min-w-0 flex-col gap-3 sm:gap-6 p-2 sm:p-4 pb-4 sm:pb-8 overflow-y-auto">
         
         {/* BACK NAVIGATION & ACTIONS */}

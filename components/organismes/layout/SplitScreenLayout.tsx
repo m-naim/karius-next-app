@@ -19,8 +19,7 @@ interface SplitScreenLayoutProps {
 /**
  * Shared Split Screen Layout component.
  * Used across Watchlist, Market, and other views to provide a unified,
- * scrollable main pane (with sticky headers and internal table scroll)
- * side-by-side with a split drawer panel.
+ * scrollable main pane side-by-side with a split drawer panel.
  */
 export function SplitScreenLayout({
   header,
@@ -34,14 +33,14 @@ export function SplitScreenLayout({
   drawerWidth,
 }: SplitScreenLayoutProps) {
   return (
-    <div className={cn('flex h-auto md:h-full w-full min-h-0 flex-1 overflow-y-auto md:overflow-hidden', className)}>
+    <div className={cn('flex flex-col md:flex-row h-auto min-h-screen w-full flex-1 overflow-y-auto', className)}>
       {/* LEFT PANE: Header, Filters & Table/Main view */}
-      <div className="flex flex-1 min-w-0 flex-col h-auto md:h-full min-h-0 gap-2 p-2 md:gap-3 md:p-3 overflow-y-auto md:overflow-hidden">
+      <div className="flex flex-1 min-w-0 flex-col h-auto min-h-0 gap-2 p-2 md:gap-3 md:p-3 overflow-y-auto">
         {header && <div className="shrink-0">{header}</div>}
         {filters && <div className="shrink-0">{filters}</div>}
 
-        <div className="bg-dark flex-1 min-w-0 overflow-y-auto md:overflow-hidden rounded-xl border">
-          <div className="flex h-full flex-col min-h-0 overflow-y-auto md:overflow-hidden">
+        <div className="bg-dark flex-1 min-w-0 overflow-y-auto rounded-xl border">
+          <div className="flex h-full flex-col min-h-0 overflow-y-auto">
             {children}
           </div>
         </div>

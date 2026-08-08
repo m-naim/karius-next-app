@@ -37,7 +37,7 @@ export function TableView({
   setActiveScreener?: (screenerId: string | null) => void
 }) {
   return (
-    <div className="flex h-full w-full flex-col min-h-0 overflow-visible md:overflow-hidden">
+    <div className="flex h-full w-full flex-col min-h-0 overflow-y-auto">
       <div className="shrink-0">
         <TableContextHeader
           table={table}
@@ -53,7 +53,7 @@ export function TableView({
           setActiveScreener={setActiveScreener}
         />
       </div>
-      <div className="flex-1 min-h-0 overflow-visible md:overflow-hidden">
+      <div className="flex-1 min-h-0 overflow-y-auto">
         <SimpleDataTable
           table={table}
           colSpan={columns.length}
@@ -64,4 +64,3 @@ export function TableView({
     </div>
   )
 }
-

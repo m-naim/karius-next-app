@@ -7,7 +7,9 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: 'Bourse Horus',
     description: siteMetadata.description,
     start_url: '/app',
+    scope: '/',
     display: 'standalone',
+    orientation: 'portrait',
     background_color: '#000000',
     theme_color: '#000000',
     icons: [
