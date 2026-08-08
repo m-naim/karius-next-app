@@ -17,6 +17,8 @@ export function TableView({
   allWatchlists = [],
   showMetrics,
   setShowMetrics,
+  activeScreener,
+  setActiveScreener,
 }: {
   table: any
   id: string
@@ -31,6 +33,8 @@ export function TableView({
   allWatchlists?: any[]
   showMetrics?: boolean
   setShowMetrics?: any
+  activeScreener?: string | null
+  setActiveScreener?: (screenerId: string | null) => void
 }) {
   return (
     <div className="flex h-full w-full flex-col min-h-0 overflow-visible md:overflow-hidden">
@@ -45,6 +49,8 @@ export function TableView({
           allAvailableTags={allAvailableTags}
           showMetrics={showMetrics}
           setShowMetrics={setShowMetrics}
+          activeScreener={activeScreener}
+          setActiveScreener={setActiveScreener}
         />
       </div>
       <div className="flex-1 min-h-0 overflow-visible md:overflow-hidden">
@@ -58,3 +64,4 @@ export function TableView({
     </div>
   )
 }
+

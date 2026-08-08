@@ -6,7 +6,7 @@ import { ChevronUp, ArrowUpDown, ChevronDown, ExternalLink, FileText } from 'luc
 import { Button } from '@/components/ui/button'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { round10 } from '@/lib/decimalAjustement'
-import { percentVariation } from '@/lib/math'
+import { percentVariation, calculateMedian } from '@/lib/math'
 import { security } from 'app/app/watchlist/[id]/data/security'
 import { cn } from '@/lib/utils'
 import { genericNumericFilterFn } from '@/lib/table-filters'
@@ -15,10 +15,30 @@ type FiltrProps = {
   column: Column<security, string>
 }
 
+const COLUMN_DESCRIPTIONS: Record<string, string> = {
+  'Actif': 'Ticker boursier et nom officiel de la société',
+  'Prix': 'Dernier cours de bourse coté en temps réel (ou à la clôture)',
+  'Variation': 'Performance du cours sur la période temporelle sélectionnée',
+  'Poids': 'Poids relatif en pourcentage (%) de l’action dans l’indice',
+  'P/E': 'PER 12 mois glissants (Prix / Bénéfice par action TTM)',
+  'P/E Fwd': 'PER estimé à 12 mois (Prix / Bénéfices futurs attendus)',
+  'PE (5a proxy)': 'PER moyen lissé sur 5 ans (bénéfices moyens 5 ans)',
+  'Linéarité (10a)': 'Régularité et constance de la hausse du cours sur 10 ans (R²)',
+  'Score (Ret×Lin)': 'Score Horus combinant rendement annuel moyen et linéarité',
+  'Yield': 'Rendement du dividende brut annuel (Dividende / Prix)',
+  'ROA': 'Rentabilité des actifs totaux (Return on Assets)',
+  'ROE': 'Rentabilité des capitaux propres (Return on Equity - Moat)',
+  'Croissance CA': 'Taux de croissance du chiffre d’affaires sur 1 an',
+  'Croissance CA (5a)': 'Taux de croissance annuel moyen du chiffre d’affaires sur 5 ans',
+  'ROIC (5a)': 'Rentabilité du capital investi moyen sur 5 ans (ROIC)',
+  'Cap. Boursière': 'Valorisation boursière totale (Prix × Nombre d’actions)',
+}
+
 const SortingButton = (title, alignRight = false) => {
+  const desc = COLUMN_DESCRIPTIONS[title] || title
   return function GhostButton({ column }: FiltrProps) {
     return (
-      <div className={cn("flex w-full items-center", alignRight ? "justify-end" : "justify-start")}>
+      <div className={cn("flex w-full items-center", alignRight ? "justify-end" : "justify-start")} title={desc}>
         <Button
           className={cn(
             "text-xs capitalize px-2 h-8 font-semibold",
@@ -31,7 +51,7 @@ const SortingButton = (title, alignRight = false) => {
             <>
               {column.getIsSorted() === 'asc' ? <ChevronUp className="mr-1.5 h-3.5 w-3.5 shrink-0" /> : null}
               {column.getIsSorted() === 'desc' ? <ChevronDown className="mr-1.5 h-3.5 w-3.5 shrink-0" /> : null}
-              {!column.getIsSorted() ? <ArrowUpDown className="mr-1.5 h-3.5 w-3.5 shrink-0" /> : null}
+              {!column.getIsSorted() ? <ArrowUpDown className="mr-1.5 h-3.5 w-3.5 shrink-0 opacity-40" /> : null}
               {title}
             </>
           ) : (
@@ -39,7 +59,7 @@ const SortingButton = (title, alignRight = false) => {
               {title}
               {column.getIsSorted() === 'asc' ? <ChevronUp className="ml-1.5 h-3.5 w-3.5 shrink-0" /> : null}
               {column.getIsSorted() === 'desc' ? <ChevronDown className="ml-1.5 h-3.5 w-3.5 shrink-0" /> : null}
-              {!column.getIsSorted() ? <ArrowUpDown className="ml-1.5 h-3.5 w-3.5 shrink-0" /> : null}
+              {!column.getIsSorted() ? <ArrowUpDown className="ml-1.5 h-3.5 w-3.5 shrink-0 opacity-40" /> : null}
             </>
           )}
         </Button>
@@ -107,6 +127,16 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
     {
       accessorKey: 'weight',
       header: SortingButton('Poids', true),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const vals = rows.map((r) => (r.getValue('weight') as number) * 100)
+        const med = calculateMedian(vals)
+        return med != null ? (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
+            {round10(med, -4)}%
+          </div>
+        ) : null
+      },
       cell: ({ row }) => (
         <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm font-medium">
           {round10((row.getValue('weight') as number) * 100, -4)}%
@@ -116,6 +146,16 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
     {
       accessorKey: 'regularMarketPrice',
       header: SortingButton('Prix', true),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const vals = rows.map((r) => parseFloat(r.getValue('regularMarketPrice')))
+        const med = calculateMedian(vals)
+        return med != null ? (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs font-medium">
+            {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', currencyDisplay: 'narrowSymbol' }).format(med)}
+          </div>
+        ) : null
+      },
       cell: ({ row }) => {
         const prix = parseFloat(row.getValue('regularMarketPrice'))
 
@@ -149,21 +189,18 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
       header: SortingButton('Variation', true),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const avg =
-          rows.reduce((acc, row) => {
-            const val = row.getValue('variation') as number
-            return isNaN(val) || val === -10000 ? acc : acc + val
-          }, 0) / rows.filter((r) => !isNaN(r.getValue('variation') as number)).length
-        return (
+        const vals = rows.map((r) => r.getValue('variation') as number)
+        const med = calculateMedian(vals)
+        return med != null ? (
           <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
             <VariationContainer
-              value={avg}
+              value={med}
               entity="%"
               background={false}
               className="m-0 p-0 text-[10px]"
             />
           </div>
-        )
+        ) : null
       },
       cell: ({ row }) => {
         let chg = row.original.regularMarketChangePercent
@@ -190,6 +227,16 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
     {
       accessorKey: 'trailingPE',
       header: SortingButton('P/E', true),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const vals = rows.map((r) => r.getValue('trailingPE') as number)
+        const med = calculateMedian(vals)
+        return med != null ? (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs lowercase">
+            {round10(med, -2)}
+          </div>
+        ) : null
+      },
       cell: ({ row }) => (
         <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm lowercase">
           {round10(row.getValue('trailingPE'), -2) || 'N/A'}
@@ -200,6 +247,16 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
     {
       accessorKey: 'forwardPE',
       header: SortingButton('P/E Fwd', true),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const vals = rows.map((r) => r.getValue('forwardPE') as number)
+        const med = calculateMedian(vals)
+        return med != null ? (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs lowercase">
+            {round10(med, -2)}
+          </div>
+        ) : null
+      },
       cell: ({ row }) => (
         <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm lowercase">
           {round10(row.getValue('forwardPE'), -2) || 'N/A'}
@@ -211,6 +268,22 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
     {
       accessorKey: 'dividendYield',
       header: SortingButton('Rendement Div.', true),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const vals = rows.map((r) => r.getValue('dividendYield') as number)
+        const med = calculateMedian(vals)
+        return med != null ? (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
+            <VariationContainer
+              value={round10(med, -2) || 0}
+              entity="%"
+              background={false}
+              vaiationColor={false}
+              className="m-0 p-0 text-[10px]"
+            />
+          </div>
+        ) : null
+      },
       cell: ({ row }) => (
         <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
           <VariationContainer
@@ -227,6 +300,23 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
     {
       accessorKey: 'linearity10y',
       header: SortingButton('Linéarité', true),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const vals = rows.map((r) => (r.getValue('linearity10y') as number) * 100)
+        const med = calculateMedian(vals)
+        return med != null ? (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
+            <VariationContainer
+              value={med}
+              entity="%"
+              background={false}
+              vaiationColor={false}
+              sign={false}
+              className="m-0 p-0 text-[10px]"
+            />
+          </div>
+        ) : null
+      },
       cell: ({ row }) => (
         <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
           <VariationContainer
@@ -258,6 +348,21 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
       },
       id: 'ret_lin',
       header: SortingButton('Score (Ret×Lin)', true),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const vals = rows.map((r) => r.getValue('ret_lin') as number)
+        const med = calculateMedian(vals)
+        return med != null ? (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
+            <VariationContainer
+              value={med}
+              entity="%"
+              background={false}
+              className="m-0 p-0 text-[11px]"
+            />
+          </div>
+        ) : null
+      },
       cell: ({ row }) => {
         const val = row.getValue('ret_lin') as number
         return (
@@ -276,6 +381,22 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
     {
       accessorKey: 'marketCap',
       header: SortingButton('Capitalisation', true),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const vals = rows.map((r) => parseFloat(r.getValue('marketCap')))
+        const med = calculateMedian(vals)
+        return med != null ? (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs lowercase">
+            {new Intl.NumberFormat('fr-FR', {
+              style: 'decimal',
+              maximumFractionDigits: 0,
+              minimumFractionDigits: 0,
+              notation: 'compact',
+              compactDisplay: 'long',
+            }).format(med)}
+          </div>
+        ) : null
+      },
       cell: ({ row }) => {
         const cap = parseFloat(row.getValue('marketCap'))
         return (
@@ -298,6 +419,22 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
       },
       id: 'roa',
       header: SortingButton('ROA', true),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const vals = rows.map((r) => (r.original?.lastYearFundamental?.roa || 0) * 100)
+        const med = calculateMedian(vals)
+        return med != null ? (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
+            <VariationContainer
+              value={med}
+              entity="%"
+              background={false}
+              vaiationColor={false}
+              className="m-0 p-0 text-[11px]"
+            />
+          </div>
+        ) : null
+      },
       cell: ({ row }) => (
         <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
           <VariationContainer
@@ -318,6 +455,22 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
       },
       id: 'roe',
       header: SortingButton('ROE', true),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const vals = rows.map((r) => (r.original?.lastYearFundamental?.roe || 0) * 100)
+        const med = calculateMedian(vals)
+        return med != null ? (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
+            <VariationContainer
+              value={med}
+              entity="%"
+              background={false}
+              vaiationColor={false}
+              className="m-0 p-0 text-[11px]"
+            />
+          </div>
+        ) : null
+      },
       cell: ({ row }) => (
         <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
           <VariationContainer
@@ -401,6 +554,21 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
       },
       id: 'growth',
       header: SortingButton('Croiss. Est.', true),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const vals = rows.map((r) => r.getValue('growth') as number)
+        const med = calculateMedian(vals)
+        return med != null ? (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
+            <VariationContainer
+              value={med}
+              entity="%"
+              background={false}
+              className="m-0 p-0 text-[10px]"
+            />
+          </div>
+        ) : null
+      },
       cell: ({ row }) => (
         <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
           <VariationContainer
@@ -418,6 +586,19 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
       accessorFn: (row) => row.qualityMetrics?.revenueGrowth5yAvg,
       id: 'revGrowth',
       header: SortingButton('Croissance CA (5a)', true),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const vals = rows.map((r) => {
+          const val = r.original.qualityMetrics?.revenueGrowth5yAvg
+          return val != null ? val * 100 : null
+        })
+        const med = calculateMedian(vals)
+        return med != null ? (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
+            <VariationContainer value={med} entity="%" background={false} className="m-0 p-0 text-[10px]" />
+          </div>
+        ) : null
+      },
       cell: ({ row }) => {
         const val = row.original.qualityMetrics?.revenueGrowth5yAvg
         if (val == null) return <div className="font-mono tabular-nums text-right px-2 py-1 text-[11px] text-muted-foreground">N/A</div>
@@ -433,6 +614,19 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
       accessorFn: (row) => row.qualityMetrics?.roic5yAvg,
       id: 'roic',
       header: SortingButton('ROIC (5a)', true),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const vals = rows.map((r) => {
+          const val = r.original.qualityMetrics?.roic5yAvg
+          return val != null ? val * 100 : null
+        })
+        const med = calculateMedian(vals)
+        return med != null ? (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
+            <VariationContainer value={med} entity="%" background={false} className="m-0 p-0 text-[10px]" />
+          </div>
+        ) : null
+      },
       cell: ({ row }) => {
         const val = row.original.qualityMetrics?.roic5yAvg
         if (val == null) return <div className="font-mono tabular-nums text-right px-2 py-1 text-[11px] text-muted-foreground">N/A</div>
@@ -448,6 +642,16 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
       accessorFn: (row) => row.qualityMetrics?.pe5yAvgProxy,
       id: 'pe5y',
       header: SortingButton('PE (5a proxy)', true),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const vals = rows.map((r) => r.original.qualityMetrics?.pe5yAvgProxy)
+        const med = calculateMedian(vals)
+        return med != null ? (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs lowercase font-medium">
+            {med.toFixed(1)}x
+          </div>
+        ) : null
+      },
       cell: ({ row }) => {
         const val = row.original.qualityMetrics?.pe5yAvgProxy
         if (val == null) return <div className="font-mono tabular-nums text-right px-2 py-1 text-[11px] text-muted-foreground">N/A</div>
@@ -473,3 +677,4 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
 
   return cols
 }
+

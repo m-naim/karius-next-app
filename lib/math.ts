@@ -141,3 +141,22 @@ export function calculateLogRegressionBands(values: number[]): {
 
   return { regressionLine, upperBand, lowerBand }
 }
+
+/**
+ * Calculates the median of an array of numbers, ignoring null, undefined, NaN, Infinity, and -10000 sentinel values.
+ * @param numbers Array of numbers or nullish values.
+ * @returns The median value, or null if no valid numbers exist.
+ */
+export function calculateMedian(numbers: (number | null | undefined)[]): number | null {
+  const valid = numbers.filter(
+    (n): n is number => typeof n === 'number' && !isNaN(n) && isFinite(n) && n !== -10000
+  )
+  if (valid.length === 0) return null
+  const sorted = [...valid].sort((a, b) => a - b)
+  const middle = Math.floor(sorted.length / 2)
+  if (sorted.length % 2 === 0) {
+    return (sorted[middle - 1] + sorted[middle]) / 2
+  }
+  return sorted[middle]
+}
+

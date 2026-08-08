@@ -6,6 +6,7 @@ import watchListService from '@/services/watchListService'
 import { security } from './data/security'
 import {
   ColumnFiltersState,
+  ColumnOrderState,
   SortingState,
   VisibilityState,
   getCoreRowModel,
@@ -21,6 +22,35 @@ import Loader from '@/components/molecules/loader/loader'
 import { useLocalStorage } from '@/hooks/useLocalStorage' // Re-import useLocalStorage
 import { useToast } from '@/hooks/use-toast'
 
+import {
+  getSavedColumnVisibility,
+  getSavedColumnOrder,
+} from '@/lib/column-persistence'
+import { filterSecuritiesByScreener } from '@/lib/screeners'
+import { ViewToggleSwitch } from '@/components/atoms/ViewToggleSwitch'
+
+const DEFAULT_WATCHLIST_VISIBILITY: VisibilityState = {
+  actions: true,
+  symbol: true,
+  regularMarketPrice: true,
+  variation: true,
+  sector: true,
+  trailingPE: true,
+  dividendYield: true,
+  growth: true,
+  tags: true,
+  hasFundamentals: false,
+  roa: false,
+  roe: false,
+  linearity10y: false,
+  ret_lin: false,
+  forwardPE: false,
+  industry: false,
+  relativePerformances: false,
+  revGrowth: false,
+  roic: false,
+  pe5y: false,
+}
 import { TableView } from './components/TableView'
 import { TickerChart } from './components/TickerChart'
 import { WatchlistSelector } from './components/WatchlistSelector'
@@ -46,8 +76,9 @@ type LocalSecurityTags = {
   [symbol: string]: string[]
 }
 
-export default function Watchlist() {
-  const id = usePathname().split('/')[3]
+export default function WatchlistPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: rawId } = React.use(params)
+  const id = decodeURIComponent(rawId)
   const { toast } = useToast()
 
   const { getItem, setItem } = useLocalStorage()
@@ -66,6 +97,7 @@ export default function Watchlist() {
   const [loading, setLoading] = React.useState(true)
   const [selectedTicker, setSelectedTicker] = React.useState<string | null>(null)
   const [showChart, setShowChart] = React.useState(false)
+  const [activeScreener, setActiveScreener] = React.useState<string | null>(null)
 
   const [allAvailableTags, setAllAvailableTags] = React.useState<string[]>([])
 
@@ -127,29 +159,13 @@ export default function Watchlist() {
 
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(() =>
+    getSavedColumnOrder([])
+  )
   const [globalFilter, setGlobalFilter] = React.useState('')
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
-    actions: true,
-    symbol: true,
-    regularMarketPrice: true,
-    variation: true,
-    sector: true,
-    trailingPE: true,
-    dividendYield: true,
-    growth: true,
-    tags: true,
-    hasFundamentals: false,
-    roa: false,
-    roe: false,
-    linearity10y: false,
-    ret_lin: false,
-    forwardPE: false,
-    industry: false,
-    relativePerformances: false,
-    revGrowth: false,
-    roic: false,
-    pe5y: false,
-  })
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(() =>
+    getSavedColumnVisibility(DEFAULT_WATCHLIST_VISIBILITY)
+  )
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
   const [showMetrics, setShowMetrics] = React.useState(false)
@@ -285,11 +301,12 @@ export default function Watchlist() {
   }
 
   const tableData = useMemo(() => {
-    return (data?.securities || []).map((security) => ({
+    const filtered = filterSecuritiesByScreener(data?.securities || [], activeScreener)
+    return filtered.map((security) => ({
       ...security,
       variation: security.variations?.[selectedPeriod] ?? security.regularMarketChangePercent,
     }))
-  }, [data, selectedPeriod])
+  }, [data, selectedPeriod, activeScreener])
 
   const tableColumns = useMemo(() => {
     return columns(id, owned, data?.benchMark, deleteRow, selectedPeriod, allWatchlists)
@@ -300,6 +317,7 @@ export default function Watchlist() {
     columns: tableColumns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    onColumnOrderChange: setColumnOrder,
     onGlobalFilterChange: setGlobalFilter,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
@@ -316,6 +334,7 @@ export default function Watchlist() {
     state: {
       sorting,
       columnFilters,
+      columnOrder,
       globalFilter,
       columnVisibility,
       rowSelection,
@@ -391,6 +410,8 @@ export default function Watchlist() {
           </div>
 
           <div className="flex items-center gap-2">
+            <ViewToggleSwitch view={view} onViewChange={setView} />
+
             <Button
               variant="ghost"
               size="icon"
@@ -400,19 +421,6 @@ export default function Watchlist() {
               title="Télécharger en CSV"
             >
               <Download className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0"
-              onClick={() => setView(view === 'table' ? 'analysis' : 'table')}
-              title={view === 'table' ? 'Vue Analyse' : 'Vue Tableau'}
-            >
-              {view === 'table' ? (
-                <LayoutDashboard className="h-4 w-4" />
-              ) : (
-                <TableIcon className="h-4 w-4" />
-              )}
             </Button>
             <Button
               variant="ghost"
@@ -491,6 +499,8 @@ export default function Watchlist() {
             allWatchlists={allWatchlists}
             showMetrics={showMetrics}
             setShowMetrics={setShowMetrics}
+            activeScreener={activeScreener}
+            setActiveScreener={setActiveScreener}
           />
         ) : (
           <AnalysisView

@@ -1,11 +1,11 @@
 'use client'
 
 import React, { useEffect, useMemo } from 'react'
-import { usePathname } from 'next/navigation'
 import marketService from '@/services/marketService'
 import { security } from '../../watchlist/[id]/data/security'
 import {
   ColumnFiltersState,
+  ColumnOrderState,
   SortingState,
   VisibilityState,
   getCoreRowModel,
@@ -15,7 +15,7 @@ import {
 } from '@tanstack/react-table'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, LineChart, SlidersHorizontal, ChevronDown, Check, X, Filter } from 'lucide-react'
+import { ArrowLeft, LineChart } from 'lucide-react'
 import Loader from '@/components/molecules/loader/loader'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
@@ -25,18 +25,45 @@ import { TickerChart } from '../../watchlist/[id]/components/TickerChart'
 import { AnalysisView } from '@/components/organismes/market/AnalysisView'
 import { columns } from './columns'
 import { LayoutDashboard, Table as TableIcon } from 'lucide-react'
-import { RightSidebar } from '@/components/organismes/layout/RightSidebar'
 import { SplitScreenLayout } from '@/components/organismes/layout/SplitScreenLayout'
+import { filterSecuritiesByScreener } from '@/lib/screeners'
 
 import watchListService from '@/services/watchListService'
+
+import { ViewToggleSwitch } from '@/components/atoms/ViewToggleSwitch'
+import {
+  getSavedColumnVisibility,
+  getSavedColumnOrder,
+  saveColumnVisibility,
+  saveColumnOrder,
+} from '@/lib/column-persistence'
+
+const DEFAULT_MARKET_VISIBILITY: VisibilityState = {
+  symbol: true,
+  regularMarketPrice: true,
+  variation: true,
+  trailingPE: true,
+  dividendYield: true,
+  linearity10y: true,
+  ret_lin: true,
+  marketCap: true,
+  weight: true,
+  forwardPE: false,
+  roa: false,
+  roe: false,
+  growth: false,
+  revGrowth: false,
+  roic: false,
+  pe5y: false,
+}
 
 interface IndexData {
   symbol: string
   name: string
-  holdings: any[]
+  holdings: security[]
 }
 
-export default function MarketPage({ params }: { params: Promise<{ symbol: string }> }) {
+export default function MarketDetailPage({ params }: { params: Promise<{ symbol: string }> }) {
   const { symbol: rawSymbol } = React.use(params)
   const symbol = decodeURIComponent(rawSymbol)
   const { toast } = useToast()
@@ -51,39 +78,8 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
   const [watchlists, setWatchlists] = React.useState<any[]>([])
   const [activeScreener, setActiveScreener] = React.useState<string | null>(null)
 
-  const screeners = [
-    { id: 'fundamentals', label: '📊 Fondamentaux Dispos', desc: 'Affiche uniquement les actions avec données fondamentales disponibles' },
-    { id: 'dividend', label: '💰 Rendement Élevé', desc: 'Rendement > 3% & P/E raisonnable (< 22)' },
-    { id: 'value', label: '🏷️ Super Value', desc: 'P/E < 15 & Rentabilité (ROE > 12%)' },
-    { id: 'garp', label: '🚀 Croissance GARP', desc: 'Forte croissance (Score > 60%) & P/E < 25' },
-    { id: 'profitability', label: '🛡️ Rentabilité Forte', desc: 'Score rentabilité > 70% & ROA > 5%' },
-    { id: 'megacap', label: '🏢 Mega-Caps', desc: 'Capitalisation > 100 Milliards' },
-  ]
-
   const filteredSecurities = useMemo(() => {
-    if (!activeScreener) return securities
-
-    return securities.filter((s) => {
-      switch (activeScreener) {
-        case 'fundamentals':
-          return !!s.qualityMetrics?.hasFundamentals || !!s.lastYearFundamental
-        case 'dividend': {
-          const dy = s.dividendYield ?? 0
-          const dyPercent = dy >= 1 ? dy : dy * 100
-          return dyPercent >= 3 && (s.trailingPE ?? 999) < 22
-        }
-        case 'value':
-          return (s.trailingPE ?? 999) > 0 && (s.trailingPE ?? 999) <= 15 && (s.lastYearFundamental?.roe ?? 0) >= 0.12
-        case 'garp':
-          return (s.trailingPE ?? 999) > 0 && (s.trailingPE ?? 999) <= 25 && (s.score?.growth ?? 0) >= 0.60
-        case 'profitability':
-          return (s.score?.profitability ?? 0) >= 0.70 && (s.lastYearFundamental?.roa ?? 0) >= 0.05
-        case 'megacap':
-          return (s.marketCap ?? 0) >= 100_000_000_000
-        default:
-          return true
-      }
-    })
+    return filterSecuritiesByScreener(securities, activeScreener)
   }, [securities, activeScreener])
 
   const [view, setView] = React.useState<'table' | 'analysis'>('table')
@@ -99,50 +95,32 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
 
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(() =>
+    getSavedColumnOrder([])
+  )
   const [globalFilter, setGlobalFilter] = React.useState('')
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
-    actions: true,
-    symbol: true,
-    weight: true,
-    regularMarketPrice: true,
-    variation: true,
-    sector: true,
-    trailingPE: true,
-    dividendYield: true,
-    marketCap: true,
-    hasFundamentals: false,
-    roa: false,
-    roe: false,
-    linearity10y: false,
-    ret_lin: false,
-    forwardPE: false,
-    industry: false,
-    growth: false,
-  })
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(() =>
+    getSavedColumnVisibility(DEFAULT_MARKET_VISIBILITY)
+  )
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
   const [showMetrics, setShowMetrics] = React.useState(false)
-  const [isFilterOpen, setIsFilterOpen] = React.useState(false)
 
   React.useEffect(() => {
     if (showMetrics) {
       setColumnVisibility({
-        actions: true,
         symbol: true,
-        weight: true,
         regularMarketPrice: false,
         variation: false,
-        sector: false,
         trailingPE: false,
         dividendYield: false,
-        marketCap: false,
-        hasFundamentals: false,
-        roa: false,
-        roe: false,
         linearity10y: false,
         ret_lin: false,
+        marketCap: false,
+        weight: false,
         forwardPE: false,
-        industry: false,
+        roa: false,
+        roe: false,
         growth: false,
         revGrowth: true,
         roic: true,
@@ -150,22 +128,18 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
       })
     } else {
       setColumnVisibility({
-        actions: true,
         symbol: true,
-        weight: true,
         regularMarketPrice: true,
         variation: true,
-        sector: true,
         trailingPE: true,
         dividendYield: true,
+        linearity10y: true,
+        ret_lin: true,
         marketCap: true,
-        hasFundamentals: false,
+        weight: true,
+        forwardPE: false,
         roa: false,
         roe: false,
-        linearity10y: false,
-        ret_lin: false,
-        forwardPE: false,
-        industry: false,
         growth: false,
         revGrowth: false,
         roic: false,
@@ -190,6 +164,7 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
     columns: tableColumns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    onColumnOrderChange: setColumnOrder,
     onGlobalFilterChange: setGlobalFilter,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
@@ -206,6 +181,7 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
     state: {
       sorting,
       columnFilters,
+      columnOrder,
       globalFilter,
       columnVisibility,
       rowSelection,
@@ -255,48 +231,8 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
           </div>
 
           <div className="flex items-center gap-2">
-            {view === 'table' && (
-              <Button
-                variant={isFilterOpen ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className={cn(
-                  'h-8 gap-1.5 rounded-full text-xs font-bold transition-all border border-border/70',
-                  isFilterOpen
-                    ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                    : activeScreener
-                    ? 'bg-primary/10 text-primary border-primary/40'
-                    : 'bg-background text-foreground hover:bg-muted'
-                )}
-              >
-                <SlidersHorizontal className="h-3.5 w-3.5" />
-                <span>Filtres</span>
-                {activeScreener && (
-                  <span className="rounded-full bg-primary-foreground/20 px-1.5 py-0.2 text-[10px] font-black">
-                    1
-                  </span>
-                )}
-                <ChevronDown
-                  className={cn(
-                    'h-3.5 w-3.5 transition-transform duration-200',
-                    isFilterOpen && 'rotate-180'
-                  )}
-                />
-              </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0"
-              onClick={() => setView(view === 'table' ? 'analysis' : 'table')}
-              title={view === 'table' ? 'Vue Analyse' : 'Vue Tableau'}
-            >
-              {view === 'table' ? (
-                <LayoutDashboard className="h-4 w-4" />
-              ) : (
-                <TableIcon className="h-4 w-4" />
-              )}
-            </Button>
+            <ViewToggleSwitch view={view} onViewChange={setView} />
+
             <Button
               variant="ghost"
               size="icon"
@@ -308,75 +244,6 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
             </Button>
           </div>
         </div>
-      }
-      filters={
-        view === 'table' && (isFilterOpen || activeScreener) && (
-          <div className="flex shrink-0 flex-col gap-2.5 rounded-xl border bg-card p-3 shadow-md border-border/70 duration-200 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-border/40 pb-2">
-              <div className="flex items-center gap-2">
-                <Filter className="h-3.5 w-3.5 text-primary" />
-                <span className="text-xs font-bold text-foreground">Filtres de Marché</span>
-                <span className={cn(
-                  "rounded-full px-2 py-0.5 text-[10px] font-bold",
-                  isFilterOpen ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-muted text-muted-foreground"
-                )}>
-                  {isFilterOpen ? "● Panneau Ouvert" : "Filtre Actif"}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                {activeScreener && (
-                  <button
-                    onClick={() => setActiveScreener(null)}
-                    className="text-xs font-semibold text-destructive hover:underline flex items-center gap-1"
-                  >
-                    <X className="h-3 w-3" />
-                    <span>Réinitialiser</span>
-                  </button>
-                )}
-                {isFilterOpen && (
-                  <button
-                    onClick={() => setIsFilterOpen(false)}
-                    className="rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-                    aria-label="Fermer les filtres"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* SCREENERS LIST (ACCORDION BODY) */}
-            {isFilterOpen && (
-              <div className="flex flex-wrap items-center gap-2 pt-0.5">
-                {screeners.map((scr) => {
-                  const isActive = activeScreener === scr.id
-                  return (
-                    <button
-                      key={scr.id}
-                      onClick={() => setActiveScreener(isActive ? null : scr.id)}
-                      title={scr.desc}
-                      aria-pressed={isActive}
-                      className={cn(
-                        "flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition-all border",
-                        isActive
-                          ? "bg-primary border-primary text-primary-foreground shadow-xs ring-2 ring-primary/20"
-                          : "bg-muted/40 text-muted-foreground border-border/60 hover:bg-muted hover:text-foreground"
-                      )}
-                    >
-                      {isActive && <Check className="h-3 w-3" />}
-                      <span>{scr.label}</span>
-                      {isActive && (
-                        <span className="ml-1 rounded-full bg-primary-foreground/20 px-1.5 py-0.2 text-[10px] font-black">
-                          {table.getFilteredRowModel().rows.length}
-                        </span>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        )
       }
       showDrawer={showChart}
       onCloseDrawer={() => setShowChart(false)}
@@ -400,7 +267,7 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
             setData={() => {}}
             selectedPeriod={selectedPeriod}
             setSelectedPeriod={setSelectedPeriod}
-            columns={columns(selectedPeriod)}
+            columns={columns(selectedPeriod, watchlists)}
             onRowClick={(row) => {
               setSelectedTicker(row.symbol)
               if (!showChart) setShowChart(true)
@@ -408,6 +275,8 @@ export default function MarketPage({ params }: { params: Promise<{ symbol: strin
             selectedTicker={selectedTicker}
             showMetrics={showMetrics}
             setShowMetrics={setShowMetrics}
+            activeScreener={activeScreener}
+            setActiveScreener={setActiveScreener}
           />
         ) : (
           <AnalysisView

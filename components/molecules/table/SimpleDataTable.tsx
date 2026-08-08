@@ -8,7 +8,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { flexRender } from '@tanstack/react-table'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 interface SimpleDataTableProps {
@@ -104,33 +103,6 @@ const SimpleDataTable = ({ table, colSpan, onRowClick, selectedId }: SimpleDataT
           ))}
         </TableFooter>
       </Table>
-      {table.getPageCount() > 1 && (
-        <div className="flex items-center justify-between border-t border-border/50 px-4 py-3">
-          <div className="flex-1 text-xs text-muted-foreground">
-            Page {table.getState().pagination.pageIndex + 1} sur {table.getPageCount()}
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-              className="h-8 text-xs"
-            >
-              Précédent
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-              className="h-8 text-xs"
-            >
-              Suivant
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
