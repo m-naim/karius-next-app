@@ -112,42 +112,31 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
   return loading ? (
     <Loader />
   ) : (
-    <Card className="w-full overflow-hidden border-border bg-card shadow-sm">
-      <CardHeader className="border-b border-border/50 bg-muted/20 px-6 py-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <CardTitle className="text-lg font-bold tracking-tight">
-              Récapitulatif Historique
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Performance mensuelle et annuelle comparée
-            </p>
-          </div>
-          
+    <Card className="w-full overflow-hidden border-border/70 bg-card shadow-sm">
+      <CardHeader className="border-b border-border/50 bg-muted/10 px-4 py-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle className="text-sm font-black uppercase tracking-tight">
+            Récapitulatif Historique
+          </CardTitle>
+
           {/* Quick Stats */}
           {stats.bestMonth && stats.worstMonth && (
-            <div className="flex items-center gap-4 text-sm">
-              <div className="flex flex-col items-end">
-                <span className="text-xs text-muted-foreground uppercase font-semibold tracking-wider">Meilleur Mois</span>
-                <div className="flex items-center gap-1.5 font-bold">
-                  <VariationContainer background={false} value={stats.bestMonth.val} />
-                  <span className="text-xs text-muted-foreground font-normal">({stats.bestMonth.displayMonth} {stats.bestMonth.year})</span>
-                </div>
+            <div className="flex items-center gap-3 text-xs">
+              <div className="flex items-center gap-1 font-bold">
+                <span className="text-[10px] text-muted-foreground uppercase">Top:</span>
+                <VariationContainer background={false} value={stats.bestMonth.val} />
+                <span className="text-[10px] text-muted-foreground font-normal">({stats.bestMonth.displayMonth})</span>
               </div>
-              <div className="h-8 w-px bg-border/50 hidden sm:block"></div>
-              <div className="flex flex-col items-end sm:items-start">
-                <span className="text-xs text-muted-foreground uppercase font-semibold tracking-wider">Pire Mois</span>
-                <div className="flex items-center gap-1.5 font-bold">
-                  <VariationContainer background={false} value={stats.worstMonth.val} />
-                  <span className="text-xs text-muted-foreground font-normal">({stats.worstMonth.displayMonth} {stats.worstMonth.year})</span>
-                </div>
+              <div className="h-4 w-px bg-border/50"></div>
+              <div className="flex items-center gap-1 font-bold">
+                <span className="text-[10px] text-muted-foreground uppercase">Flop:</span>
+                <VariationContainer background={false} value={stats.worstMonth.val} />
+                <span className="text-[10px] text-muted-foreground font-normal">({stats.worstMonth.displayMonth})</span>
               </div>
-              <div className="h-8 w-px bg-border/50 hidden sm:block"></div>
-              <div className="flex flex-col items-end sm:items-start">
-                <span className="text-xs text-muted-foreground uppercase font-semibold tracking-wider">Win Rate</span>
-                <div className="font-bold text-foreground">
-                  {stats.winRate}% <span className="text-xs font-normal text-muted-foreground">(dans le vert)</span>
-                </div>
+              <div className="h-4 w-px bg-border/50"></div>
+              <div className="font-bold text-foreground">
+                <span className="text-[10px] text-muted-foreground uppercase mr-1">Win:</span>
+                {stats.winRate}%
               </div>
             </div>
           )}

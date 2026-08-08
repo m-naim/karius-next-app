@@ -3,10 +3,16 @@ import type { RiskMetrics } from '@/hooks/useRiskMetrics';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Info, ShieldAlert, TrendingUp } from 'lucide-react';
 
 interface RiskAnalysisCardProps {
   metrics: RiskMetrics | null;
@@ -18,33 +24,15 @@ export function RiskAnalysisCard({ metrics, loading, period }: RiskAnalysisCardP
   const isEligiblePeriod = period === '1Y' || period === '3Y';
 
   if (!isEligiblePeriod) {
-    return (
-      <Card className="w-full backdrop-blur-md bg-background/80 border-border/50 text-foreground">
-        <CardHeader>
-          <CardTitle>Analyse de Risque</CardTitle>
-          <CardDescription>Indicateurs de risque avancés calculés en local</CardDescription>
-        </CardHeader>
-        <CardContent className="h-32 flex flex-col items-center justify-center text-center p-6">
-          <p className="text-sm text-muted-foreground max-w-lg">
-            Veuillez sélectionner une période de <strong>1 An (1Y)</strong> ou <strong>3 Ans (3Y)</strong> ci-dessus dans le graphique pour lancer les calculs du Sharpe, Sortino et le Max Drawdown en arrière-plan.
-          </p>
-        </CardContent>
-      </Card>
-    );
+    return null;
   }
 
   if (loading) {
     return (
-      <Card className="w-full backdrop-blur-md bg-background/80 border-border/50 text-foreground">
-        <CardHeader>
-          <CardTitle>Analyse de Risque</CardTitle>
-          <CardDescription>Indicateurs de risque avancés calculés en local</CardDescription>
-        </CardHeader>
-        <CardContent className="h-36 flex flex-col items-center justify-center text-center p-6 space-y-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <p className="text-sm text-muted-foreground">
-            Calcul en cours des métriques de risque en arrière-plan...
-          </p>
+      <Card className="w-full border-border/70 bg-card shadow-sm text-foreground">
+        <CardContent className="h-28 flex flex-col items-center justify-center text-center p-4 space-y-2">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary" />
+          <p className="text-xs text-muted-foreground">Calcul des métriques de risque...</p>
         </CardContent>
       </Card>
     );
@@ -55,145 +43,165 @@ export function RiskAnalysisCard({ metrics, loading, period }: RiskAnalysisCardP
   }
 
   const formatPercent = (val: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('fr-FR', {
       style: 'percent',
-      minimumFractionDigits: 2,
+      minimumFractionDigits: 1,
       maximumFractionDigits: 2,
     }).format(val);
   };
 
   const formatNumber = (val: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('fr-FR', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(val);
   };
 
   const getDrawdownColors = (val: number) => {
-    if (val > -0.1) return { text: 'text-green-500', bg: 'bg-green-500' };
-    if (val > -0.2) return { text: 'text-yellow-500', bg: 'bg-yellow-500' };
-    return { text: 'text-red-500', bg: 'bg-red-500' };
+    if (val > -0.1) return { text: 'text-emerald-500', bg: 'bg-emerald-500' };
+    if (val > -0.2) return { text: 'text-amber-500', bg: 'bg-amber-500' };
+    return { text: 'text-rose-500', bg: 'bg-rose-500' };
   };
 
   const getSortinoColor = (val: number) => {
-    if (val > 1) return 'text-green-500';
-    if (val > 0) return 'text-yellow-500';
-    return 'text-red-500';
+    if (val > 1) return 'text-emerald-500';
+    if (val > 0) return 'text-amber-500';
+    return 'text-rose-500';
   };
 
-  // Create a visual representation of the drawdown (progress bar inverted)
   const drawdownPercentage = Math.min(Math.abs(metrics.maxDrawdown * 100), 100);
   const drawdownColors = getDrawdownColors(metrics.maxDrawdown);
 
   return (
-    <Card className="w-full backdrop-blur-md bg-background/80 border-border/50 text-foreground">
-      <CardHeader>
-        <CardTitle>Analyse de Risque</CardTitle>
-        <CardDescription>Indicateurs de risque avancés calculés en local</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex flex-col space-y-2">
-            <span className="text-sm text-muted-foreground uppercase tracking-wider font-medium">Ratio de Sortino</span>
-            <div className="flex items-baseline space-x-2">
-              <span className={`text-4xl font-bold ${getSortinoColor(metrics.sortino)}`}>
+    <TooltipProvider>
+      <Card className="w-full border-border/70 bg-card shadow-sm text-foreground">
+        <CardHeader className="py-3 px-4 border-b border-border/50 bg-muted/10">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm font-black uppercase tracking-tight flex items-center gap-1.5">
+              <ShieldAlert className="h-4 w-4 text-primary" />
+              <span>Analyse de Risque</span>
+            </CardTitle>
+            <span className="text-[10px] font-bold text-muted-foreground rounded-full bg-muted px-2 py-0.5">
+              Période {period}
+            </span>
+          </div>
+        </CardHeader>
+        <CardContent className="p-4 space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            {/* Sortino Ratio */}
+            <div className="p-3 rounded-xl bg-muted/20 border border-border/50 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
+                  Sortino
+                </span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3.5 w-3.5 text-muted-foreground/70 hover:text-primary cursor-pointer transition-colors" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs text-xs">
+                    Mesure le rendement ajusté par rapport à la volatilité uniquement à la baisse. Plus il est élevé, plus le risque baissier est maîtrisé.
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <div className={`text-2xl font-black tabular-nums ${getSortinoColor(metrics.sortino)}`}>
                 {formatNumber(metrics.sortino)}
-              </span>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Mesure le rendement ajusté au risque par rapport à la volatilité à la baisse. Plus il est élevé, mieux c'est.
-            </p>
-          </div>
 
-          <div className="flex flex-col space-y-2">
-            <span className="text-sm text-muted-foreground uppercase tracking-wider font-medium">Chute Maximale (Max Drawdown)</span>
-            <div className="flex items-baseline space-x-2">
-              <span className={`text-4xl font-bold ${drawdownColors.text}`}>
+            {/* Max Drawdown */}
+            <div className="p-3 rounded-xl bg-muted/20 border border-border/50 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
+                  Max Drawdown
+                </span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3.5 w-3.5 text-muted-foreground/70 hover:text-primary cursor-pointer transition-colors" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs text-xs">
+                    Perte maximale observée entre le point le plus haut et le point le plus bas du portefeuille sur la période.
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <div className={`text-2xl font-black tabular-nums ${drawdownColors.text}`}>
                 {formatPercent(metrics.maxDrawdown)}
-              </span>
+              </div>
+              <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+                <div
+                  className={`h-1.5 rounded-full ${drawdownColors.bg}`}
+                  style={{ width: `${drawdownPercentage}%` }}
+                />
+              </div>
             </div>
-            <div className="w-full bg-secondary rounded-full h-2.5 mt-2 overflow-hidden flex">
-              <div
-                className={`h-2.5 rounded-full ${drawdownColors.bg}`}
-                style={{ width: `${drawdownPercentage}%` }}
-              ></div>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              La perte maximale observée entre le sommet et le creux de la valeur du portefeuille. Une valeur absolue plus faible est préférable.
-            </p>
-          </div>
 
-          {metrics.calmar !== undefined && (
-            <div className="flex flex-col space-y-2">
-              <span className="text-sm text-muted-foreground uppercase tracking-wider font-medium">Ratio de Calmar</span>
-              <div className="flex items-baseline space-x-2">
-                <span className="text-4xl font-bold">
+            {/* Calmar Ratio (if present) */}
+            {metrics.calmar !== undefined && (
+              <div className="col-span-2 p-3 rounded-xl bg-muted/20 border border-border/50 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-foreground">Ratio de Calmar</span>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-3.5 w-3.5 text-muted-foreground/70 hover:text-primary cursor-pointer transition-colors" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs text-xs">
+                      Rapport entre le rendement annualisé et le Max Drawdown.
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <span className="text-base font-black tabular-nums text-foreground">
                   {formatNumber(metrics.calmar)}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                Mesure le rendement ajusté au risque par rapport à la perte maximale (max drawdown). Plus il est élevé, mieux c'est.
-              </p>
+            )}
+          </div>
+
+          {/* Benchmark comparison table */}
+          {metrics.benchmarks && Object.keys(metrics.benchmarks).length > 0 && (
+            <div className="border-t border-border/50 pt-3 space-y-2">
+              <span className="text-xs font-bold text-foreground flex items-center gap-1">
+                <TrendingUp className="h-3.5 w-3.5 text-primary" /> Comparaison vs Indices
+              </span>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-border/50 text-muted-foreground text-[10px] uppercase font-bold">
+                      <th className="py-1">Indicateur</th>
+                      <th className="py-1 text-right">Pft</th>
+                      {Object.keys(metrics.benchmarks).map((symbol) => (
+                        <th key={symbol} className="py-1 text-right">{symbol}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/30 text-xs">
+                    <tr>
+                      <td className="py-1.5 font-medium text-muted-foreground">Sharpe</td>
+                      <td className="py-1.5 text-right font-bold">{formatNumber(metrics.sharpe)}</td>
+                      {Object.entries(metrics.benchmarks).map(([symbol, m]) => (
+                        <td key={symbol} className="py-1.5 text-right text-muted-foreground">{formatNumber(m.sharpe)}</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="py-1.5 font-medium text-muted-foreground">Drawdown</td>
+                      <td className="py-1.5 text-right font-bold">{formatPercent(metrics.maxDrawdown)}</td>
+                      {Object.entries(metrics.benchmarks).map(([symbol, m]) => (
+                        <td key={symbol} className="py-1.5 text-right text-muted-foreground">{formatPercent(m.maxDrawdown)}</td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="py-1.5 font-medium text-muted-foreground">Volatilité</td>
+                      <td className="py-1.5 text-right font-bold">{formatPercent(metrics.volatility)}</td>
+                      {Object.entries(metrics.benchmarks).map(([symbol, m]) => (
+                        <td key={symbol} className="py-1.5 text-right text-muted-foreground">{formatPercent(m.volatility)}</td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
-        </div>
-        {metrics.benchmarks && Object.keys(metrics.benchmarks).length > 0 && (
-          <div className="mt-8 border-t border-border/50 pt-6">
-            <h3 className="text-lg font-bold tracking-tight mb-4 text-foreground">Comparaison avec les Benchmarks</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm border-collapse">
-                <thead>
-                  <tr className="border-b border-border/50 text-muted-foreground text-xs uppercase tracking-wider font-semibold">
-                    <th className="py-2">Indicateur</th>
-                    <th className="py-2 text-right">Portefeuille</th>
-                    {Object.keys(metrics.benchmarks).map((symbol) => (
-                      <th key={symbol} className="py-2 text-right">{symbol}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/30">
-                  <tr className="hover:bg-muted/10 transition-colors">
-                    <td className="py-3 font-medium text-muted-foreground">Ratio de Sharpe</td>
-                    <td className="py-3 text-right font-bold">{formatNumber(metrics.sharpe)}</td>
-                    {Object.entries(metrics.benchmarks).map(([symbol, m]) => (
-                      <td key={symbol} className="py-3 text-right text-muted-foreground">{formatNumber(m.sharpe)}</td>
-                    ))}
-                  </tr>
-                  <tr className="hover:bg-muted/10 transition-colors">
-                    <td className="py-3 font-medium text-muted-foreground">Ratio de Sortino</td>
-                    <td className="py-3 text-right font-bold">{formatNumber(metrics.sortino)}</td>
-                    {Object.entries(metrics.benchmarks).map(([symbol, m]) => (
-                      <td key={symbol} className="py-3 text-right text-muted-foreground">{formatNumber(m.sortino)}</td>
-                    ))}
-                  </tr>
-                  <tr className="hover:bg-muted/10 transition-colors">
-                    <td className="py-3 font-medium text-muted-foreground">Volatilité (Annualisée)</td>
-                    <td className="py-3 text-right font-bold">{formatPercent(metrics.volatility)}</td>
-                    {Object.entries(metrics.benchmarks).map(([symbol, m]) => (
-                      <td key={symbol} className="py-3 text-right text-muted-foreground">{formatPercent(m.volatility)}</td>
-                    ))}
-                  </tr>
-                  <tr className="hover:bg-muted/10 transition-colors">
-                    <td className="py-3 font-medium text-muted-foreground">Chute Maximale (Drawdown)</td>
-                    <td className="py-3 text-right font-bold">{formatPercent(metrics.maxDrawdown)}</td>
-                    {Object.entries(metrics.benchmarks).map(([symbol, m]) => (
-                      <td key={symbol} className="py-3 text-right text-muted-foreground">{formatPercent(m.maxDrawdown)}</td>
-                    ))}
-                  </tr>
-                  <tr className="hover:bg-muted/10 transition-colors">
-                    <td className="py-3 font-medium text-muted-foreground">Bêta (sensibilité)</td>
-                    <td className="py-3 text-right font-bold text-primary">—</td>
-                    {Object.entries(metrics.benchmarks).map(([symbol, m]) => (
-                      <td key={symbol} className="py-3 text-right font-bold text-primary">{formatNumber(m.beta)}</td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   );
 }
 

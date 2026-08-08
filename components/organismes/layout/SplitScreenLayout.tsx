@@ -79,6 +79,7 @@ export function SplitScreenLayout({
         onClose={onCloseDrawer}
         title={drawerTitle}
         width={drawerWidth}
+        isOverlay={false}
       >
         {drawerContent}
       </RightSidebar>

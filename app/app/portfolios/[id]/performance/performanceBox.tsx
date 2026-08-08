@@ -158,22 +158,36 @@ export default function PerformanceBox({
 
   return (
     <div className="w-full">
-      <div className="space-y-6 pb-2">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-2">
-          <div className="space-y-1">
-            <h2 className="text-2xl font-bold tracking-tight">{selectedChart?.label}</h2>
-            <p className="text-sm text-muted-foreground">{selectedChart?.description}</p>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex items-center gap-1 rounded-full bg-muted/50 p-1 overflow-x-auto max-w-full no-scrollbar">
+      <div className="space-y-3 pb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-1">
+          <Tabs value={chartType} onValueChange={setChartType} className="w-full sm:w-auto">
+            <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1.5 bg-transparent p-0">
+              {availableChartTypes.map((chart) => (
+                <TabsTrigger
+                  key={chart.id}
+                  value={chart.id}
+                  className={cn(
+                    'relative flex items-center gap-1.5 rounded-full border border-border/60 bg-card px-3 py-1.5 text-xs transition-all duration-200 hover:bg-accent hover:text-foreground',
+                    'data-[state=active]:border-primary/50 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:font-bold'
+                  )}
+                >
+                  <chart.icon className="h-3.5 w-3.5 flex-shrink-0" />
+                  <span>{chart.label}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-0.5 rounded-full bg-muted/40 p-1 border border-border/60 overflow-x-auto max-w-full no-scrollbar">
               {Object.keys(periodsConvert).map((p) => (
                 <button
                   key={p}
                   onClick={() => handlePeriodChange(p)}
                   className={cn(
-                    'rounded-full px-2.5 py-1 text-[10px] sm:text-[11px] font-bold uppercase transition-all shrink-0',
+                    'rounded-full px-2 py-0.5 text-[10px] font-bold uppercase transition-all shrink-0',
                     period === p
-                      ? 'bg-background text-foreground shadow-sm'
+                      ? 'bg-background text-primary shadow-xs'
                       : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
@@ -190,39 +204,6 @@ export default function PerformanceBox({
             )}
           </div>
         </div>
-
-        <Tabs value={chartType} onValueChange={setChartType} className="w-full px-2">
-          <TabsList className="flex h-auto w-full flex-wrap justify-start gap-2 bg-transparent p-0">
-            {availableChartTypes.map((chart) => (
-              <TabsTrigger
-                key={chart.id}
-                value={chart.id}
-                className={cn(
-                  'relative flex items-center gap-2 rounded-full border border-border/50 bg-background/50 px-4 py-2 transition-all duration-200 hover:bg-accent hover:text-accent-foreground',
-                  'data-[state=active]:border-primary/50 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none',
-                  chart.primary ? 'font-medium' : 'font-normal'
-                )}
-              >
-                <div className="flex items-center gap-2">
-                  <chart.icon
-                    className={cn(
-                      'h-4 w-4 flex-shrink-0',
-                      'text-muted-foreground',
-                      'data-[state=active]:text-primary'
-                    )}
-                  />
-                  <span className="text-sm">
-                    {chart.label}
-                  </span>
-                </div>
-                {chart.primary && (
-                  <span className="absolute -right-1 -top-1 flex h-3 w-3 items-center justify-center rounded-full bg-primary ring-2 ring-background">
-                  </span>
-                )}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
       </div>
 
       <div className="mt-4 px-2">
