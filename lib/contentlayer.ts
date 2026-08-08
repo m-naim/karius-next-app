@@ -5,7 +5,11 @@ export function dateSortDesc(a: string, b: string) {
 }
 
 export function sortPosts(allPosts: any[]) {
-  return allPosts.sort((a, b) => dateSortDesc(a.date, b.date))
+  return allPosts.sort((a, b) => {
+    const dateA = a.lastmod || a.date || ''
+    const dateB = b.lastmod || b.date || ''
+    return dateSortDesc(dateA, dateB)
+  })
 }
 
 export function coreContent(post: any) {

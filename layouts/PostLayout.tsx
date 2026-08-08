@@ -35,7 +35,8 @@ export default function PostLayout({
   readingTime,
   children,
 }: LayoutProps) {
-  const { filePath, path, slug, date, title, tags, images } = content
+  const { filePath, path, slug, date, lastmod, title, tags, images } = content
+  const displayDate = lastmod || date
   const basePath = path.split('/')[0]
   const displayImage =
     images && images.length > 0 ? images[0] : 'https://picsum.photos/seed/picsum/800/400'
@@ -74,8 +75,8 @@ export default function PostLayout({
                     <dt className="sr-only">Published on</dt>
                     <Calendar />
                     <dd className="text-base font-medium leading-6 text-gray-500 dark:text-gray-400">
-                      <time dateTime={date}>
-                        {new Date(date).toLocaleDateString(siteMetadata.locale, postDateTemplate)}
+                      <time dateTime={displayDate}>
+                        {new Date(displayDate).toLocaleDateString(siteMetadata.locale, postDateTemplate)}
                       </time>
                     </dd>
                   </div>

@@ -1,5 +1,6 @@
 import { components as defaultComponents } from './MDXComponents'
 import { MDXRemote } from 'next-mdx-remote/rsc'
+import remarkGfm from 'remark-gfm'
 
 interface MDXLayoutRendererProps {
   code: string
@@ -16,7 +17,16 @@ export const MDXLayoutRenderer = ({ code, components: MDXComponents, ...rest }: 
 
   return (
     <div className="prose dark:prose-invert max-w-none">
-      <MDXRemote source={code} components={mergedComponents as any} {...rest} />
+      <MDXRemote
+        source={code}
+        components={mergedComponents as any}
+        options={{
+          mdxOptions: {
+            remarkPlugins: [remarkGfm],
+          },
+        }}
+        {...rest}
+      />
     </div>
   )
 }

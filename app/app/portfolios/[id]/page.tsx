@@ -1,6 +1,6 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import React, { useState, useEffect, useMemo } from 'react'
 import { useToast } from '@/hooks/use-toast'
 import {
@@ -52,6 +52,7 @@ import { Input } from '@/components/ui/input'
 
 export default function PortfolioView({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params)
+  const router = useRouter()
   const { toast } = useToast()
   const [data, setData] = React.useState<PortfolioSecurity[]>([])
   const [loading, setLoading] = React.useState(true)
@@ -121,6 +122,15 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
   const fetchData = async (id: string) => {
     try {
       const res = await get(id)
+      if (!res || !res.data) {
+        toast({
+          title: 'Portefeuille introuvable',
+          description: 'Redirection vers la page d\'exploration...',
+          variant: 'destructive',
+        })
+        router.replace('/app/portfolios/explore')
+        return
+      }
       setOwn(res.own)
       setPortfolio(res.data)
       setData(res.data.allocation)
@@ -130,10 +140,11 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
       setPortfolio({ _id: '', allocation: [], transactions: [], cashValue: 0, totalValue: 0 })
       setLoading(false)
       toast({
-        title: 'Erreur',
-        description: 'Impossible de charger les données du portfolio',
+        title: 'Portefeuille introuvable',
+        description: 'Redirection vers la page d\'exploration...',
         variant: 'destructive',
       })
+      router.replace('/app/portfolios/explore')
     }
   }
 

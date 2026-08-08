@@ -1,32 +1,42 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import PortfolioLayout from 'app/app/portfolios/[id]/PortfolioLayout'
-import React, { useState, useEffect, Children } from 'react'
+import React, { useState, useEffect } from 'react'
 
-import { get, getMetadata } from '@/services/portfolioService'
+import { getMetadata } from '@/services/portfolioService'
 
-export default function PortfolioView({ children }) {
-  const id = usePathname().split('/')[3]
+export default function PortfolioView({ children }: { children: React.ReactNode }) {
+  const router = useRouter()
+  const pathname = usePathname()
+  const id = pathname.split('/')[3]
   const [followersSize, setFollowersSize] = useState(0)
   const [own, setOwn] = React.useState(false)
   const [followed, setFollowed] = React.useState(false)
   const [name, setName] = React.useState('Portefeuille')
 
   useEffect(() => {
-    const fetchData = async (id) => {
+    const fetchData = async (id: string) => {
       try {
-        const res = await getMetadata(id as string)
+        const res = await getMetadata(id)
+        if (!res || res.status === 404 || !res.name) {
+          router.replace('/app/portfolios/explore')
+          return
+        }
         setOwn(res.own)
         setFollowed(res.followed)
         setFollowersSize(res.followersSize)
         setName(res.name)
       } catch (e) {
-        console.error('error api:' + e)
+        console.error('Portfolio 404 or fetch error:', e)
+        router.replace('/app/portfolios/explore')
       }
     }
-    fetchData(id)
-  }, [id])
+
+    if (id && id !== 'new' && id !== 'explore') {
+      fetchData(id)
+    }
+  }, [id, router])
 
   return (
     <PortfolioLayout

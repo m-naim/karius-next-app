@@ -8,16 +8,40 @@ import matter from 'gray-matter'
 const DATA_DIR = path.join(process.cwd(), 'data')
 
 function getLocalFiles(subDir: string) {
-  const targetDir = path.join(DATA_DIR, subDir)
-  if (!fs.existsSync(targetDir)) return []
+  let targetDir = path.join(DATA_DIR, subDir)
+
+  if (!fs.existsSync(targetDir) || fs.readdirSync(targetDir).length === 0) {
+    const parentContentDir = path.resolve(process.cwd(), '../boursehorus-content', subDir)
+    const localContentDir = path.resolve(process.cwd(), 'boursehorus-content', subDir)
+    if (fs.existsSync(parentContentDir) && fs.readdirSync(parentContentDir).length > 0) {
+      targetDir = parentContentDir
+    } else if (fs.existsSync(localContentDir) && fs.readdirSync(localContentDir).length > 0) {
+      targetDir = localContentDir
+    } else if (!fs.existsSync(targetDir)) {
+      return []
+    }
+  }
 
   const files: string[] = []
   function readDirRecursive(dir: string) {
+    if (!fs.existsSync(dir)) return
     const entries = fs.readdirSync(dir, { withFileTypes: true })
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name)
       if (entry.isDirectory()) {
         readDirRecursive(fullPath)
+      } else if (entry.isSymbolicLink()) {
+        try {
+          const realPath = fs.realpathSync(fullPath)
+          const stat = fs.statSync(realPath)
+          if (stat.isDirectory()) {
+            readDirRecursive(realPath)
+          } else if (stat.isFile() && (realPath.endsWith('.mdx') || realPath.endsWith('.md'))) {
+            files.push(fullPath)
+          }
+        } catch (e) {
+          // ignore broken symlink
+        }
       } else if (entry.isFile() && (entry.name.endsWith('.mdx') || entry.name.endsWith('.md'))) {
         files.push(fullPath)
       }
