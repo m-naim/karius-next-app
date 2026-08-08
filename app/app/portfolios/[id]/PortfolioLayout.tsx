@@ -1,30 +1,22 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useState } from 'react'
 
 import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
   ArrowLeft,
   ArrowLeftRight,
-  EllipsisVertical,
   GemIcon,
   StarIcon,
-  Trash2,
   TrendingUp,
   WalletMinimal,
   Settings,
+  HelpCircle,
 } from 'lucide-react'
 import SectionContainer from '@/components/organismes/layout/SectionContainer'
 import { deletePortfolio, follow } from '@/services/portfolioService'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuShortcut,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import Link from 'next/link'
-import { NavBar } from '@/components/ui/tubelight-navbar'
+import { PortfolioHelpDrawer } from './components/PortfolioHelpDrawer'
+import { PortfolioSpotlightTour } from './components/PortfolioSpotlightTour'
 
 const PortfolioLayout = ({
   id,
@@ -35,31 +27,29 @@ const PortfolioLayout = ({
   followersSize,
   setFollowersSize,
   name,
+}: {
+  id: string
+  children: ReactNode
+  isOwn: boolean
+  followed?: boolean
+  setFollowed?: any
+  followersSize?: number
+  setFollowersSize?: any
+  name?: string
 }) => {
   const router = useRouter()
   const pathname = usePathname()
+  const [isHelpOpen, setIsHelpOpen] = useState(false)
+  const [isTourActive, setIsTourActive] = useState(false)
 
   const handleFollowClick = async () => {
     try {
       const res = await follow(id)
-      setFollowed(res.followed)
-      setFollowersSize(res.followersSize)
+      if (setFollowed) setFollowed(res.followed)
+      if (setFollowersSize) setFollowersSize(res.followersSize)
     } catch {
       console.error('error')
     }
-  }
-
-  const handleDeletePortfolio = async () => {
-    try {
-      await deletePortfolio(id)
-      router.push('/app/portfolios')
-    } catch (e) {
-      console.error('error', e)
-    }
-  }
-
-  const isLinkActive = (path: string) => {
-    return pathname === path ? 'bg-primary/20' : ''
   }
 
   const navItems = [
@@ -84,7 +74,19 @@ const PortfolioLayout = ({
                 <h1 className="text-lg sm:text-2xl font-black capitalize tracking-tight text-foreground truncate">{name}</h1>
               </div>
 
-              <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                {/* Help & Tour Toggle Button */}
+                <Button
+                  id="tour-help-button"
+                  onClick={() => setIsHelpOpen(true)}
+                  variant="outline"
+                  size="sm"
+                  className="h-7 sm:h-8 gap-1.5 rounded-full border-primary/30 bg-primary/10 text-primary text-xs hover:bg-primary/20 font-bold"
+                >
+                  <HelpCircle className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Aide & Glossaire</span>
+                </Button>
+
                 {isOwn ? (
                   <Link href={`/app/portfolios/${id}/settings`}>
                     <Button size="icon" variant="ghost" className="h-7 w-7 sm:h-8 sm:w-8 rounded-full hover:bg-accent/50" aria-label="Paramètres">
@@ -100,14 +102,14 @@ const PortfolioLayout = ({
                       color={followed ? '#eac54f' : 'currentColor'}
                     />
                     <span className="font-semibold">{followed ? 'Suivis' : 'Suivre'}</span>
-                    <span className="text-muted-foreground">({followersSize})</span>
+                    <span className="text-muted-foreground">({followersSize || 0})</span>
                   </Button>
                 )}
               </div>
             </div>
 
             {/* Horizontal Navigation for Desktop & Mobile */}
-            <div className="flex w-full max-w-full min-w-0 items-center gap-1 overflow-x-auto no-scrollbar border-b border-transparent">
+            <div id="tour-subnav-links" className="flex w-full max-w-full min-w-0 items-center gap-1 overflow-x-auto no-scrollbar border-b border-transparent">
               {navItems.map((item) => {
                 const isActive = pathname === item.url || pathname === `${item.url}/`
                 return (
@@ -133,9 +135,13 @@ const PortfolioLayout = ({
 
       <SectionContainer>
         <div className="mb-6 sm:mb-12 mt-2 sm:mt-4 flex w-full max-w-full min-w-0 flex-col">
-          <div className="w-full max-w-full min-w-0 flex-grow rounded-md">{children}</div>
+          {children}
         </div>
       </SectionContainer>
+
+      {/* Help Drawer & Spotlight Tour */}
+      <PortfolioHelpDrawer isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+      <PortfolioSpotlightTour isActive={isTourActive} onClose={() => setIsTourActive(false)} />
     </div>
   )
 }

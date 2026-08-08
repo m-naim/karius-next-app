@@ -14,12 +14,13 @@ interface SplitScreenLayoutProps {
   drawerContent: React.ReactNode
   className?: string
   drawerWidth?: string
+  isFixedLayout?: boolean
 }
 
 /**
  * Shared Split Screen Layout component.
- * Used across Watchlist, Market, and other views to provide a unified,
- * scrollable main pane side-by-side with a split drawer panel.
+ * Supports both fixed desktop viewports (for Watchlist & Market Ticker detail views)
+ * and normal scrollable viewports for standard pages.
  */
 export function SplitScreenLayout({
   header,
@@ -31,16 +32,42 @@ export function SplitScreenLayout({
   drawerContent,
   className,
   drawerWidth,
+  isFixedLayout = false,
 }: SplitScreenLayoutProps) {
   return (
-    <div className={cn('flex flex-col md:flex-row h-auto min-h-screen w-full flex-1 overflow-y-auto', className)}>
+    <div
+      className={cn(
+        'flex flex-col md:flex-row w-full flex-1',
+        isFixedLayout
+          ? 'h-auto md:h-[calc(100vh-64px)] overflow-y-auto md:overflow-hidden'
+          : 'h-auto min-h-screen overflow-y-auto',
+        className
+      )}
+    >
       {/* LEFT PANE: Header, Filters & Table/Main view */}
-      <div className="flex flex-1 min-w-0 flex-col h-auto min-h-0 gap-2 p-2 md:gap-3 md:p-3 overflow-y-auto">
+      <div
+        className={cn(
+          'flex flex-1 min-w-0 flex-col gap-2 p-2 md:gap-3 md:p-3',
+          isFixedLayout
+            ? 'h-auto md:h-full min-h-0 overflow-y-auto md:overflow-hidden'
+            : 'h-auto min-h-0 overflow-y-auto'
+        )}
+      >
         {header && <div className="shrink-0">{header}</div>}
         {filters && <div className="shrink-0">{filters}</div>}
 
-        <div className="bg-dark flex-1 min-w-0 overflow-y-auto rounded-xl border">
-          <div className="flex h-full flex-col min-h-0 overflow-y-auto">
+        <div
+          className={cn(
+            'bg-dark flex-1 min-w-0 rounded-xl border',
+            isFixedLayout ? 'overflow-y-auto md:overflow-hidden' : 'overflow-y-auto'
+          )}
+        >
+          <div
+            className={cn(
+              'flex h-full flex-col min-h-0',
+              isFixedLayout ? 'overflow-y-auto md:overflow-hidden' : 'overflow-y-auto'
+            )}
+          >
             {children}
           </div>
         </div>

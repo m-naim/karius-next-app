@@ -5,38 +5,58 @@ import marketService from '@/services/marketService'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { Skeleton } from '@/components/ui/skeleton'
 
+const holdingsCache = new Map<string, any[]>()
+
 export function MarketTopFlop({ symbol, period }: { symbol: string; period: string }) {
   const [data, setData] = useState<{ top: any[]; flop: any[] } | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(!holdingsCache.has(symbol))
 
   useEffect(() => {
-    const fetchHoldings = async () => {
-      try {
-        setLoading(true)
-        const info = await marketService.get(symbol)
-        if (!info || !info.holdings) return
+    let isMounted = true
 
-        const getPerf = (s: any) => {
-          if (period === '1d') return s.regularMarketChangePercent || 0
-          return s.variations?.[period] || 0
-        }
+    const getPerf = (s: any) => {
+      if (period === '1d') return s.regularMarketChangePercent || 0
+      return s.variations?.[period] || 0
+    }
 
-        const sorted = [...info.holdings].sort((a, b) => getPerf(b) - getPerf(a))
-        const top = sorted.slice(0, 5)
-        const flop = sorted.slice(-5).reverse() // reverse so worst is first
-
+    const processHoldings = (holdings: any[]) => {
+      const sorted = [...holdings].sort((a, b) => getPerf(b) - getPerf(a))
+      const top = sorted.slice(0, 5)
+      const flop = sorted.slice(-5).reverse()
+      if (isMounted) {
         setData({ top, flop })
-      } catch (error) {
-        console.error('Failed to load top/flop for', symbol, error)
-      } finally {
         setLoading(false)
       }
     }
 
+    // Instant render if cached
+    if (holdingsCache.has(symbol)) {
+      processHoldings(holdingsCache.get(symbol)!)
+    } else {
+      setLoading(true)
+    }
+
+    const fetchHoldings = async () => {
+      try {
+        const info = await marketService.get(symbol)
+        if (!info || !info.holdings) return
+        holdingsCache.set(symbol, info.holdings)
+        processHoldings(info.holdings)
+      } catch (error) {
+        console.error('Failed to load top/flop for', symbol, error)
+      } finally {
+        if (isMounted) setLoading(false)
+      }
+    }
+
     fetchHoldings()
+
+    return () => {
+      isMounted = false
+    }
   }, [symbol, period])
 
-  if (loading) {
+  if (loading && !data) {
     return (
       <div className="space-y-4 mt-4">
         <div className="space-y-2">

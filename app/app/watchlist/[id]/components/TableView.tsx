@@ -2,6 +2,7 @@
 
 import SimpleDataTable from '@/components/molecules/table/SimpleDataTable'
 import { TableContextHeader } from '../components/table-header'
+import { cn } from '@/lib/utils'
 
 export function TableView({
   table,
@@ -19,6 +20,7 @@ export function TableView({
   setShowMetrics,
   activeScreener,
   setActiveScreener,
+  isFixedLayout = true,
 }: {
   table: any
   id: string
@@ -35,9 +37,15 @@ export function TableView({
   setShowMetrics?: any
   activeScreener?: string | null
   setActiveScreener?: (screenerId: string | null) => void
+  isFixedLayout?: boolean
 }) {
   return (
-    <div className="flex h-full w-full flex-col min-h-0 overflow-y-auto">
+    <div
+      className={cn(
+        'flex h-full w-full flex-col min-h-0',
+        isFixedLayout ? 'overflow-visible md:overflow-hidden' : 'overflow-y-auto'
+      )}
+    >
       <div className="shrink-0">
         <TableContextHeader
           table={table}
@@ -53,7 +61,12 @@ export function TableView({
           setActiveScreener={setActiveScreener}
         />
       </div>
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      <div
+        className={cn(
+          'flex-1 min-h-0',
+          isFixedLayout ? 'overflow-visible md:overflow-hidden' : 'overflow-y-auto'
+        )}
+      >
         <SimpleDataTable
           table={table}
           colSpan={columns.length}

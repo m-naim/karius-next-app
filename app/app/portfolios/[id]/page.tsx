@@ -49,6 +49,9 @@ import PortfolioTable from '@/components/molecules/table/PortfolioTable'
 import PortfolioAssetDrawer from './PortfolioAssetDrawer'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
+import { PortfolioOnboardingModal } from './components/PortfolioOnboardingModal'
+import { PortfolioSpotlightTour } from './components/PortfolioSpotlightTour'
+import { PortfolioEmptyStateChecklist } from './components/PortfolioEmptyStateChecklist'
 
 export default function PortfolioView({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params)
@@ -85,6 +88,17 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
   const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
   const [useNativeCurrency, setUseNativeCurrency] = React.useState(false)
   const [showMetrics, setShowMetrics] = React.useState(false)
+  const [isOnboardingModalOpen, setIsOnboardingModalOpen] = React.useState(false)
+  const [isTourActive, setIsTourActive] = React.useState(false)
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const done = localStorage.getItem('horus_portfolio_onboarding_done')
+      if (!done) {
+        setIsOnboardingModalOpen(true)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (showMetrics) {
@@ -238,14 +252,27 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
       {/* LEFT PANE: Stats, Table & Allocation */}
       <div className="flex flex-1 min-w-0 flex-col gap-3 sm:gap-6 p-2 sm:p-4 pb-4 sm:pb-8">
         {/* HERO SECTION: Stats at the top */}
-        <div className="w-full">
+        <div id="tour-stats-card" className="w-full">
           <StatsCard pftData={portfolio} own={own} />
         </div>
+
+        {/* Empty State Checklist for new/empty portfolios */}
+        {own && data.length === 0 && (
+          <PortfolioEmptyStateChecklist
+            portfolioId={id}
+            hasTransactions={data.length > 0}
+            hasCash={(portfolio.cashValue || 0) > 0}
+            onAddTransaction={() => {
+              const btn = document.getElementById('btn-add-transaction-trigger')
+              if (btn) btn.click()
+            }}
+          />
+        )}
 
         <div className="flex w-full flex-col lg:flex-row gap-3 sm:gap-6">
           {/* LEFT COLUMN: Table */}
           <div className="w-full flex-grow lg:w-8/12">
-            <Card className="overflow-hidden border-border bg-card shadow-sm">
+            <Card id="tour-table-section" className="overflow-hidden border-border bg-card shadow-sm">
               <CardHeader className="border-b border-border bg-muted/30 p-3 sm:p-4 space-y-3">
                 {/* ROW 1: Title, Cash & Primary Actions */}
                 <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -261,7 +288,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
                   </div>
 
                   {own && (
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div id="tour-quick-actions" className="flex items-center gap-1.5 shrink-0">
                       <AccountsMouvements
                         submitHandler={addMouvement}
                         Trigger={(props) => (
@@ -275,7 +302,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
                         totalPortfolioValue={portfolio.totalValue}
                         submitHandler={addTransaction}
                         Trigger={(props) => (
-                          <Button {...props} size="sm" className="h-8 px-3 sm:px-4 gap-1.5 text-xs font-bold shadow-sm">
+                          <Button id="btn-add-transaction-trigger" {...props} size="sm" className="h-8 px-3 sm:px-4 gap-1.5 text-xs font-bold shadow-sm">
                             <PlusIcon className="h-3.5 w-3.5" />
                             <span>Transaction</span>
                           </Button>
@@ -419,6 +446,25 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
         security={selectedSecurity}
         portfolio={portfolio}
         own={own}
+      />
+
+      {/* ONBOARDING MODAL & SPOTLIGHT WALKTHROUGH */}
+      <PortfolioOnboardingModal
+        isOpen={isOnboardingModalOpen}
+        onClose={() => {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('horus_portfolio_onboarding_done', 'true')
+          }
+          setIsOnboardingModalOpen(false)
+        }}
+        onStartTour={() => {
+          setIsTourActive(true)
+        }}
+      />
+
+      <PortfolioSpotlightTour
+        isActive={isTourActive}
+        onClose={() => setIsTourActive(false)}
       />
     </div>
   )
