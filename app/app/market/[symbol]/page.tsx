@@ -217,6 +217,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
     <Loader />
   ) : (
     <SplitScreenLayout
+      isFixedLayout={true}
       header={
         <div className="bg-dark flex shrink-0 items-center justify-between gap-2 rounded-xl border px-3 py-2 md:p-4">
           <div className="flex min-w-0 items-center gap-3">

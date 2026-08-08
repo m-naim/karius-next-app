@@ -19,7 +19,7 @@ interface SplitScreenLayoutProps {
 
 /**
  * Shared Split Screen Layout component.
- * Supports both fixed desktop viewports (for Watchlist & Market Ticker detail views)
+ * Supports fixed h-full viewport for Watchlist & Market Ticker detail views,
  * and normal scrollable viewports for standard pages.
  */
 export function SplitScreenLayout({
@@ -39,7 +39,7 @@ export function SplitScreenLayout({
       className={cn(
         'flex flex-col md:flex-row w-full flex-1',
         isFixedLayout
-          ? 'h-auto md:h-[calc(100vh-64px)] overflow-y-auto md:overflow-hidden'
+          ? 'h-full overflow-hidden'
           : 'h-auto min-h-screen overflow-y-auto',
         className
       )}
@@ -49,7 +49,7 @@ export function SplitScreenLayout({
         className={cn(
           'flex flex-1 min-w-0 flex-col gap-2 p-2 md:gap-3 md:p-3',
           isFixedLayout
-            ? 'h-auto md:h-full min-h-0 overflow-y-auto md:overflow-hidden'
+            ? 'h-full min-h-0 overflow-hidden'
             : 'h-auto min-h-0 overflow-y-auto'
         )}
       >
@@ -59,13 +59,13 @@ export function SplitScreenLayout({
         <div
           className={cn(
             'bg-dark flex-1 min-w-0 rounded-xl border',
-            isFixedLayout ? 'overflow-y-auto md:overflow-hidden' : 'overflow-y-auto'
+            isFixedLayout ? 'overflow-hidden' : 'overflow-y-auto'
           )}
         >
           <div
             className={cn(
               'flex h-full flex-col min-h-0',
-              isFixedLayout ? 'overflow-y-auto md:overflow-hidden' : 'overflow-y-auto'
+              isFixedLayout ? 'overflow-hidden' : 'overflow-y-auto'
             )}
           >
             {children}

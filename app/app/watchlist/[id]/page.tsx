@@ -396,6 +396,7 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
     <Loader />
   ) : (
     <SplitScreenLayout
+      isFixedLayout={true}
       header={
         <div className="bg-dark flex shrink-0 items-center justify-between gap-4 rounded-lg border p-4">
           <div className="flex min-w-0 items-center gap-3">
