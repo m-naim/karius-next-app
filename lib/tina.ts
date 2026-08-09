@@ -1,74 +1,59 @@
 import client from '../tina/__generated__/client'
 import readingTime from 'reading-time'
 import { extractTocHeadings } from './contentlayer'
-import fs from 'fs'
-import path from 'path'
 import matter from 'gray-matter'
 
-const DATA_DIR = path.join(process.cwd(), 'data')
+async function getGitHubFiles(subDir: string) {
+  try {
+    const owner = 'm-naim'
+    const repo = 'boursehorus-content'
+    const branch = process.env.NEXT_PUBLIC_TINA_BRANCH || 'main'
+    const url = `https://api.github.com/repos/${owner}/${repo}/contents/${subDir}?ref=${branch}`
 
-function getLocalFiles(subDir: string) {
-  let targetDir = path.join(DATA_DIR, subDir)
-
-  if (!fs.existsSync(targetDir) || fs.readdirSync(targetDir).length === 0) {
-    const parentContentDir = path.resolve(process.cwd(), '../boursehorus-content', subDir)
-    const localContentDir = path.resolve(process.cwd(), 'boursehorus-content', subDir)
-    if (fs.existsSync(parentContentDir) && fs.readdirSync(parentContentDir).length > 0) {
-      targetDir = parentContentDir
-    } else if (fs.existsSync(localContentDir) && fs.readdirSync(localContentDir).length > 0) {
-      targetDir = localContentDir
-    } else if (!fs.existsSync(targetDir)) {
-      return []
+    const headers: Record<string, string> = {
+      Accept: 'application/vnd.github.v3+json',
+      'User-Agent': 'boursehorus-app',
     }
-  }
+    if (process.env.GITHUB_TOKEN) {
+      headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`
+    }
 
-  const files: string[] = []
-  function readDirRecursive(dir: string) {
-    if (!fs.existsSync(dir)) return
-    const entries = fs.readdirSync(dir, { withFileTypes: true })
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name)
-      if (entry.isDirectory()) {
-        readDirRecursive(fullPath)
-      } else if (entry.isSymbolicLink()) {
-        try {
-          const realPath = fs.realpathSync(fullPath)
-          const stat = fs.statSync(realPath)
-          if (stat.isDirectory()) {
-            readDirRecursive(realPath)
-          } else if (stat.isFile() && (realPath.endsWith('.mdx') || realPath.endsWith('.md'))) {
-            files.push(fullPath)
-          }
-        } catch (e) {
-          // ignore broken symlink
+    const res = await fetch(url, { headers, next: { revalidate: 60 } })
+    if (!res.ok) return []
+
+    const items = await res.json()
+    if (!Array.isArray(items)) return []
+
+    const files = items.filter(
+      (item: any) => item.type === 'file' && (item.name.endsWith('.mdx') || item.name.endsWith('.md'))
+    )
+
+    const results = await Promise.all(
+      files.map(async (file: any) => {
+        const fileRes = await fetch(file.download_url, { next: { revalidate: 60 } })
+        const fileContent = await fileRes.text()
+        const { data: frontmatter, content } = matter(fileContent)
+        const slug = file.name.replace(/\.(mdx|md)$/, '')
+
+        return {
+          ...frontmatter,
+          slug,
+          path: `${subDir}/${slug}`,
+          filePath: `${subDir}/${file.name}`,
+          readingTime: readingTime(content),
+          toc: extractTocHeadings(content),
+          body: {
+            raw: content,
+            code: content,
+          },
         }
-      } else if (entry.isFile() && (entry.name.endsWith('.mdx') || entry.name.endsWith('.md'))) {
-        files.push(fullPath)
-      }
-    }
+      })
+    )
+
+    return results
+  } catch (error) {
+    return []
   }
-
-  readDirRecursive(targetDir)
-
-  return files.map((filePath) => {
-    const fileContent = fs.readFileSync(filePath, 'utf-8')
-    const { data: frontmatter, content } = matter(fileContent)
-    const relativePath = path.relative(targetDir, filePath).replace(/\\/g, '/')
-    const slug = relativePath.replace(/\.(mdx|md)$/, '')
-
-    return {
-      ...frontmatter,
-      slug,
-      path: `${subDir}/${slug}`,
-      filePath: `${subDir}/${relativePath}`,
-      readingTime: readingTime(content),
-      toc: extractTocHeadings(content),
-      body: {
-        raw: content,
-        code: content,
-      },
-    }
-  })
 }
 
 export async function getAllBlogs() {
@@ -99,10 +84,10 @@ export async function getAllBlogs() {
       }).filter(Boolean)
     }
   } catch (error) {
-    // Fallback to local files if GraphQL server is not reachable during static build
+    // Fallback to GitHub REST API
   }
 
-  return getLocalFiles('blog')
+  return getGitHubFiles('blog')
 }
 
 export async function getAllGuides() {
@@ -133,10 +118,10 @@ export async function getAllGuides() {
       }).filter(Boolean)
     }
   } catch (error) {
-    // Fallback to local files if GraphQL server is not reachable during static build
+    // Fallback to GitHub REST API
   }
 
-  return getLocalFiles('guide')
+  return getGitHubFiles('guide')
 }
 
 export async function getAllAnalyses() {
@@ -167,10 +152,10 @@ export async function getAllAnalyses() {
       }).filter(Boolean)
     }
   } catch (error) {
-    // Fallback to local files if GraphQL server is not reachable during static build
+    // Fallback to GitHub REST API
   }
 
-  return getLocalFiles('analyse')
+  return getGitHubFiles('analyse')
 }
 
 export async function getAllAuthors() {
@@ -197,8 +182,8 @@ export async function getAllAuthors() {
       }).filter(Boolean)
     }
   } catch (error) {
-    // Fallback to local files if GraphQL server is not reachable during static build
+    // Fallback to GitHub REST API
   }
 
-  return getLocalFiles('authors')
+  return getGitHubFiles('authors')
 }
