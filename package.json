@@ -6,7 +6,7 @@
   "scripts": {
     "start": "next dev --webpack",
     "dev": "cross-env next dev --webpack",
-    "prebuild": "dotenv -e .env.local -- tinacms build --datalayer-port 9005 --skip-cloud-checks",
+    "prebuild": "dotenv -e .env.local -- tinacms build --datalayer-port 9005",
     "build": "next build --turbo",
     "localbuild": "npm run build",
     "serve": "next start",
