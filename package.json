@@ -6,7 +6,7 @@
   "scripts": {
     "start": "next dev --webpack",
     "dev": "cross-env next dev --webpack",
-    "build": "tinacms build --skip-cloud-checks && cross-env NODE_OPTIONS='--experimental-json-modules' node ./scripts/postbuild.mjs && cross-env INIT_CWD=$PWD next build --turbo",
+    "build": "tinacms build & cross-env NODE_OPTIONS='--experimental-json-modules' node ./scripts/postbuild.mjs && cross-env INIT_CWD=$PWD next build --turbo",
     "prebuild": "tinacms build --skip-cloud-checks",
     "postbuild": "cross-env NODE_OPTIONS='--experimental-json-modules' node ./scripts/postbuild.mjs",
     "localbuild": "npm run build",

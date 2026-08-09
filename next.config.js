@@ -5,14 +5,13 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 // You might need to insert additional domains in script-src if you are using external services
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline' giscus.app analytics.umami.is eu.umami.is;
-  style-src 'self' 'unsafe-inline';
-  img-src * blob: data:;
+  script-src 'self' 'unsafe-eval' 'unsafe-inline' giscus.app analytics.umami.is eu.umami.is assets.tinajs.io app.tina.io;
+  style-src 'self' 'unsafe-inline' assets.tinajs.io;
+  img-src * blob: data: assets.tinajs.io;
   media-src *.s3.amazonaws.com;
   connect-src *;
-  font-src 'self';
-  frame-src giscus.app
-  frame-src eu.umami.is
+  font-src 'self' assets.tinajs.io;
+  frame-src 'self' giscus.app eu.umami.is app.tina.io assets.tinajs.io;
 `
 
 const securityHeaders = [
