@@ -211,8 +211,8 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
       return res
     } catch (error) {
       toast({
-        title: 'Erreur',
-        description: "Une erreur est survenue lors de l'ajout de la transaction",
+        title: "Échec de l'enregistrement de la transaction",
+        description: 'Vérifiez le symbole, le prix et la quantité saisis avant de réessayer.',
         variant: 'destructive',
       })
       throw error
@@ -235,8 +235,8 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
       })
     } catch (error) {
       toast({
-        title: 'Erreur',
-        description: "Une erreur est survenue lors de l'ajout du mouvement",
+        title: "Échec de l'enregistrement du mouvement",
+        description: 'Impossible de mettre à jour les liquidités du portefeuille. Veuillez réessayer.',
         variant: 'destructive',
       })
       throw error

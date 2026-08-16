@@ -162,7 +162,11 @@ export default function AlertsPage() {
       toast({ title: 'Alerte modifiée' })
     } catch (error) {
       console.error('Failed to edit alert:', error)
-      toast({ variant: 'destructive', title: 'Erreur', description: 'Impossible de modifier.' })
+      toast({
+        variant: 'destructive',
+        title: 'Modification impossible',
+        description: "L'alerte n'a pas pu être mise à jour. Vérifiez la valeur saisie et réessayez.",
+      })
     } finally {
       setSavingEdit(false)
     }
@@ -176,6 +180,11 @@ export default function AlertsPage() {
       toast({ title: 'Canal mis à jour', description: `Vous recevrez désormais vos alertes via ${channel}.` })
     } catch (error) {
       console.error('Failed to update channel:', error)
+      toast({
+        variant: 'destructive',
+        title: 'Échec du changement de canal',
+        description: 'Impossible de définir le canal de notification. Veuillez réessayer.',
+      })
     } finally {
       setUpdatingSettings(false)
     }
@@ -186,9 +195,14 @@ export default function AlertsPage() {
     try {
       await alertService.updateTelegram(tempChatId)
       setSettings((prev) => ({ ...prev, telegramChatId: tempChatId }))
-      toast({ title: 'Config Telegram enregistrée' })
+      toast({ title: 'Configuration Telegram enregistrée', description: 'Votre Chat ID a été associé avec succès.' })
     } catch (error) {
       console.error('Failed to update telegram:', error)
+      toast({
+        variant: 'destructive',
+        title: 'Échec de la configuration Telegram',
+        description: 'Vérifiez votre Chat ID et assurez-vous d\'avoir démarré une conversation avec le bot.',
+      })
     } finally {
       setUpdatingSettings(false)
     }
@@ -197,20 +211,28 @@ export default function AlertsPage() {
   const handleTestNotification = async () => {
     try {
       await alertService.testLastNotification()
-      toast({ title: 'Test envoyé', description: 'La dernière notification a été renvoyée.' })
+      toast({ title: 'Test envoyé', description: 'La notification test a été transmise à votre canal.' })
     } catch (error) {
       console.error('Failed to test notification:', error)
-      toast({ variant: 'destructive', title: 'Erreur', description: 'Impossible de renvoyer la notification.' })
+      toast({
+        variant: 'destructive',
+        title: 'Échec de l\'envoi du test',
+        description: 'Vérifiez que votre Chat ID Telegram ou votre application ntfy est correctement configurée.',
+      })
     }
   }
 
   const handleTestBatchNotification = async () => {
     try {
       await alertService.testLastBatchNotification()
-      toast({ title: 'Test Batch envoyé', description: 'La dernière notification batch a été renvoyée.' })
+      toast({ title: 'Synthèse test envoyée', description: 'Le rapport journalier a été envoyé.' })
     } catch (error) {
       console.error('Failed to test batch notification:', error)
-      toast({ variant: 'destructive', title: 'Erreur', description: 'Aucun historique de batch trouvé.' })
+      toast({
+        variant: 'destructive',
+        title: 'Aucune synthèse disponible',
+        description: 'Aucun historique de notification journalière récent n\'a été trouvé pour le test.',
+      })
     }
   }
 
@@ -227,10 +249,14 @@ export default function AlertsPage() {
         notificationChannel: settings.channel,
       })
       await authService.updateDisabledEntities(disabledEntities)
-      toast({ title: 'Rapports sauvegardés', description: 'Vos préférences ont été mises à jour.' })
+      toast({ title: 'Rapports sauvegardés', description: 'Vos fréquences et préférences de notification sont à jour.' })
     } catch (error) {
       console.error('Failed to save reports:', error)
-      toast({ variant: 'destructive', title: 'Erreur', description: 'Impossible de sauvegarder.' })
+      toast({
+        variant: 'destructive',
+        title: 'Sauvegarde des préférences échouée',
+        description: 'Impossible d\'enregistrer vos paramètres. Veuillez vérifier votre connexion et réessayer.',
+      })
     } finally {
       setSavingReports(false)
     }

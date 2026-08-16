@@ -68,13 +68,24 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
   const symbol = decodeURIComponent(rawSymbol)
   const { toast } = useToast()
 
-  const [indexInfo, setIndexInfo] = React.useState<IndexData>({
-    symbol: '',
-    name: '',
-    holdings: [],
+  const cachedIndex = React.useMemo(() => marketService.getCached(symbol), [symbol])
+
+  const [indexInfo, setIndexInfo] = React.useState<IndexData>(() => {
+    if (cachedIndex) {
+      return {
+        symbol: cachedIndex.symbol || symbol,
+        name: cachedIndex.name || symbol,
+        holdings: cachedIndex.holdings || [],
+      }
+    }
+    return {
+      symbol: '',
+      name: '',
+      holdings: [],
+    }
   })
 
-  const [securities, setSecurities] = React.useState<security[]>([])
+  const [securities, setSecurities] = React.useState<security[]>(() => cachedIndex?.holdings || [])
   const [watchlists, setWatchlists] = React.useState<any[]>([])
   const [activeScreener, setActiveScreener] = React.useState<string | null>(null)
 
@@ -83,7 +94,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
   }, [securities, activeScreener])
 
   const [view, setView] = React.useState<'table' | 'analysis'>('table')
-  const [loading, setLoading] = React.useState(true)
+  const [loading, setLoading] = React.useState(() => !cachedIndex)
   const [selectedTicker, setSelectedTicker] = React.useState<string | null>(null)
   const [showChart, setShowChart] = React.useState(false)
 
@@ -189,29 +200,44 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
   })
 
   useEffect(() => {
+    let isMounted = true
     const fetchData = async () => {
       try {
-        setLoading(true)
-        const [infos, userWatchlists] = await Promise.all([
-          marketService.get(symbol),
-          watchListService.getAll().catch(() => []),
-        ])
-        setIndexInfo(infos)
-        setSecurities(infos.holdings)
-        setWatchlists(userWatchlists || [])
+        if (!cachedIndex) {
+          setLoading(true)
+        }
+
+        watchListService.getAll().then((userWatchlists) => {
+          if (isMounted) setWatchlists(userWatchlists || [])
+        }).catch(() => [])
+
+        await marketService.getProgressive(symbol, (progressiveData) => {
+          if (isMounted) {
+            setIndexInfo(progressiveData)
+            setSecurities([...(progressiveData.holdings || [])])
+            setLoading(false) // Dismiss loader immediately as soon as chunk 1 arrives (< 50ms)!
+          }
+        })
       } catch (error) {
         console.error(error)
-        toast({
-          variant: 'destructive',
-          title: 'Erreur',
-          description: "Impossible de charger les données de l'indice.",
-        })
+        if (isMounted && !cachedIndex) {
+          toast({
+            variant: 'destructive',
+            title: 'Indice temporairement indisponible',
+            description: `Impossible de récupérer la composition de ${symbol}. Veuillez vérifier votre connexion et réessayer.`,
+          })
+        }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
     fetchData()
-  }, [symbol, toast])
+    return () => {
+      isMounted = false
+    }
+  }, [symbol, toast, cachedIndex])
 
   return loading ? (
     <Loader />

@@ -101,21 +101,26 @@ export default function ProfilePage() {
     if (newPassword !== confirmPassword) {
       toast({
         variant: 'destructive',
-        title: 'Erreur',
-        description: 'Les mots de passe ne correspondent pas.',
+        title: 'Mots de passe non identiques',
+        description: 'Les deux saisies de mot de passe ne correspondent pas. Veuillez réessayer.',
       })
       return
     }
     setPasswordLoading(true)
     try {
       await authService.changePassword({ oldPassword, newPassword })
-      toast({ title: 'Succès', description: 'Mot de passe modifié avec succès.' })
+      toast({ title: 'Mot de passe modifié', description: 'Votre nouveau mot de passe a été enregistré.' })
       setIsPasswordDialogOpen(false)
       setOldPassword('')
       setNewPassword('')
       setConfirmPassword('')
     } catch (error) {
       console.error('Failed to change password', error)
+      toast({
+        variant: 'destructive',
+        title: 'Échec de la modification',
+        description: 'Vérifiez que votre mot de passe actuel est exact et réessayez.',
+      })
     } finally {
       setPasswordLoading(false)
     }
@@ -127,10 +132,15 @@ export default function ProfilePage() {
     ) {
       try {
         await authService.deleteAccount()
-        toast({ title: 'Compte supprimé' })
+        toast({ title: 'Compte supprimé', description: 'Votre compte a été clôturé.' })
         handleLogout()
       } catch (error) {
         console.error('Failed to delete account', error)
+        toast({
+          variant: 'destructive',
+          title: 'Suppression impossible',
+          description: 'Une erreur est survenue lors de la suppression de votre compte. Veuillez réessayer.',
+        })
       }
     }
   }

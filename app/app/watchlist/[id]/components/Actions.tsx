@@ -104,8 +104,8 @@ export const Actions = ({ symbol, id = '', deleteRow, allWatchlists = [], securi
     } catch (error) {
       console.error('Failed to perform action:', error)
       toast({
-        title: 'Erreur',
-        description: `Impossible d'ajouter ${symbol} à ${targetName}`,
+        title: isMove ? 'Déplacement impossible' : 'Ajout impossible',
+        description: `Impossible de transférer ${symbol} vers ${targetName}. Vérifiez votre connexion et réessayez.`,
         variant: 'destructive',
       })
     }
@@ -128,6 +128,11 @@ export const Actions = ({ symbol, id = '', deleteRow, allWatchlists = [], securi
       setActiveDialog(null)
     } catch (error) {
       console.error('Failed to create alert:', error)
+      toast({
+        title: "Création de l'alerte échouée",
+        description: `Impossible d'enregistrer l'alerte pour ${symbol}. Vérifiez la valeur saisie.`,
+        variant: 'destructive',
+      })
     } finally {
       setLoading(false)
     }

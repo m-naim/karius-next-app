@@ -85,17 +85,27 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
   const globalTagsKey = 'global_watchlist_tags'
   const localSecurityTagsKey = `watchlist_security_tags_${id}` // Key for tags specific to this watchlist
 
-  const [data, setData] = React.useState<watchList>({
-    _id: '',
-    name: '',
-    benchMark: null,
-    securities: [],
+  const cachedWatchlist = React.useMemo(() => watchListService.getCached(id), [id])
+  const cachedAllWatchlists = React.useMemo(() => watchListService.getAllCached(), [])
+
+  const [data, setData] = React.useState<watchList>(() => {
+    if (cachedWatchlist?.watchlist) {
+      return cachedWatchlist.watchlist
+    }
+    return {
+      _id: '',
+      name: '',
+      benchMark: null,
+      securities: [],
+    }
   })
   const [view, setView] = React.useState<'table' | 'analysis'>('table')
-  const [allWatchlists, setAllWatchlists] = React.useState<watchList[]>([])
-  const [owned, setOwned] = React.useState(false)
-  const [loading, setLoading] = React.useState(true)
-  const [selectedTicker, setSelectedTicker] = React.useState<string | null>(null)
+  const [allWatchlists, setAllWatchlists] = React.useState<watchList[]>(() => cachedAllWatchlists || [])
+  const [owned, setOwned] = React.useState(() => cachedWatchlist?.owned ?? false)
+  const [loading, setLoading] = React.useState(() => !cachedWatchlist)
+  const [selectedTicker, setSelectedTicker] = React.useState<string | null>(() => {
+    return cachedWatchlist?.watchlist?.securities?.[0]?.symbol || null
+  })
   const [showChart, setShowChart] = React.useState(false)
   const [activeScreener, setActiveScreener] = React.useState<string | null>(null)
 
@@ -342,9 +352,12 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
   })
 
   useEffect(() => {
+    let isMounted = true
     const fetchData = async () => {
       try {
-        setLoading(true)
+        if (!cachedWatchlist) {
+          setLoading(true)
+        }
         const [listResponse, allResponse] = await Promise.all([
           watchListService.get(id),
           watchListService.getAll(),
@@ -355,7 +368,7 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
         const storedGlobalTags: string[] = storedGlobalTagsString
           ? JSON.parse(storedGlobalTagsString)
           : []
-        setAllAvailableTags(storedGlobalTags)
+        if (isMounted) setAllAvailableTags(storedGlobalTags)
 
         // Load security-specific tags from local storage
         const storedLocalSecurityTagsString = getItem(localSecurityTagsKey)
@@ -363,34 +376,43 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
           ? JSON.parse(storedLocalSecurityTagsString)
           : {}
 
-        const securitiesWithLocalTags = listResponse.watchlist.securities.map((sec) => ({
+        const securitiesWithLocalTags = (listResponse.watchlist?.securities || []).map((sec: any) => ({
           ...sec,
           tags: storedLocalSecurityTags[sec.symbol] || [],
         }))
 
-        setData({
-          ...listResponse.watchlist,
-          securities: securitiesWithLocalTags,
-        })
+        if (isMounted) {
+          setData({
+            ...listResponse.watchlist,
+            securities: securitiesWithLocalTags,
+          })
 
-        if (listResponse.watchlist?.securities?.length > 0) {
-          setSelectedTicker(listResponse.watchlist.securities[0].symbol)
+          if (listResponse.watchlist?.securities?.length > 0 && !selectedTicker) {
+            setSelectedTicker(listResponse.watchlist.securities[0].symbol)
+          }
+          setOwned(listResponse.owned)
+          setAllWatchlists(allResponse || [])
         }
-        setOwned(listResponse.owned)
-        setAllWatchlists(allResponse)
       } catch (err) {
         console.error(err)
-        toast({
-          variant: 'destructive',
-          title: 'Erreur de chargement',
-          description: 'Impossible de récupérer les données de la watchlist.',
-        })
+        if (isMounted && !cachedWatchlist) {
+          toast({
+            variant: 'destructive',
+            title: 'Watchlist temporairement inaccessible',
+            description: 'Impossible de récupérer vos actions suivies. Vérifiez votre connexion et réessayez.',
+          })
+        }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
     fetchData()
-  }, [id])
+    return () => {
+      isMounted = false
+    }
+  }, [id, cachedWatchlist])
 
   return loading ? (
     <Loader />

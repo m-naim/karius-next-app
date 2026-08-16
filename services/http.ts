@@ -45,17 +45,32 @@ async function CheckError(response: Response) {
   // Specific handling for common status codes
   if (response.status === 401) {
     if (typeof window !== 'undefined') {
+      const hadToken = !!localStorage.getItem('accessToken')
       localStorage.removeItem('accessToken')
+      if (hadToken) {
+        toast({
+          variant: 'destructive',
+          title: 'Session expirée',
+          description: 'Veuillez vous reconnecter pour continuer à synchroniser vos données.',
+        })
+      }
     }
-  }
-
-  // Global notification for all errors
-  if (typeof window !== 'undefined') {
-    toast({
-      variant: 'destructive',
-      title: response.status >= 500 ? 'Erreur Serveur' : 'Erreur API',
-      description: errorMessage || 'Une erreur est survenue lors de la requête.',
-    })
+  } else if (response.status === 429) {
+    if (typeof window !== 'undefined') {
+      toast({
+        variant: 'destructive',
+        title: 'Limite de requêtes atteinte',
+        description: 'Veuillez patienter quelques secondes avant de relancer cette action.',
+      })
+    }
+  } else if (response.status >= 500) {
+    if (typeof window !== 'undefined') {
+      toast({
+        variant: 'destructive',
+        title: 'Service momentanément indisponible',
+        description: 'Nos serveurs traitent une charge importante. Veuillez réessayer dans quelques instants.',
+      })
+    }
   }
 
   throw new HttpError(response.status, errorMessage, errorData)
@@ -65,8 +80,8 @@ function handleNetworkError(err: any) {
   if (!(err instanceof HttpError) && typeof window !== 'undefined') {
     toast({
       variant: 'destructive',
-      title: 'Erreur Réseau',
-      description: 'Impossible de contacter le serveur. Vérifiez votre connexion.',
+      title: 'Connexion interrompue',
+      description: 'Impossible de joindre les serveurs. Vérifiez votre connexion Internet.',
     })
   }
 }

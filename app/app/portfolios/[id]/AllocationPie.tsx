@@ -1,3 +1,5 @@
+'use client'
+
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useState, useMemo } from 'react'

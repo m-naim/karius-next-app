@@ -42,8 +42,8 @@ export default function WatchlistSettings() {
       } catch (error) {
         toast({
           variant: 'destructive',
-          title: 'Erreur',
-          description: 'Impossible de charger les informations de la watchlist.',
+          title: 'Watchlist introuvable',
+          description: 'Impossible de récupérer les paramètres de cette liste.',
         })
       } finally {
         setLoading(false)
@@ -62,15 +62,15 @@ export default function WatchlistSettings() {
         benchmark: formData.benchmark || null,
       })
       toast({
-        title: 'Succès',
-        description: 'La watchlist a été mise à jour.',
+        title: 'Paramètres enregistrés',
+        description: 'La watchlist a été mise à jour avec succès.',
       })
       router.refresh()
     } catch (error) {
       toast({
         variant: 'destructive',
-        title: 'Erreur',
-        description: 'Une erreur est survenue lors de la mise à jour.',
+        title: 'Enregistrement impossible',
+        description: 'Impossible de mettre à jour la watchlist. Veuillez vérifier les champs et réessayer.',
       })
     } finally {
       setSaving(false)
@@ -80,9 +80,18 @@ export default function WatchlistSettings() {
   const handleDeleteClick = async () => {
     try {
       await removeList(id)
+      toast({
+        title: 'Watchlist supprimée',
+        description: 'La liste a été retirée de votre compte.',
+      })
       router.push('/app/watchlist')
     } catch (e) {
       console.error('error', e)
+      toast({
+        variant: 'destructive',
+        title: 'Suppression impossible',
+        description: 'La suppression de la liste a échoué. Veuillez réessayer.',
+      })
     }
   }
   if (loading) {

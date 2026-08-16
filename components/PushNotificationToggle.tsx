@@ -20,8 +20,8 @@ export function PushNotificationToggle() {
   const requestNotificationPermission = async () => {
     if (!('Notification' in window)) {
       toast({
-        title: 'Non supporté',
-        description: 'Votre navigateur ne prend pas en charge les notifications Push.',
+        title: 'Notifications non supportées',
+        description: 'Votre navigateur actuel ne gère pas les notifications Push. Vous pouvez activer les alertes Telegram.',
         variant: 'destructive',
       })
       return
@@ -34,14 +34,13 @@ export function PushNotificationToggle() {
 
       if (res === 'granted') {
         toast({
-          title: 'Notifications Actives ! 🔔',
-          description: 'Vous recevrez désormais les alertes de prix directement sur votre écran.',
-          variant: 'success' as any,
+          title: 'Notifications activées 🔔',
+          description: 'Vous recevrez désormais vos alertes de prix directement sur votre appareil.',
         })
       } else if (res === 'denied') {
         toast({
-          title: 'Notifications Bloquées',
-          description: 'Veuillez autoriser les notifications dans les paramètres de votre navigateur.',
+          title: 'Autorisation refusée',
+          description: 'Pour recevoir vos alertes, débloquez les notifications dans les paramètres de votre navigateur (icône cadenas).',
           variant: 'destructive',
         })
       }

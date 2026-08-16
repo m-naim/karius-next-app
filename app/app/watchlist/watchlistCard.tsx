@@ -1,8 +1,11 @@
+'use client'
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Star, ListMusic, CalendarDays, BarChart3 } from 'lucide-react'
 import Link from 'next/link'
 import { WatchListInfos } from './page'
 import { cn } from '@/lib/utils'
+import watchListService from '@/services/watchListService'
 
 export function WatchCard({
   data,
@@ -23,6 +26,7 @@ export function WatchCard({
     <Link
       data-umami-event={`watchlist/${watchlistId}`}
       href={`/app/watchlist/${watchlistId}`}
+      onMouseEnter={() => watchlistId && watchListService.prefetch(watchlistId)}
       className="group block w-full"
     >
       <Card className={cn(

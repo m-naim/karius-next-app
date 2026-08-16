@@ -60,8 +60,8 @@ export default function CalculateurMensualite() {
     if (!saveName.trim()) {
       toast({
         variant: 'destructive',
-        title: 'Erreur',
-        description: 'Veuillez donner un nom à votre simulation.',
+        title: 'Nom requis',
+        description: 'Veuillez nommer cette simulation pour pouvoir la retrouver (ex: Résidence principale).',
       })
       return
     }
