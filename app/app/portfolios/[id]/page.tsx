@@ -53,23 +53,41 @@ import { PortfolioOnboardingModal } from './components/PortfolioOnboardingModal'
 import { PortfolioSpotlightTour } from './components/PortfolioSpotlightTour'
 import { PortfolioEmptyStateChecklist } from './components/PortfolioEmptyStateChecklist'
 
+import { PortfolioInsightsBar } from '@/components/molecules/portfolio/PortfolioInsightsBar'
+
 export default function PortfolioView({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params)
   const router = useRouter()
   const { toast } = useToast()
-  const [data, setData] = React.useState<PortfolioSecurity[]>([])
-  const [loading, setLoading] = React.useState(true)
+
+  // SWR persistent cache initialization for 0ms initial load
+  const cachedData = useMemo(() => {
+    if (typeof window === 'undefined') return null
+    try {
+      const raw = sessionStorage.getItem(`bh_pft_${id}`)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (parsed && parsed.data) return parsed
+      }
+    } catch {}
+    return null
+  }, [id])
+
+  const [data, setData] = React.useState<PortfolioSecurity[]>(cachedData?.data?.allocation || [])
+  const [loading, setLoading] = React.useState(!cachedData)
   const [selectedSecurity, setSelectedSecurity] = useState<PortfolioSecurity | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-  const [portfolio, setPortfolio] = useState<any>({
-    _id: '',
-    allocation: [],
-    transactions: [],
-    cashValue: 0,
-    totalValue: 0,
-    baseCurrency: 'EUR',
-  })
-  const [own, setOwn] = React.useState(false)
+  const [portfolio, setPortfolio] = useState<any>(
+    cachedData?.data || {
+      _id: '',
+      allocation: [],
+      transactions: [],
+      cashValue: 0,
+      totalValue: 0,
+      baseCurrency: 'EUR',
+    }
+  )
+  const [own, setOwn] = React.useState(cachedData?.own ?? false)
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = React.useState('')
@@ -147,18 +165,24 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
       }
       setOwn(res.own)
       setPortfolio(res.data)
-      setData(res.data.allocation)
+      setData(res.data.allocation || [])
       setLoading(false)
+
+      try {
+        sessionStorage.setItem(`bh_pft_${id}`, JSON.stringify({ own: res.own, data: res.data }))
+      } catch {}
     } catch (e) {
       console.error('error api:', e)
-      setPortfolio({ _id: '', allocation: [], transactions: [], cashValue: 0, totalValue: 0 })
-      setLoading(false)
-      toast({
-        title: 'Portefeuille introuvable',
-        description: 'Redirection vers la page d\'exploration...',
-        variant: 'destructive',
-      })
-      router.replace('/app/portfolios/explore')
+      if (!cachedData) {
+        setPortfolio({ _id: '', allocation: [], transactions: [], cashValue: 0, totalValue: 0 })
+        setLoading(false)
+        toast({
+          title: 'Portefeuille introuvable',
+          description: 'Redirection vers la page d\'exploration...',
+          variant: 'destructive',
+        })
+        router.replace('/app/portfolios/explore')
+      }
     }
   }
 
@@ -169,6 +193,9 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
       const eventData = JSON.parse(event.data)
       setPortfolio(eventData)
       setData(eventData.allocation)
+      try {
+        sessionStorage.setItem(`bh_pft_${id}`, JSON.stringify({ own, data: eventData }))
+      } catch {}
     })
     return () => {
       es.close()
@@ -252,8 +279,15 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
       {/* LEFT PANE: Stats, Table & Allocation */}
       <div className="flex flex-1 min-w-0 flex-col gap-3 sm:gap-6 p-2 sm:p-4 pb-4 sm:pb-8">
         {/* HERO SECTION: Stats at the top */}
-        <div id="tour-stats-card" className="w-full">
+        <div id="tour-stats-card" className="w-full space-y-2">
           <StatsCard pftData={portfolio} own={own} />
+          {data.length > 0 && (
+            <PortfolioInsightsBar
+              portfolio={portfolio}
+              securities={data}
+              selectedPeriod={selectedPeriod}
+            />
+          )}
         </div>
 
         {/* Empty State Checklist for new/empty portfolios */}

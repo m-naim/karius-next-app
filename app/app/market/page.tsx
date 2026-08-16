@@ -64,6 +64,7 @@ const MARKETS: MarketMeta[] = [
     color: 'text-cyan-500',
     bg: 'bg-cyan-500/10',
   },
+  /* Temporairement masqué en attente du chargement des données
   {
     symbol: 'MEUD.PAR',
     name: 'STOXX 600',
@@ -73,6 +74,7 @@ const MARKETS: MarketMeta[] = [
     color: 'text-amber-500',
     bg: 'bg-amber-500/10',
   },
+  */
   {
     symbol: 'QWLD',
     name: 'MSCI Quality',
@@ -254,7 +256,7 @@ export default function MarketListingPage() {
       </div>
 
       {/* 2. Boutons d'Indices (Compact & Responsive avec Instant Switch) */}
-      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-5">
         {MARKETS.map((market) => {
           const isActive = activeMarket.symbol === market.symbol
           const perf = getPerformance(market.symbol)

@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Star, ListMusic, CalendarDays, BarChart3 } from 'lucide-react'
+import { Star, CalendarDays, BarChart3, Bookmark, Globe, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { WatchListInfos } from './page'
 import { cn } from '@/lib/utils'
@@ -48,8 +48,8 @@ export function WatchCard({
             
             <div className="flex items-center gap-3 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
               <span className="flex items-center gap-1">
-                <ListMusic className="h-3 w-3" />
-                {securityCount} actifs
+                <Bookmark className="h-3 w-3 text-primary" />
+                {securityCount} valeur{securityCount > 1 ? 's' : ''}
               </span>
               {lastUpdate && (
                 <span className="flex items-center gap-1">
@@ -59,14 +59,21 @@ export function WatchCard({
               )}
             </div>
           </div>
-          
-          <div className="flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
-            <span className="text-[10px] font-bold">0</span>
-            <Star className="h-3 w-3" />
+
+          <div className="flex items-center gap-1.5">
+            {data.is_public || data.isPublic ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500/10 px-2 py-0.5 text-[9px] font-bold text-cyan-500 border border-cyan-500/20">
+                <Globe className="h-2.5 w-2.5" /> Public
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[9px] font-bold text-muted-foreground">
+                <Lock className="h-2.5 w-2.5" /> Privé
+              </span>
+            )}
           </div>
         </CardHeader>
 
-        {displayContent && securityCount > 0 && (
+        {displayContent && securityCount > 0 && data.securities && (
           <CardContent className="p-4 pt-2">
             <div className="flex flex-wrap gap-1.5">
               {data.securities

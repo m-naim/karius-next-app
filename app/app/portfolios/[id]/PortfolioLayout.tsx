@@ -1,5 +1,5 @@
 import React, { ReactNode, useState } from 'react'
-
+import { motion } from 'framer-motion'
 import { usePathname, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
@@ -122,7 +122,11 @@ const PortfolioLayout = ({
                       <item.icon size={15} className="hidden sm:block" />
                       {item.name}
                       {isActive && (
-                        <div className="absolute bottom-0 left-0 h-0.5 w-full bg-primary" />
+                        <motion.div
+                          layoutId="portfolio-subnav-indicator"
+                          className="absolute bottom-0 left-0 h-0.5 w-full bg-primary rounded-full"
+                          transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                        />
                       )}
                     </div>
                   </Link>
