@@ -394,6 +394,7 @@ export function ColumnViewPresetManager({ table }: ColumnViewPresetManagerProps)
   const visibleColumnIds = React.useMemo(() => {
     const currentOrder = table.getState().columnOrder
     const allTableCols = table.getAllColumns()
+    const colMap = new Map(allTableCols.map((c) => [c.id, c]))
 
     let orderedColIds: string[]
     if (currentOrder && currentOrder.length > 0) {
@@ -404,7 +405,7 @@ export function ColumnViewPresetManager({ table }: ColumnViewPresetManagerProps)
 
     // Filter to only hideable & visible columns (or symbol/actions if needed)
     return orderedColIds.filter((colId) => {
-      const col = table.getColumn(colId)
+      const col = colMap.get(colId)
       return col ? col.getIsVisible() : false
     })
   }, [table, table.getState().columnVisibility, table.getState().columnOrder])

@@ -15,6 +15,8 @@ export interface PortfolioSummery {
   annualizedReturn: number
   totalValue?: number
   variation?: number
+  is_flagged?: boolean
+  flagged_reason?: string
 }
 
 export function PortfolioCard(p: PortfolioSummery) {
@@ -27,13 +29,16 @@ export function PortfolioCard(p: PortfolioSummery) {
       <Card className={cn(
         "relative overflow-hidden transition-all duration-300",
         "border-border bg-card/50 backdrop-blur-sm",
-        "hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1"
+        p.is_flagged ? "border-rose-500/30 hover:border-rose-500/50" : "hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1"
       )}>
 
         <CardHeader className="flex flex-row items-start justify-between space-y-0 p-4 pb-2">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <div className={cn(
+                "flex h-6 w-6 items-center justify-center rounded-lg",
+                p.is_flagged ? "bg-rose-500/10 text-rose-500" : "bg-primary/10 text-primary"
+              )}>
                 <BarChart3 className="h-3.5 w-3.5" />
               </div>
               <CardTitle className="line-clamp-1 text-sm font-bold tracking-tight text-foreground sm:text-base">
@@ -42,19 +47,27 @@ export function PortfolioCard(p: PortfolioSummery) {
             </div>
             
             <div className="flex items-center gap-3 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-              <span className="flex items-center gap-1">
-                <Users className="h-3 w-3" />
-                {p.followersSize || 0} abonnés
-              </span>
-              <span className="flex items-center gap-1">
-                <TrendingUp className="h-3 w-3 text-primary" />
-                <VariationContainer
-                  value={p.annualizedReturn}
-                  entity="%"
-                  background={false}
-                  className="p-0 font-bold"
-                />
-              </span>
+              {p.is_flagged ? (
+                <span className="inline-flex items-center gap-1 rounded bg-rose-500/10 px-1.5 py-0.5 font-bold text-rose-600 dark:text-rose-400">
+                  ⚠️ Masqué du classement
+                </span>
+              ) : (
+                <>
+                  <span className="flex items-center gap-1">
+                    <Users className="h-3 w-3" />
+                    {p.followersSize || 0} abonnés
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <TrendingUp className="h-3 w-3 text-primary" />
+                    <VariationContainer
+                      value={p.annualizedReturn}
+                      entity="%"
+                      background={false}
+                      className="p-0 font-bold"
+                    />
+                  </span>
+                </>
+              )}
             </div>
           </div>
           

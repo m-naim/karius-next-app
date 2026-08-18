@@ -345,60 +345,45 @@ export const columns = (
       header: SortingButton('P/E'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => r.getValue('trailingPE') as number)
+        const vals = rows.map((r) => r.getValue('trailingPE') as number).filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
         return <div className="text-[10px]">{med != null ? round10(med, -2) : ''}</div>
       },
       cell: ({ row }) => (
         <div className="lowercase">{round10(row.getValue('trailingPE'), -2) || 'N/A'}</div>
       ),
-      filterFn: (row, id, value) => {
-        const val = row.getValue(id) as number
-        if (!value) return true
-        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
-          values: string[]
-          mode: 'is' | 'isnot'
-        }
-
-        if (!values || values.length === 0) return true
-
-        const matches = values.some((filter: string) => {
-          if (filter === 'value') return val < 15
-          if (filter === 'fair') return val >= 15 && val <= 25
-          if (filter === 'growth') return val > 25
-          return true
-        })
-
-        return mode === 'is' ? matches : !matches
-      },
+      filterFn: genericNumericFilterFn,
     },
     {
       accessorKey: 'forwardPE',
       header: SortingButton('P/E Fwd'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => r.getValue('forwardPE') as number)
+        const vals = rows.map((r) => r.getValue('forwardPE') as number).filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
         return <div className="text-[10px]">{med != null ? round10(med, -2) : ''}</div>
       },
       cell: ({ row }) => (
         <div className="lowercase">{round10(row.getValue('forwardPE'), -2) || 'N/A'}</div>
       ),
-      filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id))
-      },
+      filterFn: genericNumericFilterFn,
     },
 
     {
-      accessorKey: 'linearity10y',
+      accessorFn: (row) => {
+        const raw = row.linearity10y
+        if (raw == null || isNaN(raw)) return null
+        return Math.abs(raw) <= 1 && raw !== 0 ? raw * 100 : raw
+      },
+      id: 'linearity10y',
       header: SortingButton('Linéarité'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => (r.getValue('linearity10y') as number))
+        const vals = rows.map((r) => r.getValue('linearity10y') as number).filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
         return med != null ? (
           <VariationContainer
-            value={med * 100}
+            value={med}
             entity="%"
             background={false}
             vaiationColor={false}
@@ -407,35 +392,21 @@ export const columns = (
           />
         ) : null
       },
-      cell: ({ row }) => (
-        <VariationContainer
-          value={(row.getValue('linearity10y') as number) * 100 || 0}
-          entity="%"
-          background={false}
-          vaiationColor={false}
-          sign={false}
-          className="m-0 p-0 text-[10px]"
-        />
-      ),
-      filterFn: (row, id, value) => {
-        const val = (row.getValue(id) as number) * 100
-        if (!value) return true
-        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
-          values: string[]
-          mode: 'is' | 'isnot'
-        }
-
-        if (!values || values.length === 0) return true
-
-        const matches = values.some((filter: string) => {
-          if (filter === 'high') return val >= 90
-          if (filter === 'good') return val >= 70 && val < 90
-          if (filter === 'low') return val < 70
-          return true
-        })
-
-        return mode === 'is' ? matches : !matches
+      cell: ({ row }) => {
+        const val = row.getValue('linearity10y') as number
+        if (val == null || isNaN(val)) return <div className="text-[11px] text-muted-foreground">N/A</div>
+        return (
+          <VariationContainer
+            value={val}
+            entity="%"
+            background={false}
+            vaiationColor={false}
+            sign={false}
+            className="m-0 p-0 text-[10px]"
+          />
+        )
       },
+      filterFn: genericNumericFilterFn,
     },
 
     {
@@ -451,13 +422,14 @@ export const columns = (
         }
         if (chg === -10000) return -10000
         const lin = row.linearity10y || 0
-        return chg * lin
+        const normalizedLin = Math.abs(lin) <= 1 && lin !== 0 ? lin : lin / 100
+        return chg * normalizedLin
       },
       id: 'ret_lin',
       header: SortingButton('Score (Ret×Lin)'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => r.getValue('ret_lin') as number)
+        const vals = rows.map((r) => r.getValue('ret_lin') as number).filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
         return med != null ? (
           <VariationContainer
@@ -470,6 +442,7 @@ export const columns = (
       },
       cell: ({ row }) => {
         const val = row.getValue('ret_lin') as number
+        if (val == null || isNaN(val)) return <div className="text-[11px] text-muted-foreground">N/A</div>
         return (
           <VariationContainer
             value={val}
@@ -479,14 +452,20 @@ export const columns = (
           />
         )
       },
+      filterFn: genericNumericFilterFn,
     },
 
     {
-      accessorKey: 'dividendYield',
+      accessorFn: (row) => {
+        const raw = row.dividendYield
+        if (raw == null || isNaN(raw)) return null
+        return Math.abs(raw) <= 1 && raw !== 0 ? raw * 100 : raw
+      },
+      id: 'dividendYield',
       header: SortingButton('Rendement Div.'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => r.getValue('dividendYield') as number)
+        const vals = rows.map((r) => r.getValue('dividendYield') as number).filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
         return med != null ? (
           <VariationContainer
@@ -498,34 +477,20 @@ export const columns = (
           />
         ) : null
       },
-      cell: ({ row }) => (
-        <VariationContainer
-          value={round10(row.getValue('dividendYield'), -2) || 0}
-          entity="%"
-          background={false}
-          vaiationColor={false}
-          className="m-0 p-0 py-1 text-[11px]"
-        />
-      ),
-      filterFn: (row, id, value) => {
-        const val = row.getValue(id) as number
-        if (!value) return true
-        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
-          values: string[]
-          mode: 'is' | 'isnot'
-        }
-
-        if (!values || values.length === 0) return true
-
-        const matches = values.some((filter: string) => {
-          if (filter === 'high') return val >= 4
-          if (filter === 'medium') return val >= 2 && val < 4
-          if (filter === 'low') return val < 2
-          return true
-        })
-
-        return mode === 'is' ? matches : !matches
+      cell: ({ row }) => {
+        const val = row.getValue('dividendYield') as number
+        if (val == null || isNaN(val)) return <div className="text-[11px] text-muted-foreground">N/A</div>
+        return (
+          <VariationContainer
+            value={round10(val, -2) || 0}
+            entity="%"
+            background={false}
+            vaiationColor={false}
+            className="m-0 p-0 py-1 text-[11px]"
+          />
+        )
       },
+      filterFn: genericNumericFilterFn,
     },
 
     {
@@ -592,13 +557,15 @@ export const columns = (
     },
     {
       accessorFn: (row) => {
-        return row?.lastYearFundamental?.roa || 0
+        const raw = row?.lastYearFundamental?.roa
+        if (raw == null || isNaN(raw)) return null
+        return Math.abs(raw) <= 1 && raw !== 0 ? raw * 100 : raw
       },
       id: 'roa',
       header: SortingButton('ROA'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => (r.original?.lastYearFundamental?.roa || 0) * 100)
+        const vals = rows.map((r) => r.getValue('roa') as number).filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
         return med != null ? (
           <VariationContainer
@@ -610,45 +577,33 @@ export const columns = (
           />
         ) : null
       },
-      cell: ({ row }) => (
-        <VariationContainer
-          value={(row.original?.lastYearFundamental?.roa || 0) * 100}
-          entity="%"
-          background={false}
-          vaiationColor={false}
-          className="m-0 p-0 py-1 text-[11px]"
-        />
-      ),
-      filterFn: (row, id, value) => {
-        const val = (row.original?.lastYearFundamental?.roa || 0) * 100
-        if (!value) return true
-        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
-          values: string[]
-          mode: 'is' | 'isnot'
-        }
-
-        if (!values || values.length === 0) return true
-
-        const matches = values.some((filter: string) => {
-          if (filter === 'high') return val >= 15
-          if (filter === 'good') return val >= 5 && val < 15
-          if (filter === 'low') return val < 5
-          return true
-        })
-
-        return mode === 'is' ? matches : !matches
+      cell: ({ row }) => {
+        const val = row.getValue('roa') as number
+        if (val == null || isNaN(val)) return <div className="text-[11px] text-muted-foreground">N/A</div>
+        return (
+          <VariationContainer
+            value={val}
+            entity="%"
+            background={false}
+            vaiationColor={false}
+            className="m-0 p-0 py-1 text-[11px]"
+          />
+        )
       },
+      filterFn: genericNumericFilterFn,
     },
 
     {
       accessorFn: (row) => {
-        return row?.lastYearFundamental?.roe || 0
+        const raw = row?.lastYearFundamental?.roe
+        if (raw == null || isNaN(raw)) return null
+        return Math.abs(raw) <= 1 && raw !== 0 ? raw * 100 : raw
       },
       id: 'roe',
       header: SortingButton('ROE'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => (r.original?.lastYearFundamental?.roe || 0) * 100)
+        const vals = rows.map((r) => r.getValue('roe') as number).filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
         return med != null ? (
           <VariationContainer
@@ -660,34 +615,20 @@ export const columns = (
           />
         ) : null
       },
-      cell: ({ row }) => (
-        <VariationContainer
-          value={(row.original?.lastYearFundamental?.roe || 0) * 100}
-          entity="%"
-          background={false}
-          vaiationColor={false}
-          className="m-0 p-0 py-1 text-[11px]"
-        />
-      ),
-      filterFn: (row, id, value) => {
-        const val = (row.original?.lastYearFundamental?.roe || 0) * 100
-        if (!value) return true
-        const { values, mode } = (Array.isArray(value) ? { values: value, mode: 'is' } : value) as {
-          values: string[]
-          mode: 'is' | 'isnot'
-        }
-
-        if (!values || values.length === 0) return true
-
-        const matches = values.some((filter: string) => {
-          if (filter === 'high') return val >= 15
-          if (filter === 'good') return val >= 5 && val < 15
-          if (filter === 'low') return val < 5
-          return true
-        })
-
-        return mode === 'is' ? matches : !matches
+      cell: ({ row }) => {
+        const val = row.getValue('roe') as number
+        if (val == null || isNaN(val)) return <div className="text-[11px] text-muted-foreground">N/A</div>
+        return (
+          <VariationContainer
+            value={val}
+            entity="%"
+            background={false}
+            vaiationColor={false}
+            className="m-0 p-0 py-1 text-[11px]"
+          />
+        )
       },
+      filterFn: genericNumericFilterFn,
     },
 
     {

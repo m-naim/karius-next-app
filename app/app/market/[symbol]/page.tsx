@@ -37,6 +37,11 @@ import {
   saveColumnVisibility,
   saveColumnOrder,
 } from '@/lib/column-persistence'
+import {
+  getSavedTableFilters,
+  saveTableFilters,
+  MARKET_FILTERS_STORAGE_KEY,
+} from '@/lib/filter-persistence'
 
 const DEFAULT_MARKET_VISIBILITY: VisibilityState = {
   symbol: true,
@@ -87,7 +92,8 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
 
   const [securities, setSecurities] = React.useState<security[]>(() => cachedIndex?.holdings || [])
   const [watchlists, setWatchlists] = React.useState<any[]>([])
-  const [activeScreener, setActiveScreener] = React.useState<string | null>(null)
+  const savedFilters = React.useMemo(() => getSavedTableFilters(MARKET_FILTERS_STORAGE_KEY), [])
+  const [activeScreener, setActiveScreener] = React.useState<string | null>(() => savedFilters.activeScreener ?? null)
 
   const filteredSecurities = useMemo(() => {
     return filterSecuritiesByScreener(securities, activeScreener)
@@ -104,18 +110,29 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
     }
   }, [])
 
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [sorting, setSorting] = React.useState<SortingState>(() => savedFilters.sorting ?? [])
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(() => savedFilters.columnFilters ?? [])
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(() =>
     getSavedColumnOrder([])
   )
-  const [globalFilter, setGlobalFilter] = React.useState('')
+  const [globalFilter, setGlobalFilter] = React.useState(() => savedFilters.globalFilter ?? '')
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(() =>
     getSavedColumnVisibility(DEFAULT_MARKET_VISIBILITY)
   )
   const [rowSelection, setRowSelection] = React.useState({})
-  const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
+  const [selectedPeriod, setSelectedPeriod] = React.useState(() => savedFilters.selectedPeriod ?? '1d')
   const [showMetrics, setShowMetrics] = React.useState(false)
+
+  // Automatically persist user filters across sessions
+  React.useEffect(() => {
+    saveTableFilters(MARKET_FILTERS_STORAGE_KEY, {
+      columnFilters,
+      globalFilter,
+      sorting,
+      activeScreener,
+      selectedPeriod,
+    })
+  }, [columnFilters, globalFilter, sorting, activeScreener, selectedPeriod])
 
   React.useEffect(() => {
     if (showMetrics) {
@@ -170,6 +187,12 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
     return columns(selectedPeriod, watchlists)
   }, [selectedPeriod, watchlists])
 
+  const validColumnOrder = useMemo(() => {
+    if (!columnOrder || columnOrder.length === 0) return columnOrder
+    const validIds = new Set(tableColumns.map((c: any) => c.id || c.accessorKey).filter(Boolean))
+    return columnOrder.filter((colId) => validIds.has(colId))
+  }, [columnOrder, tableColumns])
+
   const table = useReactTable<security>({
     data: tableData,
     columns: tableColumns,
@@ -192,7 +215,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
     state: {
       sorting,
       columnFilters,
-      columnOrder,
+      columnOrder: validColumnOrder,
       globalFilter,
       columnVisibility,
       rowSelection,

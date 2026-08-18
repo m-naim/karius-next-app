@@ -107,17 +107,24 @@ export default function MarketListingPage() {
   const [activeMarket, setActiveMarket] = useState<MarketMeta>(MARKETS[0])
   const [selectedPeriod, setSelectedPeriod] = useState<string>('1d')
 
-  // Instant SWR state initialization from storage (0ms paint)
-  const [marketQuotes, setMarketQuotes] = useState<Record<string, any>>(() => {
-    return getStoredMarketOverview()?.quotes || {}
-  })
-  const [marketVariations, setMarketVariations] = useState<Record<string, Record<string, number>>>(() => {
-    return getStoredMarketOverview()?.variations || {}
-  })
+  // Stable initial state for SSR & client hydration matching
+  const [marketQuotes, setMarketQuotes] = useState<Record<string, any>>({})
+  const [marketVariations, setMarketVariations] = useState<Record<string, Record<string, number>>>({})
   const [watchlists, setWatchlists] = useState<any[]>([])
   const [breadthStats, setBreadthStats] = useState<MarketBreadthStats | null>(null)
 
   const hasPrefetchedRest = useRef(false)
+
+  // Read stored cache immediately upon mounting on client (post-hydration, 0ms)
+  useEffect(() => {
+    const cached = getStoredMarketOverview()
+    if (cached?.quotes && Object.keys(cached.quotes).length > 0) {
+      setMarketQuotes(cached.quotes)
+    }
+    if (cached?.variations && Object.keys(cached.variations).length > 0) {
+      setMarketVariations(cached.variations)
+    }
+  }, [])
 
   useEffect(() => {
     let isMounted = true

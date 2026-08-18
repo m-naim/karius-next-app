@@ -300,52 +300,86 @@ export default function SuperInvestorDetailPage() {
                     <table className="w-full text-left text-xs">
                       <thead className="bg-muted/60 text-[10px] uppercase font-black tracking-wider text-muted-foreground border-b border-border/50">
                         <tr>
-                          <th className="p-3">Actif</th>
+                          <th className="p-3">Actif &amp; Secteur</th>
                           <th className="p-3 text-right">Poids (%)</th>
-                          <th className="p-3 text-right">Valeur Total ($)</th>
+                          <th className="p-3 text-right">Activité SEC</th>
                           <th className="p-3 text-right hidden sm:table-cell">Nombre d&apos;Actions</th>
-                          <th className="p-3 text-right">Mouvement SEC</th>
+                          <th className="p-3 text-right">Valeur Total ($)</th>
+                          <th className="p-3 text-right hidden md:table-cell">Prix Déclaré</th>
+                          <th className="p-3 text-right hidden lg:table-cell">Fourchette Trimestre</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border/30">
                         {filteredPositions.map((h, i) => (
                           <tr key={h.symbol || i} className="hover:bg-accent/40 transition-colors">
                             <td className="p-3">
-                              <div className="flex flex-col">
-                                <span className="font-black text-foreground text-sm">{h.symbol}</span>
-                                <span className="text-[11px] text-muted-foreground font-medium">{h.name}</span>
+                              <div className="flex flex-col gap-0.5">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-black text-foreground text-sm">{h.symbol}</span>
+                                  {h.sector && (
+                                    <Badge variant="outline" className="text-[9px] px-1 py-0 font-medium text-muted-foreground border-border/60">
+                                      {h.sector}
+                                    </Badge>
+                                  )}
+                                </div>
+                                <span className="text-[11px] text-muted-foreground font-medium truncate max-w-[180px]">{h.name}</span>
                               </div>
                             </td>
                             <td className="p-3 text-right font-black text-foreground text-sm tabular-nums">
                               {h.weightPercent}%
                             </td>
-                            <td className="p-3 text-right font-bold text-foreground tabular-nums" title={formatFullMoney(h.valueUsd)}>
-                              {formatMoney(h.valueUsd)}
-                            </td>
-                            <td className="p-3 text-right font-semibold text-muted-foreground hidden sm:table-cell tabular-nums">
-                              {h.shares ? h.shares.toLocaleString() : '—'}
-                            </td>
                             <td className="p-3 text-right">
                               {h.changeType === 'NEW' && (
                                 <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 border-none font-bold text-[10px]">
-                                  🆕 NOUVEDAU
+                                  🆕 NOUVEAU
                                 </Badge>
                               )}
                               {h.changeType === 'ADDED' && (
-                                <span className="inline-flex items-center gap-0.5 text-emerald-500 font-bold text-xs">
-                                  <ArrowUpRight className="h-3.5 w-3.5" />
-                                  +{h.changePercent}%
-                                </span>
+                                <div className="flex flex-col items-end">
+                                  <span className="inline-flex items-center gap-0.5 text-emerald-500 font-bold text-xs">
+                                    <ArrowUpRight className="h-3.5 w-3.5" />
+                                    +{h.changePercent}%
+                                  </span>
+                                  {h.shareChange && h.shareChange > 0 && (
+                                    <span className="text-[10px] text-emerald-600/80 font-mono">
+                                      +{h.shareChange > 1000000 ? `${(h.shareChange / 1000000).toFixed(1)}M` : `${(h.shareChange / 1000).toFixed(0)}k`} shs
+                                    </span>
+                                  )}
+                                </div>
                               )}
                               {h.changeType === 'REDUCED' && (
-                                <span className="inline-flex items-center gap-0.5 text-rose-500 font-bold text-xs">
-                                  <ArrowDownRight className="h-3.5 w-3.5" />
-                                  {h.changePercent}%
-                                </span>
+                                <div className="flex flex-col items-end">
+                                  <span className="inline-flex items-center gap-0.5 text-rose-500 font-bold text-xs">
+                                    <ArrowDownRight className="h-3.5 w-3.5" />
+                                    {h.changePercent}%
+                                  </span>
+                                  {h.shareChange && h.shareChange < 0 && (
+                                    <span className="text-[10px] text-rose-600/80 font-mono">
+                                      {h.shareChange < -1000000 ? `${(h.shareChange / 1000000).toFixed(1)}M` : `${(h.shareChange / 1000).toFixed(0)}k`} shs
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                              {h.changeType === 'CLOSED' && (
+                                <Badge className="bg-rose-500/15 text-rose-600 dark:text-rose-400 border-none font-bold text-[10px]">
+                                  🚫 SOLD OUT
+                                </Badge>
                               )}
                               {(!h.changeType || h.changeType === 'UNCHANGED') && (
-                                <span className="text-[11px] text-muted-foreground font-medium">Conservée</span>
+                                <span className="text-[11px] text-muted-foreground font-medium">Inchangé (0%)</span>
                               )}
+                            </td>
+                            <td className="p-3 text-right font-semibold text-muted-foreground hidden sm:table-cell tabular-nums">
+                              {h.shares ? h.shares.toLocaleString() : '0'}
+                            </td>
+                            <td className="p-3 text-right font-bold text-foreground tabular-nums" title={formatFullMoney(h.valueUsd)}>
+                              {formatMoney(h.valueUsd)}
+                            </td>
+                            <td className="p-3 text-right font-mono text-xs font-semibold text-foreground/90 hidden md:table-cell tabular-nums">
+                              {h.reportedPrice && h.reportedPrice > 0 ? `$${h.reportedPrice.toFixed(2)}` : '—'}
+                            </td>
+                            <td className="p-3 text-right font-mono text-[11px] text-muted-foreground hidden lg:table-cell tabular-nums">
+                              {h.quarterPriceRange || '—'}
                             </td>
                           </tr>
                         ))}

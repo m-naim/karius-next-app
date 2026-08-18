@@ -17,12 +17,18 @@ import {
   deleteTransaction,
   getTransactions,
   modifyTransactionApi,
+  AddTransaction,
+  addMouvementService,
 } from '@/services/portfolioService'
 import { columns as transactionColumns } from './columns'
 import { MovementsColumns } from './movementsColumns'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
-import { Search, History, Wallet, CalendarDays } from 'lucide-react'
+import { Search, History, Wallet, CalendarDays, Plus, FileSpreadsheet, AlertTriangle } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+import TransactionDialogue from '../TransactionDialogue'
+import AccountsMouvements from '../AccountsMouvements'
 import {
   Select,
   SelectContent,
@@ -37,6 +43,7 @@ function PageTransactions() {
   const [data, setData] = useState([])
   const [movements, setMovements] = useState([])
   const [own, setOwn] = useState(false)
+  const [flaggedInfo, setFlaggedInfo] = useState<{ is_flagged?: boolean; flagged_reason?: string }>({})
   const [loading, setLoading] = useState(true)
 
   const [sorting, setSorting] = useState<SortingState>([{ id: 'date', desc: true }])
@@ -54,6 +61,20 @@ function PageTransactions() {
     setData(res?.data?.transactions || [])
   }
 
+  const addTransactionHandler = async (newTx: any) => {
+    await AddTransaction(id, newTx)
+    const refreshed = await getTransactions(id)
+    setData(refreshed.transactions || [])
+    setMovements(refreshed.cash_flow || [])
+  }
+
+  const addMouvementHandler = async (newMvt: any) => {
+    await addMouvementService(id, newMvt)
+    const refreshed = await getTransactions(id)
+    setData(refreshed.transactions || [])
+    setMovements(refreshed.cash_flow || [])
+  }
+
   useEffect(() => {
     const fetchData = async (portfolioId: string) => {
       try {
@@ -62,6 +83,10 @@ function PageTransactions() {
         setOwn(res.own)
         setData(res.transactions || [])
         setMovements(res.cash_flow || [])
+        setFlaggedInfo({
+          is_flagged: res.is_flagged,
+          flagged_reason: res.flagged_reason,
+        })
       } catch (e) {
         console.error('error api:' + e)
       } finally {
@@ -169,6 +194,19 @@ function PageTransactions() {
     <Loader />
   ) : (
     <div className="flex flex-col gap-4">
+      {/* INTEGRITY / PUBLIC EXPLORATION WARNING BANNER */}
+      {flaggedInfo.is_flagged && (
+        <div className="flex items-start gap-3 p-3.5 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-800 dark:text-rose-200 text-xs shadow-2xs">
+          <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+          <div className="flex-1 space-y-0.5">
+            <span className="font-bold">Avertissement de conformité : </span>
+            <span className="text-muted-foreground">
+              {flaggedInfo.flagged_reason ? `(${flaggedInfo.flagged_reason})` : 'Anomalie de calcul détectée'}. Ce portefeuille est masqué des classements publics pour garantir l'équité de la communauté. Vos transactions et votre historique sont intégralement préservés.
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* TOP SUMMARY STRIP (Distilled from 5 cards into 1 sleek horizontal bar) */}
       <div className="flex w-full items-center justify-between gap-3 sm:gap-6 py-2 px-3.5 sm:px-4 rounded-xl border border-border/60 bg-card/40 backdrop-blur-sm shadow-2xs overflow-x-auto no-scrollbar text-xs">
         <div className="flex items-center gap-1.5 whitespace-nowrap">
@@ -242,6 +280,54 @@ function PageTransactions() {
                 </SelectContent>
               </Select>
             </div>
+
+            {own && (
+              <div className="flex items-center gap-1.5 shrink-0">
+                <AccountsMouvements
+                  submitHandler={addMouvementHandler}
+                  Trigger={(props) => (
+                    <Button
+                      {...props}
+                      variant="outline"
+                      size="sm"
+                      title="Enregistrer un versement ou retrait de liquidités"
+                      className="h-8 px-2.5 gap-1.5 text-xs font-medium border-border/80 hover:bg-muted"
+                    >
+                      <Wallet className="h-3.5 w-3.5 text-emerald-500" />
+                      <span className="hidden sm:inline">Dépôt / Retrait Cash</span>
+                    </Button>
+                  )}
+                />
+
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  title="Importer un fichier CSV de courtier"
+                  className="h-8 px-2.5 gap-1.5 text-xs font-medium border-border/80 hover:bg-muted"
+                >
+                  <Link href={`/app/portfolios/${id}/import`}>
+                    <FileSpreadsheet className="h-3.5 w-3.5 text-blue-500" />
+                    <span className="hidden sm:inline">Importer CSV</span>
+                  </Link>
+                </Button>
+
+                <TransactionDialogue
+                  totalPortfolioValue={0}
+                  submitHandler={addTransactionHandler}
+                  Trigger={(props) => (
+                    <Button
+                      {...props}
+                      size="sm"
+                      className="h-8 px-3 gap-1.5 text-xs font-bold shadow-sm"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      <span>Transaction</span>
+                    </Button>
+                  )}
+                />
+              </div>
+            )}
           </div>
         </div>
 

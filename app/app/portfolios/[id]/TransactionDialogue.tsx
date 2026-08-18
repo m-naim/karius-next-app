@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -103,9 +104,14 @@ function TransactionDialogue({
         <Trigger />
       </DialogTrigger>
       {open && (
-        <DialogContent className=" dark:bg-black">
+        <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
-            <DialogTitle>Acheter / Vendre</DialogTitle>
+            <DialogTitle className="text-base font-bold">
+              {modifyHandler ? 'Modifier la Transaction' : 'Nouvelle Transaction'}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Enregistrez un ordre d'achat ou de vente d'actions sur ce portefeuille.
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <MultiSelect active={type} select={setType} list={['Acheter', 'Vendre']} />
@@ -186,11 +192,12 @@ function TransactionDialogue({
                       )
                     }
                   >
-                    Modifier
+                    Enregistrer les modifications
                   </Button>
                 )}
                 {submitHandler && (
                   <Button
+                    className="text-xs font-bold"
                     onClick={async (e) =>
                       await closingAction(e, () =>
                         submitHandler({
@@ -204,7 +211,7 @@ function TransactionDialogue({
                       )
                     }
                   >
-                    Exécuter
+                    Enregistrer la transaction
                   </Button>
                 )}
               </>

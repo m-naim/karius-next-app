@@ -16,12 +16,13 @@ import { columns, PortfolioSecurity } from './columns'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
-  FileScan,
-  PlusIcon,
-  WalletMinimal,
+  FileSpreadsheet,
+  Plus,
+  Wallet,
   Search,
   SlidersHorizontal,
   Check,
+  AlertTriangle,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -60,37 +61,23 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
   const router = useRouter()
   const { toast } = useToast()
 
-  // SWR persistent cache initialization for 0ms initial load
-  const cachedData = useMemo(() => {
-    if (typeof window === 'undefined') return null
-    try {
-      const raw = sessionStorage.getItem(`bh_pft_${id}`)
-      if (raw) {
-        const parsed = JSON.parse(raw)
-        if (parsed && parsed.data) return parsed
-      }
-    } catch {}
-    return null
-  }, [id])
-
-  const [data, setData] = React.useState<PortfolioSecurity[]>(cachedData?.data?.allocation || [])
-  const [loading, setLoading] = React.useState(!cachedData)
+  const [data, setData] = React.useState<PortfolioSecurity[]>([])
+  const [loading, setLoading] = React.useState(true)
   const [selectedSecurity, setSelectedSecurity] = useState<PortfolioSecurity | null>(null)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
-  const [portfolio, setPortfolio] = useState<any>(
-    cachedData?.data || {
-      _id: '',
-      allocation: [],
-      transactions: [],
-      cashValue: 0,
-      totalValue: 0,
-      baseCurrency: 'EUR',
-    }
-  )
-  const [own, setOwn] = React.useState(cachedData?.own ?? false)
+  const [portfolio, setPortfolio] = useState<any>({
+    _id: '',
+    allocation: [],
+    transactions: [],
+    cashValue: 0,
+    totalValue: 0,
+    baseCurrency: 'EUR',
+  })
+  const [own, setOwn] = React.useState(false)
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = React.useState('')
+  const lastMutationTimestamp = React.useRef<number>(0)
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
     symbol: true,
     weight: true,
@@ -173,34 +160,68 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
       } catch {}
     } catch (e) {
       console.error('error api:', e)
-      if (!cachedData) {
-        setPortfolio({ _id: '', allocation: [], transactions: [], cashValue: 0, totalValue: 0 })
-        setLoading(false)
-        toast({
-          title: 'Portefeuille introuvable',
-          description: 'Redirection vers la page d\'exploration...',
-          variant: 'destructive',
-        })
-        router.replace('/app/portfolios/explore')
-      }
+      setPortfolio({ _id: '', allocation: [], transactions: [], cashValue: 0, totalValue: 0 })
+      setLoading(false)
+      toast({
+        title: 'Portefeuille introuvable',
+        description: 'Redirection vers la page d\'exploration...',
+        variant: 'destructive',
+      })
+      router.replace('/app/portfolios/explore')
     }
   }
 
   useEffect(() => {
+    // Read client cache instantly on mount without SSR hydration mismatch
+    try {
+      const raw = sessionStorage.getItem(`bh_pft_${id}`)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (parsed && parsed.data) {
+          setPortfolio(parsed.data)
+          setData(parsed.data.allocation || [])
+          setOwn(parsed.own ?? false)
+          setLoading(false)
+        }
+      }
+    } catch {}
+
     fetchData(id)
     const es = initPortfolioSSE(id)
-    es.addEventListener('portfolio', (event) => {
-      const eventData = JSON.parse(event.data)
-      setPortfolio(eventData)
-      setData(eventData.allocation)
+    if (!es) return
+
+    const handlePortfolioUpdate = (event: MessageEvent) => {
       try {
-        sessionStorage.setItem(`bh_pft_${id}`, JSON.stringify({ own, data: eventData }))
-      } catch {}
-    })
+        const eventData = JSON.parse(event.data)
+        if (!eventData || !eventData.id) return
+
+        // Guard against phantom rollbacks: If a mutation happened locally within 3 seconds,
+        // ignore any delayed SSE event that has an empty allocation if we currently have assets
+        if (Date.now() - lastMutationTimestamp.current < 3000) {
+          const sseAllocLen = eventData.allocation ? eventData.allocation.length : 0
+          if (sseAllocLen === 0 && data.length > 0) {
+            return
+          }
+        }
+
+        setPortfolio(eventData)
+        setData(eventData.allocation || [])
+        try {
+          const raw = sessionStorage.getItem(`bh_pft_${id}`)
+          const parsed = raw ? JSON.parse(raw) : {}
+          sessionStorage.setItem(`bh_pft_${id}`, JSON.stringify({ own: parsed.own ?? true, data: eventData }))
+        } catch {}
+      } catch (err) {
+        console.warn('[SSE] Impossible de parser la charge utile :', err)
+      }
+    }
+
+    es.addEventListener('portfolio', handlePortfolioUpdate)
     return () => {
+      es.removeEventListener('portfolio', handlePortfolioUpdate)
       es.close()
     }
-  }, [id])
+  }, [id, data.length])
 
   const table = useReactTable({
     data,
@@ -223,6 +244,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
   })
 
   const addTransaction = async (transactionData) => {
+    lastMutationTimestamp.current = Date.now()
     setLoading(true)
     try {
       transactionData.id = uuidv4()
@@ -230,7 +252,10 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
       const res = await AddTransaction(id, transactionData)
       setOwn(res.own)
       setPortfolio(res.data)
-      setData(res.data.allocation)
+      setData(res.data?.allocation || [])
+      try {
+        sessionStorage.setItem(`bh_pft_${id}`, JSON.stringify({ own: res.own, data: res.data }))
+      } catch {}
       toast({
         title: 'Transaction ajoutée',
         description: 'Votre transaction a été enregistrée avec succès',
@@ -249,13 +274,17 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
   }
 
   const addMouvement = async (data) => {
+    lastMutationTimestamp.current = Date.now()
     setLoading(true)
     try {
       data.id = uuidv4()
       const res = await addMouvementService(id, data)
       setOwn(res.own)
       setPortfolio(res.data)
-      setData(res.data.allocation)
+      setData(res.data?.allocation || [])
+      try {
+        sessionStorage.setItem(`bh_pft_${id}`, JSON.stringify({ own: res.own, data: res.data }))
+      } catch {}
       toast({
         title: 'Mouvement ajouté',
         description: 'Le mouvement a été enregistré avec succès',
@@ -278,6 +307,25 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
     <div className="flex w-full min-h-screen flex-1 flex-col overflow-y-auto bg-background">
       {/* LEFT PANE: Stats, Table & Allocation */}
       <div className="flex flex-1 min-w-0 flex-col gap-3 sm:gap-6 p-2 sm:p-4 pb-4 sm:pb-8">
+        {/* SUSPICIOUS / MANIPULATED PERFORMANCE ALERT BANNER */}
+        {portfolio.is_flagged && (
+          <div className="flex items-start gap-3 p-3.5 sm:p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-800 dark:text-rose-200 shadow-sm animate-in fade-in">
+            <AlertTriangle className="h-5 w-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+            <div className="flex-1 text-xs space-y-1">
+              <div className="flex items-center gap-2 font-bold text-sm text-rose-900 dark:text-rose-100 flex-wrap">
+                <span>Performance anormale détectée</span>
+                <span className="rounded-full bg-rose-500/20 px-2 py-0.5 text-[10px] font-semibold text-rose-800 dark:text-rose-300">
+                  Masqué du classement public
+                </span>
+              </div>
+              <p className="text-muted-foreground leading-relaxed">
+                Ce portefeuille présente une anomalie statistique ou une performance jugée irréaliste{' '}
+                {portfolio.flagged_reason ? `(${portfolio.flagged_reason})` : ''}. Il a été automatiquement retiré de la communauté et de l'exploration publique afin de préserver l'équité et l'intégrité des classements partagés.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* HERO SECTION: Stats at the top */}
         <div id="tour-stats-card" className="w-full space-y-2">
           <StatsCard pftData={portfolio} own={own} />
@@ -322,31 +370,51 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
                   </div>
 
                   {own && (
-                    <div id="tour-quick-actions" className="flex items-center gap-1.5 shrink-0">
+                    <div id="tour-quick-actions" className="flex items-center gap-1.5 shrink-0 flex-wrap">
                       <AccountsMouvements
                         submitHandler={addMouvement}
                         Trigger={(props) => (
-                          <Button {...props} variant="outline" size="sm" className="h-8 px-2 sm:px-3 gap-1.5 text-xs">
-                            <WalletMinimal className="h-3.5 w-3.5" />
-                            <span className="hidden sm:inline">Espèces</span>
+                          <Button
+                            {...props}
+                            variant="outline"
+                            size="sm"
+                            title="Enregistrer un versement ou retrait de liquidités"
+                            className="h-8 px-2.5 sm:px-3 gap-1.5 text-xs font-medium border-border/80 hover:bg-muted"
+                          >
+                            <Wallet className="h-3.5 w-3.5 text-emerald-500" />
+                            <span>Dépôt / Retrait Cash</span>
                           </Button>
                         )}
                       />
+
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        title="Importer un fichier de courtier (Degiro, Trade Republic, IBKR, BoursoBank...)"
+                        className="h-8 px-2.5 sm:px-3 gap-1.5 text-xs font-medium border-border/80 hover:bg-muted"
+                      >
+                        <Link href={`${id}/import`}>
+                          <FileSpreadsheet className="h-3.5 w-3.5 text-blue-500" />
+                          <span>Importer CSV</span>
+                        </Link>
+                      </Button>
+
                       <TransactionDialogue
                         totalPortfolioValue={portfolio.totalValue}
                         submitHandler={addTransaction}
                         Trigger={(props) => (
-                          <Button id="btn-add-transaction-trigger" {...props} size="sm" className="h-8 px-3 sm:px-4 gap-1.5 text-xs font-bold shadow-sm">
-                            <PlusIcon className="h-3.5 w-3.5" />
+                          <Button
+                            id="btn-add-transaction-trigger"
+                            {...props}
+                            size="sm"
+                            className="h-8 px-3 sm:px-3.5 gap-1.5 text-xs font-bold shadow-sm"
+                          >
+                            <Plus className="h-3.5 w-3.5" />
                             <span>Transaction</span>
                           </Button>
                         )}
                       />
-                      <Link href={`${id}/import`}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 border border-border">
-                          <FileScan className="h-3.5 w-3.5" />
-                        </Button>
-                      </Link>
                     </div>
                   )}
                 </div>
@@ -416,27 +484,39 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
               </CardHeader>
               <CardContent className="p-0">
                 {data.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                      <WalletMinimal className="h-6 w-6 text-muted-foreground" />
+                  <div className="flex flex-col items-center justify-center py-12 text-center px-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <Wallet className="h-6 w-6" />
                     </div>
-                    <h3 className="mt-4 text-lg font-semibold text-foreground">Aucun investissement</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      Commencez par ajouter votre premier actif ou importez un fichier.
+                    <h3 className="mt-4 text-base sm:text-lg font-bold text-foreground">Aucun investissement pour le moment</h3>
+                    <p className="mt-1 text-xs text-muted-foreground max-w-sm">
+                      Commencez par ajouter votre premier ordre d'achat, déposez des liquidités ou importez vos relevés de courtier.
                     </p>
-                    <div className="mt-6 flex gap-3">
+                    <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
                       <TransactionDialogue
                         Trigger={(props) => (
-                          <Button {...props} size="sm" className="gap-2">
-                            <PlusIcon className="h-4 w-4" />
-                            Ajouter un actif
+                          <Button {...props} size="sm" className="h-8 gap-1.5 text-xs font-bold shadow-sm">
+                            <Plus className="h-3.5 w-3.5" />
+                            Transaction
                           </Button>
                         )}
                         totalPortfolioValue={portfolio.totalValue}
                         submitHandler={addTransaction}
                       />
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href={`${id}/import`}>Importer</Link>
+                      <AccountsMouvements
+                        submitHandler={addMouvement}
+                        Trigger={(props) => (
+                          <Button {...props} variant="outline" size="sm" className="h-8 gap-1.5 text-xs font-semibold">
+                            <Wallet className="h-3.5 w-3.5 text-emerald-500" />
+                            Dépôt Cash
+                          </Button>
+                        )}
+                      />
+                      <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs font-semibold" asChild>
+                        <Link href={`${id}/import`}>
+                          <FileSpreadsheet className="h-3.5 w-3.5 text-blue-500" />
+                          Importer CSV
+                        </Link>
                       </Button>
                     </div>
                   </div>

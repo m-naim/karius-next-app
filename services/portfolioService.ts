@@ -59,6 +59,19 @@ export function add(payload) {
   return http.post(`${host}/api/v1/portfolios`, body)
 }
 
+const formatSafeDate = (d: any): string => {
+  if (!d) return format(new Date(), 'yyyy-MM-dd', { locale: fr })
+  if (typeof d === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d
+    const parsed = new Date(d)
+    if (!isNaN(parsed.getTime())) return format(parsed, 'yyyy-MM-dd', { locale: fr })
+  }
+  if (d instanceof Date && !isNaN(d.getTime())) {
+    return format(d, 'yyyy-MM-dd', { locale: fr })
+  }
+  return format(new Date(), 'yyyy-MM-dd', { locale: fr })
+}
+
 export function AddTransaction(idPft, body) {
   const { id, type, ticker, prix, quantity, date } = body
   const coef = 'Acheter' === type ? 1 : -1
@@ -66,9 +79,9 @@ export function AddTransaction(idPft, body) {
   const apiBody = {
     id,
     symbol: ticker,
-    date: format(date, 'yyyy-MM-dd', { locale: fr }),
-    price: prix,
-    qty: quantity * coef,
+    date: formatSafeDate(date),
+    price: Number(prix) || 0,
+    qty: (Number(quantity) || 0) * coef,
   }
   return http.post(`${host}/api/v1/portfolios/${idPft}/transaction`, apiBody)
 }
@@ -77,8 +90,8 @@ export function addMouvementService(idPft, body) {
   const { id, type, amount, date } = body
   const apiBody = {
     id,
-    date: format(date, 'yyyy-MM-dd', { locale: fr }),
-    amount: amount,
+    date: formatSafeDate(date),
+    amount: Number(amount) || 0,
     type: type,
   }
   return http.post(`${host}/api/v1/portfolios/${idPft}/movement`, apiBody)
@@ -97,9 +110,9 @@ export function modifyTransactionApi(idPft, body) {
   const apiBody = {
     id,
     symbol: ticker,
-    date: format(date, 'yyyy-MM-dd', { locale: fr }),
-    price: prix,
-    qty: quantity * coef,
+    date: formatSafeDate(date),
+    price: Number(prix) || 0,
+    qty: (Number(quantity) || 0) * coef,
   }
   return http.put(`${host}/api/v1/portfolios/${idPft}/transaction`, apiBody)
 }
@@ -149,11 +162,16 @@ export function getStockInfo(symbol: string) {
 }
 
 export function initPortfolioSSE(id: string) {
+  if (typeof window === 'undefined') return null as any
   const fullUrl = `${host}/api/v1/${id}/stream`
   const eventSource = new EventSource(fullUrl, { withCredentials: false })
 
-  eventSource.onerror = (error) => {
-    console.error('SSE connection error, attempting automatic reconnection...', error)
+  eventSource.onerror = () => {
+    // EventSource standard automatically reconnects on transient disconnects (readyState === 0 CONNECTING).
+    // Avoid noisy console.error when transitioning pages or reconnecting normally.
+    if (eventSource.readyState === EventSource.CLOSED) {
+      console.warn(`[SSE] Connexion interrompue pour le portefeuille ${id}. Reconnexion automatique...`)
+    }
   }
 
   return eventSource

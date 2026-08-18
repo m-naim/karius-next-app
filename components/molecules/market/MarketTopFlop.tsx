@@ -38,20 +38,8 @@ export function MarketTopFlop({
 }: MarketTopFlopProps) {
   const cacheKey = `${symbol.toUpperCase()}_${period}`
 
-  const [data, setData] = useState<{ top: any[]; flop: any[] } | null>(() => {
-    if (topFlopComputedCache.has(cacheKey)) {
-      const cached = topFlopComputedCache.get(cacheKey)!
-      return { top: cached.top, flop: cached.flop }
-    }
-    const stored = getStoredTopFlop(symbol, period)
-    if (stored) {
-      topFlopComputedCache.set(cacheKey, stored)
-      return { top: stored.top, flop: stored.flop }
-    }
-    return null
-  })
-
-  const [loading, setLoading] = useState(() => !data)
+  const [data, setData] = useState<{ top: any[]; flop: any[] } | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let isMounted = true

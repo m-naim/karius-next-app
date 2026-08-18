@@ -45,16 +45,10 @@ export function MarketIndexSparkline({ symbol, period = '1y', initialData }: Mar
 
   const [data, setData] = useState<{ value: number; date: string; rawDate: number }[]>(() => {
     if (initialData && initialData.length > 0) return initialData
-    if (historyCache.has(cacheKey)) return historyCache.get(cacheKey)!
-    const stored = getStoredHistory(symbol, fetchPeriod)
-    if (stored && stored.length > 0) {
-      historyCache.set(cacheKey, stored)
-      return stored
-    }
     return []
   })
 
-  const [loading, setLoading] = useState(() => data.length === 0)
+  const [loading, setLoading] = useState(() => !initialData || initialData.length === 0)
 
   useEffect(() => {
     let isMounted = true

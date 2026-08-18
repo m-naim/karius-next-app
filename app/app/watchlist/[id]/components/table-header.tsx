@@ -58,6 +58,15 @@ export const TableContextHeader = ({
 }: TableContextHeaderProps) => {
   const [showFilters, setShowFilters] = React.useState(false)
 
+  const colMap = React.useMemo(() => {
+    const cols = table.getAllColumns()
+    return new Map(cols.map((c) => [c.id, c]))
+  }, [table])
+
+  const getCol = React.useCallback((colId: string) => {
+    return colMap.get(colId)
+  }, [colMap])
+
   const addRow = async (symbol: string) => {
     const response = await watchListService.addStock(id, {
       security: {
@@ -194,9 +203,14 @@ export const TableContextHeader = ({
           {/* SECTION 2: FILTRES PAR COLONNE */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <Filter className="h-3.5 w-3.5 text-primary" /> Filtres par Colonne
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <Filter className="h-3.5 w-3.5 text-primary" /> Filtres par Colonne
+                </span>
+                <span className="text-[10px] text-muted-foreground/70 hidden sm:inline-flex items-center gap-1">
+                  (sauvegarde auto)
+                </span>
+              </div>
               {hasActiveFilter && (
                 <Button
                   variant="ghost"
@@ -204,6 +218,7 @@ export const TableContextHeader = ({
                   onClick={() => {
                     table.resetColumnFilters()
                     table.resetGlobalFilter()
+                    table.resetSorting()
                     if (setActiveScreener) setActiveScreener(null)
                   }}
                   className="h-7 px-2 text-xs font-semibold text-destructive hover:text-destructive/80"
@@ -215,9 +230,9 @@ export const TableContextHeader = ({
             </div>
 
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              {table.getColumn('hasFundamentals') && (
+              {getCol('hasFundamentals') && (
                 <DataTableFacetedFilter
-                  column={table.getColumn('hasFundamentals')}
+                  column={getCol('hasFundamentals')!}
                   title="Fondamentaux"
                   options={[
                     { label: 'Disponible', value: 'yes' },
@@ -226,34 +241,34 @@ export const TableContextHeader = ({
                 />
               )}
 
-              {table.getColumn('sector') && (
+              {getCol('sector') && (
                 <DataTableFacetedFilter
-                  column={table.getColumn('sector')}
+                  column={getCol('sector')!}
                   title="Secteur"
                   options={sectors}
                 />
               )}
 
-              {table.getColumn('industry') && (
+              {getCol('industry') && (
                 <DataTableFacetedFilter
-                  column={table.getColumn('industry')}
+                  column={getCol('industry')!}
                   title="Industrie"
                   options={industries}
                 />
               )}
 
-              {table.getColumn('tags') && allAvailableTags.length > 0 && (
+              {getCol('tags') && allAvailableTags.length > 0 && (
                 <DataTableFacetedFilter
-                  column={table.getColumn('tags')}
+                  column={getCol('tags')!}
                   title="Tags"
                   options={allAvailableTags.map((tag) => ({ label: tag, value: tag }))}
                 />
               )}
 
               {/* Numerical Range Filters */}
-              {table.getColumn('trailingPE') && (
+              {getCol('trailingPE') && (
                 <DataTableRangeFilter
-                  column={table.getColumn('trailingPE')}
+                  column={getCol('trailingPE')!}
                   title="P/E"
                   step={1}
                   presets={[
@@ -264,9 +279,9 @@ export const TableContextHeader = ({
                 />
               )}
 
-              {table.getColumn('forwardPE') && (
+              {getCol('forwardPE') && (
                 <DataTableRangeFilter
-                  column={table.getColumn('forwardPE')}
+                  column={getCol('forwardPE')!}
                   title="P/E Fwd"
                   step={1}
                   presets={[
@@ -277,9 +292,9 @@ export const TableContextHeader = ({
                 />
               )}
 
-              {table.getColumn('pe5y') && (
+              {getCol('pe5y') && (
                 <DataTableRangeFilter
-                  column={table.getColumn('pe5y')}
+                  column={getCol('pe5y')!}
                   title="P/E (5a)"
                   step={1}
                   presets={[
@@ -290,9 +305,9 @@ export const TableContextHeader = ({
                 />
               )}
 
-              {table.getColumn('dividendYield') && (
+              {getCol('dividendYield') && (
                 <DataTableRangeFilter
-                  column={table.getColumn('dividendYield')}
+                  column={getCol('dividendYield')!}
                   title="Yield"
                   unit="%"
                   step={0.5}
@@ -304,9 +319,9 @@ export const TableContextHeader = ({
                 />
               )}
 
-              {table.getColumn('roic') && (
+              {getCol('roic') && (
                 <DataTableRangeFilter
-                  column={table.getColumn('roic')}
+                  column={getCol('roic')!}
                   title="ROIC (5a)"
                   unit="%"
                   step={1}
@@ -318,9 +333,9 @@ export const TableContextHeader = ({
                 />
               )}
 
-              {table.getColumn('roa') && (
+              {getCol('roa') && (
                 <DataTableRangeFilter
-                  column={table.getColumn('roa')}
+                  column={getCol('roa')!}
                   title="ROA"
                   unit="%"
                   step={1}
@@ -331,9 +346,9 @@ export const TableContextHeader = ({
                 />
               )}
 
-              {table.getColumn('roe') && (
+              {getCol('roe') && (
                 <DataTableRangeFilter
-                  column={table.getColumn('roe')}
+                  column={getCol('roe')!}
                   title="ROE"
                   unit="%"
                   step={1}
@@ -345,9 +360,9 @@ export const TableContextHeader = ({
                 />
               )}
 
-              {table.getColumn('growth') && (
+              {getCol('growth') && (
                 <DataTableRangeFilter
-                  column={table.getColumn('growth')}
+                  column={getCol('growth')!}
                   title="Croissance CA"
                   unit="%"
                   step={1}
@@ -359,9 +374,9 @@ export const TableContextHeader = ({
                 />
               )}
 
-              {table.getColumn('revGrowth') && (
+              {getCol('revGrowth') && (
                 <DataTableRangeFilter
-                  column={table.getColumn('revGrowth')}
+                  column={getCol('revGrowth')!}
                   title="Croissance CA (5a)"
                   unit="%"
                   step={1}
@@ -373,9 +388,9 @@ export const TableContextHeader = ({
                 />
               )}
 
-              {table.getColumn('linearity10y') && (
+              {getCol('linearity10y') && (
                 <DataTableRangeFilter
-                  column={table.getColumn('linearity10y')}
+                  column={getCol('linearity10y')!}
                   title="Linéarité"
                   unit="%"
                   step={5}
@@ -386,18 +401,18 @@ export const TableContextHeader = ({
                 />
               )}
 
-              {table.getColumn('ret_lin') && (
+              {getCol('ret_lin') && (
                 <DataTableRangeFilter
-                  column={table.getColumn('ret_lin')}
+                  column={getCol('ret_lin')!}
                   title="Score (Ret×Lin)"
                   unit="%"
                   step={5}
                 />
               )}
 
-              {table.getColumn('variation') && (
+              {getCol('variation') && (
                 <DataTableRangeFilter
-                  column={table.getColumn('variation')}
+                  column={getCol('variation')!}
                   title="Var. (%)"
                   unit="%"
                   step={0.5}
@@ -408,9 +423,9 @@ export const TableContextHeader = ({
                 />
               )}
 
-              {table.getColumn('cagr5y') && (
+              {getCol('cagr5y') && (
                 <DataTableRangeFilter
-                  column={table.getColumn('cagr5y')}
+                  column={getCol('cagr5y')!}
                   title="TCAC 5a"
                   unit="%"
                   step={1}
@@ -421,16 +436,16 @@ export const TableContextHeader = ({
                 />
               )}
 
-              {table.getColumn('regularMarketPrice') && (
-                <DataTableRangeFilter column={table.getColumn('regularMarketPrice')} title="Prix" step={1} />
+              {getCol('regularMarketPrice') && (
+                <DataTableRangeFilter column={getCol('regularMarketPrice')!} title="Prix" step={1} />
               )}
 
-              {table.getColumn('marketCap') && (
-                <DataTableRangeFilter column={table.getColumn('marketCap')} title="Cap. Boursière" step={1000000} />
+              {getCol('marketCap') && (
+                <DataTableRangeFilter column={getCol('marketCap')!} title="Cap. Boursière" step={1000000} />
               )}
 
-              {table.getColumn('weight') && (
-                <DataTableRangeFilter column={table.getColumn('weight')} title="Pondération" unit="%" step={1} />
+              {getCol('weight') && (
+                <DataTableRangeFilter column={getCol('weight')!} title="Pondération" unit="%" step={1} />
               )}
             </div>
           </div>

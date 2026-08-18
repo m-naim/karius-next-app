@@ -125,11 +125,16 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
     },
 
     {
-      accessorKey: 'weight',
+      accessorFn: (row) => {
+        const raw = row.weight
+        if (raw == null || isNaN(raw)) return null
+        return Math.abs(raw) <= 1 && raw !== 0 ? raw * 100 : raw
+      },
+      id: 'weight',
       header: SortingButton('Poids', true),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => (r.getValue('weight') as number) * 100)
+        const vals = rows.map((r) => r.getValue('weight') as number).filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
         return med != null ? (
           <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
@@ -137,11 +142,16 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
           </div>
         ) : null
       },
-      cell: ({ row }) => (
-        <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm font-medium">
-          {round10((row.getValue('weight') as number) * 100, -4)}%
-        </div>
-      ),
+      cell: ({ row }) => {
+        const val = row.getValue('weight') as number
+        if (val == null || isNaN(val)) return <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm font-medium">N/A</div>
+        return (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm font-medium">
+            {round10(val, -4)}%
+          </div>
+        )
+      },
+      filterFn: genericNumericFilterFn,
     },
     {
       accessorKey: 'regularMarketPrice',
@@ -298,11 +308,16 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
       filterFn: genericNumericFilterFn,
     },
     {
-      accessorKey: 'linearity10y',
+      accessorFn: (row) => {
+        const raw = row.linearity10y
+        if (raw == null || isNaN(raw)) return null
+        return Math.abs(raw) <= 1 && raw !== 0 ? raw * 100 : raw
+      },
+      id: 'linearity10y',
       header: SortingButton('Linéarité', true),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => (r.getValue('linearity10y') as number) * 100)
+        const vals = rows.map((r) => r.getValue('linearity10y') as number).filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
         return med != null ? (
           <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
@@ -317,18 +332,22 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
           </div>
         ) : null
       },
-      cell: ({ row }) => (
-        <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
-          <VariationContainer
-            value={(row.getValue('linearity10y') as number) * 100 || 0}
-            entity="%"
-            background={false}
-            vaiationColor={false}
-            sign={false}
-            className="m-0 p-0 text-[10px]"
-          />
-        </div>
-      ),
+      cell: ({ row }) => {
+        const val = row.getValue('linearity10y') as number
+        if (val == null || isNaN(val)) return <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">N/A</div>
+        return (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
+            <VariationContainer
+              value={val}
+              entity="%"
+              background={false}
+              vaiationColor={false}
+              sign={false}
+              className="m-0 p-0 text-[10px]"
+            />
+          </div>
+        )
+      },
       filterFn: genericNumericFilterFn,
     },
     {
@@ -344,13 +363,14 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
         }
         if (chg === -10000) return -10000
         const lin = row.linearity10y || 0
-        return chg * lin
+        const normalizedLin = Math.abs(lin) <= 1 && lin !== 0 ? lin : lin / 100
+        return chg * normalizedLin
       },
       id: 'ret_lin',
       header: SortingButton('Score (Ret×Lin)', true),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => r.getValue('ret_lin') as number)
+        const vals = rows.map((r) => r.getValue('ret_lin') as number).filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
         return med != null ? (
           <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
@@ -365,6 +385,7 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
       },
       cell: ({ row }) => {
         const val = row.getValue('ret_lin') as number
+        if (val == null || isNaN(val)) return <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">N/A</div>
         return (
           <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
             <VariationContainer
@@ -415,13 +436,15 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
     },
     {
       accessorFn: (row) => {
-        return row?.lastYearFundamental?.roa || 0
+        const raw = row?.lastYearFundamental?.roa
+        if (raw == null || isNaN(raw)) return null
+        return Math.abs(raw) <= 1 && raw !== 0 ? raw * 100 : raw
       },
       id: 'roa',
       header: SortingButton('ROA', true),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => (r.original?.lastYearFundamental?.roa || 0) * 100)
+        const vals = rows.map((r) => r.getValue('roa') as number).filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
         return med != null ? (
           <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
@@ -435,29 +458,35 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
           </div>
         ) : null
       },
-      cell: ({ row }) => (
-        <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
-          <VariationContainer
-            value={(row.original?.lastYearFundamental?.roa || 0) * 100}
-            entity="%"
-            background={false}
-            vaiationColor={false}
-            className="m-0 p-0 text-[11px]"
-          />
-        </div>
-      ),
+      cell: ({ row }) => {
+        const val = row.getValue('roa') as number
+        if (val == null || isNaN(val)) return <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">N/A</div>
+        return (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
+            <VariationContainer
+              value={val}
+              entity="%"
+              background={false}
+              vaiationColor={false}
+              className="m-0 p-0 text-[11px]"
+            />
+          </div>
+        )
+      },
       filterFn: genericNumericFilterFn,
     },
 
     {
       accessorFn: (row) => {
-        return row?.lastYearFundamental?.roe || 0
+        const raw = row?.lastYearFundamental?.roe
+        if (raw == null || isNaN(raw)) return null
+        return Math.abs(raw) <= 1 && raw !== 0 ? raw * 100 : raw
       },
       id: 'roe',
       header: SortingButton('ROE', true),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => (r.original?.lastYearFundamental?.roe || 0) * 100)
+        const vals = rows.map((r) => r.getValue('roe') as number).filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
         return med != null ? (
           <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
@@ -471,17 +500,21 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
           </div>
         ) : null
       },
-      cell: ({ row }) => (
-        <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
-          <VariationContainer
-            value={(row.original?.lastYearFundamental?.roe || 0) * 100}
-            entity="%"
-            background={false}
-            vaiationColor={false}
-            className="m-0 p-0 text-[11px]"
-          />
-        </div>
-      ),
+      cell: ({ row }) => {
+        const val = row.getValue('roe') as number
+        if (val == null || isNaN(val)) return <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">N/A</div>
+        return (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
+            <VariationContainer
+              value={val}
+              entity="%"
+              background={false}
+              vaiationColor={false}
+              className="m-0 p-0 text-[11px]"
+            />
+          </div>
+        )
+      },
       filterFn: genericNumericFilterFn,
     },
 
@@ -583,15 +616,16 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
       filterFn: genericNumericFilterFn,
     },
     {
-      accessorFn: (row) => row.qualityMetrics?.revenueGrowth5yAvg,
+      accessorFn: (row) => {
+        const raw = row.qualityMetrics?.revenueGrowth5yAvg
+        if (raw == null || isNaN(raw)) return null
+        return Math.abs(raw) <= 1 && raw !== 0 ? raw * 100 : raw
+      },
       id: 'revGrowth',
       header: SortingButton('Croissance CA (5a)', true),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => {
-          const val = r.original.qualityMetrics?.revenueGrowth5yAvg
-          return val != null ? val * 100 : null
-        })
+        const vals = rows.map((r) => r.getValue('revGrowth') as number).filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
         return med != null ? (
           <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
@@ -600,26 +634,27 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
         ) : null
       },
       cell: ({ row }) => {
-        const val = row.original.qualityMetrics?.revenueGrowth5yAvg
-        if (val == null) return <div className="font-mono tabular-nums text-right px-2 py-1 text-[11px] text-muted-foreground">N/A</div>
+        const val = row.getValue('revGrowth') as number
+        if (val == null || isNaN(val)) return <div className="font-mono tabular-nums text-right px-2 py-1 text-[11px] text-muted-foreground">N/A</div>
         return (
           <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
-            <VariationContainer value={val * 100} entity="%" background={false} className="m-0 p-0 text-[11px]" />
+            <VariationContainer value={val} entity="%" background={false} className="m-0 p-0 text-[11px]" />
           </div>
         )
       },
       filterFn: genericNumericFilterFn,
     },
     {
-      accessorFn: (row) => row.qualityMetrics?.roic5yAvg,
+      accessorFn: (row) => {
+        const raw = row.qualityMetrics?.roic5yAvg
+        if (raw == null || isNaN(raw)) return null
+        return Math.abs(raw) <= 1 && raw !== 0 ? raw * 100 : raw
+      },
       id: 'roic',
       header: SortingButton('ROIC (5a)', true),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => {
-          const val = r.original.qualityMetrics?.roic5yAvg
-          return val != null ? val * 100 : null
-        })
+        const vals = rows.map((r) => r.getValue('roic') as number).filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
         return med != null ? (
           <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
@@ -628,11 +663,11 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
         ) : null
       },
       cell: ({ row }) => {
-        const val = row.original.qualityMetrics?.roic5yAvg
-        if (val == null) return <div className="font-mono tabular-nums text-right px-2 py-1 text-[11px] text-muted-foreground">N/A</div>
+        const val = row.getValue('roic') as number
+        if (val == null || isNaN(val)) return <div className="font-mono tabular-nums text-right px-2 py-1 text-[11px] text-muted-foreground">N/A</div>
         return (
           <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
-            <VariationContainer value={val * 100} entity="%" background={false} className="m-0 p-0 text-[11px]" />
+            <VariationContainer value={val} entity="%" background={false} className="m-0 p-0 text-[11px]" />
           </div>
         )
       },

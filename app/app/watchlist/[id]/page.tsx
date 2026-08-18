@@ -26,6 +26,11 @@ import {
   getSavedColumnVisibility,
   getSavedColumnOrder,
 } from '@/lib/column-persistence'
+import {
+  getSavedTableFilters,
+  saveTableFilters,
+  WATCHLIST_FILTERS_STORAGE_KEY,
+} from '@/lib/filter-persistence'
 import { filterSecuritiesByScreener } from '@/lib/screeners'
 import { ViewToggleSwitch } from '@/components/atoms/ViewToggleSwitch'
 
@@ -107,7 +112,8 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
     return cachedWatchlist?.watchlist?.securities?.[0]?.symbol || null
   })
   const [showChart, setShowChart] = React.useState(false)
-  const [activeScreener, setActiveScreener] = React.useState<string | null>(null)
+  const savedFilters = React.useMemo(() => getSavedTableFilters(WATCHLIST_FILTERS_STORAGE_KEY), [])
+  const [activeScreener, setActiveScreener] = React.useState<string | null>(() => savedFilters.activeScreener ?? null)
 
   const [allAvailableTags, setAllAvailableTags] = React.useState<string[]>([])
 
@@ -167,18 +173,29 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
     }
   }, [])
 
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [sorting, setSorting] = React.useState<SortingState>(() => savedFilters.sorting ?? [])
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(() => savedFilters.columnFilters ?? [])
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(() =>
     getSavedColumnOrder([])
   )
-  const [globalFilter, setGlobalFilter] = React.useState('')
+  const [globalFilter, setGlobalFilter] = React.useState(() => savedFilters.globalFilter ?? '')
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(() =>
     getSavedColumnVisibility(DEFAULT_WATCHLIST_VISIBILITY)
   )
   const [rowSelection, setRowSelection] = React.useState({})
-  const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
+  const [selectedPeriod, setSelectedPeriod] = React.useState(() => savedFilters.selectedPeriod ?? '1d')
   const [showMetrics, setShowMetrics] = React.useState(false)
+
+  // Automatically persist user filters across sessions
+  React.useEffect(() => {
+    saveTableFilters(WATCHLIST_FILTERS_STORAGE_KEY, {
+      columnFilters,
+      globalFilter,
+      sorting,
+      activeScreener,
+      selectedPeriod,
+    })
+  }, [columnFilters, globalFilter, sorting, activeScreener, selectedPeriod])
 
   React.useEffect(() => {
     if (showMetrics) {
@@ -322,6 +339,12 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
     return columns(id, owned, data?.benchMark, deleteRow, selectedPeriod, allWatchlists)
   }, [id, owned, data?.benchMark, deleteRow, selectedPeriod, allWatchlists])
 
+  const validColumnOrder = useMemo(() => {
+    if (!columnOrder || columnOrder.length === 0) return columnOrder
+    const validIds = new Set(tableColumns.map((c: any) => c.id || c.accessorKey).filter(Boolean))
+    return columnOrder.filter((colId) => validIds.has(colId))
+  }, [columnOrder, tableColumns])
+
   const table = useReactTable<security>({
     data: tableData,
     columns: tableColumns,
@@ -344,7 +367,7 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
     state: {
       sorting,
       columnFilters,
-      columnOrder,
+      columnOrder: validColumnOrder,
       globalFilter,
       columnVisibility,
       rowSelection,
