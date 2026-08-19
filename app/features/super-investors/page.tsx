@@ -14,7 +14,7 @@ import {
   Search,
   Zap,
 } from 'lucide-react'
-import superInvestors from '@/data/superInvestors.json'
+import { getSuperInvestors, SuperInvestor } from '@/services/superInvestorService'
 
 export const metadata = genPageMetadata({
   title: 'Portefeuilles des Super Investisseurs 13F (Buffett, Rochon, Akre, Hohn) | Boursehorus',
@@ -22,7 +22,9 @@ export const metadata = genPageMetadata({
     'Suivez gratuitement les portefeuilles officiels 13F SEC des plus grands investisseurs mondiaux : François Rochon, Chuck Akre, Chris Hohn, Terry Smith et Warren Buffett.',
 })
 
-export default function SuperInvestorsLandingPage() {
+export default async function SuperInvestorsLandingPage() {
+  const superInvestors: SuperInvestor[] = await getSuperInvestors()
+  const displayInvestors = superInvestors.slice(0, 3)
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -93,7 +95,7 @@ export default function SuperInvestorsLandingPage() {
 
           {/* INVESTOR GRID PREVIEW */}
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 text-left max-w-5xl mx-auto">
-            {superInvestors.slice(0, 3).map((inv) => (
+            {displayInvestors.map((inv) => (
               <div
                 key={inv.id}
                 className="p-6 rounded-2xl border border-border/70 bg-card shadow-sm space-y-3"
@@ -105,7 +107,7 @@ export default function SuperInvestorsLandingPage() {
                 <h3 className="text-lg font-extrabold text-foreground">{inv.name}</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">{inv.description}</p>
                 <div className="pt-2 flex flex-wrap gap-1.5">
-                  {inv.notableHoldings.map((h) => (
+                  {(inv.notableHoldings || []).map((h) => (
                     <span key={h} className="text-[10px] font-bold bg-muted px-2 py-0.5 rounded border">
                       {h}
                     </span>
