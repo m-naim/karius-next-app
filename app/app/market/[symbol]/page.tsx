@@ -234,13 +234,23 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
           if (isMounted) setWatchlists(userWatchlists || [])
         }).catch(() => [])
 
-        await marketService.getProgressive(symbol, (progressiveData) => {
+        const finalData = await marketService.getProgressive(symbol, (progressiveData) => {
           if (isMounted) {
             setIndexInfo(progressiveData)
             setSecurities([...(progressiveData.holdings || [])])
             setLoading(false) // Dismiss loader immediately as soon as chunk 1 arrives (< 50ms)!
           }
         })
+
+        // The progressive callback can be missed when React replays effects in
+        // development or when another caller already owns the in-flight request.
+        // Always commit the resolved result so a successful request cannot leave
+        // the table stuck at an empty state.
+        if (isMounted) {
+          setIndexInfo(finalData)
+          setSecurities([...(finalData.holdings || [])])
+          setLoading(false)
+        }
       } catch (error) {
         console.error(error)
         if (isMounted && !cachedIndex) {
@@ -260,7 +270,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
     return () => {
       isMounted = false
     }
-  }, [symbol, toast, cachedIndex])
+  }, [symbol, toast])
 
   return loading ? (
     <Loader />
