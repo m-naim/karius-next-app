@@ -33,7 +33,6 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 
 export default function AppDashboard() {
-  const [mounted, setMounted] = useState(false)
   const [portfolios, setPortfolios] = useState<PortfolioSummery[]>([])
   const [watchlists, setWatchlists] = useState<WatchListInfos[]>([])
   const [loading, setLoading] = useState(true)
@@ -60,11 +59,8 @@ export default function AppDashboard() {
   }
 
   useEffect(() => {
-    setMounted(true)
     fetchData()
   }, [])
-
-  if (!mounted) return null
 
   const getGreeting = () => {
     const hour = new Date().getHours()

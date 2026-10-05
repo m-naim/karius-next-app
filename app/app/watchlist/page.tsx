@@ -36,8 +36,7 @@ export default function WatchlistHubPage() {
     setMounted(true)
     let isMounted = true
 
-    // Fetch user watchlists if logged in
-    if (authentificated) {
+    if (activeTab === 'my' && authentificated) {
       watchListService
         .getAll()
         .then((res) => {
@@ -49,28 +48,29 @@ export default function WatchlistHubPage() {
         .catch(() => {
           if (isMounted) setLoadingMy(false)
         })
-    } else {
+    } else if (!authentificated) {
       setLoadingMy(false)
       setActiveTab('public')
     }
 
-    // Fetch public community watchlists
-    watchListService
-      .getPublic()
-      .then((res) => {
-        if (isMounted) {
-          setPublicWatchlists(Array.isArray(res) ? res : [])
-          setLoadingPublic(false)
-        }
-      })
-      .catch(() => {
-        if (isMounted) setLoadingPublic(false)
-      })
+    if (activeTab === 'public') {
+      watchListService
+        .getPublic()
+        .then((res) => {
+          if (isMounted) {
+            setPublicWatchlists(Array.isArray(res) ? res : [])
+            setLoadingPublic(false)
+          }
+        })
+        .catch(() => {
+          if (isMounted) setLoadingPublic(false)
+        })
+    }
 
     return () => {
       isMounted = false
     }
-  }, [authentificated])
+  }, [activeTab, authentificated])
 
   if (!mounted) {
     return (

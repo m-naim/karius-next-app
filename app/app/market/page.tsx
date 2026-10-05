@@ -112,17 +112,21 @@ export default function MarketListingPage() {
   const [marketVariations, setMarketVariations] = useState<Record<string, Record<string, number>>>({})
   const [watchlists, setWatchlists] = useState<any[]>([])
   const [breadthStats, setBreadthStats] = useState<MarketBreadthStats | null>(null)
-
-  const hasPrefetchedRest = useRef(false)
+  const marketOverviewRef = useRef<{
+    quotes: Record<string, any>
+    variations: Record<string, Record<string, number>>
+  }>({ quotes: {}, variations: {} })
 
   // Read stored cache immediately upon mounting on client (post-hydration, 0ms)
   useEffect(() => {
     const cached = getStoredMarketOverview()
     if (cached?.quotes && Object.keys(cached.quotes).length > 0) {
       setMarketQuotes(cached.quotes)
+      marketOverviewRef.current.quotes = cached.quotes
     }
     if (cached?.variations && Object.keys(cached.variations).length > 0) {
       setMarketVariations(cached.variations)
+      marketOverviewRef.current.variations = cached.variations
     }
   }, [])
 
@@ -132,12 +136,9 @@ export default function MarketListingPage() {
 
     const fetchMarketOverview = async () => {
       try {
-        const [quotesData, variationsData, userWatchlists, batchHistory] = await Promise.all([
+        const [quotesData, userWatchlists] = await Promise.all([
           getQuotes(symbols).catch(() => []),
-          getStocksVariations(symbols).catch(() => []),
           watchListService.getAll().catch(() => []),
-          // Pre-fetch historical sparklines for ALL 6 indices in 1 single HTTP call!
-          getStockHistory(symbols, selectedPeriod === '1d' ? '1w' : selectedPeriod).catch(() => ({})),
         ])
 
         if (!isMounted) return
@@ -149,39 +150,11 @@ export default function MarketListingPage() {
           })
         }
         setMarketQuotes(qMap)
+        marketOverviewRef.current.quotes = qMap
+        saveStoredMarketOverview(qMap, marketOverviewRef.current.variations)
 
-        const vMap: Record<string, Record<string, number>> = {}
-        if (Array.isArray(variationsData)) {
-          variationsData.forEach((v: any) => {
-            if (v?.symbol) vMap[v.symbol] = v.variations || {}
-          })
-        }
-        setMarketVariations(vMap)
         setWatchlists(userWatchlists || [])
 
-        // Save fresh snapshot to persistent storage
-        if (Object.keys(qMap).length > 0) {
-          saveStoredMarketOverview(qMap, vMap)
-        }
-
-        // Cache batch sparklines for all 6 indices
-        if (batchHistory && typeof batchHistory === 'object') {
-          Object.entries(batchHistory).forEach(([sym, history]) => {
-            if (Array.isArray(history) && history.length > 0) {
-              populateHistoryCache(sym, selectedPeriod, history)
-            }
-          })
-        }
-
-        // Background idle prefetch of other index holdings so clicking them is 0ms
-        if (!hasPrefetchedRest.current) {
-          hasPrefetchedRest.current = true
-          setTimeout(() => {
-            MARKETS.filter((m) => m.symbol !== '^VIX' && m.symbol !== activeMarket.symbol).forEach((m) => {
-              marketService.prefetch(m.symbol)
-            })
-          }, 300)
-        }
       } catch (err) {
         console.error('Failed to load market overview:', err)
       }
@@ -191,7 +164,46 @@ export default function MarketListingPage() {
     return () => {
       isMounted = false
     }
-  }, [selectedPeriod, activeMarket.symbol])
+  }, [])
+
+  useEffect(() => {
+    let isMounted = true
+    const symbols = MARKETS.map((m) => m.symbol)
+
+    const fetchPeriodData = async () => {
+      const [variationsData, batchHistory] = await Promise.all([
+        getStocksVariations(symbols).catch(() => []),
+        getStockHistory(symbols, selectedPeriod === '1d' ? '1w' : selectedPeriod).catch(() => ({})),
+      ])
+
+      if (!isMounted) return
+
+      const variationMap: Record<string, Record<string, number>> = {}
+      if (Array.isArray(variationsData)) {
+        variationsData.forEach((variation: any) => {
+          if (variation?.symbol) variationMap[variation.symbol] = variation.variations || {}
+        })
+      }
+      setMarketVariations(variationMap)
+      marketOverviewRef.current.variations = variationMap
+      if (Object.keys(marketOverviewRef.current.quotes).length > 0) {
+        saveStoredMarketOverview(marketOverviewRef.current.quotes, variationMap)
+      }
+
+      if (batchHistory && typeof batchHistory === 'object') {
+        Object.entries(batchHistory).forEach(([symbol, history]) => {
+          if (Array.isArray(history) && history.length > 0) {
+            populateHistoryCache(symbol, selectedPeriod, history)
+          }
+        })
+      }
+    }
+
+    fetchPeriodData().catch((error) => console.error('Failed to load market period data:', error))
+    return () => {
+      isMounted = false
+    }
+  }, [selectedPeriod])
 
   // Reset breadth when active market changes
   useEffect(() => {

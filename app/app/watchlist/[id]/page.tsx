@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useMemo } from 'react'
+import dynamic from 'next/dynamic'
 import { usePathname } from 'next/navigation'
 import watchListService from '@/services/watchListService'
 import { security } from './data/security'
@@ -57,13 +58,21 @@ const DEFAULT_WATCHLIST_VISIBILITY: VisibilityState = {
   pe5y: false,
 }
 import { TableView } from './components/TableView'
-import { TickerChart } from './components/TickerChart'
 import { WatchlistSelector } from './components/WatchlistSelector'
-import { AnalysisView } from '@/components/organismes/market/AnalysisView'
 import { LayoutDashboard, Table as TableIcon } from 'lucide-react'
 import { RightSidebar } from '@/components/organismes/layout/RightSidebar'
 import { SplitScreenLayout } from '@/components/organismes/layout/SplitScreenLayout'
 import { cn } from '@/lib/utils'
+
+const TickerChart = dynamic(
+  () => import('./components/TickerChart').then((module) => module.TickerChart),
+  { ssr: false }
+)
+
+const AnalysisView = dynamic(
+  () => import('@/components/organismes/market/AnalysisView').then((module) => module.AnalysisView),
+  { ssr: false }
+)
 
 export interface watchList {
   _id?: string
