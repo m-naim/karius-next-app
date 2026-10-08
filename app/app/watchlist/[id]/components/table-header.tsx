@@ -8,7 +8,7 @@ import {
 import { AddStockButton } from './AddStockButton'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ChevronDown, Filter, Search, Settings2, Sparkles, Check, X, XCircleIcon } from 'lucide-react'
+import { ChevronDown, Filter, Search, Sparkles, Check, X, XCircleIcon } from 'lucide-react'
 import watchListService from '@/services/watchListService'
 import { DataTableFacetedFilter } from './data-table-filter'
 import { DataTableRangeFilter } from './data-table-range-filter'
@@ -51,12 +51,12 @@ export const TableContextHeader = ({
   selectedPeriod,
   setSelectedPeriod,
   allAvailableTags = [],
-  showMetrics,
-  setShowMetrics,
   activeScreener = null,
   setActiveScreener,
 }: TableContextHeaderProps) => {
   const [showFilters, setShowFilters] = React.useState(false)
+  const [searchExpanded, setSearchExpanded] = React.useState(() => Boolean(table.getState().globalFilter))
+  const searchInputRef = React.useRef<HTMLInputElement>(null)
 
   const colMap = React.useMemo(() => {
     const cols = table.getAllColumns()
@@ -83,19 +83,43 @@ export const TableContextHeader = ({
   const isFiltered = table.getState().columnFilters.length > 0 || !!table.getState().globalFilter
   const hasActiveFilter = isFiltered || !!activeScreener
 
+  const collapseSearchIfEmpty = () => {
+    if (!table.getState().globalFilter) {
+      setSearchExpanded(false)
+    }
+  }
+
   return (
     <div className="flex flex-col gap-2 p-2 sm:gap-4 sm:p-4">
-      <div className="flex items-center justify-between gap-2 sm:gap-4">
-        <div className="flex flex-1 items-center gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           {owned && <AddStockButton addRow={addRow} />}
 
-          <div className="relative w-full max-w-sm sm:w-auto">
+          <div
+            className={cn(
+              'relative min-w-0 transition-[width] duration-200 ease-out md:max-w-sm',
+              searchExpanded ? 'w-full' : 'w-10 md:w-[250px]'
+            )}
+          >
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
+              ref={searchInputRef}
               placeholder="Search by name or symbol..."
               value={(table.getState().globalFilter as string) ?? ''}
               onChange={(event) => table.setGlobalFilter(event.target.value)}
-              className="h-8 w-full pl-8 text-xs sm:w-[250px]"
+              onFocus={() => setSearchExpanded(true)}
+              onBlur={collapseSearchIfEmpty}
+              onClick={() => setSearchExpanded(true)}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape' && !table.getState().globalFilter) {
+                  searchInputRef.current?.blur()
+                }
+              }}
+              aria-label="Rechercher une action par nom ou symbole"
+              className={cn(
+                'h-9 w-full pl-8 text-xs transition-colors md:h-8 md:w-[250px]',
+                !searchExpanded && 'cursor-pointer text-transparent placeholder:text-transparent md:cursor-text md:text-foreground md:placeholder:text-muted-foreground'
+              )}
             />
           </div>
 
@@ -125,13 +149,13 @@ export const TableContextHeader = ({
           </Button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex w-full items-center gap-2 sm:w-auto">
           {/* Unified Column View & Preset Manager */}
           <ColumnViewPresetManager table={table} />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="outline" className="h-8 whitespace-nowrap">
+              <Button size="sm" variant="outline" className="h-9 min-w-0 flex-1 justify-between whitespace-nowrap sm:h-8 sm:flex-none">
                 {periods.find((p) => p.value === selectedPeriod)?.label || 'Sélectionner'}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>

@@ -134,48 +134,6 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
     })
   }, [columnFilters, globalFilter, sorting, activeScreener, selectedPeriod])
 
-  React.useEffect(() => {
-    if (showMetrics) {
-      setColumnVisibility({
-        symbol: true,
-        regularMarketPrice: false,
-        variation: false,
-        trailingPE: false,
-        dividendYield: false,
-        linearity10y: false,
-        ret_lin: false,
-        marketCap: false,
-        weight: false,
-        forwardPE: false,
-        roa: false,
-        roe: false,
-        growth: false,
-        revGrowth: true,
-        roic: true,
-        pe5y: true,
-      })
-    } else {
-      setColumnVisibility({
-        symbol: true,
-        regularMarketPrice: true,
-        variation: true,
-        trailingPE: true,
-        dividendYield: true,
-        linearity10y: true,
-        ret_lin: true,
-        marketCap: true,
-        weight: true,
-        forwardPE: false,
-        roa: false,
-        roe: false,
-        growth: false,
-        revGrowth: false,
-        roic: false,
-        pe5y: false,
-      })
-    }
-  }, [showMetrics])
-
   const tableData = useMemo(() => {
     return filteredSecurities.map((security) => ({
       ...security,

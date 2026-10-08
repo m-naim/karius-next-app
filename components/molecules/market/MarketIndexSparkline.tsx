@@ -132,6 +132,22 @@ export function MarketIndexSparkline({ symbol, period = '1y', initialData }: Mar
     )
   }
 
+  if (data.length < 2) {
+    const point = data[0]
+    return (
+      <div className="flex h-full min-h-[120px] w-full items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/10 px-4 text-center sm:min-h-[150px]">
+        <div className="space-y-1">
+          <p className="m-0 text-sm font-bold text-foreground">
+            {point.value.toLocaleString('fr-FR', { maximumFractionDigits: 2 })}
+          </p>
+          <p className="m-0 text-[11px] leading-relaxed text-muted-foreground">
+            Historique insuffisant pour tracer la tendance
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   const strokeColor = stats?.isPositive ? '#10b981' : '#ef4444' // emerald-500 or red-500
   const gradientId = `color-${symbol.replace(/[^a-zA-Z0-9]/g, '_')}`
 
@@ -166,7 +182,7 @@ export function MarketIndexSparkline({ symbol, period = '1y', initialData }: Mar
       )}
 
       {/* Chart container */}
-      <div className="flex-1 min-h-[180px] w-full">
+      <div className="min-h-[150px] w-full flex-1">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
             <defs>

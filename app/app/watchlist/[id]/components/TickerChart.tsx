@@ -310,7 +310,7 @@ export function TickerChart({
         </TabsList>
 
         <TabsContent value="technical" className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
             <div className="flex flex-wrap items-center gap-1">
               {periodes.map((p) => {
                 const primaryHistory = fullHistory[symbol] || []
@@ -342,7 +342,7 @@ export function TickerChart({
                         ? `Seulement ~${Math.round(totalAvailableDays)} jours d'historique disponibles`
                         : undefined
                     }
-                    className={`rounded-md px-2 py-1 text-xs font-medium transition-colors ${
+                    className={`min-h-9 min-w-10 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
                       period === p.value
                         ? 'bg-primary text-primary-foreground'
                         : isExceeding
@@ -357,7 +357,7 @@ export function TickerChart({
               })}
             </div>
 
-            <div className="flex items-center gap-4 border-l pl-3">
+            <div className="flex w-full flex-wrap items-center gap-2 border-t pt-2 sm:w-auto sm:gap-4 sm:border-l sm:border-t-0 sm:pl-3 sm:pt-0">
               {availableBenchmarks.map((bench) => (
                 <div key={bench.symbol} className="flex items-center space-x-1.5">
                   <Checkbox
@@ -425,11 +425,11 @@ export function TickerChart({
                   </div>
                 )}
               </div>
-              <div className="flex gap-1 border-l pl-3">
+              <div className="ml-auto flex shrink-0 gap-1 border-l pl-2 sm:pl-3">
                 <Button
                   variant={isLogarithmic ? 'default' : 'outline'}
                   size="sm"
-                  className="h-7 px-2 text-[10px] font-bold uppercase tracking-tight"
+                  className="h-9 min-w-11 px-2 text-[10px] font-bold uppercase tracking-tight"
                   onClick={() => {
                     setIsLogarithmic(!isLogarithmic)
                     if (isDrawdown) setIsDrawdown(false)
@@ -441,7 +441,7 @@ export function TickerChart({
                 <Button
                   variant={isDrawdown ? 'default' : 'outline'}
                   size="sm"
-                  className="h-7 px-2 text-[10px] font-bold uppercase tracking-tight"
+                  className="h-9 min-w-11 px-2 text-[10px] font-bold uppercase tracking-tight"
                   onClick={() => {
                     const nextValue = !isDrawdown
                     setIsDrawdown(nextValue)

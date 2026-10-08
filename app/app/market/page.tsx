@@ -7,7 +7,6 @@ import {
   Globe,
   ShieldCheck,
   PieChart,
-  Landmark,
   ArrowRight,
   Activity,
   Sparkles,
@@ -223,10 +222,10 @@ export default function MarketListingPage() {
   const vixQuote = marketQuotes['^VIX']
 
   return (
-    <div className="flex flex-col gap-3 px-3 py-3 md:px-6 md:py-4 max-w-6xl mx-auto w-full">
+    <div className="flex min-w-0 flex-col gap-3 px-3 pb-24 pt-3 md:px-6 md:py-4 max-w-6xl mx-auto w-full">
       {/* 1. Top Header Bar: Titre + Macro VIX Pulse + Sélecteur de Période */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/40 pb-2.5">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-2 border-b border-border/40 pb-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           <h1 className="text-lg font-black tracking-tight text-foreground sm:text-xl">
             Marchés &amp; <span className="text-primary">Indices</span>
           </h1>
@@ -248,7 +247,7 @@ export default function MarketListingPage() {
         </div>
 
         {/* Sélecteur de période ultra-compact */}
-        <div className="flex items-center gap-0.5 rounded-lg bg-muted/40 border border-border/60 p-0.5">
+        <div className="flex w-fit items-center gap-0.5 rounded-lg border border-border/60 bg-muted/40 p-0.5">
           {PERIODS.map(({ key, label }) => {
             const isActive = selectedPeriod === key
             return (
@@ -256,7 +255,7 @@ export default function MarketListingPage() {
                 key={key}
                 onClick={() => setSelectedPeriod(key)}
                 className={cn(
-                  'relative px-2 py-0.5 text-xs font-black uppercase transition-all rounded-md',
+                  'relative min-h-9 min-w-10 rounded-md px-2.5 py-1.5 text-xs font-black uppercase transition-all',
                   isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
                 )}
               >
@@ -287,8 +286,9 @@ export default function MarketListingPage() {
               key={market.symbol}
               onClick={() => setActiveMarket(market)}
               onMouseEnter={() => market.symbol !== '^VIX' && marketService.prefetch(market.symbol)}
+              aria-pressed={isActive}
               className={cn(
-                'relative flex items-center justify-between rounded-lg border px-2.5 py-1.5 text-left transition-all duration-150',
+                'relative flex min-h-12 min-w-0 items-center justify-between rounded-lg border px-2 py-1.5 text-left transition-all duration-150 sm:min-h-14 sm:px-2.5 sm:py-2',
                 isActive
                   ? 'bg-card border-primary ring-1 ring-primary/40 shadow-xs'
                   : 'bg-card/40 border-border/60 hover:bg-card hover:border-border'
@@ -327,17 +327,14 @@ export default function MarketListingPage() {
                 )}
               </div>
 
-              {isActive && (
-                <div className="absolute -bottom-[1px] left-2 right-2 h-[2px] bg-primary rounded-full" />
-              )}
             </button>
           )
         })}
       </div>
 
       {/* 3. Bandeau d'Action Rapide de l'Indice Actif */}
-      <div className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-card px-3.5 py-2 shadow-xs">
-        <div className="flex items-center gap-3 min-w-0">
+      <div className="flex flex-col items-stretch gap-2.5 rounded-xl border border-border/60 bg-card px-3 py-2.5 shadow-xs sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-3.5 sm:py-2">
+        <div className="flex min-w-0 flex-1 items-center justify-between gap-2 sm:justify-start">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <span className="text-sm font-black text-foreground truncate">
@@ -354,7 +351,7 @@ export default function MarketListingPage() {
 
           <div className="h-5 w-[1px] bg-border/60 hidden sm:block" />
 
-          <div className="flex items-baseline gap-2 shrink-0">
+          <div className="flex shrink-0 items-baseline gap-2">
             <span className="text-xs font-black text-foreground">
               {activeQuote?.regularMarketPrice != null
                 ? activeQuote.regularMarketPrice.toLocaleString('fr-FR', {
@@ -380,12 +377,13 @@ export default function MarketListingPage() {
           <Link
             href={`/app/market/${encodeURIComponent(activeMarket.symbol)}`}
             onMouseEnter={() => marketService.prefetch(activeMarket.symbol)}
-            className="shrink-0"
+            className="w-full sm:w-auto"
           >
-            <button className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground shadow-xs transition-all hover:bg-primary/90">
-              <span>Voir la composition ({activeMarket.constituentsCount})</span>
+            <span className="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-center text-xs font-bold leading-tight text-primary-foreground shadow-xs transition-all hover:bg-primary/90 sm:w-auto">
+              <span className="sm:hidden">Composition</span>
+              <span className="hidden sm:inline">Voir la composition ({activeMarket.constituentsCount})</span>
               <ArrowRight className="h-3 w-3" />
-            </button>
+            </span>
           </Link>
         ) : (
           <span className="rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-bold text-rose-500 border border-rose-500/20">
@@ -416,10 +414,10 @@ export default function MarketListingPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.15 }}
-            className="grid grid-cols-1 gap-3 lg:grid-cols-12"
+            className="grid min-w-0 grid-cols-1 gap-2.5 lg:grid-cols-12"
           >
             {/* Colonne Gauche : Graphique historique + Breadth & Baromètre Sectoriel (8 cols) */}
-            <div className="flex flex-col justify-between rounded-xl border border-border/60 bg-card p-3.5 shadow-xs lg:col-span-8">
+            <div className="flex min-w-0 flex-col justify-between rounded-xl border border-border/60 bg-card p-2.5 shadow-xs sm:p-3.5 lg:col-span-8">
               <div>
                 <div className="flex items-center justify-between border-b border-border/40 pb-1.5">
                   <div className="flex items-center gap-1.5">
@@ -434,7 +432,7 @@ export default function MarketListingPage() {
                 </div>
 
                 {/* Graphique */}
-                <div className="h-[210px] sm:h-[240px] w-full pt-1">
+                <div className="h-[150px] w-full pt-1 sm:h-[240px]">
                   <MarketIndexSparkline
                     key={`${activeMarket.symbol}_${selectedPeriod}`}
                     symbol={activeMarket.symbol}
@@ -448,7 +446,7 @@ export default function MarketListingPage() {
             </div>
 
             {/* Colonne Droite : Moteurs du Marché (Top / Flop) avec Actions rapides (4 cols) */}
-            <div className="flex flex-col justify-between rounded-xl border border-border/60 bg-card p-3.5 shadow-xs lg:col-span-4">
+            <div className="flex min-w-0 flex-col justify-between rounded-xl border border-border/60 bg-card p-2.5 shadow-xs sm:p-3.5 lg:col-span-4">
               <div>
                 <div className="flex items-center justify-between border-b border-border/40 pb-1.5 mb-2">
                   <div className="flex items-center gap-1.5">

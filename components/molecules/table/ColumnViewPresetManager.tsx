@@ -339,6 +339,9 @@ export function ColumnViewPresetManager({ table }: ColumnViewPresetManagerProps)
   const [open, setOpen] = React.useState(false)
   const [customPresets, setCustomPresets] = React.useState<ColumnViewPreset[]>([])
   const [activePresetId, setActivePresetId] = React.useState<string>('standard')
+  const [savedPresetId, setSavedPresetId] = React.useState<string | null>(null)
+  const [persistenceLoaded, setPersistenceLoaded] = React.useState(false)
+  const hasRestoredPreset = React.useRef(false)
   const [addSearchTerm, setAddSearchTerm] = React.useState('')
   const [newPresetName, setNewPresetName] = React.useState('')
   const [isCreatingNew, setIsCreatingNew] = React.useState(false)
@@ -356,10 +359,13 @@ export function ColumnViewPresetManager({ table }: ColumnViewPresetManagerProps)
       }
       const savedActive = localStorage.getItem(ACTIVE_PRESET_KEY)
       if (savedActive) {
+        setSavedPresetId(savedActive)
         setActivePresetId(savedActive)
       }
+      setPersistenceLoaded(true)
     } catch (e) {
       console.error('Error loading custom column presets', e)
+      setPersistenceLoaded(true)
     }
   }, [])
 
@@ -481,6 +487,22 @@ export function ColumnViewPresetManager({ table }: ColumnViewPresetManagerProps)
     },
     [table]
   )
+
+  // Restore the last selected view after custom presets have been loaded.
+  // The table owns its state, so saving only the label is not enough: the
+  // visibility and order must be applied again when the page is remounted.
+  React.useEffect(() => {
+    if (!persistenceLoaded || hasRestoredPreset.current) return
+
+    if (!savedPresetId) {
+      hasRestoredPreset.current = true
+      return
+    }
+
+    const savedPreset = allPresets.find((preset) => preset.id === savedPresetId) || SYSTEM_VIEW_PRESETS[0]
+    hasRestoredPreset.current = true
+    applyPreset(savedPreset)
+  }, [allPresets, applyPreset, persistenceLoaded, savedPresetId])
 
   // Remove column from active view
   const handleRemoveColumn = (colId: string) => {

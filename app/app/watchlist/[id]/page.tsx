@@ -206,56 +206,6 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
     })
   }, [columnFilters, globalFilter, sorting, activeScreener, selectedPeriod])
 
-  React.useEffect(() => {
-    if (showMetrics) {
-      setColumnVisibility({
-        actions: true,
-        symbol: true,
-        regularMarketPrice: false,
-        variation: false,
-        sector: false,
-        trailingPE: false,
-        dividendYield: false,
-        growth: false,
-        tags: true,
-        hasFundamentals: false,
-        roa: false,
-        roe: false,
-        linearity10y: false,
-        ret_lin: false,
-        forwardPE: false,
-        industry: false,
-        relativePerformances: false,
-        revGrowth: true,
-        roic: true,
-        pe5y: true,
-      })
-    } else {
-      setColumnVisibility({
-        actions: true,
-        symbol: true,
-        regularMarketPrice: true,
-        variation: true,
-        sector: true,
-        trailingPE: true,
-        dividendYield: true,
-        growth: true,
-        tags: true,
-        hasFundamentals: false,
-        roa: false,
-        roe: false,
-        linearity10y: false,
-        ret_lin: false,
-        forwardPE: false,
-        industry: false,
-        relativePerformances: false,
-        revGrowth: false,
-        roic: false,
-        pe5y: false,
-      })
-    }
-  }, [showMetrics])
-
   const deleteRow = (symbol: string) => {
     setData((prevData) => ({
       ...prevData,

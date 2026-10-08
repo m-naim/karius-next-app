@@ -176,8 +176,8 @@ export function MarketTopFlop({
 
   if (!data || (data.top.length === 0 && data.flop.length === 0)) {
     return (
-      <div className="flex h-32 items-center justify-center text-xs text-muted-foreground">
-        Aucun composant disponible pour cet indice
+      <div className="flex min-h-24 items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/10 px-4 py-6 text-center text-xs text-muted-foreground">
+        Composition détaillée indisponible pour cet indice
       </div>
     )
   }
