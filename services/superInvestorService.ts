@@ -1,3 +1,5 @@
+import config from './config'
+
 export interface SuperInvestorPosition {
   symbol: string
   name: string
@@ -38,10 +40,7 @@ export interface SuperInvestor {
 }
 
 function getApiBaseUrl(): string {
-  if (typeof window !== 'undefined') {
-    return '' // Use Next.js proxy rewrites on client browser
-  }
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+  return config.API_URL.replace(/\/$/, '')
 }
 
 export async function getSuperInvestors(): Promise<SuperInvestor[]> {

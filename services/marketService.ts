@@ -19,6 +19,26 @@ const memoryCache = new Map<string, { data: IndexComposition; timestamp: number;
 const inFlightProgressive = new Map<string, Promise<IndexComposition>>()
 const CACHE_TTL_MS = 60 * 1000 // 1 minute fresh cache
 const CHUNK_SIZE = 100
+const MAX_PAGINATION_PAGES = 100
+
+function getNumericPageValue(page: any, keys: string[], fallback: number): number {
+  for (const key of keys) {
+    const value = Number(page?.[key])
+    if (Number.isFinite(value) && value >= 0) return value
+  }
+  return fallback
+}
+
+function pageHasMore(page: any, offset: number, requestedLimit: number, totalHoldings: number): boolean {
+  const explicitHasMore = page?.hasMore ?? page?.has_more
+  const pageLimit = getNumericPageValue(page, ['limit', 'pageSize', 'page_size'], requestedLimit)
+  const pageOffset = getNumericPageValue(page, ['offset', 'start'], offset)
+  const inferredHasMore = totalHoldings > 0 && pageOffset + pageLimit < totalHoldings
+
+  // Keep pagination working even when an older API response omits hasMore or
+  // returns fewer enriched holdings than the requested page size.
+  return explicitHasMore === true || explicitHasMore === 'true' || inferredHasMore
+}
 
 export async function getChunk(symbol: string, offset = 0, limit = CHUNK_SIZE): Promise<any> {
   return http.get(
@@ -53,13 +73,20 @@ export async function getProgressive(
     try {
       // 1. Fetch initial chunk fast (e.g. first 100 holdings)
       const firstChunk = await getChunk(symbol, 0, CHUNK_SIZE)
-      const totalHoldings = firstChunk.totalHoldings || firstChunk.holdings?.length || 0
-      const hasMore = !!firstChunk.hasMore
+      const firstHoldings = Array.isArray(firstChunk.holdings) ? firstChunk.holdings : []
+      const firstPageOffset = getNumericPageValue(firstChunk, ['offset', 'start'], 0)
+      const firstPageLimit = getNumericPageValue(firstChunk, ['limit', 'pageSize', 'page_size'], CHUNK_SIZE)
+      const totalHoldings = getNumericPageValue(
+        firstChunk,
+        ['totalHoldings', 'total_holdings', 'total', 'count'],
+        firstHoldings.length
+      )
+      const hasMore = pageHasMore(firstChunk, firstPageOffset, CHUNK_SIZE, totalHoldings)
 
       const composition: IndexComposition = {
         symbol: symbol.toUpperCase(),
         name: firstChunk.name || symbol,
-        holdings: firstChunk.holdings || [],
+        holdings: firstHoldings,
         totalHoldings,
         hasMore,
         net_assets: firstChunk.net_assets,
@@ -77,11 +104,12 @@ export async function getProgressive(
       }
 
       // 2. If there are more holdings, stream remaining chunks in the background invisibly
-      if (!isComplete && totalHoldings > CHUNK_SIZE) {
-        let currentOffset = CHUNK_SIZE
+      if (!isComplete) {
+        let currentOffset = firstPageOffset + firstPageLimit
         const seenSymbols = new Set(composition.holdings.map((h: any) => h.symbol))
+        let pagesFetched = 1
 
-        while (currentOffset < totalHoldings) {
+        while (hasMore && currentOffset < totalHoldings && pagesFetched < MAX_PAGINATION_PAGES) {
           try {
             const nextChunk = await getChunk(symbol, currentOffset, CHUNK_SIZE)
             const newHoldings = (nextChunk.holdings || []).filter(
@@ -93,7 +121,8 @@ export async function getProgressive(
               composition.holdings.push(h)
             })
 
-            const complete = !nextChunk.hasMore || composition.holdings.length >= totalHoldings
+            const nextHasMore = pageHasMore(nextChunk, currentOffset, CHUNK_SIZE, totalHoldings)
+            const complete = !nextHasMore || currentOffset + getNumericPageValue(nextChunk, ['limit', 'pageSize', 'page_size'], CHUNK_SIZE) >= totalHoldings
             composition.hasMore = !complete
             memoryCache.set(cacheKey, { data: composition, timestamp: Date.now(), isComplete: complete })
 
@@ -102,11 +131,15 @@ export async function getProgressive(
               onProgress(composition, complete)
             }
 
-            if (complete || !nextChunk.hasMore || newHoldings.length === 0) {
+            pagesFetched += 1
+            if (complete) {
               break
             }
 
-            currentOffset += CHUNK_SIZE
+            const nextPageOffset = getNumericPageValue(nextChunk, ['offset', 'start'], currentOffset)
+            const nextPageLimit = getNumericPageValue(nextChunk, ['limit', 'pageSize', 'page_size'], CHUNK_SIZE)
+            const nextOffset = nextPageOffset + nextPageLimit
+            currentOffset = nextOffset > currentOffset ? nextOffset : currentOffset + CHUNK_SIZE
           } catch (chunkErr) {
             console.warn(`Failed to fetch chunk at offset ${currentOffset} for ${symbol}:`, chunkErr)
             break
