@@ -16,8 +16,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogFooter,
 } from '@/components/ui/dialog'
 import {
   Select,
@@ -83,6 +81,12 @@ export const Actions = ({ symbol, id = '', deleteRow, allWatchlists = [], securi
   }, [alertType, operator, value, symbol])
 
   const otherWatchlists = id ? allWatchlists.filter((w) => (w._id || w.id) !== id) : allWatchlists
+  const canMove = Boolean(id && deleteRow)
+  const watchlistActionLabel = canMove
+    ? 'Copier ou déplacer vers...'
+    : id
+      ? 'Copier vers...'
+      : 'Ajouter à une watchlist...'
 
   const handleAction = async (targetId: string, targetName: string, isMove: boolean) => {
     try {
@@ -154,7 +158,7 @@ export const Actions = ({ symbol, id = '', deleteRow, allWatchlists = [], securi
           </DropdownMenuItem>
 
           <DropdownMenuItem onSelect={() => setTimeout(() => setActiveDialog('copy'), 100)}>
-            <Plus className="mr-2 h-4 w-4" /> {id ? 'Copier/Déplacer vers...' : 'Ajouter à une Watchlist...'}
+            <Plus className="mr-2 h-4 w-4" /> {watchlistActionLabel}
           </DropdownMenuItem>
 
           {id && deleteRow && (
@@ -174,21 +178,27 @@ export const Actions = ({ symbol, id = '', deleteRow, allWatchlists = [], securi
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Copy/Move Dialog */}
+      {/* Watchlist destination dialog */}
       <Dialog
         open={activeDialog === 'copy'}
         onOpenChange={(open) => !open && setActiveDialog(null)}
       >
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Copier ou Déplacer {symbol}</DialogTitle>
-            <DialogDescription>Choisissez la watchlist de destination.</DialogDescription>
+            <DialogTitle>
+              {canMove ? `Copier ou déplacer ${symbol}` : `Ajouter ${symbol} à une watchlist`}
+            </DialogTitle>
+            <DialogDescription>
+              {canMove
+                ? 'Choisissez une watchlist de destination et l’action à effectuer.'
+                : 'Choisissez la watchlist dans laquelle ajouter cette valeur.'}
+            </DialogDescription>
           </DialogHeader>
           <ScrollArea className="mt-4 h-[300px] pr-4">
             <div className="space-y-4">
               {otherWatchlists.length === 0 ? (
                 <p className="py-4 text-center text-sm text-muted-foreground">
-                  Aucune autre watchlist.
+                  {id ? 'Aucune autre watchlist.' : 'Aucune watchlist disponible.'}
                 </p>
               ) : (
                 otherWatchlists.map((watchlist, index) => {
@@ -201,22 +211,37 @@ export const Actions = ({ symbol, id = '', deleteRow, allWatchlists = [], securi
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{watchlist.name}</p>
                       </div>
-                      <div className="flex gap-2">
+                      {canMove ? (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1.5"
+                            onClick={() => handleAction(wlId, watchlist.name, false)}
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                            Copier
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="gap-1.5"
+                            onClick={() => handleAction(wlId, watchlist.name, true)}
+                          >
+                            <Move className="h-3.5 w-3.5" />
+                            Déplacer
+                          </Button>
+                        </div>
+                      ) : (
                         <Button
                           size="sm"
-                          variant="outline"
+                          className="gap-1.5"
                           onClick={() => handleAction(wlId, watchlist.name, false)}
                         >
-                          Copier
+                          <Plus className="h-3.5 w-3.5" />
+                          Ajouter
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => handleAction(wlId, watchlist.name, true)}
-                        >
-                          Déplacer
-                        </Button>
-                      </div>
+                      )}
                     </div>
                   )
                 })

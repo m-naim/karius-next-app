@@ -10,16 +10,31 @@ import React, { useState } from 'react'
 function AddWatchList() {
   const [name, setName] = useState('')
   const [visibility, setVisibility] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const router = useRouter()
 
   const addClick = async () => {
-    const res = await add({
-      name,
-      visibility,
-    })
+    const trimmedName = name.trim()
+    if (!trimmedName || isSubmitting) return
 
-    router.push(`/app/watchlist/${res.id}`, { scroll: false })
+    setIsSubmitting(true)
+    try {
+      const res = await add({
+        name: trimmedName,
+        visibility,
+      })
+
+      const createdId = res?.id || res?._id || res?.watchlist?.id || res?.watchlist?._id
+      if (!createdId) {
+        throw new Error('La watchlist créée ne contient aucun identifiant')
+      }
+
+      router.replace(`/app/watchlist/${encodeURIComponent(String(createdId))}`, { scroll: false })
+    } catch (error) {
+      console.error('Failed to create watchlist:', error)
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -51,8 +66,8 @@ function AddWatchList() {
           </div>
         </div>
 
-        <Button className="btn-primary" onClick={() => addClick()}>
-          Ajouter
+        <Button className="btn-primary" onClick={addClick} disabled={isSubmitting || !name.trim()}>
+          {isSubmitting ? 'Création...' : 'Ajouter'}
         </Button>
       </div>
     </div>
