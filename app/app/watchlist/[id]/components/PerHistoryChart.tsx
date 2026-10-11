@@ -6,6 +6,8 @@ import { format } from 'date-fns'
 import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
 
+type ValuationMetric = 'pe' | 'ps'
+
 interface ChartData {
   labels: string[]
   datasets: {
@@ -32,6 +34,7 @@ export function PerHistoryChart({ symbol }: { symbol: string }) {
   const [selectedRange, setSelectedRange] = useState<[number, number]>([0, 0])
   const [fullHistory, setFullHistory] = useState<any[]>([])
   const [fundamentals, setFundamentals] = useState<any>(null)
+  const [metric, setMetric] = useState<ValuationMetric>('pe')
 
   useEffect(() => {
     setLoading(true)
@@ -52,7 +55,7 @@ export function PerHistoryChart({ symbol }: { symbol: string }) {
         setLoading(false)
       })
       .catch((err) => {
-        console.error('Failed to fetch PER history data:', err)
+        console.error('Failed to fetch valuation history data:', err)
         setLoading(false)
       })
   }, [symbol, period])
@@ -92,12 +95,30 @@ export function PerHistoryChart({ symbol }: { symbol: string }) {
       )
 
       const last4 = priorQuarters.slice(-4)
-      if (last4.length === 4) {
-        const ttmEps = last4.reduce((sum, q) => sum + (q.eps || 0), 0)
-        if (ttmEps > 0) {
-          labels.push(format(itemDate, 'dd/MM/yyyy'))
-          data.push(item.close / ttmEps)
-        }
+      if (last4.length !== 4) return
+
+      let valuation: number | null = null
+      if (metric === 'pe') {
+        const ttmEps = last4.every((q) => q.eps != null)
+          ? last4.reduce((sum, q) => sum + Number(q.eps), 0)
+          : 0
+        if (ttmEps > 0) valuation = item.close / ttmEps
+      } else {
+        const ttmRevenue = last4.every((q) => q.totalRevenue != null)
+          ? last4.reduce((sum, q) => sum + Number(q.totalRevenue), 0)
+          : 0
+        const latestShares = [...last4]
+          .reverse()
+          .find((q) => Number(q.sharesOutstanding) > 0)?.sharesOutstanding
+        const revenuePerShare = latestShares && ttmRevenue > 0
+          ? ttmRevenue / Number(latestShares)
+          : 0
+        if (revenuePerShare > 0) valuation = item.close / revenuePerShare
+      }
+
+      if (valuation != null && Number.isFinite(valuation)) {
+        labels.push(format(itemDate, 'dd/MM/yyyy'))
+        data.push(valuation)
       }
     })
 
@@ -105,18 +126,39 @@ export function PerHistoryChart({ symbol }: { symbol: string }) {
       labels,
       datasets: [
         {
-          label: 'PER (TTM)',
+          label: metric === 'pe' ? 'PER (TTM)' : 'P/S (TTM)',
           data,
           borderColor: '#8b5cf6',
           backgroundColor: 'rgba(139, 92, 246, 0.1)',
         },
       ],
     })
-  }, [fullHistory, fundamentals, selectedRange, period, symbol])
+  }, [fullHistory, fundamentals, selectedRange, period, symbol, metric])
 
   return (
     <div className="space-y-3">
       <div className="flex justify-center gap-1.5">
+        <div className="mr-1 flex items-center rounded-md border bg-muted/40 p-0.5">
+          {[
+            { value: 'pe' as const, label: 'PER', title: 'Prix / bénéfice par action' },
+            { value: 'ps' as const, label: 'P/S', title: 'Prix / chiffre d’affaires' },
+          ].map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              title={option.title}
+              aria-pressed={metric === option.value}
+              onClick={() => setMetric(option.value)}
+              className={`rounded px-2 py-1 text-[11px] font-semibold transition-colors ${
+                metric === option.value
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
         {periods.map((p) => (
           <button
             key={p.value}
@@ -146,7 +188,7 @@ export function PerHistoryChart({ symbol }: { symbol: string }) {
           <LineValue data={chartData} unit="x" isLogarithmic={isLogarithmic} />
         ) : (
           <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-            Données insuffisantes pour calculer l'historique du PER
+            Données insuffisantes pour calculer l'historique du {metric === 'pe' ? 'PER' : 'P/S'}
           </div>
         )}
       </div>

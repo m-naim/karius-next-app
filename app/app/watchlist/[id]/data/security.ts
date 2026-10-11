@@ -30,6 +30,8 @@ export interface security {
   lastYearFundamental?: {
     roa: number
     roe: number
+    totalRevenue?: number
+    sharesOutstanding?: number
   }
   tags?: string[]
   qualityMetrics?: any

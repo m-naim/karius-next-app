@@ -116,6 +116,12 @@ export const ALL_COLUMNS_CONFIG: { id: string; label: string; group: string; des
     description: 'PER estimé : Prix rapporté aux bénéfices futurs attendus par les analystes à 12 mois.',
   },
   {
+    id: 'priceToSales',
+    label: 'P/S (Prix / CA)',
+    group: 'Valuation',
+    description: 'Price-to-Sales : capitalisation boursière rapportée au chiffre d’affaires annuel.',
+  },
+  {
     id: 'pe5y',
     label: 'P/E (5a proxy)',
     group: 'Valuation',
@@ -287,7 +293,7 @@ export const SYSTEM_VIEW_PRESETS: ColumnViewPreset[] = [
   {
     id: 'valuation',
     name: 'Valuation & Rendement',
-    description: 'Multiples de valorisation complets (PE, PE Fwd, PE 5a, Dividende)',
+    description: 'Multiples de valorisation complets (P/E, P/S, P/E Fwd, Dividende)',
     icon: '💰',
     isSystem: true,
     columns: {
@@ -296,6 +302,7 @@ export const SYSTEM_VIEW_PRESETS: ColumnViewPreset[] = [
       regularMarketPrice: true,
       trailingPE: true,
       forwardPE: true,
+      priceToSales: true,
       pe5y: true,
       dividendYield: true,
       cagr5y: true,
@@ -307,6 +314,7 @@ export const SYSTEM_VIEW_PRESETS: ColumnViewPreset[] = [
       'regularMarketPrice',
       'trailingPE',
       'forwardPE',
+      'priceToSales',
       'pe5y',
       'dividendYield',
       'cagr5y',

@@ -316,6 +316,19 @@ export const TableContextHeader = ({
                 />
               )}
 
+              {getCol('priceToSales') && (
+                <DataTableRangeFilter
+                  column={getCol('priceToSales')!}
+                  title="P/S"
+                  step={0.5}
+                  presets={[
+                    { label: '< 1 (Value)', max: 1 },
+                    { label: '1 - 3 (Fair)', min: 1, max: 3 },
+                    { label: '> 3 (Growth)', min: 3 },
+                  ]}
+                />
+              )}
+
               {getCol('pe5y') && (
                 <DataTableRangeFilter
                   column={getCol('pe5y')!}

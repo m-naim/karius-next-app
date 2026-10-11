@@ -42,6 +42,7 @@ const DEFAULT_WATCHLIST_VISIBILITY: VisibilityState = {
   variation: true,
   sector: true,
   trailingPE: true,
+  priceToSales: true,
   dividendYield: true,
   growth: true,
   tags: true,
@@ -137,6 +138,7 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
       'Sector',
       'Industry',
       'P/E Trailing',
+      'P/S',
       'Yield %',
       'Revenue Growth %',
       'ROE %',
@@ -152,6 +154,11 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
         `"${(s.sector || '').replace(/"/g, '""')}"`,
         `"${(s.industry || '').replace(/"/g, '""')}"`,
         s.trailingPE || '',
+        (() => {
+          const revenue = Number(s.lastYearFundamental?.totalRevenue)
+          const marketCap = Number(s.marketCap)
+          return revenue > 0 && marketCap > 0 ? (marketCap / revenue).toFixed(2) : ''
+        })(),
         (s.dividendYield ? s.dividendYield * 100 : 0).toFixed(2),
         (s.score?.growth ? s.score.growth * 100 : 0).toFixed(2),
         (s.lastYearFundamental?.roe ? s.lastYearFundamental.roe * 100 : 0).toFixed(2),
