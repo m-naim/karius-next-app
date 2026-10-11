@@ -9,7 +9,6 @@ import { getPublicPortfolios } from '@/services/portfolioService'
 import {
   AlertCircle,
   ArrowDown,
-  ArrowLeft,
   ArrowRight,
   ArrowUp,
   ArrowUpDown,
