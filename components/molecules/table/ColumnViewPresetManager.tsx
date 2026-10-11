@@ -91,6 +91,18 @@ export const ALL_COLUMNS_CONFIG: { id: string; label: string; group: string; des
     description: 'Poids relatif en pourcentage de la valeur au sein de l’indice ou du portefeuille.',
   },
   {
+    id: 'bep',
+    label: 'PRU Moyen',
+    group: 'Portefeuille',
+    description: 'Prix de revient unitaire moyen de la position détenue.',
+  },
+  {
+    id: 'variationPercent',
+    label: 'Plus-value / Retour',
+    group: 'Portefeuille',
+    description: 'Plus-value latente et rendement de la position par rapport au PRU.',
+  },
+  {
     id: 'tags',
     label: 'Tags',
     group: 'Général',

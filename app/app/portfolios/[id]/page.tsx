@@ -5,6 +5,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { useToast } from '@/hooks/use-toast'
 import {
   ColumnFiltersState,
+  ColumnOrderState,
   SortingState,
   VisibilityState,
   getCoreRowModel,
@@ -53,8 +54,33 @@ import { Input } from '@/components/ui/input'
 import { PortfolioOnboardingModal } from './components/PortfolioOnboardingModal'
 import { PortfolioSpotlightTour } from './components/PortfolioSpotlightTour'
 import { PortfolioEmptyStateChecklist } from './components/PortfolioEmptyStateChecklist'
+import { ColumnViewPresetManager } from '@/components/molecules/table/ColumnViewPresetManager'
+import { getSavedColumnOrder, getSavedColumnVisibility } from '@/lib/column-persistence'
 
 import { PortfolioInsightsBar } from '@/components/molecules/portfolio/PortfolioInsightsBar'
+
+const DEFAULT_PORTFOLIO_VISIBILITY: VisibilityState = {
+  symbol: true,
+  weight: true,
+  regularMarketPrice: true,
+  bep: true,
+  variationPercent: true,
+  variation: true,
+  trailingPE: false,
+  forwardPE: false,
+  priceToSales: false,
+  dividendYield: false,
+  marketCap: false,
+  roa: false,
+  roe: false,
+  revGrowth: false,
+  roic: false,
+  pe5y: false,
+  linearity10y: false,
+  sector: false,
+  industry: false,
+  hasFundamentals: false,
+}
 
 export default function PortfolioView({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params)
@@ -78,21 +104,13 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = React.useState('')
   const lastMutationTimestamp = React.useRef<number>(0)
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({
-    symbol: true,
-    weight: true,
-    last: true,
-    bep: true,
-    variationPercent: true,
-    variation: true,
-    revGrowth: false,
-    roic: false,
-    pe5y: false,
-  })
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(() =>
+    getSavedColumnVisibility(DEFAULT_PORTFOLIO_VISIBILITY)
+  )
+  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(() => getSavedColumnOrder([]))
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
   const [useNativeCurrency, setUseNativeCurrency] = React.useState(false)
-  const [showMetrics, setShowMetrics] = React.useState(false)
   const [isOnboardingModalOpen, setIsOnboardingModalOpen] = React.useState(false)
   const [isTourActive, setIsTourActive] = React.useState(false)
 
@@ -105,38 +123,16 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
     }
   }, [])
 
-  useEffect(() => {
-    if (showMetrics) {
-      setColumnVisibility({
-        symbol: true,
-        weight: false,
-        last: false,
-        bep: false,
-        variationPercent: false,
-        variation: false,
-        revGrowth: true,
-        roic: true,
-        pe5y: true,
-      })
-    } else {
-      setColumnVisibility({
-        symbol: true,
-        weight: true,
-        last: true,
-        bep: true,
-        variationPercent: true,
-        variation: true,
-        revGrowth: false,
-        roic: false,
-        pe5y: false,
-      })
-    }
-  }, [showMetrics])
+  const tableColumns = useMemo(
+    () => columns(selectedPeriod, portfolio.baseCurrency, useNativeCurrency, own),
+    [selectedPeriod, portfolio.baseCurrency, useNativeCurrency, own]
+  )
 
-  const useDynamicColumns = () =>
-    useMemo(() => {
-      return columns(selectedPeriod, portfolio.baseCurrency, useNativeCurrency, own)
-    }, [selectedPeriod, portfolio.baseCurrency, useNativeCurrency, own])
+  const validColumnOrder = useMemo(() => {
+    if (!columnOrder || columnOrder.length === 0) return columnOrder
+    const validIds = new Set(tableColumns.map((column) => column.id || column.accessorKey).filter(Boolean))
+    return columnOrder.filter((columnId) => validIds.has(columnId))
+  }, [columnOrder, tableColumns])
 
   const fetchData = async (id: string) => {
     try {
@@ -225,22 +221,30 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
 
   const table = useReactTable({
     data,
-    columns: useDynamicColumns(),
+    columns: tableColumns,
     state: {
       sorting,
       columnFilters,
+      columnOrder: validColumnOrder,
       columnVisibility,
       rowSelection,
       globalFilter,
     },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    onColumnOrderChange: setColumnOrder,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    globalFilterFn: (row, _columnId, filterValue) => {
+      const value = String(filterValue || '').toLowerCase()
+      return [row.original.symbol, row.original.shortname, row.original.sector, row.original.industry]
+        .filter(Boolean)
+        .some((field) => String(field).toLowerCase().includes(value))
+    },
   })
 
   const addTransaction = async (transactionData) => {
@@ -471,15 +475,9 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
                         <span>Devise locale ({useNativeCurrency ? 'Oui' : 'Non'})</span>
                         {useNativeCurrency && <Check className="h-4 w-4 text-primary" />}
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setShowMetrics(!showMetrics)}
-                        className="flex items-center justify-between text-xs cursor-pointer"
-                      >
-                        <span>Métriques 5 ans (ROIC, PE)</span>
-                        {showMetrics && <Check className="h-4 w-4 text-primary" />}
-                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
+                  <ColumnViewPresetManager table={table} />
                 </div>
               </CardHeader>
               <CardContent className="p-0">
@@ -524,7 +522,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
                   <div className="w-full">
                     <PortfolioTable
                       table={table}
-                      colSpan={columns.length}
+                      colSpan={table.getAllColumns().length}
                       selectedSymbol={selectedSecurity?.symbol}
                       onRowClick={(sec) => {
                         setSelectedSecurity(sec)

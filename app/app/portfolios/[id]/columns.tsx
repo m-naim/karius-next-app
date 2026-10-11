@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { round10 } from '@/lib/decimalAjustement'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
+import { genericNumericFilterFn } from '@/lib/table-filters'
 
 
 // Fonction pour obtenir les initiales
@@ -37,6 +38,15 @@ export interface PortfolioSecurity {
   sector?: string
   industry?: string
   qualityMetrics?: any
+  marketCap?: number | null
+  trailingPE?: number | null
+  forwardPE?: number | null
+  dividendYield?: number | null
+  linearity10y?: number | null
+  priceToSales?: number | null
+  totalRevenue?: number | null
+  roa?: number | null
+  roe?: number | null
   currency?: string
   nativeBep?: number
   shortname?: string
@@ -88,6 +98,23 @@ const SortingButton = (title, activateFilter = true) => {
   }
 }
 
+const formatMultiple = (value: unknown) => {
+  const numericValue = Number(value)
+  return Number.isFinite(numericValue) && numericValue > 0 ? `${round10(numericValue, -2)}x` : '—'
+}
+
+const asPercent = (value: unknown) => {
+  const numericValue = Number(value)
+  if (!Number.isFinite(numericValue)) return null
+  return Math.abs(numericValue) <= 1 && numericValue !== 0 ? numericValue * 100 : numericValue
+}
+
+const PercentCell = ({ value }: { value: unknown }) => {
+  const percent = asPercent(value)
+  if (percent == null) return <div className="font-mono tabular-nums text-muted-foreground">—</div>
+  return <VariationContainer value={percent} entity="%" background={false} className="m-0 p-0" />
+}
+
 export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCurrency = false, own = true): any[] => {
   const colList: any[] = [
     {
@@ -136,13 +163,14 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
           </div>
         )
       },
-      enableHiding: false,
+      enableHiding: true,
     },
     {
-      accessorKey: 'last',
+      accessorFn: (row) => row.last,
+      id: 'regularMarketPrice',
       header: SortingButton('Cours', false),
       cell: ({ row }) => {
-        const last = parseFloat(row.getValue('last'))
+        const last = parseFloat(row.getValue('regularMarketPrice'))
         const currencyToUse = useNativeCurrency && row.original.currency ? row.original.currency : baseCurrency
         const formatted = new Intl.NumberFormat('fr-FR', {
           style: 'currency',
@@ -151,6 +179,52 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
         return <div className="font-medium">{formatted}</div>
       },
       enableHiding: true,
+    },
+    {
+      accessorKey: 'trailingPE',
+      header: SortingButton('P/E'),
+      cell: ({ row }) => <div className="font-mono tabular-nums">{formatMultiple(row.getValue('trailingPE'))}</div>,
+      filterFn: genericNumericFilterFn,
+    },
+    {
+      accessorKey: 'forwardPE',
+      header: SortingButton('P/E Fwd'),
+      cell: ({ row }) => <div className="font-mono tabular-nums">{formatMultiple(row.getValue('forwardPE'))}</div>,
+      filterFn: genericNumericFilterFn,
+    },
+    {
+      accessorKey: 'priceToSales',
+      header: SortingButton('P/S'),
+      cell: ({ row }) => <div className="font-mono tabular-nums">{formatMultiple(row.getValue('priceToSales'))}</div>,
+      filterFn: genericNumericFilterFn,
+    },
+    {
+      accessorKey: 'dividendYield',
+      header: SortingButton('Yield'),
+      cell: ({ row }) => <PercentCell value={row.getValue('dividendYield')} />,
+      filterFn: genericNumericFilterFn,
+    },
+    {
+      accessorKey: 'marketCap',
+      header: SortingButton('Capitalisation'),
+      cell: ({ row }) => {
+        const value = Number(row.getValue('marketCap'))
+        if (!Number.isFinite(value) || value <= 0) return <div className="font-mono tabular-nums text-muted-foreground">—</div>
+        return <div className="font-mono tabular-nums">{new Intl.NumberFormat('fr-FR', { notation: 'compact', maximumFractionDigits: 1 }).format(value)}</div>
+      },
+      filterFn: genericNumericFilterFn,
+    },
+    {
+      accessorKey: 'roa',
+      header: SortingButton('ROA'),
+      cell: ({ row }) => <PercentCell value={row.getValue('roa')} />,
+      filterFn: genericNumericFilterFn,
+    },
+    {
+      accessorKey: 'roe',
+      header: SortingButton('ROE'),
+      cell: ({ row }) => <PercentCell value={row.getValue('roe')} />,
+      filterFn: genericNumericFilterFn,
     },
   ]
 
@@ -166,7 +240,7 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
           <div className="font-medium">{row.original.qty === 0 || bepVal == null ? '-' : round10(bepVal as number, -2).toLocaleString() + ' ' + symbol}</div>
         )
       },
-      enableHiding: false,
+      enableHiding: true,
     })
   }
 
@@ -200,7 +274,7 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
         </div>
       )
     },
-    enableHiding: false,
+    enableHiding: true,
   })
   colList.push(
     {
@@ -282,6 +356,30 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
         if (val == null) return <div className="text-muted-foreground">-</div>
         return <div className="font-medium">{val.toFixed(1)}x</div>
       },
+    },
+    {
+      accessorKey: 'linearity10y',
+      header: SortingButton('Linéarité 10a'),
+      cell: ({ row }) => <PercentCell value={row.getValue('linearity10y')} />,
+      filterFn: genericNumericFilterFn,
+    },
+    {
+      accessorKey: 'sector',
+      header: SortingButton('Secteur'),
+      cell: ({ row }) => <div className="capitalize">{row.getValue('sector') || '—'}</div>,
+    },
+    {
+      accessorKey: 'industry',
+      header: SortingButton('Industrie'),
+      cell: ({ row }) => <div className="capitalize">{row.getValue('industry') || '—'}</div>,
+    },
+    {
+      accessorFn: (row) => row.qualityMetrics?.hasFundamentals ? 'yes' : 'no',
+      id: 'hasFundamentals',
+      header: SortingButton('Fondamentaux'),
+      cell: ({ row }) => row.original.qualityMetrics?.hasFundamentals
+        ? <div className="font-medium text-emerald-600 dark:text-emerald-400">Dispo</div>
+        : <div className="text-muted-foreground">—</div>,
     }
   )
 
