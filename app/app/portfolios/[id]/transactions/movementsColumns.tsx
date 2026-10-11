@@ -58,35 +58,40 @@ const SortingButton = (title, activateFilter = true) => {
   }
 }
 
-export const MovementsColumns: ColumnDef<unknown>[] = [
-  {
-    accessorKey: 'date',
-    header: SortingButton('date', false),
-    cell: ({ row }) => <div className="">{row.getValue('date')}</div>,
-  },
-
-  {
-    header: 'Opération',
-    cell: ({ row }) => (
-      <div className="capitalize">
-        {parseFloat(row.getValue('amount')) > 0 ? 'Dépôt' : 'Retrait'}
-      </div>
-    ),
-  },
-
-  {
-    accessorKey: 'amount',
-    header: SortingButton('Montant', false),
-    cell: ({ row }) => {
-      const last = parseFloat(row.getValue('amount'))
-
-      // Format the prix as a dollar prix
-      const formatted = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'EUR',
-      }).format(last)
-
-      return <div className="font-medium ">{formatted}</div>
+export const MovementsColumns = (owned: boolean): ColumnDef<unknown>[] => {
+  const columns: ColumnDef<unknown>[] = [
+    {
+      accessorKey: 'date',
+      header: SortingButton('date', false),
+      cell: ({ row }) => <div className="">{row.getValue('date')}</div>,
     },
-  },
-]
+
+    {
+      header: 'Opération',
+      cell: ({ row }) => (
+        <div className="capitalize">
+          {row.getValue('action') || (parseFloat(row.getValue('amount')) > 0 ? 'Dépôt' : 'Retrait')}
+        </div>
+      ),
+    },
+  ]
+
+  if (owned) {
+    columns.push({
+      accessorKey: 'amount',
+      header: SortingButton('Montant', false),
+      cell: ({ row }) => {
+        const last = parseFloat(row.getValue('amount'))
+
+        const formatted = new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'EUR',
+        }).format(last)
+
+        return <div className="font-medium ">{formatted}</div>
+      },
+    })
+  }
+
+  return columns
+}

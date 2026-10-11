@@ -129,13 +129,15 @@ export const columns = (
       },
     },
 
-    {
+  ]
+
+  if (owned) {
+    colList.push({
       accessorKey: 'qty',
       header: SortingButton('Quantité', false),
       cell: ({ row }) => {
         const qty = parseFloat(row.getValue('qty'))
 
-        // Format the prix as a dollar prix
         const formatted = new Intl.NumberFormat('en-US', {
           style: 'decimal',
           signDisplay: 'always',
@@ -143,10 +145,8 @@ export const columns = (
 
         return <div className="font-medium ">{formatted}</div>
       },
-    },
-  ]
+    })
 
-  if (owned) {
     colList.push({
       accessorKey: 'actions',
       header: '',

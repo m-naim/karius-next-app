@@ -141,7 +141,7 @@ function PageTransactions() {
 
   const movementsTable = useReactTable({
     data: filteredMovements,
-    columns: MovementsColumns,
+    columns: MovementsColumns(own),
     initialState: {
       pagination: {
         pageSize: 20,
@@ -342,7 +342,7 @@ function PageTransactions() {
         <TabsContent value="movements" className="mt-2 border-none p-0">
           <Card className="overflow-hidden border-border bg-card shadow-sm">
             <CardContent className="p-0">
-              <SimpleDataTable table={movementsTable} colSpan={MovementsColumns.length} />
+              <SimpleDataTable table={movementsTable} colSpan={MovementsColumns(own).length} />
             </CardContent>
           </Card>
         </TabsContent>
