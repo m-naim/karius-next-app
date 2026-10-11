@@ -23,7 +23,6 @@ import {
   SlidersHorizontal,
   Check,
   AlertTriangle,
-  BarChart3,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -54,7 +53,6 @@ import { Input } from '@/components/ui/input'
 import { PortfolioOnboardingModal } from './components/PortfolioOnboardingModal'
 import { PortfolioSpotlightTour } from './components/PortfolioSpotlightTour'
 import { PortfolioEmptyStateChecklist } from './components/PortfolioEmptyStateChecklist'
-import { PortfolioFundamentalsPanel } from './components/PortfolioFundamentalsPanel'
 
 import { PortfolioInsightsBar } from '@/components/molecules/portfolio/PortfolioInsightsBar'
 
@@ -93,7 +91,6 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
   })
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
-  const [activeView, setActiveView] = React.useState<'holdings' | 'fundamentals'>('holdings')
   const [useNativeCurrency, setUseNativeCurrency] = React.useState(false)
   const [showMetrics, setShowMetrics] = React.useState(false)
   const [isOnboardingModalOpen, setIsOnboardingModalOpen] = React.useState(false)
@@ -354,44 +351,6 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
           />
         )}
 
-        <div className="flex w-full justify-start border-b border-border/60">
-          <div className="flex items-center gap-1 rounded-lg bg-muted/50 p-1" role="tablist" aria-label="Vue du portefeuille">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeView === 'holdings'}
-              onClick={() => setActiveView('holdings')}
-              className={cn(
-                'inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                activeView === 'holdings'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <Wallet className="h-3.5 w-3.5" />
-              Positions
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeView === 'fundamentals'}
-              onClick={() => setActiveView('fundamentals')}
-              className={cn(
-                'inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                activeView === 'fundamentals'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <BarChart3 className="h-3.5 w-3.5" />
-              Fondamentaux vs prix
-            </button>
-          </div>
-        </div>
-
-        {activeView === 'fundamentals' ? (
-          <PortfolioFundamentalsPanel portfolioId={id} />
-        ) : (
         <div className="flex w-full flex-col lg:flex-row gap-3 sm:gap-6">
           {/* LEFT COLUMN: Table */}
           <div className="w-full flex-grow lg:w-8/12">
@@ -592,7 +551,6 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
             )}
           </div>
         </div>
-        )}
       </div>
 
       {/* SIDE DRAWER RICHESSE DES ACHATS & TRANSACTIONS */}

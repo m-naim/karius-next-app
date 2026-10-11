@@ -1,6 +1,6 @@
 import React, { ReactNode, useState } from 'react'
 import { motion } from 'framer-motion'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
   ArrowLeft,
@@ -8,12 +8,13 @@ import {
   GemIcon,
   StarIcon,
   TrendingUp,
+  BarChart3,
   WalletMinimal,
   Settings,
   HelpCircle,
 } from 'lucide-react'
 import SectionContainer from '@/components/organismes/layout/SectionContainer'
-import { deletePortfolio, follow } from '@/services/portfolioService'
+import { follow } from '@/services/portfolioService'
 import Link from 'next/link'
 import { PortfolioHelpDrawer } from './components/PortfolioHelpDrawer'
 import { PortfolioSpotlightTour } from './components/PortfolioSpotlightTour'
@@ -37,7 +38,6 @@ const PortfolioLayout = ({
   setFollowersSize?: any
   name?: string
 }) => {
-  const router = useRouter()
   const pathname = usePathname()
   const [isHelpOpen, setIsHelpOpen] = useState(false)
   const [isTourActive, setIsTourActive] = useState(false)
@@ -56,6 +56,7 @@ const PortfolioLayout = ({
     { name: 'Investissements', url: `/app/portfolios/${id}`, icon: WalletMinimal },
     { name: 'Dividendes', url: `/app/portfolios/${id}/dividends`, icon: GemIcon },
     { name: 'Performance', url: `/app/portfolios/${id}/performance`, icon: TrendingUp },
+    { name: 'Fondamentaux', url: `/app/portfolios/${id}/fundamentals`, icon: BarChart3 },
     { name: 'Activité', url: `/app/portfolios/${id}/transactions`, icon: ArrowLeftRight },
   ]
 
