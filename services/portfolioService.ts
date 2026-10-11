@@ -31,6 +31,11 @@ export function get(portfolioID = 'curent') {
 export function getMetadata(portfolioID = 'curent') {
   return http.get(`${host}/api/v1/portfolios/${portfolioID}/metadata`)
 }
+
+export function getFundamentalsPerformance(portfolioID: string) {
+  return http.get(`${host}/api/v1/portfolios/${encodeURIComponent(portfolioID)}/fundamentals-performance`)
+}
+
 export function getTransactions(portfolioID = 'curent') {
   return http.get(`${host}/api/v1/portfolios/${portfolioID}/transactions`)
 }
