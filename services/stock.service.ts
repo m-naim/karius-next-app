@@ -21,7 +21,48 @@ export function getProductsSymbols(products: any) {
 }
 
 export function getStockPrixForDate(symbol: string, date: string) {
-  return http.get(`${host}/api/v1/stocks/query/history?date=${date}&symbol=${symbol}`)
+  return http.get(`${host}/api/v1/stocks/query/history?date=${date}&symbol=${encodeURIComponent(symbol)}`)
+}
+
+type HistoricalPriceQuote = {
+  symbol: string
+  price: number
+  priceDate: string
+  requestedDate: string
+  exactDate: boolean
+  daysOffset: number
+}
+
+const historicalPriceCache = new Map<string, { data: HistoricalPriceQuote; timestamp: number }>()
+const inFlightHistoricalPrices = new Map<string, Promise<HistoricalPriceQuote>>()
+const HISTORICAL_PRICE_TTL_MS = 10 * 60 * 1000
+
+export async function getStockPriceQuoteForDate(symbol: string, date: string) {
+  const normalizedSymbol = symbol.trim().toUpperCase()
+  const cacheKey = `${normalizedSymbol}:${date}`
+  const cached = historicalPriceCache.get(cacheKey)
+
+  if (cached && Date.now() - cached.timestamp < HISTORICAL_PRICE_TTL_MS) {
+    return cached.data
+  }
+
+  const existingRequest = inFlightHistoricalPrices.get(cacheKey)
+  if (existingRequest) return existingRequest
+
+  const request = http
+    .get(
+      `${host}/api/v1/stocks/query/price?date=${encodeURIComponent(date)}&symbol=${encodeURIComponent(normalizedSymbol)}`
+    )
+    .then((data) => {
+      historicalPriceCache.set(cacheKey, { data, timestamp: Date.now() })
+      return data
+    })
+    .finally(() => {
+      inFlightHistoricalPrices.delete(cacheKey)
+    })
+
+  inFlightHistoricalPrices.set(cacheKey, request)
+  return request
 }
 
 export function getStockHistory(symbols: string[], period: string) {

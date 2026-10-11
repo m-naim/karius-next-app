@@ -48,6 +48,7 @@ const DEFAULT_MARKET_VISIBILITY: VisibilityState = {
   regularMarketPrice: true,
   variation: true,
   trailingPE: true,
+  priceToSales: false,
   dividendYield: true,
   linearity10y: true,
   ret_lin: true,

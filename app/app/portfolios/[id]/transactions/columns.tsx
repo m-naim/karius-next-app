@@ -80,6 +80,7 @@ interface Transaction {
   total: string
   type: string
   id: string
+  freeShares?: boolean
 }
 
 export const columns = (
@@ -163,11 +164,12 @@ export const columns = (
               )}
               initialData={{
                 id: row!.original.id,
-                type: row!.original.price > 0 ? 'Acheter' : 'Vendre',
+                type: row!.original.qty > 0 ? 'Acheter' : 'Vendre',
                 ticker: row!.original.symbol,
                 date: row!.original.date,
                 quantity: row!.original.qty,
                 prix: row!.original.price,
+                freeShares: row!.original.freeShares,
               }}
               totalPortfolioValue={0}
               deleteHandler={deleteTransactionHandler}

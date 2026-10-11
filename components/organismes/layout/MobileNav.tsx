@@ -32,7 +32,7 @@ const MobileNav = () => {
         type="button"
         aria-label="Toggle Menu"
         onClick={onToggleNav}
-        className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md p-2 text-foreground hover:bg-muted focus:outline-none sm:hidden touch-manipulation active:scale-95 transition-transform"
+        className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md p-1.5 text-foreground transition-transform hover:bg-muted focus:outline-none active:scale-95 touch-manipulation sm:hidden"
       >
         <Menu className="h-6 w-6" />
       </button>

@@ -78,15 +78,18 @@ const formatSafeDate = (d: any): string => {
 }
 
 export function AddTransaction(idPft, body) {
-  const { id, type, ticker, prix, quantity, date } = body
+  const { id, type, ticker, prix, quantity, date, freeShares = false } = body
   const coef = 'Acheter' === type ? 1 : -1
+  const numericPrice = Number(prix)
+  const numericQuantity = Number(quantity)
 
   const apiBody = {
     id,
     symbol: ticker,
     date: formatSafeDate(date),
-    price: Number(prix) || 0,
-    qty: (Number(quantity) || 0) * coef,
+    price: Number.isFinite(numericPrice) ? numericPrice : null,
+    qty: Number.isFinite(numericQuantity) ? numericQuantity * coef : null,
+    freeShares: Boolean(freeShares),
   }
   return http.post(`${host}/api/v1/portfolios/${idPft}/transaction`, apiBody)
 }
@@ -109,15 +112,18 @@ export function addTransactions(idPft, transactions) {
 }
 
 export function modifyTransactionApi(idPft, body) {
-  const { id, type, ticker, prix, quantity, date } = body
+  const { id, type, ticker, prix, quantity, date, freeShares = false } = body
   const coef = 'Acheter' === type ? 1 : -1
+  const numericPrice = Number(prix)
+  const numericQuantity = Number(quantity)
 
   const apiBody = {
     id,
     symbol: ticker,
     date: formatSafeDate(date),
-    price: Number(prix) || 0,
-    qty: (Number(quantity) || 0) * coef,
+    price: Number.isFinite(numericPrice) ? numericPrice : null,
+    qty: Number.isFinite(numericQuantity) ? numericQuantity * coef : null,
+    freeShares: Boolean(freeShares),
   }
   return http.put(`${host}/api/v1/portfolios/${idPft}/transaction`, apiBody)
 }

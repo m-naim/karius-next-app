@@ -21,109 +21,106 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/tooltip'
 const Header = () => {
   const { user } = useAuth()
 
+  const primaryLinks = headerNavLinks.filter(
+    (link) => !link.draft && ['/app/portfolios', '/app/watchlist', '/app/market'].includes(link.href)
+  )
+  const secondaryLinks = headerNavLinks.filter(
+    (link) => !link.draft && ['/app/super-investors'].includes(link.href)
+  )
+  const resourceLink = headerNavLinks.find((link) => link.title === 'Ressources')
 
   return (
-    <header className="relative z-50 border-b py-2 bg-background">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 sm:px-6 xl:max-w-7xl xl:px-0">
-        <div>
+    <header className="relative z-50 h-11 shrink-0 border-b bg-background">
+      <div className="mx-auto flex h-full w-full max-w-[1600px] items-center justify-between gap-2 px-3 sm:px-4 lg:px-6">
+        <div className="shrink-0">
           <Link 
             data-umami-event={'header-home'} 
             href={user ? '/app' : '/'} 
             aria-label={siteMetadata.headerTitle}
           >
-            <div className="text-2xl font-semibold italic text-primary ">
+            <div className="text-base font-extrabold tracking-tight text-primary sm:text-lg">
               {siteMetadata.headerTitle}
             </div>
           </Link>
         </div>
-        <div className="flex items-center space-x-4 leading-5 sm:space-x-6">
-          {headerNavLinks
-            .filter((link) => link.href !== '/')
-            .filter((link) => !link.draft)
-            .map((link) => {
-              if (link.children) {
-                return (
-                  <DropdownMenu key={link.title}>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="hidden items-center gap-1 font-medium text-gray-900 dark:text-gray-100 sm:flex"
-                      >
-                        {link.title} <ChevronDown className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      {link.children.map((child) => (
-                        <DropdownMenuItem key={child.title} asChild>
-                          <Link href={child.href} className="w-full cursor-pointer">
-                            {child.title}
-                          </Link>
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )
-              }
-              return (
-                <Button variant="ghost" asChild key={link.title}>
-                  <Link
-                    data-umami-event={`header-${link.title}`}
-                    href={link.href}
-                    className="hidden font-medium text-gray-900 dark:text-gray-100 sm:block"
-                  >
+        <nav className="hidden min-w-0 flex-1 items-center gap-0.5 pl-4 md:flex">
+          {primaryLinks.map((link) => (
+            <Button variant="ghost" asChild key={link.title} className="h-8 px-2 text-xs font-semibold">
+              <Link data-umami-event={`header-${link.title}`} href={link.href}>
+                {link.title}
+              </Link>
+            </Button>
+          ))}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 gap-1 px-2 text-xs font-semibold">
+                Plus <ChevronDown className="h-3.5 w-3.5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="min-w-44">
+              {secondaryLinks.map((link) => (
+                <DropdownMenuItem key={link.title} asChild>
+                  <Link href={link.href} className="w-full cursor-pointer text-xs">
                     {link.title}
                   </Link>
-                </Button>
-              )
-            })}
+                </DropdownMenuItem>
+              ))}
+              {resourceLink?.children?.map((child) => (
+                <DropdownMenuItem key={child.title} asChild>
+                  <Link href={child.href} className="w-full cursor-pointer text-xs">
+                    {child.title}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </nav>
+
+        <div className="flex shrink-0 items-center gap-0.5">
           {user && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" asChild className="flex">
-                  <Link href="/app/stocks">
+                <Button variant="ghost" size="icon" asChild className="h-8 w-8">
+                  <Link href="/app/stocks" aria-label="Rechercher une action">
                     <Search className="h-4 w-4" />
                   </Link>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>
-                <p>Rechercher une action</p>
-              </TooltipContent>
+              <TooltipContent><p>Rechercher une action</p></TooltipContent>
             </Tooltip>
           )}
           {user && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" asChild className="hidden sm:flex">
-                  <Link href="/app/alerts">
+                <Button variant="ghost" size="icon" asChild className="hidden h-8 w-8 sm:flex">
+                  <Link href="/app/alerts" aria-label="Mes alertes">
                     <Bell className="h-4 w-4" />
                   </Link>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>
-                <p>Mes Alertes</p>
-              </TooltipContent>
+              <TooltipContent><p>Mes alertes</p></TooltipContent>
             </Tooltip>
           )}
           <ThemeSwitch />
           {user ? (
             <Link href="/app/profile">
-              <Avatar className="cursor-pointer transition-opacity hover:opacity-80">
+              <Avatar className="h-7 w-7 cursor-pointer transition-opacity hover:opacity-80">
                 <AvatarFallback className="bg-primary text-white">
                   {user.sub.substring(0, 1)}
                 </AvatarFallback>
               </Avatar>
             </Link>
           ) : (
-            <div className="hidden md:block">
+            <div className="hidden items-center gap-1 md:flex">
               <Link href="/login">
-                <Button variant={'link'} size={'sm'}>
+                <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
                   Se connecter
                 </Button>
               </Link>
 
               <Link href="/signup" data-umami-event="header-Signup-button">
-                <Button className="h-7" size={'sm'} data-umami-event="header-Signup-button">
-                  Crée un compte gratuit
+                <Button className="h-8 px-2.5 text-xs" size="sm" data-umami-event="header-Signup-button">
+                  Créer un compte
                 </Button>
               </Link>
             </div>

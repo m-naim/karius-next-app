@@ -22,6 +22,7 @@ const COLUMN_DESCRIPTIONS: Record<string, string> = {
   'Poids': 'Poids relatif en pourcentage (%) de l’action dans l’indice',
   'P/E': 'PER 12 mois glissants (Prix / Bénéfice par action TTM)',
   'P/E Fwd': 'PER estimé à 12 mois (Prix / Bénéfices futurs attendus)',
+  'P/S': 'Price-to-Sales : capitalisation boursière rapportée au chiffre d’affaires annuel',
   'PE (5a proxy)': 'PER moyen lissé sur 5 ans (bénéfices moyens 5 ans)',
   'Linéarité (10a)': 'Régularité et constance de la hausse du cours sur 10 ans (R²)',
   'Score (Ret×Lin)': 'Score Horus combinant rendement annuel moyen et linéarité',
@@ -272,6 +273,36 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
           {round10(row.getValue('forwardPE'), -2) || 'N/A'}
         </div>
       ),
+      filterFn: genericNumericFilterFn,
+    },
+    {
+      accessorFn: (row) => {
+        const marketCap = Number(row.marketCap)
+        const revenue = Number(row.lastYearFundamental?.totalRevenue)
+        return marketCap > 0 && revenue > 0 ? marketCap / revenue : null
+      },
+      id: 'priceToSales',
+      header: SortingButton('P/S', true),
+      footer: (info) => {
+        const rows = info.table.getFilteredRowModel().rows
+        const vals = rows
+          .map((r) => r.getValue('priceToSales') as number)
+          .filter((v) => v != null && !isNaN(v))
+        const med = calculateMedian(vals)
+        return med != null ? (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs lowercase">
+            {round10(med, -2)}x
+          </div>
+        ) : null
+      },
+      cell: ({ row }) => {
+        const value = row.getValue('priceToSales') as number
+        return (
+          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm lowercase">
+            {value != null && !isNaN(value) ? `${round10(value, -2)}x` : 'N/A'}
+          </div>
+        )
+      },
       filterFn: genericNumericFilterFn,
     },
 
