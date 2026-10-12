@@ -47,6 +47,12 @@ export interface ColumnViewPreset {
   order?: string[]
 }
 
+interface ColumnViewPresetManagerProps {
+  table: Table<any>
+  storageScope?: string
+  systemPresets?: ColumnViewPreset[]
+}
+
 export const ALL_COLUMNS_CONFIG: { id: string; label: string; group: string; description: string }[] = [
   {
     id: 'symbol',
@@ -351,11 +357,18 @@ export const SYSTEM_VIEW_PRESETS: ColumnViewPreset[] = [
 
 const CUSTOM_PRESETS_STORAGE_KEY = 'boursehorus_custom_column_presets_v2'
 
-interface ColumnViewPresetManagerProps {
-  table: Table<any>
-}
-
-export function ColumnViewPresetManager({ table }: ColumnViewPresetManagerProps) {
+export function ColumnViewPresetManager({
+  table,
+  storageScope = 'global',
+  systemPresets: systemPresetsProp,
+}: ColumnViewPresetManagerProps) {
+  const systemPresets = systemPresetsProp || SYSTEM_VIEW_PRESETS
+  const customPresetsStorageKey = storageScope === 'global'
+    ? CUSTOM_PRESETS_STORAGE_KEY
+    : `${CUSTOM_PRESETS_STORAGE_KEY}_${storageScope}`
+  const activePresetStorageKey = storageScope === 'global'
+    ? ACTIVE_PRESET_KEY
+    : `${ACTIVE_PRESET_KEY}_${storageScope}`
   const [open, setOpen] = React.useState(false)
   const [customPresets, setCustomPresets] = React.useState<ColumnViewPreset[]>([])
   const [activePresetId, setActivePresetId] = React.useState<string>('standard')
@@ -373,11 +386,11 @@ export function ColumnViewPresetManager({ table }: ColumnViewPresetManagerProps)
   // Load custom presets & active preset on mount
   React.useEffect(() => {
     try {
-      const savedCustom = localStorage.getItem(CUSTOM_PRESETS_STORAGE_KEY)
+      const savedCustom = localStorage.getItem(customPresetsStorageKey)
       if (savedCustom) {
         setCustomPresets(JSON.parse(savedCustom))
       }
-      const savedActive = localStorage.getItem(ACTIVE_PRESET_KEY)
+      const savedActive = localStorage.getItem(activePresetStorageKey)
       if (savedActive) {
         setSavedPresetId(savedActive)
         setActivePresetId(savedActive)
@@ -387,15 +400,15 @@ export function ColumnViewPresetManager({ table }: ColumnViewPresetManagerProps)
       console.error('Error loading custom column presets', e)
       setPersistenceLoaded(true)
     }
-  }, [])
+  }, [activePresetStorageKey, customPresetsStorageKey])
 
   const allPresets = React.useMemo(() => {
-    return [...SYSTEM_VIEW_PRESETS, ...customPresets]
-  }, [customPresets])
+    return [...systemPresets, ...customPresets]
+  }, [customPresets, systemPresets])
 
   const activePreset = React.useMemo(() => {
-    return allPresets.find((p) => p.id === activePresetId) || SYSTEM_VIEW_PRESETS[0]
-  }, [allPresets, activePresetId])
+    return allPresets.find((p) => p.id === activePresetId) || systemPresets[0]
+  }, [allPresets, activePresetId, systemPresets])
 
   // Helper to get human label
   const getColumnLabel = (colId: string) => {
@@ -467,10 +480,10 @@ export function ColumnViewPresetManager({ table }: ColumnViewPresetManagerProps)
 
       table.setColumnVisibility(visMap)
       table.setColumnOrder(fullOrder)
-      saveColumnVisibility(visMap)
-      saveColumnOrder(fullOrder)
+      saveColumnVisibility(visMap, storageScope)
+      saveColumnOrder(fullOrder, storageScope)
     },
-    [table]
+    [storageScope, table]
   )
 
   // Apply a preset to the table
@@ -478,7 +491,7 @@ export function ColumnViewPresetManager({ table }: ColumnViewPresetManagerProps)
     (preset: ColumnViewPreset) => {
       setActivePresetId(preset.id)
       try {
-        localStorage.setItem(ACTIVE_PRESET_KEY, preset.id)
+        localStorage.setItem(activePresetStorageKey, preset.id)
       } catch (e) {
         console.error(e)
       }
@@ -502,10 +515,10 @@ export function ColumnViewPresetManager({ table }: ColumnViewPresetManagerProps)
         fullOrder = [...defaultOrder, ...restCols]
       }
       table.setColumnOrder(fullOrder)
-      saveColumnVisibility(visibility)
-      saveColumnOrder(fullOrder)
+      saveColumnVisibility(visibility, storageScope)
+      saveColumnOrder(fullOrder, storageScope)
     },
-    [table]
+    [activePresetStorageKey, storageScope, table]
   )
 
   // Restore the last selected view after custom presets have been loaded.
@@ -519,10 +532,10 @@ export function ColumnViewPresetManager({ table }: ColumnViewPresetManagerProps)
       return
     }
 
-    const savedPreset = allPresets.find((preset) => preset.id === savedPresetId) || SYSTEM_VIEW_PRESETS[0]
+    const savedPreset = allPresets.find((preset) => preset.id === savedPresetId) || systemPresets[0]
     hasRestoredPreset.current = true
     applyPreset(savedPreset)
-  }, [allPresets, applyPreset, persistenceLoaded, savedPresetId])
+  }, [allPresets, applyPreset, persistenceLoaded, savedPresetId, systemPresets])
 
   // Remove column from active view
   const handleRemoveColumn = (colId: string) => {
@@ -609,7 +622,7 @@ export function ColumnViewPresetManager({ table }: ColumnViewPresetManagerProps)
     const updated = [...customPresets, newPreset]
     setCustomPresets(updated)
     try {
-      localStorage.setItem(CUSTOM_PRESETS_STORAGE_KEY, JSON.stringify(updated))
+      localStorage.setItem(customPresetsStorageKey, JSON.stringify(updated))
     } catch (e) {
       console.error(e)
     }
@@ -641,7 +654,7 @@ export function ColumnViewPresetManager({ table }: ColumnViewPresetManagerProps)
 
     setCustomPresets(updatedPresets)
     try {
-      localStorage.setItem(CUSTOM_PRESETS_STORAGE_KEY, JSON.stringify(updatedPresets))
+      localStorage.setItem(customPresetsStorageKey, JSON.stringify(updatedPresets))
     } catch (e) {
       console.error(e)
     }
@@ -653,12 +666,12 @@ export function ColumnViewPresetManager({ table }: ColumnViewPresetManagerProps)
     const updated = customPresets.filter((p) => p.id !== presetId)
     setCustomPresets(updated)
     try {
-      localStorage.setItem(CUSTOM_PRESETS_STORAGE_KEY, JSON.stringify(updated))
+      localStorage.setItem(customPresetsStorageKey, JSON.stringify(updated))
     } catch (err) {
       console.error(err)
     }
     if (activePresetId === presetId) {
-      applyPreset(SYSTEM_VIEW_PRESETS[0])
+      applyPreset(systemPresets[0])
     }
   }
 
@@ -917,7 +930,7 @@ export function ColumnViewPresetManager({ table }: ColumnViewPresetManagerProps)
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => applyPreset(SYSTEM_VIEW_PRESETS[0])}
+                onClick={() => applyPreset(systemPresets[0])}
                 className="h-8 text-xs text-muted-foreground hover:text-foreground shrink-0"
               >
                 <RotateCcw className="h-3.5 w-3.5 mr-1" /> Reinitialiser Standard

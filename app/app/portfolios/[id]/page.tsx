@@ -54,7 +54,7 @@ import { Input } from '@/components/ui/input'
 import { PortfolioOnboardingModal } from './components/PortfolioOnboardingModal'
 import { PortfolioSpotlightTour } from './components/PortfolioSpotlightTour'
 import { PortfolioEmptyStateChecklist } from './components/PortfolioEmptyStateChecklist'
-import { ColumnViewPresetManager } from '@/components/molecules/table/ColumnViewPresetManager'
+import { ColumnViewPreset, ColumnViewPresetManager } from '@/components/molecules/table/ColumnViewPresetManager'
 import { getSavedColumnOrder, getSavedColumnVisibility } from '@/lib/column-persistence'
 
 import { PortfolioInsightsBar } from '@/components/molecules/portfolio/PortfolioInsightsBar'
@@ -82,6 +82,94 @@ const DEFAULT_PORTFOLIO_VISIBILITY: VisibilityState = {
   hasFundamentals: false,
 }
 
+const PORTFOLIO_VIEW_PRESETS: ColumnViewPreset[] = [
+  {
+    id: 'standard',
+    name: 'Standard / Synthèse',
+    description: 'Vue historique du portefeuille : position, cours, PRU et retour.',
+    icon: '⚡',
+    isSystem: true,
+    columns: {
+      symbol: true,
+      weight: true,
+      regularMarketPrice: true,
+      bep: true,
+      variationPercent: true,
+      variation: true,
+    },
+    order: ['symbol', 'weight', 'regularMarketPrice', 'bep', 'variationPercent', 'variation'],
+  },
+  {
+    id: 'valuation',
+    name: 'Valorisation',
+    description: 'P/E, P/S, rendement et capitalisation des positions.',
+    icon: '💰',
+    isSystem: true,
+    columns: {
+      symbol: true,
+      regularMarketPrice: true,
+      trailingPE: true,
+      forwardPE: true,
+      priceToSales: true,
+      dividendYield: true,
+      marketCap: true,
+    },
+    order: ['symbol', 'regularMarketPrice', 'trailingPE', 'forwardPE', 'priceToSales', 'dividendYield', 'marketCap'],
+  },
+  {
+    id: 'quality',
+    name: 'Qualité & croissance',
+    description: 'ROE, ROA, ROIC et croissance du chiffre d’affaires.',
+    icon: '💎',
+    isSystem: true,
+    columns: {
+      symbol: true,
+      regularMarketPrice: true,
+      roe: true,
+      roa: true,
+      roic: true,
+      revGrowth: true,
+      linearity10y: true,
+      hasFundamentals: true,
+    },
+    order: ['symbol', 'regularMarketPrice', 'roe', 'roa', 'roic', 'revGrowth', 'linearity10y', 'hasFundamentals'],
+  },
+  {
+    id: 'all',
+    name: 'Toutes les colonnes',
+    description: 'Vue exhaustive des données portefeuille et fondamentales disponibles.',
+    icon: '👁️',
+    isSystem: true,
+    columns: {
+      symbol: true,
+      regularMarketPrice: true,
+      weight: true,
+      bep: true,
+      variationPercent: true,
+      variation: true,
+      trailingPE: true,
+      forwardPE: true,
+      priceToSales: true,
+      dividendYield: true,
+      marketCap: true,
+      roa: true,
+      roe: true,
+      revGrowth: true,
+      roic: true,
+      pe5y: true,
+      linearity10y: true,
+      sector: true,
+      industry: true,
+      hasFundamentals: true,
+    },
+    order: [
+      'symbol', 'regularMarketPrice', 'weight', 'bep', 'variationPercent', 'variation',
+      'trailingPE', 'forwardPE', 'priceToSales', 'dividendYield', 'marketCap', 'roa', 'roe',
+      'revGrowth', 'roic', 'pe5y', 'linearity10y', 'sector', 'industry', 'hasFundamentals',
+    ],
+  },
+]
+
 export default function PortfolioView({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params)
   const router = useRouter()
@@ -105,9 +193,9 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
   const [globalFilter, setGlobalFilter] = React.useState('')
   const lastMutationTimestamp = React.useRef<number>(0)
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(() =>
-    getSavedColumnVisibility(DEFAULT_PORTFOLIO_VISIBILITY)
+    getSavedColumnVisibility(DEFAULT_PORTFOLIO_VISIBILITY, 'portfolio')
   )
-  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(() => getSavedColumnOrder([]))
+  const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(() => getSavedColumnOrder([], 'portfolio'))
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
   const [useNativeCurrency, setUseNativeCurrency] = React.useState(false)
@@ -477,7 +565,11 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <ColumnViewPresetManager table={table} />
+                  <ColumnViewPresetManager
+                    table={table}
+                    storageScope="portfolio"
+                    systemPresets={PORTFOLIO_VIEW_PRESETS}
+                  />
                 </div>
               </CardHeader>
               <CardContent className="p-0">
