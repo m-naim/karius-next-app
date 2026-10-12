@@ -187,32 +187,34 @@ export default function ExplorePortfoliosPage() {
 
   return (
     <SectionContainer className="space-y-5 py-5 sm:space-y-7 sm:py-8">
-      <section className="relative overflow-hidden rounded-[2rem] border border-primary/15 bg-gradient-to-br from-primary/[0.12] via-card to-card px-5 py-7 shadow-sm sm:px-8 sm:py-9">
-        <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
-        <div className="relative max-w-3xl">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/70 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-primary">
-            <Sparkles className="h-3.5 w-3.5" />
-            Exploration communautaire
+      <section className="rounded-xl border border-border/70 bg-card px-4 py-4 shadow-sm sm:px-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <div className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-primary">
+              <Sparkles className="h-3.5 w-3.5" />
+              Exploration communautaire
+            </div>
+            <h1 className="text-xl font-black tracking-tight text-foreground sm:text-2xl">
+              Trouvez une stratégie à <span className="text-primary">suivre</span>
+            </h1>
+            <p className="mt-1 max-w-2xl text-xs leading-5 text-muted-foreground sm:text-sm">
+              Comparez les performances et les positions des portefeuilles publics.
+            </p>
           </div>
-          <h1 className="text-3xl font-black tracking-[-0.04em] text-foreground sm:text-5xl">
-            Trouvez une stratégie à <span className="text-primary">suivre</span>
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-            Comparez les performances annualisées, la popularité et les principales positions des portefeuilles publics.
-          </p>
-        </div>
-        <div className="relative mt-6 grid max-w-2xl grid-cols-2 gap-2 sm:grid-cols-3">
-          <div className="rounded-2xl border border-border/60 bg-background/65 px-3 py-2.5">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Portefeuilles</p>
-            <p className="mt-1 text-xl font-black tabular-nums">{data?.totalElements || '—'}</p>
-          </div>
-          <div className="rounded-2xl border border-border/60 bg-background/65 px-3 py-2.5">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Tri actuel</p>
-            <p className="mt-1 truncate text-sm font-bold">{sortLabel}</p>
-          </div>
-          <div className="col-span-2 rounded-2xl border border-border/60 bg-background/65 px-3 py-2.5 sm:col-span-1">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Page</p>
-            <p className="mt-1 text-sm font-bold tabular-nums">{data ? (page + 1) + ' / ' + Math.max(data.totalPages, 1) : '—'}</p>
+
+          <div className="flex min-w-0 flex-wrap items-center gap-2 lg:justify-end">
+            <div className="inline-flex items-center gap-2 rounded-lg border border-border/60 bg-background px-2.5 py-1.5">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Portefeuilles</span>
+              <span className="text-sm font-black tabular-nums">{data?.totalElements ?? '—'}</span>
+            </div>
+            <div className="inline-flex min-w-0 items-center gap-2 rounded-lg border border-border/60 bg-background px-2.5 py-1.5">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Tri</span>
+              <span className="max-w-[12rem] truncate text-xs font-bold">{sortLabel}</span>
+            </div>
+            <div className="inline-flex items-center gap-2 rounded-lg border border-border/60 bg-background px-2.5 py-1.5">
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Page</span>
+              <span className="text-xs font-bold tabular-nums">{data ? (page + 1) + ' / ' + Math.max(data.totalPages, 1) : '—'}</span>
+            </div>
           </div>
         </div>
       </section>
