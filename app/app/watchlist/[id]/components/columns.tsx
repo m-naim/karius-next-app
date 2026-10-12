@@ -92,9 +92,6 @@ export const columns = (
               <div className="flex flex-col min-w-0 overflow-hidden">
                 <span className="truncate text-xs font-semibold flex items-center gap-1">
                   <span className="truncate">{row.original.longname}</span>
-                  {row.original.qualityMetrics?.hasFundamentals && (
-                    <span title="Données fondamentales disponibles" className="shrink-0"><FileText className="h-3 w-3 text-blue-500" /></span>
-                  )}
                 </span>
                 <span className="text-[10px] font-bold uppercase text-muted-foreground truncate">{row.original.symbol}</span>
               </div>

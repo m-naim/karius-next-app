@@ -26,6 +26,7 @@ import { AnalysisView } from '@/components/organismes/market/AnalysisView'
 import { columns } from './columns'
 import { LayoutDashboard, Table as TableIcon } from 'lucide-react'
 import { SplitScreenLayout } from '@/components/organismes/layout/SplitScreenLayout'
+import { AnalysisDrawerTitle } from '@/components/molecules/market/AnalysisDrawerTitle'
 import { filterSecuritiesByScreener } from '@/lib/screeners'
 
 import watchListService from '@/services/watchListService'
@@ -141,6 +142,11 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
       variation: security.variations?.[selectedPeriod] ?? security.regularMarketChangePercent,
     }))
   }, [filteredSecurities, selectedPeriod])
+
+  const selectedSecurity = useMemo(
+    () => securities.find((security) => security.symbol === selectedTicker),
+    [securities, selectedTicker]
+  )
 
   const tableColumns = useMemo(() => {
     return columns(selectedPeriod, watchlists)
@@ -266,7 +272,13 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
       }
       showDrawer={showChart}
       onCloseDrawer={() => setShowChart(false)}
-      drawerTitle={selectedTicker ? `ANALYSE : ${selectedTicker}` : 'ANALYSE'}
+      drawerTitle={selectedTicker ? (
+        <AnalysisDrawerTitle
+          symbol={selectedTicker}
+          price={selectedSecurity?.regularMarketPrice}
+          currency={selectedSecurity?.currency}
+        />
+      ) : 'ANALYSE'}
       drawerContent={
         selectedTicker ? (
           <TickerChart symbol={selectedTicker} />

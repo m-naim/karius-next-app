@@ -63,6 +63,7 @@ import { WatchlistSelector } from './components/WatchlistSelector'
 import { LayoutDashboard, Table as TableIcon } from 'lucide-react'
 import { RightSidebar } from '@/components/organismes/layout/RightSidebar'
 import { SplitScreenLayout } from '@/components/organismes/layout/SplitScreenLayout'
+import { AnalysisDrawerTitle } from '@/components/molecules/market/AnalysisDrawerTitle'
 import { cn } from '@/lib/utils'
 
 const TickerChart = dynamic(
@@ -126,6 +127,11 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
   const [activeScreener, setActiveScreener] = React.useState<string | null>(() => savedFilters.activeScreener ?? null)
 
   const [allAvailableTags, setAllAvailableTags] = React.useState<string[]>([])
+
+  const selectedSecurity = useMemo(
+    () => data.securities?.find((security) => security.symbol === selectedTicker),
+    [data.securities, selectedTicker]
+  )
 
   const downloadCSV = () => {
     if (!data.securities || data.securities.length === 0) return
@@ -466,7 +472,13 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
       }
       showDrawer={showChart}
       onCloseDrawer={() => setShowChart(false)}
-      drawerTitle={selectedTicker ? `ANALYSE : ${selectedTicker}` : 'ANALYSE'}
+      drawerTitle={selectedTicker ? (
+        <AnalysisDrawerTitle
+          symbol={selectedTicker}
+          price={selectedSecurity?.regularMarketPrice}
+          currency={selectedSecurity?.currency}
+        />
+      ) : 'ANALYSE'}
       drawerContent={
         selectedTicker ? (
           <TickerChart

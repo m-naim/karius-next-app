@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { Column, sortingFns } from '@tanstack/react-table'
-import { ChevronUp, ArrowUpDown, ChevronDown, ListFilterIcon, FileText } from 'lucide-react'
+import { ChevronUp, ArrowUpDown, ChevronDown, ListFilterIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -133,9 +133,6 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
             <div className="flex flex-col min-w-0 overflow-hidden">
               <span className="truncate text-xs font-semibold flex items-center gap-1">
                 <span className="truncate">{symbol} {own && row.original.qty ? `x ${row.original.qty}` : ''}</span>
-                {row.original.qualityMetrics?.hasFundamentals && (
-                  <span title="Données fondamentales disponibles" className="shrink-0"><FileText className="h-3 w-3 text-blue-500" /></span>
-                )}
               </span>
               <span className="truncate text-[10px] text-muted-foreground">
                 {row.original.shortname || ''}
