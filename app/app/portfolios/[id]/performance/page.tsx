@@ -10,6 +10,7 @@ import { initPerformance } from '@/services/portfolioService'
 import { deleteCache } from '@/lib/idb-cache'
 import RiskQuickStats from './components/RiskQuickStats'
 import RiskAnalysisCard from './components/RiskAnalysisCard'
+import { Activity, Clock3 } from 'lucide-react'
 
 function PagePerformance() {
   const id = usePathname().split('/')[3]
@@ -19,6 +20,7 @@ function PagePerformance() {
   const [recalculating, setRecalculating] = useState<boolean>(false)
 
   const { metrics, loading } = useRiskMetrics(id, period, selectedBenchmarks, refreshKey)
+  const hasRiskAnalysis = period === '1Y' || period === '3Y'
 
   const handleAddBenchmark = (benchmark: string) => {
     if (!validateBenchmark(benchmark)) return
@@ -55,8 +57,26 @@ function PagePerformance() {
   }
 
   return (
-    <div className="flex flex-col gap-4 w-full pb-6">
-      {/* 1. Quick Metrics Bar + Recalculate Button */}
+    <div className="flex w-full flex-col gap-5 pb-6">
+      <div className="flex flex-col gap-3 border-b border-border/60 pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0">
+          <div className="mb-2 flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-primary">
+            <Activity className="h-3.5 w-3.5" />
+            Suivi du portefeuille
+          </div>
+          <h2 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">
+            Performance & risque
+          </h2>
+          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            Comprenez l’évolution de votre portefeuille et le niveau de risque pris sur chaque période.
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2 self-start rounded-full border border-border/70 bg-muted/30 px-3 py-1.5 text-xs font-semibold text-muted-foreground sm:self-end">
+          <Clock3 className="h-3.5 w-3.5" />
+          Données historiques
+        </div>
+      </div>
+
       <RiskQuickStats
         metrics={metrics}
         loading={loading}
@@ -65,10 +85,8 @@ function PagePerformance() {
         recalculating={recalculating}
       />
 
-      {/* 2. Main Dense Split Layout (8-col chart / 4-col analytics) */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        {/* Left Column: Main Performance Chart */}
-        <div className="lg:col-span-8 space-y-4">
+      <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-12 lg:items-start">
+        <div className={`min-w-0 ${hasRiskAnalysis ? 'lg:col-span-8' : 'lg:col-span-12'}`}>
           <PerformanceBox
             key={`box-${refreshKey}`}
             id={id}
@@ -80,12 +98,14 @@ function PagePerformance() {
           />
         </div>
 
-        {/* Right Column: Risk Analysis & Yearly Overview */}
-        <div className="lg:col-span-4 space-y-4">
-          <RiskAnalysisCard metrics={metrics} loading={loading} period={period} />
-          <YearlyOverview key={`overview-${refreshKey}`} id={id} selectedBenchmarks={selectedBenchmarks} />
-        </div>
+        {hasRiskAnalysis && (
+          <div className="min-w-0 lg:col-span-4">
+            <RiskAnalysisCard metrics={metrics} loading={loading} period={period} />
+          </div>
+        )}
       </div>
+
+      <YearlyOverview key={`overview-${refreshKey}`} id={id} selectedBenchmarks={selectedBenchmarks} />
     </div>
   )
 }
