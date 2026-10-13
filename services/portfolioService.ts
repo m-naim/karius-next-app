@@ -106,8 +106,17 @@ export function addMouvementService(idPft, body) {
 }
 
 export function addTransactions(idPft, transactions) {
+  const apiTransactions = transactions.map((transaction) => ({
+    id: transaction.id,
+    symbol: transaction.symbol,
+    date: transaction.date,
+    qty: Number(transaction.qty),
+    price: Number(transaction.price),
+    freeShares: Boolean(transaction.freeShares),
+  }))
+
   return http.post(`${host}/api/v1/portfolios/${idPft}/transaction/import`, {
-    transactions: transactions,
+    transactions: apiTransactions,
   })
 }
 
