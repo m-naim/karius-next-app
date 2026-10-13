@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import {
   BellOff,
+  Bell,
   Send,
   Trash2,
   CheckCircle2,
@@ -54,9 +55,11 @@ interface Alert {
 }
 
 interface NotificationSettings {
-  channel: 'telegram' | 'ntfy'
+  channel: 'telegram' | 'ntfy' | 'browser'
   telegramChatId?: string
   ntfyTopic?: string
+  browserPushEnabled?: boolean
+  browserPushConfigured?: boolean
 }
 
 export default function AlertsPage() {
@@ -64,7 +67,8 @@ export default function AlertsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [settings, setSettings] = useState<NotificationSettings>({ channel: 'telegram' })
-  const [tempChatId, setTempChatId] = useState('')
+  const [telegramActivationLink, setTelegramActivationLink] = useState<string | null>(null)
+  const [checkingTelegram, setCheckingTelegram] = useState(false)
   const [updatingSettings, setUpdatingSettings] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const { toast } = useToast()
@@ -89,9 +93,10 @@ export default function AlertsPage() {
     setLoading(true)
     setError(null)
     try {
-      const [alertsData, settingsData, profileData, disabled, pfts, wls] = await Promise.all([
+      const [alertsData, settingsData, activationData, profileData, disabled, pfts, wls] = await Promise.all([
         alertService.getMyAlerts(),
         alertService.getNotificationSettings().catch(() => ({ channel: 'telegram' })),
+        alertService.getTelegramActivationLink().catch(() => null),
         authService.getProfile().catch(() => ({})),
         authService.getDisabledEntities().catch(() => []),
         getPortfolios().catch(() => []),
@@ -99,7 +104,7 @@ export default function AlertsPage() {
       ])
       setAlerts(alertsData)
       setSettings(settingsData)
-      setTempChatId(settingsData.telegramChatId || '')
+      setTelegramActivationLink(activationData?.url || null)
 
       setNotificationsEnabled(profileData.notificationsEnabled || false)
       setPortfolioNotifFreq(profileData.portfolioNotifFreq || 'WEEKLY')
@@ -117,6 +122,7 @@ export default function AlertsPage() {
 
   useEffect(() => {
     fetchData()
+    void alertService.trackEvent('alerts_page_viewed').catch(() => undefined)
   }, [])
 
   const handleDelete = async (id: string) => {
@@ -172,12 +178,13 @@ export default function AlertsPage() {
     }
   }
 
-  const handleChannelChange = async (channel: 'telegram' | 'ntfy') => {
+  const handleChannelChange = async (channel: 'telegram' | 'ntfy' | 'browser') => {
     setUpdatingSettings(true)
     try {
       await alertService.updateNotificationChannel(channel)
       setSettings((prev) => ({ ...prev, channel }))
-      toast({ title: 'Canal mis à jour', description: `Vous recevrez désormais vos alertes via ${channel}.` })
+      void alertService.trackEvent('notification_channel_selected', channel)
+      toast({ title: 'Canal mis à jour', description: `Vous recevrez désormais vos alertes via ${channel === 'browser' ? 'le navigateur' : channel}.` })
     } catch (error) {
       console.error('Failed to update channel:', error)
       toast({
@@ -190,35 +197,80 @@ export default function AlertsPage() {
     }
   }
 
-  const handleUpdateTelegram = async () => {
-    setUpdatingSettings(true)
+  const handleRefreshTelegramStatus = async () => {
+    setCheckingTelegram(true)
     try {
-      await alertService.updateTelegram(tempChatId)
-      setSettings((prev) => ({ ...prev, telegramChatId: tempChatId }))
-      toast({ title: 'Configuration Telegram enregistrée', description: 'Votre Chat ID a été associé avec succès.' })
+      const [settingsData, activationData] = await Promise.all([
+        alertService.getNotificationSettings(),
+        alertService.getTelegramActivationLink(),
+      ])
+      setSettings(settingsData)
+      setTelegramActivationLink(activationData?.url || null)
+      if (settingsData.telegramChatId) {
+        toast({ title: 'Telegram connecté', description: 'Votre compte Telegram est maintenant lié.' })
+      } else {
+        toast({ title: 'Liaison non détectée', description: 'Cliquez sur le lien Telegram, envoyez /start, puis réessayez.' })
+      }
     } catch (error) {
-      console.error('Failed to update telegram:', error)
+      console.error('Failed to refresh telegram status:', error)
       toast({
         variant: 'destructive',
-        title: 'Échec de la configuration Telegram',
-        description: 'Vérifiez votre Chat ID et assurez-vous d\'avoir démarré une conversation avec le bot.',
+        title: 'Vérification impossible',
+        description: 'Impossible de vérifier la liaison Telegram pour le moment.',
       })
     } finally {
-      setUpdatingSettings(false)
+      setCheckingTelegram(false)
     }
   }
 
   const handleTestNotification = async () => {
+    if (settings.channel === 'browser') {
+      try {
+        await alertService.testBrowserNotification()
+        toast({ title: 'Notification de test envoyée', description: 'Vérifiez votre centre de notifications navigateur.' })
+      } catch (error) {
+        console.error('Failed to test browser notification:', error)
+        toast({ variant: 'destructive', title: 'Échec du test', description: 'Activez d’abord les notifications navigateur sur cet appareil.' })
+      }
+      return
+    }
+    if (!settings.telegramChatId) return
     try {
-      await alertService.testLastNotification()
-      toast({ title: 'Test envoyé', description: 'La notification test a été transmise à votre canal.' })
+      await authService.testNotification(settings.telegramChatId)
+      toast({ title: 'Message de test envoyé', description: 'Vérifiez immédiatement votre conversation Telegram.' })
     } catch (error) {
       console.error('Failed to test notification:', error)
       toast({
         variant: 'destructive',
         title: 'Échec de l\'envoi du test',
-        description: 'Vérifiez que votre Chat ID Telegram ou votre application ntfy est correctement configurée.',
+        description: 'Telegram n\'a pas accepté le message. Relancez la liaison ou vérifiez que le bot n\'est pas bloqué.',
       })
+    }
+  }
+
+  const handleNotificationsToggle = async (enabled: boolean) => {
+    if (settings.channel === 'telegram' && !settings.telegramChatId) return
+    setUpdatingSettings(true)
+    try {
+      const profile = await authService.getProfile()
+      await authService.updateProfile({
+        name: profile.name || '',
+        telegramChatId: profile.telegramChatId || settings.telegramChatId || '',
+        notificationsEnabled: enabled,
+        portfolioNotifFreq: profile.portfolioNotifFreq || 'NONE',
+        watchlistNotifFreq: profile.watchlistNotifFreq || 'NONE',
+        notificationChannel: settings.channel,
+      })
+      setNotificationsEnabled(enabled)
+      toast({
+        title: enabled ? 'Notifications activées' : 'Notifications désactivées',
+        description: enabled ? `Les alertes pourront maintenant vous être envoyées via ${settings.channel === 'browser' ? 'le navigateur' : settings.channel}.` : 'Vous pourrez les réactiver à tout moment.',
+      })
+    } catch (error) {
+      console.error('Failed to update notification status:', error)
+      toast({ variant: 'destructive', title: 'Mise à jour impossible', description: 'Réessayez dans quelques instants.' })
+    } finally {
+      setUpdatingSettings(false)
     }
   }
 
@@ -326,7 +378,7 @@ export default function AlertsPage() {
       </div>
 
       <div className="mb-6">
-        <PushNotificationToggle />
+        <PushNotificationToggle onSubscriptionChange={(active) => setSettings((prev) => ({ ...prev, browserPushEnabled: active }))} />
       </div>
 
       <Tabs defaultValue="price-alerts" className="w-full">
@@ -560,8 +612,8 @@ export default function AlertsPage() {
                     </Label>
                     <RadioGroup 
                       value={settings.channel} 
-                      onValueChange={(v) => handleChannelChange(v as 'telegram' | 'ntfy')}
-                      className="grid grid-cols-2 gap-2"
+                      onValueChange={(v) => handleChannelChange(v as 'telegram' | 'ntfy' | 'browser')}
+                      className="grid grid-cols-3 gap-2"
                     >
                       <div>
                         <RadioGroupItem value="telegram" id="tg" className="peer sr-only" />
@@ -583,6 +635,16 @@ export default function AlertsPage() {
                           <span className="text-[10px] font-bold">NTFY (WEB)</span>
                         </Label>
                       </div>
+                      <div>
+                        <RadioGroupItem value="browser" id="browser" className="peer sr-only" />
+                        <Label
+                          htmlFor="browser"
+                          className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                        >
+                          <Bell className="mb-1 h-4 w-4" />
+                          <span className="text-[10px] font-bold">NAVIGATEUR</span>
+                        </Label>
+                      </div>
                     </RadioGroup>
                   </div>
 
@@ -590,89 +652,101 @@ export default function AlertsPage() {
 
                   {settings.channel === 'telegram' && (
                     <div className="space-y-4 animate-in fade-in slide-in-from-left-2 pt-1">
-                      <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 space-y-4">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-xs font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
-                            <MessageSquare className="h-4 w-4" />
-                            Procédure d&apos;activation Telegram
-                          </h4>
-                          {settings.telegramChatId && (
-                            <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[10px] font-bold gap-1">
+                      <div className="rounded-xl border border-[#24A1DE]/25 bg-[#24A1DE]/5 p-4">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <h4 className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-[#168ac0] dark:text-[#58c5f0]">
+                              <MessageSquare className="h-4 w-4" />
+                              Connexion Telegram
+                            </h4>
+                            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                              Ouvrez votre lien personnel, cliquez sur <strong>Démarrer</strong> dans Telegram, puis revenez ici.
+                            </p>
+                          </div>
+                          {settings.telegramChatId ? (
+                            <Badge variant="outline" className="w-fit gap-1 border-emerald-500/30 bg-emerald-500/10 text-[10px] font-bold text-emerald-600">
                               <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                              Compte Lié
+                              Compte lié
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="w-fit gap-1 border-amber-500/30 bg-amber-500/10 text-[10px] font-bold text-amber-700">
+                              En attente
                             </Badge>
                           )}
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          {/* Left Column: Direct Link & QR Code */}
-                          <div className="flex flex-col items-center justify-center p-3 rounded-lg border border-border/50 bg-background text-center space-y-3">
-                            <span className="text-[11px] font-bold text-muted-foreground">
-                              Étape 1 : Ouvrez notre Bot Telegram
-                            </span>
-
+                        {!settings.telegramChatId ? (
+                          <div className="mt-4 space-y-3">
                             <a
-                              href={process.env.NEXT_PUBLIC_TELEGRAM_BOT_URL || 'https://t.me/boursehorus_bot'}
+                              href={telegramActivationLink || '#'}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="w-full"
+                              onClick={() => {
+                                if (telegramActivationLink) void alertService.trackEvent('telegram_activation_link_clicked')
+                              }}
+                              className="block"
                             >
-                              <Button size="sm" className="w-full font-bold bg-[#24A1DE] hover:bg-[#2092ca] text-white gap-2 h-9 shadow-sm">
-                                <ExternalLink className="h-3.5 w-3.5" />
-                                Ouvrir dans Telegram
+                              <Button disabled={!telegramActivationLink} className="h-10 w-full gap-2 bg-[#24A1DE] font-bold text-white hover:bg-[#2092ca]">
+                                <ExternalLink className="h-4 w-4" />
+                                Ouvrir mon lien Telegram
                               </Button>
                             </a>
-
-                            <div className="flex flex-col items-center pt-1">
-                              <img
-                                src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(
-                                  process.env.NEXT_PUBLIC_TELEGRAM_BOT_URL || 'https://t.me/boursehorus_bot'
-                                )}`}
-                                alt="QR Code Telegram Bot"
-                                className="h-28 w-28 rounded-lg border p-1 bg-white shadow-sm object-contain"
-                              />
-                              <span className="text-[9px] font-medium text-muted-foreground mt-1">
-                                Scannez pour ouvrir sur mobile
-                              </span>
-                            </div>
+                            <Button
+                              variant="outline"
+                              onClick={handleRefreshTelegramStatus}
+                              disabled={checkingTelegram}
+                              className="h-9 w-full gap-2 text-xs font-bold"
+                            >
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                              {checkingTelegram ? 'Vérification...' : 'J’ai démarré le bot — vérifier'}
+                            </Button>
+                            <p className="text-center text-[11px] text-muted-foreground">
+                              Le lien expire dans 15 minutes et ne peut être utilisé que pour votre compte.
+                            </p>
                           </div>
-
-                          {/* Right Column: Step 2 & 3 */}
-                          <div className="flex flex-col justify-between space-y-3 p-3 rounded-lg border border-border/50 bg-background">
-                            <div className="space-y-1.5">
-                              <span className="text-[11px] font-bold text-muted-foreground">
-                                Étape 2 : Envoyez <code className="bg-primary/10 text-primary px-1 rounded text-xs font-mono">/start</code>
-                              </span>
-                              <p className="text-[11px] text-muted-foreground leading-relaxed">
-                                Dans l&apos;application Telegram, cliquez sur <strong>Démarrer</strong> (ou tapez <code>/start</code>).
-                                Le bot vous enverra instantanément votre <strong>Code d&apos;activation</strong>.
-                              </p>
-                            </div>
-
-                            <div className="space-y-2 pt-2 border-t border-border/40">
-                              <Label htmlFor="chatId" className="text-[11px] font-bold text-foreground">
-                                Étape 3 : Collez votre Code d&apos;Activation
-                              </Label>
-                              <div className="flex gap-2">
-                                <Input
-                                  id="chatId"
-                                  placeholder="Ex: 12345678"
-                                  value={tempChatId}
-                                  onChange={(e) => setTempChatId(e.target.value)}
-                                  className="h-9 border-slate-200 text-xs font-bold tabular-nums"
-                                />
-                                <Button
-                                  size="sm"
-                                  onClick={handleUpdateTelegram}
-                                  disabled={updatingSettings || !tempChatId}
-                                  className="font-bold shrink-0 h-9"
-                                >
-                                  {updatingSettings ? '...' : settings.telegramChatId ? 'Modifier' : 'Lier le compte'}
-                                </Button>
+                        ) : (
+                          <div className="mt-4 space-y-3 rounded-lg border border-border/60 bg-background p-3">
+                            <div className="flex items-center justify-between gap-3">
+                              <div>
+                                <p className="text-xs font-bold text-foreground">Notifications Telegram</p>
+                                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                                  Recevoir les alertes de prix et les rapports périodiques.
+                                </p>
                               </div>
+                              <Button
+                                size="sm"
+                                variant={notificationsEnabled ? 'outline' : 'default'}
+                                onClick={() => handleNotificationsToggle(!notificationsEnabled)}
+                                disabled={updatingSettings}
+                                aria-pressed={notificationsEnabled}
+                                className="shrink-0 text-xs font-bold"
+                              >
+                                {notificationsEnabled ? 'Désactiver' : 'Activer les notifications'}
+                              </Button>
+                            </div>
+                            <div className="flex flex-col gap-2 sm:flex-row">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleTestNotification}
+                                disabled={updatingSettings}
+                                className="flex-1 gap-2 text-xs font-bold"
+                              >
+                                <Send className="h-3.5 w-3.5" />
+                                Envoyer un test
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleRefreshTelegramStatus}
+                                disabled={checkingTelegram}
+                                className="text-xs font-bold text-muted-foreground"
+                              >
+                                Vérifier la liaison
+                              </Button>
                             </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -706,6 +780,43 @@ export default function AlertsPage() {
                           ntfy n'accepte pas le HTML. Les messages seront reçus en texte brut optimisé.
                         </p>
                       </div>
+                    </div>
+                  )}
+
+                  {settings.channel === 'browser' && (
+                    <div className="space-y-4 animate-in fade-in slide-in-from-right-2">
+                      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+                        <h4 className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-primary">
+                          <Bell className="h-4 w-4" /> Notifications navigateur
+                        </h4>
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                          Activez d’abord cet appareil avec la carte située au-dessus, puis activez ce canal pour recevoir vos alertes.
+                        </p>
+                        {!settings.browserPushConfigured && (
+                          <p className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-[11px] font-medium text-amber-700">
+                            Le serveur doit être configuré avec ses clés Web Push avant de pouvoir enregistrer un appareil.
+                          </p>
+                        )}
+                      </div>
+                      <Button
+                        size="sm"
+                        variant={notificationsEnabled ? 'outline' : 'default'}
+                        className="w-full text-xs font-bold"
+                        onClick={() => handleNotificationsToggle(!notificationsEnabled)}
+                        disabled={updatingSettings || !settings.browserPushEnabled}
+                        aria-pressed={notificationsEnabled}
+                      >
+                        {notificationsEnabled ? 'Désactiver les notifications' : 'Activer les notifications navigateur'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full gap-2 text-xs font-bold"
+                        onClick={handleTestNotification}
+                        disabled={updatingSettings}
+                      >
+                        <Send className="h-3.5 w-3.5" /> Envoyer un test navigateur
+                      </Button>
                     </div>
                   )}
 
