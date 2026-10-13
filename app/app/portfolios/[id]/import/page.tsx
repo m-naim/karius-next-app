@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { distinct } from '@/lib/arrays'
 import { csvToArray } from '@/lib/csv'
-import { getProductsSymbols } from '@/services/stock.service'
+import { getProductsSymbols, getStockPriceQuoteForDate } from '@/services/stock.service'
 import { ArrowLeft, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -125,9 +125,19 @@ export default function PortfolioView() {
         const quantity = parseCsvNumber(getField(row, ['Quantité', 'Quantite', 'Quantity', 'Qty', 'Nombre']))
         const price = parseCsvNumber(getField(row, ['Cours', 'Prix', 'Price', "Prix d'exécution", 'Execution price']))
         const operationValue = getField(row, ['Type', "Type d'opération", 'Type operation', 'Operation', 'Action', 'Side', 'Sens'])
-        const operation = operationValue ? getTransactionType(operationValue) : quantity < 0 ? 'SELL' : 'BUY'
+        const localAmount = parseCsvNumber(getField(row, ['Montant devise locale', 'Montant local', 'Local amount']))
+        const eurAmount = parseCsvNumber(getField(row, ['Montant EUR', 'Montant en EUR', 'EUR amount']))
+        const amount = Number.isFinite(localAmount) ? localAmount : eurAmount
+        const isFreeShareRow = quantity > 0 && price === 0 && (!Number.isFinite(amount) || amount === 0)
+        const operation = operationValue
+          ? getTransactionType(operationValue)
+          : isFreeShareRow
+            ? 'FREE'
+            : quantity < 0 || (quantity > 0 && amount > 0)
+            ? 'SELL'
+            : 'BUY'
 
-        if (!productName || !date || !Number.isFinite(quantity) || !Number.isFinite(price) || quantity === 0 || price <= 0) {
+        if (!productName || !date || !Number.isFinite(quantity) || !Number.isFinite(price) || quantity === 0 || price < 0 || (price === 0 && !isFreeShareRow)) {
           throw new Error(`Ligne ${index + 2} incomplète : produit, date, quantité et prix sont obligatoires.`)
         }
 
@@ -159,9 +169,20 @@ export default function PortfolioView() {
       }
       const symbolByIsin = new Map((symbols || []).map((symbol) => [symbol.isin, symbol.symbol]))
 
-      const extractedTransactions = rows.map((row, index) => {
+      const extractedTransactions = await Promise.all(rows.map(async (row, index) => {
         const resolvedSymbol = row.directSymbol || symbolByIsin.get(row.isin) || ''
         const signedQuantity = row.operation === 'SELL' ? -row.quantity : row.quantity
+        let referencePrice = row.price
+
+        if (row.operation === 'FREE' && referencePrice === 0 && resolvedSymbol) {
+          try {
+            const quote = await getStockPriceQuoteForDate(resolvedSymbol, row.date)
+            const fetchedPrice = Number(quote?.price)
+            if (Number.isFinite(fetchedPrice) && fetchedPrice > 0) referencePrice = fetchedPrice
+          } catch (error) {
+            console.warn(`Could not resolve reference price for free shares on line ${index + 2}:`, error)
+          }
+        }
 
         return {
           id: getField(row.row, ['ID Ordre', 'ID', 'Order ID', 'Référence', 'Reference']) || `import-${Date.now()}-${index}`,
@@ -169,11 +190,11 @@ export default function PortfolioView() {
           type: row.operation === 'SELL' ? 'Vendre' : row.operation === 'FREE' ? 'Attribution gratuite' : 'Acheter',
           date: row.date,
           qty: signedQuantity,
-          price: row.price,
+          price: referencePrice,
           symbol: resolvedSymbol,
           freeShares: row.operation === 'FREE',
         }
-      })
+      }))
 
       setTransactions(extractedTransactions)
       setFileLoaded(true)
@@ -188,6 +209,24 @@ export default function PortfolioView() {
   }
 
   const dumpTransactions = async () => {
+    const invalidTransaction = transactions.find(
+      (transaction) =>
+        !transaction.symbol?.trim() ||
+        !Number.isFinite(Number(transaction.qty)) ||
+        Number(transaction.qty) === 0 ||
+        !Number.isFinite(Number(transaction.price)) ||
+        Number(transaction.price) <= 0
+    )
+
+    if (invalidTransaction) {
+      setImportError(
+        invalidTransaction.freeShares
+          ? 'Une attribution gratuite doit avoir un symbole et un cours de référence positif. Modifiez la ligne avant de continuer.'
+          : 'Chaque transaction doit avoir un symbole, une quantité non nulle et un prix positif.'
+      )
+      return
+    }
+
     try {
       setLoading(true)
       await addTransactions(id, transactions)
@@ -206,14 +245,27 @@ export default function PortfolioView() {
     setTransactions(transactions.filter((t) => t.productName !== productName))
   }
 
-  function replaceSymbolForProduct(productName: string) {
-    const newTransactions = transactions.map((transaction) => {
-      if (transaction.productName === productName) {
-        transaction.symbol = ticker
-        return transaction
+  async function replaceSymbolForProduct(productName: string) {
+    const selectedTicker = ticker.trim().toUpperCase()
+    if (!selectedTicker) return
+
+    const newTransactions = await Promise.all(transactions.map(async (transaction) => {
+      if (transaction.productName !== productName) return transaction
+
+      let referencePrice = transaction.price
+      if (transaction.freeShares && referencePrice <= 0) {
+        try {
+          const quote = await getStockPriceQuoteForDate(selectedTicker, transaction.date)
+          const fetchedPrice = Number(quote?.price)
+          if (Number.isFinite(fetchedPrice) && fetchedPrice > 0) referencePrice = fetchedPrice
+        } catch (error) {
+          console.warn(`Could not resolve reference price for ${selectedTicker}:`, error)
+        }
       }
-      return transaction
-    })
+
+      return { ...transaction, symbol: selectedTicker, price: referencePrice }
+    }))
+
     setTransactions(newTransactions)
     setTicker('')
   }

@@ -32,7 +32,15 @@ export const Transactions = ({ id, transactionState }) => {
             <div className="text-right"> {t['Frais de courtage']} </div>
             <div className="flex gap-2 py-1">
               <TransactionDialogue
-                initialData={t}
+                initialData={{
+                  id: t.id,
+                  type: t.type,
+                  ticker: t.symbol,
+                  date: t.date,
+                  quantity: Math.abs(Number(t.qty)),
+                  prix: Number(t.price),
+                  freeShares: t.freeShares,
+                }}
                 totalPortfolioValue={0}
                 Trigger={() => <Pencil size={16} />}
                 submitHandler={async (newTransactionsValues) => {
@@ -40,7 +48,14 @@ export const Transactions = ({ id, transactionState }) => {
                     if (t.id === newTransactionsValues.id) {
                       return {
                         ...t,
-                        ...newTransactionsValues,
+                        type: newTransactionsValues.type,
+                        symbol: newTransactionsValues.ticker,
+                        date: newTransactionsValues.date,
+                        qty: newTransactionsValues.type === 'Vendre'
+                          ? -Math.abs(Number(newTransactionsValues.quantity))
+                          : Math.abs(Number(newTransactionsValues.quantity)),
+                        price: Number(newTransactionsValues.prix),
+                        freeShares: Boolean(newTransactionsValues.freeShares),
                       }
                     } else {
                       return t
