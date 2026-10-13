@@ -189,13 +189,14 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
 
   useEffect(() => {
     let isMounted = true
+    const controller = new AbortController()
     const fetchData = async () => {
       try {
         if (!cachedIndex) {
           setLoading(true)
         }
 
-        watchListService.getAll().then((userWatchlists) => {
+        watchListService.getAll(false, { signal: controller.signal }).then((userWatchlists) => {
           if (isMounted) setWatchlists(userWatchlists || [])
         }).catch(() => [])
 
@@ -205,7 +206,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
             setSecurities([...(progressiveData.holdings || [])])
             setLoading(false) // Dismiss loader immediately as soon as chunk 1 arrives (< 50ms)!
           }
-        })
+        }, false, controller.signal)
 
         // The progressive callback can be missed when React replays effects in
         // development or when another caller already owns the in-flight request.
@@ -216,9 +217,9 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
           setSecurities([...(finalData.holdings || [])])
           setLoading(false)
         }
-      } catch (error) {
-        console.error(error)
-        if (isMounted && !cachedIndex) {
+      } catch (error: any) {
+        if (error?.name !== 'AbortError') console.error(error)
+        if (isMounted && !cachedIndex && error?.name !== 'AbortError') {
           toast({
             variant: 'destructive',
             title: 'Indice temporairement indisponible',
@@ -234,6 +235,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
     fetchData()
     return () => {
       isMounted = false
+      controller.abort()
     }
   }, [symbol, toast])
 

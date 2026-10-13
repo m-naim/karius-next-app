@@ -52,6 +52,7 @@ export function MarketIndexSparkline({ symbol, period = '1y', initialData }: Mar
 
   useEffect(() => {
     let isMounted = true
+    const controller = new AbortController()
 
     if (historyCache.has(cacheKey)) {
       setData(historyCache.get(cacheKey)!)
@@ -69,7 +70,7 @@ export function MarketIndexSparkline({ symbol, period = '1y', initialData }: Mar
 
     const fetchHistory = async () => {
       try {
-        const historyData = await getStockHistory([symbol], fetchPeriod)
+        const historyData = await getStockHistory([symbol], fetchPeriod, { signal: controller.signal })
         const symbolHistory = historyData[symbol] || []
         if (symbolHistory.length > 0) {
           const formatted = symbolHistory.map((item: any) => {
@@ -94,7 +95,9 @@ export function MarketIndexSparkline({ symbol, period = '1y', initialData }: Mar
           }
         }
       } catch (error) {
-        console.error(`Failed to fetch history for ${symbol}`, error)
+        if (!controller.signal.aborted) {
+          console.error(`Failed to fetch history for ${symbol}`, error)
+        }
       } finally {
         if (isMounted) setLoading(false)
       }
@@ -103,6 +106,7 @@ export function MarketIndexSparkline({ symbol, period = '1y', initialData }: Mar
 
     return () => {
       isMounted = false
+      controller.abort()
     }
   }, [symbol, fetchPeriod, cacheKey])
 

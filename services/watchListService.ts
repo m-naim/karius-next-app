@@ -2,6 +2,7 @@ import config from './config'
 import http from './http'
 
 const host = config.API_URL
+type RequestOptions = { signal?: AbortSignal }
 
 const watchlistCache = new Map<string, { data: any; timestamp: number }>()
 const inFlightWatchlists = new Map<string, Promise<any>>()
@@ -10,7 +11,7 @@ const CACHE_TTL_MS = 60 * 1000 // 1 minute
 let allWatchlistsCache: { data: any; timestamp: number } | null = null
 let inFlightAllWatchlists: Promise<any> | null = null
 
-export async function getAll(forceRefresh = false) {
+export async function getAll(forceRefresh = false, options: RequestOptions = {}) {
   if (typeof window !== 'undefined' && !localStorage.getItem('accessToken')) {
     return []
   }
@@ -25,7 +26,7 @@ export async function getAll(forceRefresh = false) {
 
   inFlightAllWatchlists = (async () => {
     try {
-      const data = await http.get(`${host}/api/v1/watchlists/`)
+      const data = await http.get(`${host}/api/v1/watchlists/`, options)
       allWatchlistsCache = { data, timestamp: Date.now() }
       return data
     } finally {

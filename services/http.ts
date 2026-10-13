@@ -76,8 +76,12 @@ async function CheckError(response: Response) {
   throw new HttpError(response.status, errorMessage, errorData)
 }
 
+function isAbortError(err: any) {
+  return err?.name === 'AbortError'
+}
+
 function handleNetworkError(err: any) {
-  if (!(err instanceof HttpError) && typeof window !== 'undefined') {
+  if (!isAbortError(err) && !(err instanceof HttpError) && typeof window !== 'undefined') {
     toast({
       variant: 'destructive',
       title: 'Connexion interrompue',
@@ -115,7 +119,7 @@ function post(path: string, body: any) {
     })
 }
 
-function get(path: string) {
+function get(path: string, options: { signal?: AbortSignal } = {}) {
   return fetch(`${path}`, {
     credentials: 'omit',
     headers: {
@@ -125,6 +129,7 @@ function get(path: string) {
     },
     method: 'GET',
     mode: 'cors',
+    signal: options.signal,
   })
     .then(CheckError)
     .catch((err) => {

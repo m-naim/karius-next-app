@@ -16,10 +16,75 @@ export interface IndexComposition {
 }
 
 const memoryCache = new Map<string, { data: IndexComposition; timestamp: number; isComplete: boolean }>()
-const inFlightProgressive = new Map<string, Promise<IndexComposition>>()
+type InFlightProgressive = {
+  promise: Promise<IndexComposition>
+  controller: AbortController
+  consumers: number
+}
+
+const inFlightProgressive = new Map<string, InFlightProgressive>()
 const CACHE_TTL_MS = 60 * 1000 // 1 minute fresh cache
 const CHUNK_SIZE = 100
 const MAX_PAGINATION_PAGES = 100
+const PREFETCH_DELAY_MS = 350
+
+let activePrefetchKey: string | null = null
+
+function isAbortError(error: unknown): boolean {
+  return (error as { name?: string } | null)?.name === 'AbortError'
+}
+
+function createAbortError(): Error {
+  if (typeof DOMException !== 'undefined') {
+    return new DOMException('The request was aborted', 'AbortError')
+  }
+
+  const error = new Error('The request was aborted')
+  error.name = 'AbortError'
+  return error
+}
+
+function withAbort<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
+  if (!signal) return promise
+  if (signal.aborted) return Promise.reject(createAbortError())
+
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = () => {
+      cleanup()
+      reject(createAbortError())
+    }
+
+    const cleanup = () => signal.removeEventListener('abort', onAbort)
+
+    signal.addEventListener('abort', onAbort, { once: true })
+    promise.then(
+      (value) => {
+        cleanup()
+        resolve(value)
+      },
+      (error) => {
+        cleanup()
+        reject(error)
+      }
+    )
+  })
+}
+
+function subscribeToProgressiveRequest(entry: InFlightProgressive, signal?: AbortSignal) {
+  entry.consumers += 1
+  let released = false
+
+  const release = () => {
+    if (released) return
+    released = true
+    entry.consumers -= 1
+    if (entry.consumers === 0 && !entry.controller.signal.aborted) {
+      entry.controller.abort()
+    }
+  }
+
+  return withAbort(entry.promise, signal).finally(release)
+}
 
 function getNumericPageValue(page: any, keys: string[], fallback: number): number {
   for (const key of keys) {
@@ -40,19 +105,30 @@ function pageHasMore(page: any, offset: number, requestedLimit: number, totalHol
   return explicitHasMore === true || explicitHasMore === 'true' || inferredHasMore
 }
 
-export async function getChunk(symbol: string, offset = 0, limit = CHUNK_SIZE): Promise<any> {
+export async function getChunk(
+  symbol: string,
+  offset = 0,
+  limit = CHUNK_SIZE,
+  signal?: AbortSignal
+): Promise<any> {
   return http.get(
-    `${host}/api/v1/index?symbol=${encodeURIComponent(symbol)}&offset=${offset}&limit=${limit}`
+    `${host}/api/v1/index?symbol=${encodeURIComponent(symbol)}&offset=${offset}&limit=${limit}`,
+    { signal }
   )
 }
 
 export async function getProgressive(
   symbol: string,
   onProgress?: (data: IndexComposition, isComplete: boolean) => void,
-  forceRefresh = false
+  forceRefresh = false,
+  signal?: AbortSignal
 ): Promise<IndexComposition> {
   const cacheKey = symbol.toUpperCase()
   const cached = memoryCache.get(cacheKey)
+
+  if (signal?.aborted) {
+    throw createAbortError()
+  }
 
   // Return fresh full data from memory cache immediately (0ms)
   if (!forceRefresh && cached && cached.isComplete && Date.now() - cached.timestamp < CACHE_TTL_MS) {
@@ -61,18 +137,19 @@ export async function getProgressive(
   }
 
   // Prevent duplicate concurrent requests (deduplication)
-  if (inFlightProgressive.has(cacheKey)) {
-    const activePromise = inFlightProgressive.get(cacheKey)!
+  const activeRequest = inFlightProgressive.get(cacheKey)
+  if (activeRequest) {
     if (cached && onProgress) {
       onProgress(cached.data, cached.isComplete)
     }
-    return activePromise
+    return subscribeToProgressiveRequest(activeRequest, signal)
   }
 
+  const controller = new AbortController()
   const promise = (async () => {
     try {
       // 1. Fetch initial chunk fast (e.g. first 100 holdings)
-      const firstChunk = await getChunk(symbol, 0, CHUNK_SIZE)
+      const firstChunk = await getChunk(symbol, 0, CHUNK_SIZE, controller.signal)
       const firstHoldings = Array.isArray(firstChunk.holdings) ? firstChunk.holdings : []
       const firstPageOffset = getNumericPageValue(firstChunk, ['offset', 'start'], 0)
       const firstPageLimit = getNumericPageValue(firstChunk, ['limit', 'pageSize', 'page_size'], CHUNK_SIZE)
@@ -111,7 +188,7 @@ export async function getProgressive(
 
         while (hasMore && currentOffset < totalHoldings && pagesFetched < MAX_PAGINATION_PAGES) {
           try {
-            const nextChunk = await getChunk(symbol, currentOffset, CHUNK_SIZE)
+            const nextChunk = await getChunk(symbol, currentOffset, CHUNK_SIZE, controller.signal)
             const newHoldings = (nextChunk.holdings || []).filter(
               (h: any) => h && h.symbol && !seenSymbols.has(h.symbol)
             )
@@ -141,6 +218,7 @@ export async function getProgressive(
             const nextOffset = nextPageOffset + nextPageLimit
             currentOffset = nextOffset > currentOffset ? nextOffset : currentOffset + CHUNK_SIZE
           } catch (chunkErr) {
+            if (isAbortError(chunkErr)) throw chunkErr
             console.warn(`Failed to fetch chunk at offset ${currentOffset} for ${symbol}:`, chunkErr)
             break
           }
@@ -149,16 +227,20 @@ export async function getProgressive(
 
       return composition
     } finally {
-      inFlightProgressive.delete(cacheKey)
+      const currentRequest = inFlightProgressive.get(cacheKey)
+      if (currentRequest?.controller === controller) {
+        inFlightProgressive.delete(cacheKey)
+      }
     }
   })()
 
-  inFlightProgressive.set(cacheKey, promise)
-  return promise
+  const request: InFlightProgressive = { promise, controller, consumers: 0 }
+  inFlightProgressive.set(cacheKey, request)
+  return subscribeToProgressiveRequest(request, signal)
 }
 
-export async function get(symbol: string, forceRefresh = false): Promise<IndexComposition> {
-  return getProgressive(symbol, undefined, forceRefresh)
+export async function get(symbol: string, forceRefresh = false, signal?: AbortSignal): Promise<IndexComposition> {
+  return getProgressive(symbol, undefined, forceRefresh, signal)
 }
 
 export function getCached(symbol: string): IndexComposition | null {
@@ -169,10 +251,18 @@ export function getCached(symbol: string): IndexComposition | null {
 export function prefetch(symbol: string): void {
   const cacheKey = symbol.toUpperCase()
   const cached = memoryCache.get(cacheKey)
-  if (!cached || Date.now() - cached.timestamp >= CACHE_TTL_MS) {
-    getProgressive(symbol).catch(() => {})
-  }
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) return
+  if (activePrefetchKey && activePrefetchKey !== cacheKey) return
+
+  activePrefetchKey = cacheKey
+  getProgressive(symbol)
+    .catch(() => {})
+    .finally(() => {
+      if (activePrefetchKey === cacheKey) activePrefetchKey = null
+    })
 }
+
+export { PREFETCH_DELAY_MS }
 
 const marketService = {
   get,

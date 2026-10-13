@@ -14,13 +14,13 @@ import {
   LineChart,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MarketIndexSparkline, populateHistoryCache } from '@/components/molecules/market/MarketIndexSparkline'
+import { MarketIndexSparkline } from '@/components/molecules/market/MarketIndexSparkline'
 import { MarketTopFlop, MarketBreadthStats } from '@/components/molecules/market/MarketTopFlop'
 import { MarketVixCockpit } from '@/components/molecules/market/MarketVixCockpit'
 import { MarketBreadthAndSectors } from '@/components/molecules/market/MarketBreadthAndSectors'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
-import { getQuotes, getStocksVariations, getStockHistory } from '@/services/stock.service'
-import marketService from '@/services/marketService'
+import { getQuotes, getStocksVariations } from '@/services/stock.service'
+import marketService, { PREFETCH_DELAY_MS } from '@/services/marketService'
 import watchListService from '@/services/watchListService'
 import { getStoredMarketOverview, saveStoredMarketOverview } from '@/services/marketCache'
 import { cn } from '@/lib/utils'
@@ -115,6 +115,31 @@ export default function MarketListingPage() {
     quotes: Record<string, any>
     variations: Record<string, Record<string, number>>
   }>({ quotes: {}, variations: {} })
+  const prefetchTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
+
+  const cancelMarketPrefetch = (symbol: string) => {
+    const timer = prefetchTimersRef.current.get(symbol)
+    if (timer) {
+      clearTimeout(timer)
+      prefetchTimersRef.current.delete(symbol)
+    }
+  }
+
+  const scheduleMarketPrefetch = (symbol: string) => {
+    cancelMarketPrefetch(symbol)
+    const timer = setTimeout(() => {
+      prefetchTimersRef.current.delete(symbol)
+      marketService.prefetch(symbol)
+    }, PREFETCH_DELAY_MS)
+    prefetchTimersRef.current.set(symbol, timer)
+  }
+
+  useEffect(() => {
+    return () => {
+      prefetchTimersRef.current.forEach((timer) => clearTimeout(timer))
+      prefetchTimersRef.current.clear()
+    }
+  }, [])
 
   // Read stored cache immediately upon mounting on client (post-hydration, 0ms)
   useEffect(() => {
@@ -131,13 +156,14 @@ export default function MarketListingPage() {
 
   useEffect(() => {
     let isMounted = true
+    const controller = new AbortController()
     const symbols = MARKETS.map((m) => m.symbol)
 
     const fetchMarketOverview = async () => {
       try {
         const [quotesData, userWatchlists] = await Promise.all([
-          getQuotes(symbols).catch(() => []),
-          watchListService.getAll().catch(() => []),
+          getQuotes(symbols, false, { signal: controller.signal }).catch(() => []),
+          watchListService.getAll(false, { signal: controller.signal }).catch(() => []),
         ])
 
         if (!isMounted) return
@@ -162,18 +188,19 @@ export default function MarketListingPage() {
     fetchMarketOverview()
     return () => {
       isMounted = false
+      controller.abort()
     }
   }, [])
 
   useEffect(() => {
     let isMounted = true
+    const controller = new AbortController()
     const symbols = MARKETS.map((m) => m.symbol)
 
     const fetchPeriodData = async () => {
-      const [variationsData, batchHistory] = await Promise.all([
-        getStocksVariations(symbols).catch(() => []),
-        getStockHistory(symbols, selectedPeriod === '1d' ? '1w' : selectedPeriod).catch(() => ({})),
-      ])
+      const variationsData = selectedPeriod === '1d'
+        ? []
+        : await getStocksVariations(symbols, false, { signal: controller.signal }).catch(() => [])
 
       if (!isMounted) return
 
@@ -189,18 +216,16 @@ export default function MarketListingPage() {
         saveStoredMarketOverview(marketOverviewRef.current.quotes, variationMap)
       }
 
-      if (batchHistory && typeof batchHistory === 'object') {
-        Object.entries(batchHistory).forEach(([symbol, history]) => {
-          if (Array.isArray(history) && history.length > 0) {
-            populateHistoryCache(symbol, selectedPeriod, history)
-          }
-        })
-      }
     }
 
-    fetchPeriodData().catch((error) => console.error('Failed to load market period data:', error))
+    fetchPeriodData().catch((error) => {
+      if (!controller.signal.aborted) {
+        console.error('Failed to load market period data:', error)
+      }
+    })
     return () => {
       isMounted = false
+      controller.abort()
     }
   }, [selectedPeriod])
 
@@ -285,7 +310,8 @@ export default function MarketListingPage() {
             <button
               key={market.symbol}
               onClick={() => setActiveMarket(market)}
-              onMouseEnter={() => market.symbol !== '^VIX' && marketService.prefetch(market.symbol)}
+              onMouseEnter={() => market.symbol !== '^VIX' && scheduleMarketPrefetch(market.symbol)}
+              onMouseLeave={() => cancelMarketPrefetch(market.symbol)}
               aria-pressed={isActive}
               className={cn(
                 'relative flex min-h-12 min-w-0 items-center justify-between rounded-lg border px-2 py-1.5 text-left transition-all duration-150 sm:min-h-14 sm:px-2.5 sm:py-2',
@@ -376,7 +402,8 @@ export default function MarketListingPage() {
         {!isVix ? (
           <Link
             href={`/app/market/${encodeURIComponent(activeMarket.symbol)}`}
-            onMouseEnter={() => marketService.prefetch(activeMarket.symbol)}
+            onMouseEnter={() => scheduleMarketPrefetch(activeMarket.symbol)}
+            onMouseLeave={() => cancelMarketPrefetch(activeMarket.symbol)}
             className="w-full sm:w-auto"
           >
             <span className="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-center text-xs font-bold leading-tight text-primary-foreground shadow-xs transition-all hover:bg-primary/90 sm:w-auto">

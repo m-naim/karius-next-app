@@ -43,6 +43,7 @@ export function MarketTopFlop({
 
   useEffect(() => {
     let isMounted = true
+    const controller = new AbortController()
 
     // If we have stored stats, deliver them immediately
     const stored = topFlopComputedCache.get(cacheKey) || getStoredTopFlop(symbol, period)
@@ -141,9 +142,11 @@ export function MarketTopFlop({
           if (!progressiveData || !progressiveData.holdings) return
           holdingsCache.set(symbol, progressiveData.holdings)
           processHoldings(progressiveData.holdings)
-        })
-      } catch (error) {
-        console.error('Failed to load top/flop for', symbol, error)
+        }, false, controller.signal)
+      } catch (error: any) {
+        if (error?.name !== 'AbortError') {
+          console.error('Failed to load top/flop for', symbol, error)
+        }
       } finally {
         if (isMounted) setLoading(false)
       }
@@ -153,6 +156,7 @@ export function MarketTopFlop({
 
     return () => {
       isMounted = false
+      controller.abort()
     }
   }, [symbol, period, cacheKey, onStatsLoaded])
 
