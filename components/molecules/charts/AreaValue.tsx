@@ -56,8 +56,9 @@ export function AreaValue({ data, unit = '€' }: AreaValueProps) {
               data.datasets[0].label || '',
             ]}
             contentStyle={{
-              backgroundColor: 'white',
-              border: '1px solid #f0f0f0',
+              backgroundColor: 'hsl(var(--popover))',
+              border: '1px solid hsl(var(--border))',
+              color: 'hsl(var(--popover-foreground))',
               borderRadius: '6px',
               padding: '8px 12px',
             }}

@@ -418,7 +418,13 @@ export default function CalculateurMensualite() {
                           name === 'Intérêts' ? payload.percentInterets : payload.percentPrincipal
                         return [`${value.toLocaleString()} € (${percent}%)`, name]
                       }}
-                      contentStyle={{ fontSize: '12px', borderRadius: '8px' }}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--popover))',
+                        border: '1px solid hsl(var(--border))',
+                        color: 'hsl(var(--popover-foreground))',
+                        fontSize: '12px',
+                        borderRadius: '8px',
+                      }}
                     />
                     <Legend iconSize={10} wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
                     <Bar name="Principal" dataKey="principal" stackId="a" fill="#10b981" />
@@ -452,7 +458,13 @@ export default function CalculateurMensualite() {
                     <YAxis fontSize={10} tickFormatter={(v) => `${v / 1000}k€`} />
                     <Tooltip
                       formatter={(v) => `${v.toLocaleString()} €`}
-                      contentStyle={{ fontSize: '12px', borderRadius: '8px' }}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--popover))',
+                        border: '1px solid hsl(var(--border))',
+                        color: 'hsl(var(--popover-foreground))',
+                        fontSize: '12px',
+                        borderRadius: '8px',
+                      }}
                     />
                     <Area
                       name="Cumul frais"
@@ -490,7 +502,13 @@ export default function CalculateurMensualite() {
                     <YAxis fontSize={10} tickFormatter={(v) => `${v / 1000}k€`} />
                     <Tooltip
                       formatter={(v) => `${v.toLocaleString()} €`}
-                      contentStyle={{ fontSize: '12px', borderRadius: '8px' }}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--popover))',
+                        border: '1px solid hsl(var(--border))',
+                        color: 'hsl(var(--popover-foreground))',
+                        fontSize: '12px',
+                        borderRadius: '8px',
+                      }}
                     />
                     <Area
                       name="Capital restant"

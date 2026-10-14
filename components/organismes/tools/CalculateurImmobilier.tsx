@@ -440,7 +440,12 @@ export default function CalculateurImmobilier() {
                     <XAxis dataKey="year" fontSize={10} />
                     <YAxis tickFormatter={(v) => `${v / 1000}k`} fontSize={10} />
                     <Tooltip
-                      contentStyle={{ fontSize: '10px' }}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--popover))',
+                        border: '1px solid hsl(var(--border))',
+                        color: 'hsl(var(--popover-foreground))',
+                        fontSize: '10px',
+                      }}
                       formatter={(v) => `${v.toLocaleString()} €`}
                     />
                     <Area
@@ -485,7 +490,12 @@ export default function CalculateurImmobilier() {
                     <XAxis dataKey="year" fontSize={10} />
                     <YAxis tickFormatter={(v) => `${v / 1000}k`} fontSize={10} />
                     <Tooltip
-                      contentStyle={{ fontSize: '10px' }}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--popover))',
+                        border: '1px solid hsl(var(--border))',
+                        color: 'hsl(var(--popover-foreground))',
+                        fontSize: '10px',
+                      }}
                       formatter={(v) => `${v.toLocaleString()} €`}
                     />
                     <Legend iconSize={8} wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />

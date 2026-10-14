@@ -334,7 +334,14 @@ export function PortfolioFundamentalsOverview({ portfolioId }: { portfolioId: st
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border/60" />
                     <XAxis dataKey="label" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
                     <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} width={34} />
-                    <Tooltip formatter={(value) => typeof value === 'number' ? value.toFixed(1) + ' (base 100)' : '—'} />
+                    <Tooltip
+                      formatter={(value) => typeof value === 'number' ? value.toFixed(1) + ' (base 100)' : '—'}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--popover))',
+                        border: '1px solid hsl(var(--border))',
+                        color: 'hsl(var(--popover-foreground))',
+                      }}
+                    />
                     <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
                     <Line type="monotone" dataKey="Prix" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 3 }} connectNulls />
                     <Line type="monotone" dataKey="CA" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} connectNulls />

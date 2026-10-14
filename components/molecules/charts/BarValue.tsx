@@ -70,14 +70,15 @@ export function BarValue({ data, unit = '' }: BarValueProps) {
           <Tooltip
             formatter={(value: number, name: string) => [`${formatValue(value)}${unit}`, name]}
             contentStyle={{
-              backgroundColor: 'white',
-              border: '1px solid #f0f0f0',
+              backgroundColor: 'hsl(var(--popover))',
+              border: '1px solid hsl(var(--border))',
+              color: 'hsl(var(--popover-foreground))',
               borderRadius: '6px',
               padding: '8px 12px',
               zIndex: 50,
               fontSize: '11px',
             }}
-            cursor={{ fill: 'rgba(0, 0, 0, 0.04)' }}
+            cursor={{ fill: 'hsl(var(--muted))', opacity: 0.35 }}
           />
           {data.datasets.length > 1 && (
             <Legend

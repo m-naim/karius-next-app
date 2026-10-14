@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    color-scheme: light;
     --background: 0 0% 100%;
     --foreground: 224 71.4% 4.1%;
 
@@ -36,32 +37,33 @@
   }
 
   .dark {
-    --background: 0 0% 12%; /* #1e1e1e */
-    --foreground: 0 0% 80%; /* #cccccc */
+    color-scheme: dark;
+    --background: 240 10% 4%; /* #0a0a0b */
+    --foreground: 240 5% 96%; /* #f3f3f4 */
 
-    --card: 240 1% 15%; /* #252526 */
-    --card-foreground: 0 0% 80%; /* #cccccc */
+    --card: 240 8% 7%; /* #111113 */
+    --card-foreground: 240 5% 96%;
 
-    --popover: 240 1% 15%;
-    --popover-foreground: 0 0% 80%;
+    --popover: 240 8% 6%; /* #0f0f11 */
+    --popover-foreground: 240 5% 96%;
 
     --primary: 263.4 70% 50.4%; /* Purple */
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 240 5% 23%; /* #37373d */
-    --secondary-foreground: 0 0% 80%;
+    --secondary: 240 5% 14%; /* #232326 */
+    --secondary-foreground: 240 5% 92%;
 
-    --muted: 240 5% 23%;
-    --muted-foreground: 0 0% 60%; /* #999999 */
+    --muted: 240 5% 12%; /* #1f1f22 */
+    --muted-foreground: 240 5% 66%; /* #a5a5ab */
 
-    --accent: 240 5% 23%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 240 5% 16%; /* #29292c */
+    --accent-foreground: 240 5% 98%;
 
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 24%; /* #3c3c3c */
-    --input: 0 0% 24%;
+    --border: 240 5% 20%; /* #303034 */
+    --input: 240 5% 20%;
     --ring: 263.4 70% 50.4%;
   }
 }
