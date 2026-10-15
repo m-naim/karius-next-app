@@ -24,6 +24,8 @@ type TrendPoint = {
   price?: number | null
   revenue?: number | null
   freeCashFlow?: number | null
+  revenuePerShare?: number | null
+  freeCashFlowPerShare?: number | null
   revenueGrowthPercent?: number | null
   freeCashFlowGrowthPercent?: number | null
   priceGrowthPercent?: number | null
@@ -38,15 +40,16 @@ type SecurityTrend = {
 }
 
 type FundamentalsResponse = {
+  baseCurrency?: string | null
   securities: SecurityTrend[]
 }
 
 type AggregatePoint = {
   label: string
   fiscalDate: string
-  Prix?: number | null
-  CA?: number | null
-  FCF?: number | null
+  Cours?: number | null
+  CAParAction?: number | null
+  FCFParAction?: number | null
   couverture: number
 }
 
@@ -61,27 +64,19 @@ type AggregateBucket = {
   symbols: Set<string>
 }
 
-const formatPercent = (value?: number | null) => {
+const formatMoney = (value?: number | null, currency = 'EUR') => {
   if (value == null || !Number.isFinite(value)) return '—'
-  return (value >= 0 ? '+' : '') + value.toFixed(1) + ' %'
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency,
+    currencyDisplay: 'narrowSymbol',
+    maximumFractionDigits: 2,
+  }).format(value)
 }
 
-const formatIndex = (value?: number | null) => {
-  if (value == null || !Number.isFinite(value)) return '—'
-  return value.toFixed(1)
-}
-
-const positiveStart = (points: TrendPoint[], key: 'revenue' | 'freeCashFlow' | 'price') =>
-  points.find((point) => {
-    const value = point[key]
-    return value != null && Number.isFinite(value) && value > 0
-  })?.[key]
-
-const normalize = (value: number | null | undefined, start: number | null | undefined) => {
-  if (value == null || start == null || !Number.isFinite(value) || !Number.isFinite(start) || start <= 0 || value <= 0) {
-    return null
-  }
-  return Math.round((value / start) * 1000) / 10
+const formatMoneyDelta = (value?: number | null, currency = 'EUR') => {
+  if (value == null || !Number.isFinite(value)) return undefined
+  return `Écart historique ${value >= 0 ? '+' : ''}${formatMoney(value, currency)}`
 }
 
 const addWeighted = (target: WeightedValue, value: number | null, weight: number) => {
@@ -90,8 +85,8 @@ const addWeighted = (target: WeightedValue, value: number | null, weight: number
   target.weight += weight
 }
 
-const weightedAverage = (value: WeightedValue) =>
-  value.weight > 0 ? Math.round((value.sum / value.weight) * 10) / 10 : null
+const weightedContribution = (value: WeightedValue) =>
+  value.weight > 0 ? value.sum : null
 
 function LoadingState() {
   return (
@@ -148,11 +143,8 @@ export function PortfolioFundamentalsOverview({ portfolioId }: { portfolioId: st
 
     securities.forEach((security) => {
       const weight = Number.isFinite(security.weightPercent) && (security.weightPercent || 0) > 0
-        ? security.weightPercent as number
-        : 100 / available
-      const revenueStart = positiveStart(security.points, 'revenue')
-      const freeCashFlowStart = positiveStart(security.points, 'freeCashFlow')
-      const priceStart = positiveStart(security.points, 'price')
+        ? (security.weightPercent as number) / 100
+        : 1 / available
 
       security.points.forEach((point) => {
         const key = point.fiscalDate || point.label
@@ -164,14 +156,18 @@ export function PortfolioFundamentalsOverview({ portfolioId }: { portfolioId: st
           freeCashFlow: { sum: 0, weight: 0 },
           symbols: new Set<string>(),
         }
-        const price = normalize(point.price, priceStart)
-        const revenue = normalize(point.revenue, revenueStart)
-        const freeCashFlow = normalize(point.freeCashFlow, freeCashFlowStart)
+        const price = point.price != null && Number.isFinite(point.price) ? point.price : null
+        const revenuePerShare = point.revenuePerShare != null && Number.isFinite(point.revenuePerShare)
+          ? point.revenuePerShare
+          : null
+        const freeCashFlowPerShare = point.freeCashFlowPerShare != null && Number.isFinite(point.freeCashFlowPerShare)
+          ? point.freeCashFlowPerShare
+          : null
 
-        if (price != null || revenue != null || freeCashFlow != null) bucket.symbols.add(security.symbol)
+        if (price != null || revenuePerShare != null || freeCashFlowPerShare != null) bucket.symbols.add(security.symbol)
         addWeighted(bucket.price, price, weight)
-        addWeighted(bucket.revenue, revenue, weight)
-        addWeighted(bucket.freeCashFlow, freeCashFlow, weight)
+        addWeighted(bucket.revenue, revenuePerShare, weight)
+        addWeighted(bucket.freeCashFlow, freeCashFlowPerShare, weight)
         buckets.set(key, bucket)
       })
     })
@@ -181,34 +177,34 @@ export function PortfolioFundamentalsOverview({ portfolioId }: { portfolioId: st
       .map((bucket) => ({
         label: bucket.label,
         fiscalDate: bucket.fiscalDate,
-        Prix: weightedAverage(bucket.price),
-        CA: weightedAverage(bucket.revenue),
-        FCF: weightedAverage(bucket.freeCashFlow),
+        Cours: weightedContribution(bucket.price),
+        CAParAction: weightedContribution(bucket.revenue),
+        FCFParAction: weightedContribution(bucket.freeCashFlow),
         couverture: bucket.symbols.size,
       }))
   }, [securities])
 
   const securityChartData = useMemo(() => {
     if (!selectedSecurity) return []
-    const points = selectedSecurity.points
-    const revenueStart = positiveStart(points, 'revenue')
-    const freeCashFlowStart = positiveStart(points, 'freeCashFlow')
-    const priceStart = positiveStart(points, 'price')
 
-    return points.map((point) => ({
+    return selectedSecurity.points.map((point) => ({
       label: point.label,
       fiscalDate: point.fiscalDate,
-      Prix: normalize(point.price, priceStart),
-      CA: normalize(point.revenue, revenueStart),
-      FCF: normalize(point.freeCashFlow, freeCashFlowStart),
+      Cours: point.price,
+      CAParAction: point.revenuePerShare,
+      FCFParAction: point.freeCashFlowPerShare,
       couverture: 1,
     }))
   }, [selectedSecurity])
 
   const chartData = viewMode === 'portfolio' ? aggregateData : securityChartData
-  const hasFcfChart = chartData.some((point) => point.FCF != null)
-  const latestAggregate = aggregateData[aggregateData.length - 1]
-  const firstAggregate = aggregateData[0]
+  const currency = data?.baseCurrency || 'EUR'
+  const hasFcfChart = chartData.some((point) => point.FCFParAction != null)
+  const latestPoint = chartData[chartData.length - 1]
+  const firstPoint = chartData[0]
+
+  const formatChartMoney = (value: unknown) =>
+    typeof value === 'number' ? formatMoney(value, currency) : '—'
 
   const summary = useMemo(() => {
     const withData = securities.filter((security) => security.points.length > 0)
@@ -258,7 +254,7 @@ export function PortfolioFundamentalsOverview({ portfolioId }: { portfolioId: st
             <h2 className="text-base font-bold tracking-tight">Fondamentaux vs prix</h2>
           </div>
           <p className="mt-1 max-w-3xl text-xs text-muted-foreground">
-            Vue agrégée des lignes du portefeuille. Chaque action est indexée à 100 puis pondérée par son poids actuel pour comparer la trajectoire du CA, du FCF et du cours.
+            Valeurs monétaires agrégées avec le poids actuel de chaque ligne : cours × poids, CA/action × poids et FCF/action × poids. Aucune base 100.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -301,10 +297,24 @@ export function PortfolioFundamentalsOverview({ portfolioId }: { portfolioId: st
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
         <SummaryItem label="Positions" value={String(summary.total)} detail={summary.withData + ' avec historique'} />
-        <SummaryItem label="CA en hausse" value={summary.revenueGrowing + '/' + summary.withData} tone="positive" />
-        <SummaryItem label="FCF en hausse" value={summary.fcfGrowing + '/' + summary.withData} tone="positive" />
-        <SummaryItem label="CA portefeuille" value={formatIndex(latestAggregate?.CA)} detail={firstAggregate ? 'base 100 · ' + formatPercent((latestAggregate?.CA || 100) - 100) : undefined} tone={latestAggregate?.CA != null && latestAggregate.CA >= 100 ? 'positive' : undefined} />
-        <SummaryItem label="Prix portefeuille" value={formatIndex(latestAggregate?.Prix)} detail={firstAggregate ? 'base 100 · ' + formatPercent((latestAggregate?.Prix || 100) - 100) : undefined} tone={latestAggregate?.Prix != null && latestAggregate.Prix >= 100 ? 'positive' : undefined} />
+        <SummaryItem
+          label={viewMode === 'portfolio' ? 'Cours pondéré' : 'Cours'}
+          value={formatMoney(latestPoint?.Cours, currency)}
+          detail={firstPoint ? formatMoneyDelta((latestPoint?.Cours ?? 0) - (firstPoint.Cours ?? 0), currency) : undefined}
+        />
+        <SummaryItem
+          label={viewMode === 'portfolio' ? 'CA/action pondéré' : 'CA/action'}
+          value={formatMoney(latestPoint?.CAParAction, currency)}
+          detail={firstPoint ? formatMoneyDelta((latestPoint?.CAParAction ?? 0) - (firstPoint.CAParAction ?? 0), currency) : undefined}
+          tone="positive"
+        />
+        <SummaryItem
+          label={viewMode === 'portfolio' ? 'FCF/action pondéré' : 'FCF/action'}
+          value={formatMoney(latestPoint?.FCFParAction, currency)}
+          detail={firstPoint ? formatMoneyDelta((latestPoint?.FCFParAction ?? 0) - (firstPoint.FCFParAction ?? 0), currency) : undefined}
+          tone="positive"
+        />
+        <SummaryItem label="Couverture" value={viewMode === 'portfolio' ? `${latestPoint?.couverture ?? 0}/${summary.total}` : '1/1'} detail={viewMode === 'portfolio' ? `${summary.revenueGrowing} CA et ${summary.fcfGrowing} FCF en hausse` : selectedSecurity?.symbol} />
       </div>
 
       {chartData.length > 0 ? (
@@ -313,18 +323,18 @@ export function PortfolioFundamentalsOverview({ portfolioId }: { portfolioId: st
             <CardHeader className="flex flex-row items-start justify-between gap-3 border-b border-border/60 bg-muted/20 p-3 sm:p-4">
               <div>
                 <h3 className="text-sm font-bold">
-                  {viewMode === 'portfolio' ? 'Trajectoires agrégées du portefeuille' : (
-                    <>{selectedSecurity?.symbol || 'Ligne'} — trajectoires normalisées</>
+                  {viewMode === 'portfolio' ? 'Valeurs monétaires pondérées du portefeuille' : (
+                    <>{selectedSecurity?.symbol || 'Ligne'} — valeurs monétaires</>
                   )}
                 </h3>
                 <p className="mt-1 text-[11px] text-muted-foreground">
-                  Une valeur supérieure à 100 indique une progression depuis le premier point comparable.
+                  Devise affichée : {currency}. Les agrégats utilisent le poids actuel des positions.
                 </p>
               </div>
               <div className="hidden items-center gap-3 text-[11px] text-muted-foreground sm:flex">
-                <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" />Prix</span>
-                <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-500" />CA</span>
-                <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-amber-500" />FCF</span>
+                <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" />Cours</span>
+                <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-500" />CA/action</span>
+                <span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-amber-500" />FCF/action</span>
               </div>
             </CardHeader>
             <CardContent className="p-3 sm:p-4">
@@ -333,9 +343,15 @@ export function PortfolioFundamentalsOverview({ portfolioId }: { portfolioId: st
                   <LineChart data={chartData} margin={{ top: 10, right: 12, left: -16, bottom: 4 }}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border/60" />
                     <XAxis dataKey="label" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
-                    <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} width={34} />
+                    <YAxis
+                      tick={{ fontSize: 11 }}
+                      tickLine={false}
+                      axisLine={false}
+                      width={54}
+                      tickFormatter={(value) => formatMoney(value, currency)}
+                    />
                     <Tooltip
-                      formatter={(value) => typeof value === 'number' ? value.toFixed(1) + ' (base 100)' : '—'}
+                      formatter={(value) => formatChartMoney(value)}
                       contentStyle={{
                         backgroundColor: 'hsl(var(--popover))',
                         border: '1px solid hsl(var(--border))',
@@ -343,15 +359,15 @@ export function PortfolioFundamentalsOverview({ portfolioId }: { portfolioId: st
                       }}
                     />
                     <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
-                    <Line type="monotone" dataKey="Prix" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 3 }} connectNulls />
-                    <Line type="monotone" dataKey="CA" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} connectNulls />
-                    {hasFcfChart && <Line type="monotone" dataKey="FCF" stroke="#f59e0b" strokeWidth={2} dot={{ r: 3 }} connectNulls />}
+                    <Line type="monotone" dataKey="Cours" name="Cours pondéré" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 3 }} connectNulls />
+                    <Line type="monotone" dataKey="CAParAction" name="CA/action pondéré" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} connectNulls />
+                    {hasFcfChart && <Line type="monotone" dataKey="FCFParAction" name="FCF/action pondéré" stroke="#f59e0b" strokeWidth={2} dot={{ r: 3 }} connectNulls />}
                   </LineChart>
                 </ResponsiveContainer>
               </div>
               {!hasFcfChart && (
                 <p className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                  <Info className="h-3.5 w-3.5" /> Le FCF est négatif ou incomplet sur cette période : sa courbe indexée n’est pas affichée.
+                  <Info className="h-3.5 w-3.5" /> Le FCF/action est incomplet sur cette période : sa courbe n’est pas affichée.
                 </p>
               )}
             </CardContent>
@@ -359,16 +375,16 @@ export function PortfolioFundamentalsOverview({ portfolioId }: { portfolioId: st
 
           <Card className="overflow-hidden border-border bg-card shadow-sm">
             <CardHeader className="border-b border-border/60 bg-muted/20 p-3 sm:p-4">
-              <h3 className="text-sm font-bold">Détail des trajectoires</h3>
+              <h3 className="text-sm font-bold">Détail des valeurs monétaires</h3>
             </CardHeader>
             <CardContent className="overflow-x-auto p-0">
               <table className="w-full min-w-[680px] text-xs">
                 <thead className="bg-muted/30 text-left text-[10px] uppercase tracking-wide text-muted-foreground">
                   <tr>
                     <th className="px-4 py-3 font-semibold">Exercice</th>
-                    <th className="px-4 py-3 text-right font-semibold">CA index</th>
-                    <th className="px-4 py-3 text-right font-semibold">FCF index</th>
-                    <th className="px-4 py-3 text-right font-semibold">Prix index</th>
+                    <th className="px-4 py-3 text-right font-semibold">CA/action</th>
+                    <th className="px-4 py-3 text-right font-semibold">FCF/action</th>
+                    <th className="px-4 py-3 text-right font-semibold">Cours</th>
                     {viewMode === 'portfolio' && <th className="px-4 py-3 text-right font-semibold">Couverture</th>}
                   </tr>
                 </thead>
@@ -376,9 +392,9 @@ export function PortfolioFundamentalsOverview({ portfolioId }: { portfolioId: st
                   {chartData.map((point) => (
                     <tr key={point.fiscalDate} className="transition-colors hover:bg-muted/20">
                       <td className="px-4 py-3 font-semibold">{point.label}</td>
-                      <td className="px-4 py-3 text-right tabular-nums">{formatIndex(point.CA)}</td>
-                      <td className="px-4 py-3 text-right tabular-nums">{formatIndex(point.FCF)}</td>
-                      <td className="px-4 py-3 text-right tabular-nums">{formatIndex(point.Prix)}</td>
+                      <td className="px-4 py-3 text-right tabular-nums">{formatMoney(point.CAParAction, currency)}</td>
+                      <td className="px-4 py-3 text-right tabular-nums">{formatMoney(point.FCFParAction, currency)}</td>
+                      <td className="px-4 py-3 text-right tabular-nums">{formatMoney(point.Cours, currency)}</td>
                       {viewMode === 'portfolio' && <td className="px-4 py-3 text-right tabular-nums">{point.couverture}/{summary.total}</td>}
                     </tr>
                   ))}
@@ -388,8 +404,8 @@ export function PortfolioFundamentalsOverview({ portfolioId }: { portfolioId: st
           </Card>
 
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5 text-[11px] text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5"><TrendingUp className="h-3.5 w-3.5 text-emerald-500" />CA/FCF et prix sont pondérés par le poids des lignes</span>
-            <span className="inline-flex items-center gap-1.5"><TrendingDown className="h-3.5 w-3.5 text-rose-500" />Une valeur sous 100 indique une baisse depuis la base</span>
+            <span className="inline-flex items-center gap-1.5"><TrendingUp className="h-3.5 w-3.5 text-emerald-500" />Chaque valeur = valeur par action × poids de la ligne</span>
+            <span className="inline-flex items-center gap-1.5"><TrendingDown className="h-3.5 w-3.5 text-rose-500" />Les valeurs sont monétaires, pas indexées à 100</span>
           </div>
         </>
       ) : (

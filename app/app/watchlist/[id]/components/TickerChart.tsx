@@ -292,10 +292,14 @@ export function TickerChart({
   }, [fullHistory, selectedRange, period, symbol, selectedBenchmarks, isDrawdown])
 
   const handleBenchmarkChange = (benchmarkSymbol: string) => {
+    const isSelected = selectedBenchmarks.includes(benchmarkSymbol)
+    if (!isSelected) {
+      // Benchmark series are normalized around 0% and can contain negative
+      // values, which are not valid on a logarithmic axis.
+      setIsLogarithmic(false)
+    }
     setSelectedBenchmarks((prev) =>
-      prev.includes(benchmarkSymbol)
-        ? prev.filter((s) => s !== benchmarkSymbol)
-        : [...prev, benchmarkSymbol]
+      isSelected ? prev.filter((s) => s !== benchmarkSymbol) : [...prev, benchmarkSymbol]
     )
   }
 
@@ -402,16 +406,11 @@ export function TickerChart({
                 {showCompDropdown && compResults.length > 0 && (
                   <div className="absolute right-0 top-8 z-50 w-48 rounded-md border bg-card p-1 shadow-lg max-h-48 overflow-y-auto">
                     {compResults.map((res: any) => {
-                      const isAdded = selectedBenchmarks.includes(res.symbol)
                       return (
                         <button
                           key={res.symbol}
                           onClick={() => {
-                            if (!isAdded) {
-                              setSelectedBenchmarks(prev => [...prev, res.symbol])
-                            } else {
-                              setSelectedBenchmarks(prev => prev.filter(s => s !== res.symbol))
-                            }
+                            handleBenchmarkChange(res.symbol)
                             setCompQuery('')
                             setShowCompDropdown(false)
                           }}
@@ -430,11 +429,16 @@ export function TickerChart({
                   variant={isLogarithmic ? 'default' : 'outline'}
                   size="sm"
                   className="h-9 min-w-11 px-2 text-[10px] font-bold uppercase tracking-tight"
+                  title={
+                    selectedBenchmarks.length > 0
+                      ? 'L’échelle logarithmique est indisponible avec une comparaison en pourcentage'
+                      : 'Afficher l’échelle logarithmique'
+                  }
                   onClick={() => {
                     setIsLogarithmic(!isLogarithmic)
                     if (isDrawdown) setIsDrawdown(false)
                   }}
-                  disabled={isDrawdown}
+                  disabled={isDrawdown || selectedBenchmarks.length > 0}
                 >
                   Log
                 </Button>

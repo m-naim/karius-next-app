@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Column, sortingFns } from '@tanstack/react-table'
+import { Column } from '@tanstack/react-table'
 import { ChevronUp, ArrowUpDown, ChevronDown, ListFilterIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -50,6 +50,8 @@ export interface PortfolioSecurity {
   currency?: string
   nativeBep?: number
   shortname?: string
+  regularMarketChangePercent?: number | null
+  variations?: Record<string, number>
 }
 
 type FiltrProps = {
@@ -113,6 +115,14 @@ const PercentCell = ({ value }: { value: unknown }) => {
   const percent = asPercent(value)
   if (percent == null) return <div className="font-mono tabular-nums text-muted-foreground">—</div>
   return <VariationContainer value={percent} entity="%" background={false} className="m-0 p-0" />
+}
+
+const getPeriodVariation = (row: PortfolioSecurity, selectedPeriod?: string): number | undefined => {
+  const value = !selectedPeriod || selectedPeriod === '1d'
+    ? row.regularMarketChangePercent
+    : row.variations?.[selectedPeriod]
+
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined
 }
 
 export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCurrency = false, own = true): any[] => {
@@ -276,53 +286,54 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
   colList.push(
     {
       accessorFn: (row) => {
-        let chg = row.regularMarketChangePercent
-        if (selectedPeriod != '1d') {
-          const variations = row.variations as Record<string, number>
-          if (variations != null) {
-            chg = variations[selectedPeriod]
-          } else {
-            chg = -10000
-          }
-        }
-        return chg
+        return getPeriodVariation(row, selectedPeriod)
       },
       id: 'variation',
       header: SortingButton('Variation', false),
       cell: ({ row }) => {
-        let chg = row.original.dailyVariationPercent
-
-        if (selectedPeriod != '1d') {
-          const variations = row.original?.variations as Record<string, number>
-          chg = variations != null ? variations[selectedPeriod] : NaN
-        }
+        const chg = getPeriodVariation(row.original, selectedPeriod)
+        const portfolioImpact = chg != null && Number.isFinite(row.original.weight)
+          ? chg * row.original.weight
+          : undefined
 
         return (
-          <div className="flex flex-col">
-            <VariationContainer
-              value={chg}
-              entity="%"
-              background={false}
-              className="m-0 p-0 py-0"
-            />
-            {own && (
-              <VariationContainer
-                value={chg * row.original.weight}
-                entity="%"
-                background={false}
-                className="m-0 p-0 py-0"
-              />
+          <div className="flex min-w-[92px] flex-col gap-0.5">
+            {chg == null ? (
+              <span className="font-mono text-xs text-muted-foreground">—</span>
+            ) : (
+              <div className="flex items-center gap-1">
+                <span className="text-[9px] font-medium uppercase text-muted-foreground">Cours</span>
+                <VariationContainer
+                  value={chg}
+                  entity="%"
+                  background={false}
+                  className="m-0 p-0"
+                />
+              </div>
+            )}
+            {own && portfolioImpact != null && (
+              <div className="flex items-center gap-1">
+                <span className="text-[9px] font-medium uppercase text-muted-foreground">Impact</span>
+                <VariationContainer
+                  value={portfolioImpact}
+                  entity="%"
+                  background={false}
+                  className="m-0 p-0 text-[10px]"
+                />
+              </div>
             )}
           </div>
         )
       },
-      sortingFns: (rowA, rowB) => {
-        const varA = selectedPeriod !== '1d' ? (rowA.original?.variations?.[selectedPeriod] ?? NaN) : (rowA.original?.regularMarketChangePercent ?? 0)
-        const varB = selectedPeriod !== '1d' ? (rowB.original?.variations?.[selectedPeriod] ?? NaN) : (rowB.original?.regularMarketChangePercent ?? 0)
-        const a = (isNaN(varA) ? -10000 : varA) * (rowA.original?.weight ?? 0)
-        const b = (isNaN(varB) ? -10000 : varB) * (rowB.original?.weight ?? 0)
-        return a - b
+      sortingFn: (rowA, rowB) => {
+        const varA = getPeriodVariation(rowA.original, selectedPeriod)
+        const varB = getPeriodVariation(rowB.original, selectedPeriod)
+        if (varA == null && varB == null) return 0
+        if (varA == null) return 1
+        if (varB == null) return -1
+        return varA - varB
       },
+      sortUndefined: 'last',
     },
     {
       accessorFn: (row) => row.qualityMetrics?.revenueGrowth5yAvg,

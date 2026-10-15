@@ -131,11 +131,18 @@ export function LineValue({ data, unit = '€', isLogarithmic = false, transacti
       .filter(Boolean) as any[]
   }, [transactions, data.labels, data.datasets])
 
-  const allYValues = data.datasets.flatMap((set) => set.data).filter((v) => v != null)
-  const minValue = Math.min(...allYValues)
+  const allYValues = data.datasets
+    .flatMap((set) => set.data)
+    .filter((v): v is number => typeof v === 'number' && Number.isFinite(v))
+  const minValue = allYValues.length > 0 ? Math.min(...allYValues) : 0
+
+  // Logarithmic axes cannot represent zero or negative values. This can
+  // happen with benchmark comparison series, which are expressed as returns
+  // around 0%. Fall back to a linear axis instead of rendering an empty chart.
+  const canUseLogarithmicScale = isLogarithmic && allYValues.length > 0 && allYValues.every((v) => v > 0)
 
   // Domain handling
-  const domain = isLogarithmic
+  const domain = canUseLogarithmicScale
     ? minValue > 0
       ? ['auto', 'auto']
       : [0.01, 'auto']
@@ -187,7 +194,7 @@ export function LineValue({ data, unit = '€', isLogarithmic = false, transacti
             tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10, fontWeight: 500 }}
             tickFormatter={(value) => `${value.toLocaleString('fr-FR')}${unit}`}
             domain={domain as any}
-            scale={isLogarithmic ? 'log' : 'auto'}
+            scale={canUseLogarithmicScale ? 'log' : 'auto'}
             width={60}
           />
           <Tooltip

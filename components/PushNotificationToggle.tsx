@@ -32,7 +32,6 @@ export function PushNotificationToggle({ onSubscriptionChange }: { onSubscriptio
         if (!cancelled) {
           const isActive = Boolean(subscription)
           setActive(isActive)
-          onSubscriptionChange?.(isActive)
         }
       } catch (error) {
         console.warn('Unable to inspect browser push subscription', error)
@@ -96,11 +95,12 @@ export function PushNotificationToggle({ onSubscriptionChange }: { onSubscriptio
   const sendTestNotification = async () => {
     setLoading(true)
     try {
+      await alertService.syncCurrentBrowserSubscription()
       await alertService.testBrowserNotification()
       toast({ title: 'Notification de test envoyée', description: 'Vérifiez votre centre de notifications.' })
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to send browser notification test:', error)
-      toast({ title: 'Échec du test', description: 'Activez d’abord les notifications navigateur sur cet appareil.', variant: 'destructive' })
+      toast({ title: 'Échec du test', description: error?.message || 'Activez d’abord les notifications navigateur sur cet appareil.', variant: 'destructive' })
     } finally {
       setLoading(false)
     }

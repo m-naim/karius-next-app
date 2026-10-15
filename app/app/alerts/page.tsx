@@ -226,11 +226,12 @@ export default function AlertsPage() {
   const handleTestNotification = async () => {
     if (settings.channel === 'browser') {
       try {
+        await alertService.syncCurrentBrowserSubscription()
         await alertService.testBrowserNotification()
         toast({ title: 'Notification de test envoyée', description: 'Vérifiez votre centre de notifications navigateur.' })
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to test browser notification:', error)
-        toast({ variant: 'destructive', title: 'Échec du test', description: 'Activez d’abord les notifications navigateur sur cet appareil.' })
+        toast({ variant: 'destructive', title: 'Échec du test', description: error?.message || 'Activez d’abord les notifications navigateur sur cet appareil.' })
       }
       return
     }
@@ -813,7 +814,7 @@ export default function AlertsPage() {
                         size="sm"
                         className="w-full gap-2 text-xs font-bold"
                         onClick={handleTestNotification}
-                        disabled={updatingSettings}
+                        disabled={updatingSettings || !settings.browserPushEnabled}
                       >
                         <Send className="h-3.5 w-3.5" /> Envoyer un test navigateur
                       </Button>
