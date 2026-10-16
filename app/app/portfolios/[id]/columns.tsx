@@ -51,6 +51,7 @@ export interface PortfolioSecurity {
   currency?: string
   nativeBep?: number
   shortname?: string
+  dailyVariationPercent?: number | null
   regularMarketChangePercent?: number | null
   variations?: Record<string, number>
 }
@@ -175,7 +176,7 @@ const PercentCell = ({ value }: { value: unknown }) => {
 
 const getPeriodVariation = (row: PortfolioSecurity, selectedPeriod?: string): number | undefined => {
   const value = !selectedPeriod || selectedPeriod === '1d'
-    ? row.regularMarketChangePercent
+    ? row.variations?.['1d'] ?? row.dailyVariationPercent ?? row.regularMarketChangePercent
     : row.variations?.[selectedPeriod]
 
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined
