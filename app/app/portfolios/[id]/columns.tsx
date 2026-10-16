@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { Column } from '@tanstack/react-table'
-import { ChevronUp, ArrowUpDown, ChevronDown, ListFilterIcon } from 'lucide-react'
+import { ChevronUp, ArrowUpDown, ChevronDown, Info, ListFilterIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { round10 } from '@/lib/decimalAjustement'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { genericNumericFilterFn } from '@/lib/table-filters'
@@ -58,6 +59,53 @@ type FiltrProps = {
   column: Column<PortfolioSecurity>
 }
 
+const COLUMN_DESCRIPTIONS: Record<string, string> = {
+  'Produit x Quantité': 'Ticker de la position et quantité détenue. La quantité est masquée pour les portefeuilles publics.',
+  Produit: 'Ticker et nom de l’action ou de l’ETF.',
+  Poids: 'Part actuelle de cette position dans la valeur totale du portefeuille. Le montant affiché dessous est la valeur de la ligne.',
+  Cours: 'Dernier prix de marché connu, dans la devise sélectionnée.',
+  'P/E': 'Prix de l’action rapporté au bénéfice par action des douze derniers mois. Plus bas peut indiquer une valorisation moindre, mais le ratio dépend de la qualité des bénéfices.',
+  'P/E Fwd': 'Prix de l’action rapporté au bénéfice par action attendu sur les prochains mois.',
+  'P/S': 'Prix rapporté au chiffre d’affaires : capitalisation boursière divisée par le chiffre d’affaires annuel.',
+  Yield: 'Rendement annuel du dividende rapporté au cours actuel.',
+  Capitalisation: 'Valeur totale des actions cotées de l’entreprise.',
+  ROA: 'Rentabilité des actifs : résultat généré par rapport au total des actifs.',
+  ROE: 'Rentabilité des capitaux propres : résultat généré par rapport aux fonds propres.',
+  PRU: 'Prix de revient unitaire moyen de vos achats, hors impact des ventes.',
+  Retour: 'Performance depuis votre prix de revient : montant latent puis pourcentage latent.',
+  Variation: 'Variation du cours sur la période sélectionnée. La ligne « Impact » estime sa contribution au portefeuille selon le poids de la position.',
+  'Croissance CA (5a)': 'Croissance annuelle moyenne du chiffre d’affaires sur les cinq dernières années disponibles.',
+  'ROIC (5a)': 'Rentabilité moyenne du capital investi sur les cinq dernières années disponibles.',
+  'PE (5a proxy)': 'P/E indicatif calculé avec le bénéfice par action moyen des cinq dernières années.',
+  'Linéarité 10a': 'Régularité de la trajectoire du cours sur dix ans. Une valeur élevée indique une progression plus régulière.',
+  Secteur: 'Grande catégorie économique de l’entreprise.',
+  Industrie: 'Sous-secteur d’activité plus précis.',
+  Fondamentaux: 'Indique si des données financières historiques sont disponibles pour cette position.',
+}
+
+const HeaderTooltip = ({ title, children }: { title: string; children?: React.ReactNode }) => {
+  const description = COLUMN_DESCRIPTIONS[title]
+  if (!description) return <>{children || title}</>
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span
+          tabIndex={0}
+          className="inline-flex items-center gap-1 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label={`À propos de ${title}`}
+        >
+          {children || title}
+          <Info className="h-3 w-3 shrink-0 text-muted-foreground/70" aria-hidden="true" />
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-xs text-xs leading-relaxed">
+        {description}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
 const FilterButton = ({ column }: FiltrProps) => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
@@ -78,21 +126,29 @@ const FilterButton = ({ column }: FiltrProps) => (
   </DropdownMenu>
 )
 
-const SortingButton = (title, activateFilter = true) => {
+const SortingButton = (title: string, activateFilter = true) => {
   return function GhostButton({ column }: FiltrProps) {
     return (
-      <div className="flex">
-        <Button
-          className="p-0 capitalize"
-          variant="ghost"
-          aria-label={`Trier par ${title}`}
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          {title}
-          {column.getIsSorted() === 'asc' ? <ChevronUp className="ml-2 h-4 w-4" /> : null}
-          {column.getIsSorted() === 'desc' ? <ChevronDown className="ml-2 h-4 w-4" /> : null}
-          {!column.getIsSorted() ? <ArrowUpDown className="ml-2 h-4 w-4" /> : null}
-        </Button>
+      <div className="flex items-center">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              className="gap-1 p-0 capitalize"
+              variant="ghost"
+              aria-label={`Trier par ${title}. ${COLUMN_DESCRIPTIONS[title] || ''}`}
+              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            >
+              <span>{title}</span>
+              <Info className="h-3 w-3 shrink-0 text-muted-foreground/70" aria-hidden="true" />
+              {column.getIsSorted() === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : null}
+              {column.getIsSorted() === 'desc' ? <ChevronDown className="ml-1 h-4 w-4" /> : null}
+              {!column.getIsSorted() ? <ArrowUpDown className="ml-1 h-4 w-4" /> : null}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-xs text-xs leading-relaxed">
+            {COLUMN_DESCRIPTIONS[title] || `Trier par ${title}.`}
+          </TooltipContent>
+        </Tooltip>
 
         {activateFilter ? <FilterButton column={column}></FilterButton> : null}
       </div>
@@ -238,7 +294,7 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
   if (own) {
     colList.push({
       accessorKey: 'bep',
-      header: 'PRU',
+      header: <HeaderTooltip title="PRU" />,
       cell: ({ row }) => {
         const currencyToUse = useNativeCurrency && row.original.currency ? row.original.currency : baseCurrency
         const symbol = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: currencyToUse }).formatToParts(0).find(p => p.type === 'currency')?.value || '€'
