@@ -146,6 +146,18 @@ export const ALL_COLUMNS_CONFIG: { id: string; label: string; group: string; des
     description: 'PER lissé sur 5 ans : Prix rapporté à la moyenne des bénéfices nets des 5 derniers exercices.',
   },
   {
+    id: 'psGrowth5y',
+    label: 'PEG CA (5a)',
+    group: 'Valuation',
+    description: 'P/S divisé par la croissance moyenne du chiffre d’affaires sur 5 ans, exprimée en points de pourcentage.',
+  },
+  {
+    id: 'peg5y',
+    label: 'PEG BPA (5a)',
+    group: 'Valuation',
+    description: 'P/E divisé par la croissance moyenne du bénéfice par action sur 5 ans, exprimée en points de pourcentage.',
+  },
+  {
     id: 'dividendYield',
     label: 'Rendement Div. (%)',
     group: 'Valuation',

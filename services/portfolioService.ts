@@ -60,6 +60,7 @@ export function add(payload) {
   const body = {
     name: payload.name,
     isPublic: payload.visibility,
+    baseCurrency: payload.baseCurrency,
   }
   return http.post(`${host}/api/v1/portfolios`, body)
 }

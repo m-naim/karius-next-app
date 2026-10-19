@@ -76,6 +76,8 @@ const DEFAULT_PORTFOLIO_VISIBILITY: VisibilityState = {
   revGrowth: false,
   roic: false,
   pe5y: false,
+  psGrowth5y: false,
+  peg5y: false,
   linearity10y: false,
   sector: false,
   industry: false,
@@ -157,6 +159,8 @@ const PORTFOLIO_VIEW_PRESETS: ColumnViewPreset[] = [
       revGrowth: true,
       roic: true,
       pe5y: true,
+      psGrowth5y: true,
+      peg5y: true,
       linearity10y: true,
       sector: true,
       industry: true,
@@ -165,7 +169,7 @@ const PORTFOLIO_VIEW_PRESETS: ColumnViewPreset[] = [
     order: [
       'symbol', 'regularMarketPrice', 'weight', 'bep', 'variationPercent', 'variation',
       'trailingPE', 'forwardPE', 'priceToSales', 'dividendYield', 'marketCap', 'roa', 'roe',
-      'revGrowth', 'roic', 'pe5y', 'linearity10y', 'sector', 'industry', 'hasFundamentals',
+      'revGrowth', 'roic', 'pe5y', 'psGrowth5y', 'peg5y', 'linearity10y', 'sector', 'industry', 'hasFundamentals',
     ],
   },
 ]

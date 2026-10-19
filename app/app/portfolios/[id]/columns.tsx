@@ -78,6 +78,8 @@ const COLUMN_DESCRIPTIONS: Record<string, string> = {
   'Croissance CA (5a)': 'Croissance annuelle moyenne du chiffre d’affaires sur les cinq dernières années disponibles.',
   'ROIC (5a)': 'Rentabilité moyenne du capital investi sur les cinq dernières années disponibles.',
   'PE (5a proxy)': 'P/E indicatif calculé avec le bénéfice par action moyen des cinq dernières années.',
+  'PEG CA (5a)': 'P/S rapporté à la croissance moyenne du chiffre d’affaires sur cinq ans. Plus bas peut indiquer une valorisation plus raisonnable, uniquement si la croissance est positive.',
+  'PEG BPA (5a)': 'P/E rapporté à la croissance moyenne du bénéfice par action sur cinq ans, proche du PEG classique. Plus bas peut indiquer une valorisation plus raisonnable, uniquement si la croissance est positive.',
   'Linéarité 10a': 'Régularité de la trajectoire du cours sur dix ans. Une valeur élevée indique une progression plus régulière.',
   Secteur: 'Grande catégorie économique de l’entreprise.',
   Industrie: 'Sous-secteur d’activité plus précis.',
@@ -172,6 +174,16 @@ const PercentCell = ({ value }: { value: unknown }) => {
   const percent = asPercent(value)
   if (percent == null) return <div className="font-mono tabular-nums text-muted-foreground">—</div>
   return <VariationContainer value={percent} entity="%" background={false} className="m-0 p-0" />
+}
+
+const growthAdjustedMultiple = (multiple: unknown, growth: unknown): number | null => {
+  const parsedMultiple = Number(multiple)
+  const parsedGrowth = Number(growth)
+  if (!Number.isFinite(parsedMultiple) || parsedMultiple <= 0) return null
+  if (!Number.isFinite(parsedGrowth) || parsedGrowth <= 0) return null
+
+  const growthPercent = Math.abs(parsedGrowth) <= 1 ? parsedGrowth * 100 : parsedGrowth
+  return growthPercent > 0 ? parsedMultiple / growthPercent : null
 }
 
 const getPeriodVariation = (row: PortfolioSecurity, selectedPeriod?: string): number | undefined => {
@@ -421,6 +433,26 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
         if (val == null) return <div className="text-muted-foreground">-</div>
         return <div className="font-medium">{val.toFixed(1)}x</div>
       },
+    },
+    {
+      accessorFn: (row) => growthAdjustedMultiple(row.priceToSales, row.qualityMetrics?.revenueGrowth5yAvg),
+      id: 'psGrowth5y',
+      header: SortingButton('PEG CA (5a)'),
+      cell: ({ row }) => {
+        const val = growthAdjustedMultiple(row.original.priceToSales, row.original.qualityMetrics?.revenueGrowth5yAvg)
+        return val == null ? <div className="text-muted-foreground">—</div> : <div className="font-medium">{val.toFixed(1)}x</div>
+      },
+      filterFn: genericNumericFilterFn,
+    },
+    {
+      accessorFn: (row) => growthAdjustedMultiple(row.trailingPE, row.qualityMetrics?.epsGrowth5yAvg),
+      id: 'peg5y',
+      header: SortingButton('PEG BPA (5a)'),
+      cell: ({ row }) => {
+        const val = growthAdjustedMultiple(row.original.trailingPE, row.original.qualityMetrics?.epsGrowth5yAvg)
+        return val == null ? <div className="text-muted-foreground">—</div> : <div className="font-medium">{val.toFixed(1)}x</div>
+      },
+      filterFn: genericNumericFilterFn,
     },
     {
       accessorKey: 'linearity10y',

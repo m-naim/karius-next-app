@@ -10,12 +10,16 @@ export function AnalysisDrawerTitle({ symbol, price, currency }: AnalysisDrawerT
   const numericPrice = Number(price)
   const hasPrice = price != null && Number.isFinite(numericPrice)
   const formattedPrice = hasPrice
-    ? new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: currency || 'EUR',
-        currencyDisplay: 'narrowSymbol',
-        maximumFractionDigits: 2,
-      }).format(numericPrice)
+    ? currency
+      ? new Intl.NumberFormat('fr-FR', {
+          style: 'currency',
+          currency,
+          currencyDisplay: 'narrowSymbol',
+          maximumFractionDigits: 2,
+        }).format(numericPrice)
+      : new Intl.NumberFormat('fr-FR', {
+          maximumFractionDigits: 2,
+        }).format(numericPrice)
     : null
 
   return (
