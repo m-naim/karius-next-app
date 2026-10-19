@@ -10,7 +10,7 @@ import { percentVariation, calculateMedian } from '@/lib/math'
 import { security } from 'app/app/watchlist/[id]/data/security'
 import { cn } from '@/lib/utils'
 import { genericNumericFilterFn } from '@/lib/table-filters'
-import { growthAdjustedMultiple } from '@/lib/valuation-metrics'
+import { growthAdjustedMultiple, priceToSalesMultiple } from '@/lib/valuation-metrics'
 
 type FiltrProps = {
   column: Column<security, string>
@@ -276,11 +276,7 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
       filterFn: genericNumericFilterFn,
     },
     {
-      accessorFn: (row) => {
-        const marketCap = Number(row.marketCap)
-        const revenue = Number(row.lastYearFundamental?.totalRevenue)
-        return marketCap > 0 && revenue > 0 ? marketCap / revenue : null
-      },
+      accessorFn: (row) => priceToSalesMultiple(row.marketCap, row.lastYearFundamental?.totalRevenue),
       id: 'priceToSales',
       header: SortingButton('P/S', true),
       footer: (info) => {
@@ -726,7 +722,10 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
       filterFn: genericNumericFilterFn,
     },
     {
-      accessorFn: (row) => growthAdjustedMultiple(row.priceToSales, row.qualityMetrics?.revenueGrowth5yAvg),
+      accessorFn: (row) => growthAdjustedMultiple(
+        priceToSalesMultiple(row.marketCap, row.lastYearFundamental?.totalRevenue),
+        row.qualityMetrics?.revenueGrowth5yAvg
+      ),
       id: 'psGrowth5y',
       header: SortingButton('PEG CA (5a)', true),
       footer: (info) => {

@@ -15,3 +15,12 @@ export const growthAdjustedMultiple = (multiple: unknown, growth: unknown): numb
   const growthPercent = Math.abs(parsedGrowth) <= 1 ? parsedGrowth * 100 : parsedGrowth
   return growthPercent > 0 ? parsedMultiple / growthPercent : null
 }
+
+/** Returns P/S from the market-cap and trailing-revenue fields used by lists. */
+export const priceToSalesMultiple = (marketCap: unknown, revenue: unknown): number | null => {
+  const parsedMarketCap = Number(marketCap)
+  const parsedRevenue = Number(revenue)
+  if (!Number.isFinite(parsedMarketCap) || parsedMarketCap <= 0) return null
+  if (!Number.isFinite(parsedRevenue) || parsedRevenue <= 0) return null
+  return parsedMarketCap / parsedRevenue
+}
