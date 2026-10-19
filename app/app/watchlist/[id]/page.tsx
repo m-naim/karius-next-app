@@ -57,6 +57,8 @@ const DEFAULT_WATCHLIST_VISIBILITY: VisibilityState = {
   revGrowth: false,
   roic: false,
   pe5y: false,
+  psGrowth5y: false,
+  peg5y: false,
 }
 import { TableView } from './components/TableView'
 import { WatchlistSelector } from './components/WatchlistSelector'

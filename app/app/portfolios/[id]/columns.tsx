@@ -16,6 +16,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { round10 } from '@/lib/decimalAjustement'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { genericNumericFilterFn } from '@/lib/table-filters'
+import { growthAdjustedMultiple } from '@/lib/valuation-metrics'
 
 
 // Fonction pour obtenir les initiales
@@ -174,16 +175,6 @@ const PercentCell = ({ value }: { value: unknown }) => {
   const percent = asPercent(value)
   if (percent == null) return <div className="font-mono tabular-nums text-muted-foreground">—</div>
   return <VariationContainer value={percent} entity="%" background={false} className="m-0 p-0" />
-}
-
-const growthAdjustedMultiple = (multiple: unknown, growth: unknown): number | null => {
-  const parsedMultiple = Number(multiple)
-  const parsedGrowth = Number(growth)
-  if (!Number.isFinite(parsedMultiple) || parsedMultiple <= 0) return null
-  if (!Number.isFinite(parsedGrowth) || parsedGrowth <= 0) return null
-
-  const growthPercent = Math.abs(parsedGrowth) <= 1 ? parsedGrowth * 100 : parsedGrowth
-  return growthPercent > 0 ? parsedMultiple / growthPercent : null
 }
 
 const getPeriodVariation = (row: PortfolioSecurity, selectedPeriod?: string): number | undefined => {

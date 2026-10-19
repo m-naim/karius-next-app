@@ -24,6 +24,7 @@ export interface security {
   relativePerformances: Record<string, number>
   trailingPE: number
   forwardPE: number
+  priceToSales?: number
   currency: string
   weight?: number
   linearity10y: number

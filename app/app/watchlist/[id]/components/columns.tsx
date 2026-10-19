@@ -11,6 +11,7 @@ import VariationContainer from '@/components/molecules/portfolio/variationContai
 import { round10 } from '@/lib/decimalAjustement'
 import { percentVariation, cagrFromVariation, calculateMedian } from '@/lib/math'
 import { genericNumericFilterFn } from '@/lib/table-filters'
+import { growthAdjustedMultiple } from '@/lib/valuation-metrics'
 
 type FiltrProps = {
   column: Column<security, string>
@@ -29,6 +30,8 @@ const COLUMN_DESCRIPTIONS: Record<string, string> = {
   'P/E Fwd': 'PER estimé à 12 mois (Prix / Bénéfices futurs attendus)',
   'P/S': 'Price-to-Sales : capitalisation boursière rapportée au chiffre d’affaires annuel',
   'PE (5a proxy)': 'PER moyen lissé sur 5 ans (bénéfices moyens 5 ans)',
+  'PEG CA (5a)': 'P/S divisé par la croissance moyenne du chiffre d’affaires sur 5 ans, exprimée en points de pourcentage',
+  'PEG BPA (5a)': 'P/E divisé par la croissance moyenne du bénéfice par action sur 5 ans, exprimée en points de pourcentage',
   'Linéarité (10a)': 'Régularité et constance de la hausse du cours sur 10 ans (R²)',
   'Score (Ret×Lin)': 'Score Horus combinant rendement annuel moyen et linéarité',
   'Yield': 'Rendement du dividende brut annuel (Dividende / Prix)',
@@ -741,6 +744,44 @@ export const columns = (
         const val = row.original.qualityMetrics?.pe5yAvgProxy
         if (val == null) return <div className="text-[11px] text-muted-foreground">N/A</div>
         return <div className="lowercase text-[11px] font-medium">{val.toFixed(1)}x</div>
+      },
+      filterFn: genericNumericFilterFn,
+    },
+    {
+      accessorFn: (row) => growthAdjustedMultiple(row.priceToSales, row.qualityMetrics?.revenueGrowth5yAvg),
+      id: 'psGrowth5y',
+      header: SortingButton('PEG CA (5a)'),
+      footer: (info) => {
+        const vals = info.table.getFilteredRowModel().rows
+          .map((r) => r.getValue('psGrowth5y') as number)
+          .filter((v) => v != null && !isNaN(v))
+        const med = calculateMedian(vals)
+        return med != null ? <div className="lowercase text-[10px] font-medium">{med.toFixed(1)}x</div> : null
+      },
+      cell: ({ row }) => {
+        const val = row.getValue('psGrowth5y') as number
+        return val == null || isNaN(val)
+          ? <div className="text-[11px] text-muted-foreground">N/A</div>
+          : <div className="lowercase text-[11px] font-medium">{val.toFixed(1)}x</div>
+      },
+      filterFn: genericNumericFilterFn,
+    },
+    {
+      accessorFn: (row) => growthAdjustedMultiple(row.trailingPE, row.qualityMetrics?.epsGrowth5yAvg),
+      id: 'peg5y',
+      header: SortingButton('PEG BPA (5a)'),
+      footer: (info) => {
+        const vals = info.table.getFilteredRowModel().rows
+          .map((r) => r.getValue('peg5y') as number)
+          .filter((v) => v != null && !isNaN(v))
+        const med = calculateMedian(vals)
+        return med != null ? <div className="lowercase text-[10px] font-medium">{med.toFixed(1)}x</div> : null
+      },
+      cell: ({ row }) => {
+        const val = row.getValue('peg5y') as number
+        return val == null || isNaN(val)
+          ? <div className="text-[11px] text-muted-foreground">N/A</div>
+          : <div className="lowercase text-[11px] font-medium">{val.toFixed(1)}x</div>
       },
       filterFn: genericNumericFilterFn,
     },
