@@ -485,6 +485,7 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
         selectedTicker ? (
           <TickerChart
             symbol={selectedTicker}
+            compact
             tags={data?.securities.find((sec) => sec.symbol === selectedTicker)?.tags || []}
             allAvailableTags={allAvailableTags}
             onTagsChange={(newTags) => onTagsChangeForSymbol(selectedTicker, newTags)}

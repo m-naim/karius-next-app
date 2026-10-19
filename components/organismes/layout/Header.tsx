@@ -1,10 +1,12 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import siteMetadata from '@/data/siteMetadata'
 import headerNavLinks from '@/data/headerNavLinks'
 import Link from '../../atoms/Link'
 import MobileNav from './MobileNav'
 import ThemeSwitch from './ThemeSwitch'
+import StockCommand from '@/components/molecules/stocks/StockCommand'
 import { Button } from '../../ui/button'
 import { Avatar, AvatarFallback } from '../../ui/avatar'
 import {
@@ -20,6 +22,19 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/tooltip'
 
 const Header = () => {
   const { user } = useAuth()
+  const [stockCommandOpen, setStockCommandOpen] = useState(false)
+
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        setStockCommandOpen(true)
+      }
+    }
+
+    window.addEventListener('keydown', handleShortcut)
+    return () => window.removeEventListener('keydown', handleShortcut)
+  }, [])
 
   const primaryLinks = headerNavLinks.filter(
     (link) => !link.draft && ['/app/portfolios', '/app/watchlist', '/app/market'].includes(link.href)
@@ -80,13 +95,19 @@ const Header = () => {
           {user && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" asChild className="h-8 w-8">
-                  <Link href="/app/stocks" aria-label="Rechercher une action">
-                    <Search className="h-4 w-4" />
-                  </Link>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  aria-label="Rechercher une action"
+                  onClick={() => setStockCommandOpen(true)}
+                >
+                  <Search className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent><p>Rechercher une action</p></TooltipContent>
+              <TooltipContent>
+                <p>Rechercher une action · ⌘K</p>
+              </TooltipContent>
             </Tooltip>
           )}
           {user && (
@@ -125,9 +146,10 @@ const Header = () => {
               </Link>
             </div>
           )}
-          <MobileNav />
+          <MobileNav onOpenSearch={() => setStockCommandOpen(true)} />
         </div>
       </div>
+      <StockCommand open={stockCommandOpen} onOpenChange={setStockCommandOpen} />
     </header>
   )
 }

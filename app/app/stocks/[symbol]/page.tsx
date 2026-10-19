@@ -1,27 +1,15 @@
 'use client'
 
-import React, { useEffect, useState, useRef } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import React, { useEffect, useState } from 'react'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { getStock, search } from '@/services/stock.service'
+import { getStock } from '@/services/stock.service'
 import { TickerChart } from '../../watchlist/[id]/components/TickerChart'
 import SecurityImage from '@/components/atoms/SecurityImage'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Search, Loader2, TrendingUp, TrendingDown, X } from 'lucide-react'
-import { useDebouncedCallback } from 'use-debounce'
-import { motion, AnimatePresence } from 'framer-motion'
-
-interface Security {
-  quoteType: string
-  symbol: string
-  shortname: string
-  exchange: string
-  longname?: string
-  fullExchangeName: string
-}
+import { ArrowLeft, Loader2, TrendingUp, TrendingDown } from 'lucide-react'
 
 interface StockDetails {
   symbol: string
@@ -38,19 +26,11 @@ interface StockDetails {
 
 export default function StockDetailPage() {
   const params = useParams()
-  const router = useRouter()
   const symbol = (params?.symbol as string)?.toUpperCase() || ''
 
   const [stock, setStock] = useState<StockDetails | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
-
-  // Mini search bar states
-  const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<Security[]>([])
-  const [searchLoading, setSearchLoading] = useState(false)
-  const [showDropdown, setShowDropdown] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!symbol) return
@@ -73,53 +53,6 @@ export default function StockDetailPage() {
         setLoading(false)
       })
   }, [symbol])
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowDropdown(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [])
-
-  const handleMiniSearch = async (value: string) => {
-    if (value.trim().length < 1) {
-      setSearchResults([])
-      setSearchLoading(false)
-      return
-    }
-
-    setSearchLoading(true)
-    try {
-      const data: Security[] = await search(value)
-      setSearchResults(data || [])
-    } catch (err) {
-      console.error('Failed to search in mini bar:', err)
-    } finally {
-      setSearchLoading(false)
-    }
-  }
-
-  const debouncedMiniSearch = useDebouncedCallback(handleMiniSearch, 300)
-
-  const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value
-    setSearchQuery(val)
-    setShowDropdown(true)
-    debouncedMiniSearch(val)
-  }
-
-  const selectStock = (newSymbol: string) => {
-    setSearchQuery('')
-    setSearchResults([])
-    setShowDropdown(false)
-    router.push(`/app/stocks/${newSymbol.toUpperCase()}`)
-  }
 
   if (loading) {
     return (
@@ -154,138 +87,71 @@ export default function StockDetailPage() {
     )
   }
 
-  const isPositive = (stock.regularMarketChangePercent || 0) >= 0
-  const formattedPrice = new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: stock.currency || 'EUR',
-  }).format(stock.regularMarketPrice || 0)
+  const hasPrice = typeof stock.regularMarketPrice === 'number' && Number.isFinite(stock.regularMarketPrice)
+  const hasChange =
+    typeof stock.regularMarketChange === 'number' &&
+    Number.isFinite(stock.regularMarketChange) &&
+    typeof stock.regularMarketChangePercent === 'number' &&
+    Number.isFinite(stock.regularMarketChangePercent)
+  const isPositive = hasChange && (stock.regularMarketChangePercent || 0) >= 0
+  const formattedPrice = hasPrice
+    ? new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: stock.currency || 'EUR',
+      }).format(stock.regularMarketPrice as number)
+    : '— €'
 
   const changeSign = isPositive ? '+' : ''
-  const formattedChange = `${changeSign}${(stock.regularMarketChange || 0).toFixed(2)} (${changeSign}${(stock.regularMarketChangePercent || 0).toFixed(2)}%)`
+  const formattedChange = hasChange
+    ? `${changeSign}${stock.regularMarketChange?.toFixed(2)} (${changeSign}${stock.regularMarketChangePercent?.toFixed(2)}%)`
+    : 'Cours indisponible'
 
   return (
-    <div className="container mx-auto space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-      {/* Header Bar */}
-      <div className="flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
+    <div className="container mx-auto space-y-5 px-4 pb-20 pt-5 sm:space-y-6 sm:px-6 sm:py-8 lg:px-8">
+      {/* Stock identity and quote */}
+      <div className="border-b pb-5 sm:pb-6">
+        <div className="flex items-start gap-3">
           <Button variant="ghost" size="icon" asChild className="h-9 w-9">
             <Link href="/app/stocks">
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </Button>
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border bg-card shadow-sm">
+          <div className="flex min-w-0 flex-1 items-start gap-3" title={stock.longname || stock.shortname}>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border bg-card">
               <SecurityImage symbol={stock.symbol} />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl font-black tracking-tight text-foreground sm:text-2xl">
-                  {stock.longname || stock.shortname}
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <h1 className="truncate py-0 text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+                  {stock.shortname || stock.longname}
                 </h1>
                 <Badge variant="secondary" className="font-mono text-xs">
                   {stock.symbol}
                 </Badge>
               </div>
-              <p className="text-xs text-muted-foreground">{stock.exchange}</p>
+              <p className="mb-0 mt-1 truncate text-xs text-muted-foreground">
+                {stock.symbol} · {stock.exchange}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Real-time Price and Mini Search */}
-        <div className="flex flex-wrap items-center gap-4 sm:justify-end">
-          {/* Price details */}
-          <div className="text-left sm:text-right">
-            <div className="text-2xl font-black text-foreground">{formattedPrice}</div>
-            <div
-              className={`flex items-center gap-1 text-sm font-semibold ${
-                isPositive ? 'text-emerald-500' : 'text-rose-500'
-              }`}
-            >
-              {isPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+        {/* Quote and mini search */}
+        <div className="mt-4">
+          <div className="text-left">
+            <div className="text-2xl font-bold text-foreground">{formattedPrice}</div>
+            <div className={`flex items-center gap-1 text-sm font-semibold ${hasChange ? (isPositive ? 'text-emerald-500' : 'text-rose-500') : 'text-muted-foreground'}`}>
+              {hasChange && (isPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />)}
               <span>{formattedChange}</span>
             </div>
           </div>
 
-          {/* Mini Search input with dropdown */}
-          <div className="relative w-full sm:w-64" ref={dropdownRef}>
-            <div className="relative flex items-center rounded-md border bg-card px-3 py-1.5 focus-within:ring-1 focus-within:ring-primary transition-all">
-              <Search className="h-4 w-4 text-muted-foreground mr-2 shrink-0" />
-              <Input
-                type="text"
-                placeholder="Rechercher un autre symbole..."
-                value={searchQuery}
-                onChange={onSearchChange}
-                className="h-7 border-0 bg-transparent p-0 text-sm shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/75"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => {
-                    setSearchQuery('')
-                    setSearchResults([])
-                    setShowDropdown(false)
-                  }}
-                  className="rounded-full p-0.5 hover:bg-muted"
-                >
-                  <X className="h-3 w-3 text-muted-foreground" />
-                </button>
-              )}
-            </div>
-
-            {/* Suggestions Dropdown */}
-            <AnimatePresence>
-              {showDropdown && (searchQuery.trim().length > 0) && (
-                <motion.div
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 5 }}
-                  className="absolute right-0 top-full z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-lg focus:outline-none sm:w-80"
-                >
-                  {searchLoading ? (
-                    <div className="flex items-center justify-center p-4 text-xs text-muted-foreground gap-2">
-                      <Loader2 className="h-3 w-3 animate-spin" /> Rechercher...
-                    </div>
-                  ) : searchResults.length === 0 ? (
-                    <div className="p-4 text-center text-xs text-muted-foreground">
-                      Aucun résultat.
-                    </div>
-                  ) : (
-                    <div className="p-1 divide-y divide-border/40">
-                      {searchResults.map((item) => (
-                        <div
-                          key={`${item.symbol}-${item.exchange}`}
-                          onClick={() => selectStock(item.symbol)}
-                          className="flex cursor-pointer items-center justify-between px-3 py-2 text-xs transition-colors hover:bg-accent hover:text-accent-foreground rounded"
-                        >
-                          <div className="flex items-center gap-2 overflow-hidden">
-                            <SecurityImage symbol={item.symbol} />
-                            <div className="overflow-hidden">
-                              <div className="font-bold truncate">{item.symbol}</div>
-                              <div className="text-[10px] text-muted-foreground truncate max-w-[150px]">
-                                {item.longname || item.shortname}
-                              </div>
-                            </div>
-                          </div>
-                          <Badge variant="outline" className="font-mono text-[9px] scale-90">
-                            {item.exchange}
-                          </Badge>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
         </div>
       </div>
 
       {/* Main Stock Chart Section */}
-      <div className="grid grid-cols-1 gap-6">
-        <Card className="border bg-card/40 shadow-sm">
-          <CardContent className="p-6">
-            <TickerChart symbol={symbol} />
-          </CardContent>
-        </Card>
+      <div className="min-w-0">
+        <TickerChart symbol={symbol} compact />
       </div>
 
       {/* Basic Stock Metadata Grid */}

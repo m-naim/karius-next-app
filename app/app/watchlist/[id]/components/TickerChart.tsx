@@ -14,6 +14,7 @@ import MultiSelectTagDropdown from '@/components/molecules/MultiSelectTagDropdow
 import { PerHistoryChart } from './PerHistoryChart'
 import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
+import { ChevronDown } from 'lucide-react'
 // Define interfaces for data structures
 interface ChartData {
   labels: string[]
@@ -49,6 +50,7 @@ const periodes = [
 
 export function TickerChart({
   symbol,
+  compact = false,
   tags = [],
   allAvailableTags = [],
   onTagsChange,
@@ -57,6 +59,7 @@ export function TickerChart({
   transactions = [],
 }: {
   symbol: string
+  compact?: boolean
   tags?: string[]
   allAvailableTags?: string[]
   onTagsChange?: (newTags: string[]) => void
@@ -304,18 +307,19 @@ export function TickerChart({
   }
 
   return (
-    <div className="flex h-full flex-col overflow-y-auto p-4 md:p-6">
+    <div className={`flex h-full flex-col overflow-y-auto ${compact ? 'p-2 md:p-3' : 'p-4 md:p-6'}`}>
       <Tabs defaultValue="technical" className="flex-1">
-        <TabsList className="mb-4">
+        <TabsList className={compact ? 'mb-2' : 'mb-4'}>
           <TabsTrigger value="technical">Technique</TabsTrigger>
           <TabsTrigger value="fundamental">Fondamental</TabsTrigger>
           <TabsTrigger value="valorisation">Valorisation</TabsTrigger>
           {onTagsChange && <TabsTrigger value="tags">Tags</TabsTrigger>}
         </TabsList>
 
-        <TabsContent value="technical" className="space-y-3">
-          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-            <div className="flex flex-wrap items-center gap-1">
+        <TabsContent value="technical" className={compact ? 'space-y-2' : 'space-y-3'}>
+          <div className={compact ? 'space-y-2' : 'space-y-3'}>
+            <div className={`min-w-0 overflow-x-auto ${compact ? 'pb-0' : 'pb-1'}`}>
+              <div className="flex min-w-max gap-2">
               {periodes.map((p) => {
                 const primaryHistory = fullHistory[symbol] || []
                 const totalAvailableDays =
@@ -346,7 +350,7 @@ export function TickerChart({
                         ? `Seulement ~${Math.round(totalAvailableDays)} jours d'historique disponibles`
                         : undefined
                     }
-                    className={`min-h-9 min-w-10 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
+                    className={`${compact ? 'min-h-8 min-w-9 px-2 text-[11px]' : 'min-h-9 min-w-10 px-2 text-xs'} rounded-md py-1 font-medium transition-colors ${
                       period === p.value
                         ? 'bg-primary text-primary-foreground'
                         : isExceeding
@@ -359,76 +363,93 @@ export function TickerChart({
                   </button>
                 )
               })}
+              </div>
             </div>
 
-            <div className="flex w-full flex-wrap items-center gap-2 border-t pt-2 sm:w-auto sm:gap-4 sm:border-l sm:border-t-0 sm:pl-3 sm:pt-0">
-              {availableBenchmarks.map((bench) => (
-                <div key={bench.symbol} className="flex items-center space-x-1.5">
-                  <Checkbox
-                    id={bench.symbol}
-                    checked={selectedBenchmarks.includes(bench.symbol)}
-                    onCheckedChange={() => handleBenchmarkChange(bench.symbol)}
-                    className="h-3.5 w-3.5"
-                  />
-                  <Label htmlFor={bench.symbol} className="cursor-pointer text-xs font-medium">
-                    {bench.name}
-                  </Label>
-                </div>
-              ))}
-              {selectedBenchmarks
-                .filter(sym => !availableBenchmarks.some(b => b.symbol === sym))
-                .map((sym) => (
-                  <div key={sym} className="flex items-center space-x-1.5 bg-primary/10 rounded-md px-1.5 py-0.5 border border-primary/20">
-                    <Checkbox
-                      id={sym}
-                      checked={true}
-                      onCheckedChange={() => handleBenchmarkChange(sym)}
-                      className="h-3 w-3"
+            <div className="flex flex-wrap items-start gap-2">
+              <details className={`group min-w-0 flex-1 rounded-lg border border-border/60 bg-card/20 ${compact ? 'text-xs' : ''}`}>
+                <summary className={`flex cursor-pointer list-none items-center justify-between gap-3 font-medium [&::-webkit-details-marker]:hidden ${compact ? 'min-h-8 px-2 text-xs' : 'min-h-10 px-3 text-sm'}`}>
+                  <span>
+                    Comparer à
+                    {selectedBenchmarks.length > 0 && (
+                      <span className="ml-1 text-xs text-muted-foreground">({selectedBenchmarks.length})</span>
+                    )}
+                  </span>
+                  <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+                </summary>
+                <div className={`space-y-2 border-t border-border/60 ${compact ? 'px-2 py-2' : 'px-3 py-3'}`}>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                    {availableBenchmarks.map((bench) => (
+                      <div key={bench.symbol} className="flex items-center space-x-1.5">
+                        <Checkbox
+                          id={bench.symbol}
+                          checked={selectedBenchmarks.includes(bench.symbol)}
+                          onCheckedChange={() => handleBenchmarkChange(bench.symbol)}
+                          className="h-3.5 w-3.5"
+                        />
+                        <Label htmlFor={bench.symbol} className="cursor-pointer text-xs font-medium">
+                          {bench.name}
+                        </Label>
+                      </div>
+                    ))}
+                    {selectedBenchmarks
+                      .filter((sym) => !availableBenchmarks.some((b) => b.symbol === sym))
+                      .map((sym) => (
+                        <div key={sym} className="flex items-center space-x-1.5 rounded-md border border-primary/20 bg-primary/10 px-1.5 py-0.5">
+                          <Checkbox
+                            id={sym}
+                            checked={true}
+                            onCheckedChange={() => handleBenchmarkChange(sym)}
+                            className="h-3 w-3"
+                          />
+                          <Label htmlFor={sym} className="cursor-pointer text-[10px] font-bold uppercase text-primary">
+                            {sym}
+                          </Label>
+                        </div>
+                      ))}
+                  </div>
+
+                  <div className="relative max-w-xs">
+                    <input
+                      type="text"
+                      placeholder="Ajouter une comparaison"
+                      aria-label="Ajouter une comparaison"
+                      value={compQuery}
+                      onChange={(e) => {
+                        setCompQuery(e.target.value)
+                        setShowCompDropdown(true)
+                      }}
+                      onFocus={() => setShowCompDropdown(true)}
+                      onBlur={() => setTimeout(() => setShowCompDropdown(false), 200)}
+                      className={`${compact ? 'h-8' : 'h-9'} w-full rounded-md border border-border bg-background px-3 text-xs font-medium outline-none transition-colors placeholder:text-muted-foreground/75 focus:ring-1 focus:ring-primary`}
                     />
-                    <Label htmlFor={sym} className="cursor-pointer text-[10px] font-bold uppercase text-primary">
-                      {sym}
-                    </Label>
+                    {showCompDropdown && compResults.length > 0 && (
+                      <div className="absolute left-0 top-10 z-50 max-h-48 w-full overflow-y-auto rounded-md border bg-card p-1 shadow-lg">
+                        {compResults.map((res: any) => (
+                          <button
+                            key={res.symbol}
+                            onClick={() => {
+                              handleBenchmarkChange(res.symbol)
+                              setCompQuery('')
+                              setShowCompDropdown(false)
+                            }}
+                            className="flex w-full items-center justify-between rounded px-2 py-2 text-left text-xs font-medium hover:bg-muted"
+                          >
+                            <span className="flex-1 truncate pr-1 text-foreground">{res.longname || res.symbol}</span>
+                            <span className="shrink-0 text-[10px] font-bold uppercase text-muted-foreground">{res.symbol}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                ))}
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Comparer..."
-                  value={compQuery}
-                  onChange={(e) => {
-                    setCompQuery(e.target.value)
-                    setShowCompDropdown(true)
-                  }}
-                  onFocus={() => setShowCompDropdown(true)}
-                  onBlur={() => setTimeout(() => setShowCompDropdown(false), 200)}
-                  className="h-7 w-24 rounded-md border border-border bg-background px-2 text-[10px] font-medium outline-none focus:ring-1 focus:ring-primary"
-                />
-                {showCompDropdown && compResults.length > 0 && (
-                  <div className="absolute right-0 top-8 z-50 w-48 rounded-md border bg-card p-1 shadow-lg max-h-48 overflow-y-auto">
-                    {compResults.map((res: any) => {
-                      return (
-                        <button
-                          key={res.symbol}
-                          onClick={() => {
-                            handleBenchmarkChange(res.symbol)
-                            setCompQuery('')
-                            setShowCompDropdown(false)
-                          }}
-                          className="flex w-full items-center justify-between rounded px-2 py-1 text-left text-[10px] font-medium hover:bg-muted"
-                        >
-                          <span className="truncate flex-1 pr-1 text-foreground">{res.longname || res.symbol}</span>
-                          <span className="shrink-0 text-[8px] font-bold text-muted-foreground uppercase">{res.symbol}</span>
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-              <div className="ml-auto flex shrink-0 gap-1 border-l pl-2 sm:pl-3">
+                </div>
+              </details>
+
+              <div className="flex shrink-0 gap-1">
                 <Button
                   variant={isLogarithmic ? 'default' : 'outline'}
                   size="sm"
-                  className="h-9 min-w-11 px-2 text-[10px] font-bold uppercase tracking-tight"
+                  className={`${compact ? 'h-8 min-w-10' : 'h-9 min-w-11'} px-2 text-[10px] font-bold uppercase tracking-tight`}
                   title={
                     selectedBenchmarks.length > 0
                       ? 'L’échelle logarithmique est indisponible avec une comparaison en pourcentage'
@@ -445,12 +466,13 @@ export function TickerChart({
                 <Button
                   variant={isDrawdown ? 'default' : 'outline'}
                   size="sm"
-                  className="h-9 min-w-11 px-2 text-[10px] font-bold uppercase tracking-tight"
+                  className={`${compact ? 'h-8 min-w-10' : 'h-9 min-w-11'} px-2 text-[10px] font-bold uppercase tracking-tight`}
                   onClick={() => {
                     const nextValue = !isDrawdown
                     setIsDrawdown(nextValue)
                     if (nextValue) setIsLogarithmic(false)
                   }}
+                  title="Afficher le drawdown"
                 >
                   DD
                 </Button>
@@ -489,7 +511,7 @@ export function TickerChart({
                 'dd/MM/yyyy'
               )
               return (
-                <div className="flex items-center gap-1.5 rounded-md border border-amber-500/20 bg-amber-500/10 px-2.5 py-1 text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                <div className={`flex items-center gap-1.5 rounded-md border border-amber-500/20 bg-amber-500/10 font-medium text-amber-600 dark:text-amber-400 ${compact ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-1 text-[11px]'}`}>
                   <span>
                     ℹ️ Historique limité : cet actif dispose de ~{Math.round(totalAvailableDays)} jours de données (du {startDate} au {endDate}). Plage maximale affichée.
                   </span>
@@ -499,7 +521,7 @@ export function TickerChart({
             return null
           })()}
 
-          <div className="h-[250px] w-full rounded-lg border bg-card/30 p-1">
+          <div className={`${compact ? 'h-[220px] sm:h-[280px] p-0.5' : 'h-[250px] p-1'} w-full rounded-lg border bg-card/30`}>
             {loading ? (
               <div className="flex h-full items-center justify-center text-sm">Chargement...</div>
             ) : (
@@ -513,7 +535,7 @@ export function TickerChart({
           </div>
 
           {!loading && yearRange[0] !== yearRange[1] && (
-            <div className="px-2 pt-2">
+            <div className={compact ? 'px-1 pt-1' : 'px-2 pt-2'}>
               <div className="mb-1 flex justify-between text-[10px] font-medium text-muted-foreground">
                 <span>
                   Intervalle: {selectedRange[0]} - {selectedRange[1]}

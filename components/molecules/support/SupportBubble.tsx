@@ -123,9 +123,9 @@ export default function SupportBubble() {
   if (!userId) return null
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100] flex flex-col items-end">
+    <div className="fixed bottom-3 right-3 z-[100] flex flex-col items-end sm:bottom-6 sm:right-6">
       {isOpen && (
-        <Card className="mb-4 w-[350px] overflow-hidden border border-border bg-background shadow-2xl duration-300 animate-in slide-in-from-bottom-4 sm:w-[400px]">
+        <Card className="mb-3 w-[calc(100vw-1.5rem)] max-w-[400px] overflow-hidden border border-border bg-background shadow-2xl duration-300 animate-in slide-in-from-bottom-4 sm:mb-4 sm:w-[400px]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 bg-muted/50 p-4">
             <div className="flex items-center gap-3">
               <div className="relative">
@@ -218,13 +218,14 @@ export default function SupportBubble() {
 
       <Button
         size="icon"
-        className={`h-14 w-14 rounded-full shadow-2xl transition-all duration-300 ${isOpen ? 'rotate-90 scale-90 bg-muted hover:bg-muted' : 'bg-primary hover:scale-110'}`}
+        aria-label={isOpen ? 'Fermer le support' : 'Ouvrir le support'}
+        className={`h-11 w-11 rounded-full shadow-lg transition-all duration-300 sm:h-14 sm:w-14 sm:shadow-2xl ${isOpen ? 'rotate-90 scale-90 bg-muted hover:bg-muted' : 'bg-primary hover:scale-105'}`}
         onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen ? (
-          <X className="h-6 w-6 text-foreground" />
+          <X className="h-5 w-5 text-foreground sm:h-6 sm:w-6" />
         ) : (
-          <MessageCircle className="h-6 w-6 text-primary-foreground" />
+          <MessageCircle className="h-5 w-5 text-primary-foreground sm:h-6 sm:w-6" />
         )}
       </Button>
     </div>

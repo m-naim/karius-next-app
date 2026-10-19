@@ -285,7 +285,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
       ) : 'ANALYSE'}
       drawerContent={
         selectedTicker ? (
-          <TickerChart symbol={selectedTicker} />
+          <TickerChart symbol={selectedTicker} compact />
         ) : (
           <div className="flex h-full items-center justify-center text-gray-500">
             Select a security to view chart

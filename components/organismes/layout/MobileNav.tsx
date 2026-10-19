@@ -7,7 +7,7 @@ import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
 
-const MobileNav = () => {
+const MobileNav = ({ onOpenSearch }: { onOpenSearch?: () => void }) => {
   const [navShow, setNavShow] = useState(false)
   const { user } = useAuth()
 
@@ -78,14 +78,17 @@ const MobileNav = () => {
 
           {user && (
             <div className="py-2">
-              <Link
+              <button
+                type="button"
                 data-umami-event="mobile-header-Search"
-                href="/app/stocks"
                 className="text-2xl font-bold tracking-widest text-foreground"
-                onClick={onToggleNav}
+                onClick={() => {
+                  onToggleNav()
+                  onOpenSearch?.()
+                }}
               >
                 Recherche
-              </Link>
+              </button>
             </div>
           )}
 
