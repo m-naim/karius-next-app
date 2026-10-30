@@ -1,107 +1,103 @@
 import config from './config'
 
-export interface SuperInvestorPosition {
-  symbol: string
-  name: string
-  cusip?: string
-  shares?: number
-  valueUsd?: number
-  weightPercent: number
-  changePercent?: number
-  changeType?: 'NEW' | 'ADDED' | 'REDUCED' | 'CLOSED' | 'UNCHANGED'
-  sector?: string
-  shareChange?: number
-  reportedPrice?: number
-  quarterPriceRange?: string
+export type ChangeType =
+  | 'NEW'
+  | 'ADDED'
+  | 'REDUCED'
+  | 'CLOSED'
+  | 'UNCHANGED'
+  | 'NOT_COMPUTABLE'
+
+export interface InvestorSummary {
+  slug: string
+  displayName: string
+  fundDisplayName: string
+  style: string
+  description: string
+  cik: string
+  legalName: string
+  latestReportDate: string
+  latestFilingDate: string
+  totalValueUsd: number
+  availableQuarters: number
+  targetQuarters: number
+  lastSuccessfulSyncAt?: string
 }
 
-export interface QuarterlyFiling {
+export interface ManagerView {
+  cik: string
+  legalName: string
+  verificationStatus: 'VERIFIED' | 'PENDING_VERIFICATION' | 'SUSPENDED'
+}
+
+export interface AccessionView {
+  accessionNumber: string
+  formType: '13F-HR' | '13F-HR/A'
+  secUrl: string
+}
+
+export interface HoldingView {
+  symbol?: string | null
+  issuerName: string
+  titleOfClass?: string
+  cusip: string
+  instrumentType: 'EQUITY' | 'OPTION'
+  putCall?: 'PUT' | 'CALL' | null
+  sharesOrPrincipal: number
+  valueUsd: number
+  weightPercent: number
+  sector?: string | null
+  changeType: ChangeType
+  quantityChange?: number | null
+  changePercent?: number | null
+}
+
+export interface FilingView {
+  snapshotId: number
   quarterLabel: string
   reportDate: string
   filingDate: string
+  validationStatus: 'VALIDATED' | 'AMENDED' | 'INCOMPLETE'
   totalValueUsd: number
-  positions: SuperInvestorPosition[]
+  entryCount: number
+  sources: AccessionView[]
+  equityHoldings: HoldingView[]
+  optionHoldings: HoldingView[]
 }
 
-export interface SuperInvestor {
-  id: string
-  cik: string
-  name: string
-  fundName: string
+export interface InvestorDetail {
+  slug: string
+  displayName: string
+  fundDisplayName: string
   style: string
   description: string
-  avatarUrl?: string
-  aum?: number
-  lastFilingDate?: string
-  notableHoldings: string[]
-  holdings?: SuperInvestorPosition[]
-  quarterlyHistory?: QuarterlyFiling[]
-  secFilingUrl?: string
+  managers: ManagerView[]
+  availableQuarters: number
+  targetQuarters: number
+  filings: FilingView[]
+  disclaimer: string
 }
 
-function getApiBaseUrl(): string {
-  return config.API_URL.replace(/\/$/, '')
-}
-
-export async function getSuperInvestors(): Promise<SuperInvestor[]> {
-  try {
-    const baseUrl = getApiBaseUrl()
-    const res = await fetch(`${baseUrl}/api/v1/super-investors`, {
-      cache: 'no-store',
-      headers: {
-        'Accept': 'application/json'
-      }
-    })
-    if (res.ok) {
-      const data = await res.json()
-      if (Array.isArray(data)) return data
-    }
-  } catch (e) {
-    console.error('API error fetching super investors:', e)
-  }
-  return []
-}
-
-export async function getSuperInvestorById(idOrCik: string): Promise<SuperInvestor | null> {
-  try {
-    const baseUrl = getApiBaseUrl()
-    const res = await fetch(`${baseUrl}/api/v1/super-investors/${idOrCik}`, {
-      cache: 'no-store',
-      headers: {
-        'Accept': 'application/json'
-      }
-    })
-    if (res.ok) {
-      const data = await res.json()
-      if (data && data.id) return data
-    }
-  } catch (e) {
-    console.error('API error fetching super investor details:', e)
-  }
-  return null
-}
-
-export interface InvestorHoldingBrief {
-  investorId: string
+export interface ConsensusHolder {
+  investorSlug: string
   investorName: string
   fundName: string
+  reportDate: string
   weightPercent: number
-  shares: number
   valueUsd: number
-  changeType: 'NEW' | 'ADDED' | 'REDUCED' | 'CLOSED' | 'UNCHANGED'
-  changePercent: number
+  changeType: ChangeType
+  changePercent?: number | null
 }
 
 export interface ConsensusStock {
   symbol: string
-  name: string
-  sector: string
+  issuerName: string
   investorCount: number
   totalValueUsd: number
   averageWeightPercent: number
   buyCount: number
   sellCount: number
-  holders: InvestorHoldingBrief[]
+  holders: ConsensusHolder[]
 }
 
 export interface ConsensusReport {
@@ -109,43 +105,45 @@ export interface ConsensusReport {
   topBuys: ConsensusStock[]
   topSells: ConsensusStock[]
   totalInvestorsAnalyzed: number
-  latestQuarter: string
+  latestReportDate?: string
+  coverageLabel: string
 }
 
-export async function getConsensusReport(): Promise<ConsensusReport | null> {
+function getApiBaseUrl(): string {
+  return config.API_URL.replace(/\/$/, '')
+}
+
+async function getJson<T>(path: string): Promise<T> {
+  const response = await fetch(`${getApiBaseUrl()}${path}`, {
+    cache: 'no-store',
+    headers: { Accept: 'application/json' },
+  })
+  if (!response.ok) throw new Error(`Super Investors API: HTTP ${response.status}`)
+  return response.json() as Promise<T>
+}
+
+export function getSuperInvestors(): Promise<InvestorSummary[]> {
+  return getJson('/api/v2/super-investors')
+}
+
+export async function getSuperInvestorById(slug: string): Promise<InvestorDetail | null> {
   try {
-    const baseUrl = getApiBaseUrl()
-    const res = await fetch(`${baseUrl}/api/v1/super-investors/consensus`, {
-      cache: 'no-store',
-      headers: {
-        'Accept': 'application/json'
-      }
-    })
-    if (res.ok) {
-      const data = await res.json()
-      if (data && Array.isArray(data.mostOwned)) return data
-    }
-  } catch (e) {
-    console.error('API error fetching super investor consensus:', e)
+    return await getJson(`/api/v2/super-investors/${encodeURIComponent(slug)}`)
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('HTTP 404')) return null
+    throw error
   }
-  return null
+}
+
+export function getConsensusReport(): Promise<ConsensusReport> {
+  return getJson('/api/v2/super-investors/consensus')
 }
 
 export async function getStockSuperInvestors(symbol: string): Promise<ConsensusStock | null> {
   try {
-    const baseUrl = getApiBaseUrl()
-    const res = await fetch(`${baseUrl}/api/v1/super-investors/consensus/stock/${encodeURIComponent(symbol)}`, {
-      cache: 'no-store',
-      headers: {
-        'Accept': 'application/json'
-      }
-    })
-    if (res.ok) {
-      const data = await res.json()
-      if (data && data.symbol) return data
-    }
-  } catch (e) {
-    console.error(`API error fetching consensus holders for ${symbol}:`, e)
+    return await getJson(`/api/v2/super-investors/consensus/stocks/${encodeURIComponent(symbol)}`)
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('HTTP 404')) return null
+    throw error
   }
-  return null
 }

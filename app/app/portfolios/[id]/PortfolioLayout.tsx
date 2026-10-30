@@ -18,6 +18,7 @@ import { follow } from '@/services/portfolioService'
 import Link from 'next/link'
 import { PortfolioHelpDrawer } from './components/PortfolioHelpDrawer'
 import { PortfolioSpotlightTour } from './components/PortfolioSpotlightTour'
+import { useToast } from '@/hooks/use-toast'
 
 const PortfolioLayout = ({
   id,
@@ -41,14 +42,25 @@ const PortfolioLayout = ({
   const pathname = usePathname()
   const [isHelpOpen, setIsHelpOpen] = useState(false)
   const [isTourActive, setIsTourActive] = useState(false)
+  const { toast } = useToast()
 
   const handleFollowClick = async () => {
     try {
       const res = await follow(id)
       if (setFollowed) setFollowed(res.followed)
       if (setFollowersSize) setFollowersSize(res.followersSize)
+      toast({
+        title: res.followed ? 'Portefeuille ajouté aux favoris' : 'Portefeuille retiré des favoris',
+        description: res.followed
+          ? 'Vous recevrez une alerte si ce portefeuille fait un mouvement et que vos notifications sont activées.'
+          : 'Les alertes de ce portefeuille sont désactivées.',
+      })
     } catch {
-      console.error('error')
+      toast({
+        variant: 'destructive',
+        title: 'Favori non modifié',
+        description: 'Impossible de mettre à jour ce portefeuille pour le moment.',
+      })
     }
   }
 
@@ -95,14 +107,23 @@ const PortfolioLayout = ({
                     </Button>
                   </Link>
                 ) : (
-                  <Button onClick={handleFollowClick} size="sm" variant="outline" className="h-7 sm:h-8 gap-1.5 sm:gap-2 rounded-full border-border/50 bg-background text-xs hover:bg-accent/50">
+                  <Button
+                    onClick={handleFollowClick}
+                    size="sm"
+                    variant="outline"
+                    aria-pressed={followed}
+                    aria-label={followed ? 'Retirer ce portefeuille des favoris' : 'Ajouter ce portefeuille aux favoris'}
+                    className="h-7 sm:h-8 gap-1.5 sm:gap-2 rounded-full border-border/50 bg-background text-xs hover:bg-accent/50"
+                  >
                     <StarIcon
                       className="h-3.5 w-3.5 sm:h-4 sm:w-4"
                       fill={followed ? '#eac54f' : 'transparent'}
                       strokeWidth={followed ? 0 : 2}
                       color={followed ? '#eac54f' : 'currentColor'}
                     />
-                    <span className="font-semibold">{followed ? 'Suivis' : 'Suivre'}</span>
+                    <span className="font-semibold">
+                      {followed ? 'Favori' : <><span className="sm:hidden">Favori</span><span className="hidden sm:inline">Ajouter aux favoris</span></>}
+                    </span>
                     <span className="text-muted-foreground">({followersSize || 0})</span>
                   </Button>
                 )}

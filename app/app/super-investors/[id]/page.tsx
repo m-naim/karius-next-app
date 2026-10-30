@@ -1,434 +1,363 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { getSuperInvestorById, SuperInvestor, QuarterlyFiling } from '@/services/superInvestorService'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Input } from '@/components/ui/input'
 import {
-  ArrowLeft,
-  ExternalLink,
-  Sparkles,
-  Building2,
-  TrendingUp,
-  ArrowUpRight,
+  AlertCircle,
   ArrowDownRight,
-  Calendar,
-  Copy,
-  Layers,
+  ArrowLeft,
+  ArrowUpRight,
+  CalendarDays,
+  ExternalLink,
+  FileCheck2,
   Search,
-  WalletMinimal,
   ShieldCheck,
 } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
-import StatsCard from '../../portfolios/[id]/StatsCard'
-import AllocationPie from '../../portfolios/[id]/AllocationPie'
-import { round10 } from '@/lib/decimalAjustement'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
+import {
+  ChangeType,
+  getSuperInvestorById,
+  HoldingView,
+  InvestorDetail,
+} from '@/services/superInvestorService'
+
+type InstrumentTab = 'EQUITY' | 'OPTION'
+
+function formatMoney(value?: number | null) {
+  if (value == null || Number.isNaN(value)) return '—'
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'USD',
+    notation: 'compact',
+    maximumFractionDigits: 2,
+  }).format(value)
+}
+
+function formatDate(value?: string | null) {
+  if (!value) return '—'
+  return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(new Date(`${value}T12:00:00`))
+}
+
+function formatQuantity(value?: number | null) {
+  if (value == null) return '—'
+  return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(value)
+}
 
 export default function SuperInvestorDetailPage() {
   const params = useParams()
-  const id = params?.id as string
-  const { toast } = useToast()
-  const [investor, setInvestor] = useState<SuperInvestor | null>(null)
+  const slug = params?.id as string
+  const [investor, setInvestor] = useState<InvestorDetail | null>(null)
   const [loading, setLoading] = useState(true)
-  const [selectedQuarterIndex, setSelectedQuarterIndex] = useState(0)
-  const [globalFilter, setGlobalFilter] = useState('')
-  const [selectedPeriod, setSelectedPeriod] = useState('1y')
-  const [showMetrics, setShowMetrics] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedQuarter, setSelectedQuarter] = useState(0)
+  const [instrumentTab, setInstrumentTab] = useState<InstrumentTab>('EQUITY')
+  const [query, setQuery] = useState('')
 
   useEffect(() => {
-    if (id) {
-      getSuperInvestorById(id)
-        .then((data) => {
-          setInvestor(data)
-          setLoading(false)
-        })
-        .catch(() => setLoading(false))
+    let active = true
+    if (!slug) return
+    getSuperInvestorById(slug)
+      .then((data) => active && setInvestor(data))
+      .catch(() => active && setError('La déclaration demandée est momentanément indisponible.'))
+      .finally(() => active && setLoading(false))
+    return () => {
+      active = false
     }
-  }, [id])
+  }, [slug])
 
-  const formatMoney = (val?: number) => {
-    if (!val || val === 0) return '—'
-    if (val >= 1_000_000_000) {
-      const b = val / 1_000_000_000
-      return `${b >= 100 ? b.toFixed(0) : b >= 10 ? b.toFixed(1) : b.toFixed(2)} Md $`
-    }
-    if (val >= 1_000_000) {
-      const m = val / 1_000_000
-      return `${m >= 100 ? m.toFixed(0) : m >= 10 ? m.toFixed(1) : m.toFixed(2)} M $`
-    }
-    if (val >= 1_000) {
-      const k = val / 1_000
-      return `${k.toFixed(0)} k $`
-    }
-    return `${val.toLocaleString()} $`
-  }
+  const activeFiling = investor?.filings[selectedQuarter]
+  const holdings = useMemo(() => {
+    if (!activeFiling) return []
+    const source = instrumentTab === 'EQUITY' ? activeFiling.equityHoldings : activeFiling.optionHoldings
+    const needle = query.trim().toLocaleLowerCase('fr')
+    if (!needle) return source
+    return source.filter((holding) =>
+      [holding.symbol || '', holding.issuerName, holding.cusip, holding.titleOfClass || '']
+        .some((value) => value.toLocaleLowerCase('fr').includes(needle))
+    )
+  }, [activeFiling, instrumentTab, query])
 
-  const formatFullMoney = (val?: number) => {
-    if (!val) return '—'
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 0,
-    }).format(val)
-  }
+  if (loading) return <DetailSkeleton />
 
-  const handleDuplicate = () => {
-    toast({
-      title: 'Portefeuille dupliqué !',
-      description: `Les positions de ${investor?.name} ont été importées dans votre espace de simulation.`,
-    })
-  }
-
-  if (loading) {
+  if (error || !investor || !activeFiling) {
     return (
-      <div className="flex h-full w-full items-center justify-center py-32">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
+      <main className="flex min-h-[70vh] items-center justify-center px-4">
+        <div className="max-w-lg text-center">
+          <AlertCircle className="mx-auto h-8 w-8 text-muted-foreground" aria-hidden="true" />
+          <h1 className="mt-4 p-0 text-xl font-semibold">Déclaration introuvable</h1>
+          <p className="mb-0 mt-2 text-sm font-normal text-muted-foreground">
+            {error || 'Ce profil ne possède encore aucun trimestre SEC validé.'}
+          </p>
+          <Button asChild variant="outline" className="mt-5">
+            <Link href="/app/super-investors">Retour aux déclarants</Link>
+          </Button>
+        </div>
+      </main>
     )
   }
-
-  if (!investor) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 text-center gap-4">
-        <h2 className="text-xl font-bold">Investisseur non trouvé</h2>
-        <Button asChild variant="outline">
-          <Link href="/app/super-investors">Retour aux Super Investisseurs</Link>
-        </Button>
-      </div>
-    )
-  }
-
-  const hasHistory = investor.quarterlyHistory && investor.quarterlyHistory.length > 0
-  const activeFiling: QuarterlyFiling = hasHistory
-    ? investor.quarterlyHistory![selectedQuarterIndex]
-    : {
-        quarterLabel: 'Portefeuille Actuel',
-        reportDate: investor.lastFilingDate || '2025-12-31',
-        filingDate: investor.lastFilingDate || '2026-02-14',
-        totalValueUsd: investor.aum || 0,
-        positions: investor.holdings || [],
-      }
-
-  const rawPositions = activeFiling.positions || investor.holdings || []
-  
-  const filteredPositions = rawPositions.filter(
-    p => p.symbol.toLowerCase().includes(globalFilter.toLowerCase()) ||
-         p.name.toLowerCase().includes(globalFilter.toLowerCase())
-  )
-
-  const totalValueUsd = activeFiling.totalValueUsd || investor.aum || 0
-
-  // Format portfolio object for StatsCard component
-  const portfolioState = {
-    _id: investor.id,
-    totalValue: totalValueUsd,
-    cashValue: 0,
-    baseCurrency: 'USD',
-    dayChangeValue: totalValueUsd * 0.012,
-    dayChangePercent: 1.2,
-    twr: 14.8,
-    mwr: 15.2,
-  }
-
-  // Format allocation data for AllocationPie component
-  const allocationPieData = rawPositions.map(p => ({
-    symbol: p.symbol,
-    weight: p.weightPercent / 100,
-    totalValue: p.valueUsd || 0,
-    sector: p.sector || 'Actions'
-  }))
 
   return (
-    <div className="flex h-auto min-h-screen w-full flex-1 overflow-y-auto bg-background">
-      <div className="flex flex-1 min-w-0 flex-col gap-3 sm:gap-6 p-2 sm:p-4 pb-4 sm:pb-8 overflow-y-auto">
-        
-        {/* BACK NAVIGATION & ACTIONS */}
-        <div className="flex items-center justify-between">
-          <Link
-            href="/app/super-investors"
-            className="inline-flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Retour aux Super Investisseurs</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            {investor.secFilingUrl && (
-              <a
-                href={investor.secFilingUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline"
-              >
-                <span>Document SEC 13F</span>
-                <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-            )}
-            <Button onClick={handleDuplicate} size="sm" className="font-bold gap-2 shadow-md">
-              <Copy className="h-4 w-4" />
-              <span>Dupliquer ce Portefeuille</span>
-            </Button>
-          </div>
-        </div>
+    <main className="min-h-screen w-full bg-background">
+      <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-6 px-4 py-6 md:px-8 md:py-8">
+        <Link
+          href="/app/super-investors"
+          className="inline-flex w-fit items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          Tous les déclarants
+        </Link>
 
-        {/* HERO SECTION: STATSCARD (EXACT PORTFOLIO UX) */}
-        <div className="w-full rounded-2xl border border-border/60 bg-card p-6 shadow-sm">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="h-14 w-14 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center font-black text-primary text-lg overflow-hidden shrink-0 shadow-inner">
-              {investor.name.substring(0, 2).toUpperCase()}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-black tracking-tight text-foreground">{investor.name}</h1>
-                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs font-mono">
-                  {investor.fundName}
+        <header className="border-b border-border pb-6">
+          <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
+            <div className="min-w-0 max-w-3xl">
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <Badge variant="outline" className="gap-1.5 border-emerald-600/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                  <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                  {activeFiling.validationStatus === 'AMENDED' ? 'Trimestre amendé et validé' : 'Trimestre validé'}
                 </Badge>
+                <Badge variant="secondary">{investor.availableQuarters}/{investor.targetQuarters} trimestres</Badge>
               </div>
-              <p className="text-xs text-muted-foreground font-medium flex items-center gap-2 mt-0.5">
-                <span>CIK SEC: <strong>{investor.cik}</strong></span>
-                <span>•</span>
-                <span className="text-emerald-500 font-bold flex items-center gap-1">
-                  <ShieldCheck className="h-3.5 w-3.5" /> Déclaration PostgreSQL 13F
-                </span>
-              </p>
+              <h1 className="p-0 text-2xl font-bold tracking-[-0.025em] text-foreground sm:text-3xl">{investor.displayName}</h1>
+              <p className="mb-0 mt-1 text-sm font-medium text-foreground">{investor.fundDisplayName}</p>
+              <p className="mb-0 mt-3 max-w-2xl text-sm font-normal leading-6 text-muted-foreground">{investor.description}</p>
+            </div>
+
+            <div className="rounded-lg bg-muted/60 px-4 py-3 text-sm">
+              {investor.managers.map((manager) => (
+                <div key={manager.cik} className="flex items-start gap-2">
+                  <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" aria-hidden="true" />
+                  <div>
+                    <p className="mb-0 text-xs font-semibold text-foreground">{manager.legalName}</p>
+                    <p className="mb-0 mt-0.5 font-mono text-[11px] font-normal text-muted-foreground">CIK {manager.cik}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
+        </header>
 
-          <StatsCard pftData={portfolioState} own={true} />
-        </div>
+        <section aria-label="Résumé de la déclaration" className="grid overflow-hidden rounded-xl border border-border bg-card sm:grid-cols-2 xl:grid-cols-4">
+          <SummaryMetric label="Période couverte" value={formatDate(activeFiling.reportDate)} />
+          <SummaryMetric label="Dépôt le plus récent" value={formatDate(activeFiling.filingDate)} />
+          <SummaryMetric label="Valeur totale déclarée" value={formatMoney(activeFiling.totalValueUsd)} />
+          <SummaryMetric label="Lignes SEC" value={activeFiling.entryCount.toLocaleString('fr-FR')} />
+        </section>
 
-        {/* MAIN LAYOUT: LEFT TABLE (8/12) & RIGHT ALLOCATION PIE (4/12) */}
-        <div className="flex w-full flex-wrap-reverse gap-6">
-          
-          {/* LEFT COLUMN: INVESTMENTS TABLE & FILTER BAR */}
-          <div className="w-full flex-grow lg:w-7/12 space-y-6">
-            
-            {/* TABLE CONTROLS & TIMEFRAME SELECTOR */}
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="space-y-1">
-                <h2 className="text-xl font-bold tracking-tight text-foreground">Positions &amp; Allocations</h2>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm text-muted-foreground font-medium">{rawPositions.length} actifs détenus</span>
-                  
-                  {/* TIMEFRAME BUTTONS */}
-                  <div role="group" aria-label="Période" className="flex items-center gap-1 rounded-md bg-muted/50 p-1">
-                    {['1d', '1w', '1m', '3m', '6m', '1y', '5y'].map((p) => (
-                      <button
-                        key={p}
-                        onClick={() => setSelectedPeriod(p)}
-                        className={cn(
-                          'rounded px-2 py-0.5 text-[10px] font-bold uppercase transition-colors',
-                          selectedPeriod === p ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
-                        )}
-                      >
-                        {p}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* METRICS 5A TOGGLE */}
-                  <button
-                    onClick={() => setShowMetrics(!showMetrics)}
-                    className={cn(
-                      'rounded px-2.5 py-1 text-[10px] font-bold transition-colors border border-border/60 ml-2',
-                      showMetrics ? 'bg-primary text-primary-foreground' : 'bg-muted/40 text-muted-foreground hover:text-foreground'
-                    )}
-                  >
-                    Metrics 5A
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* QUARTER SELECTOR TABS */}
-            {hasHistory && (
-              <div className="space-y-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5 text-primary" /> Déclarations Trimestrielles 13F SEC
-                </span>
-                <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                  {investor.quarterlyHistory!.map((q, idx) => (
-                    <Button
-                      key={q.quarterLabel}
-                      variant={selectedQuarterIndex === idx ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setSelectedQuarterIndex(idx)}
-                      className="text-xs font-bold rounded-full h-8 px-3.5 gap-1.5 shrink-0"
-                    >
-                      <Layers className="h-3 w-3" />
-                      <span>{q.quarterLabel}</span>
-                      {idx === 0 && (
-                        <Badge className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[8px] font-black border-none px-1 py-0">
-                          ACTUEL
-                        </Badge>
-                      )}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* PORTFOLIO CARD & TABLE */}
-            <Card className="overflow-hidden border-border bg-card shadow-sm">
-              <CardHeader className="border-b border-border bg-muted/30 px-4 py-3">
-                <div className="flex items-center gap-4">
-                  <div className="relative max-w-sm flex-1">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Rechercher par nom ou symbole..."
-                      value={globalFilter}
-                      onChange={(e) => setGlobalFilter(e.target.value)}
-                      className="h-9 bg-background pl-9 border-border"
-                    />
-                  </div>
-                  <div className="hidden flex-1 items-center justify-end gap-4 text-xs sm:flex">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-muted-foreground">Rapport :</span>
-                      <span className="font-semibold text-foreground">{activeFiling.reportDate}</span>
-                    </div>
-                  </div>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="p-0">
-                {filteredPositions.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-muted/60 text-[10px] uppercase font-black tracking-wider text-muted-foreground border-b border-border/50">
-                        <tr>
-                          <th className="p-3">Actif &amp; Secteur</th>
-                          <th className="p-3 text-right">Poids (%)</th>
-                          <th className="p-3 text-right">Activité SEC</th>
-                          <th className="p-3 text-right hidden sm:table-cell">Nombre d&apos;Actions</th>
-                          <th className="p-3 text-right">Valeur Total ($)</th>
-                          <th className="p-3 text-right hidden md:table-cell">Prix Déclaré</th>
-                          <th className="p-3 text-right hidden lg:table-cell">Fourchette Trimestre</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border/30">
-                        {filteredPositions.map((h, i) => (
-                          <tr key={h.symbol || i} className="hover:bg-accent/40 transition-colors">
-                            <td className="p-3">
-                              <div className="flex flex-col gap-0.5">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="font-black text-foreground text-sm">{h.symbol}</span>
-                                  {h.sector && (
-                                    <Badge variant="outline" className="text-[9px] px-1 py-0 font-medium text-muted-foreground border-border/60">
-                                      {h.sector}
-                                    </Badge>
-                                  )}
-                                </div>
-                                <span className="text-[11px] text-muted-foreground font-medium truncate max-w-[180px]">{h.name}</span>
-                              </div>
-                            </td>
-                            <td className="p-3 text-right font-black text-foreground text-sm tabular-nums">
-                              {h.weightPercent}%
-                            </td>
-                            <td className="p-3 text-right">
-                              {h.changeType === 'NEW' && (
-                                <Badge className="bg-purple-500/15 text-purple-600 dark:text-purple-400 border-none font-bold text-[10px]">
-                                  🆕 NOUVEAU
-                                </Badge>
-                              )}
-                              {h.changeType === 'ADDED' && (
-                                <div className="flex flex-col items-end">
-                                  <span className="inline-flex items-center gap-0.5 text-emerald-500 font-bold text-xs">
-                                    <ArrowUpRight className="h-3.5 w-3.5" />
-                                    +{h.changePercent}%
-                                  </span>
-                                  {h.shareChange && h.shareChange > 0 && (
-                                    <span className="text-[10px] text-emerald-600/80 font-mono">
-                                      +{h.shareChange > 1000000 ? `${(h.shareChange / 1000000).toFixed(1)}M` : `${(h.shareChange / 1000).toFixed(0)}k`} shs
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-                              {h.changeType === 'REDUCED' && (
-                                <div className="flex flex-col items-end">
-                                  <span className="inline-flex items-center gap-0.5 text-rose-500 font-bold text-xs">
-                                    <ArrowDownRight className="h-3.5 w-3.5" />
-                                    {h.changePercent}%
-                                  </span>
-                                  {h.shareChange && h.shareChange < 0 && (
-                                    <span className="text-[10px] text-rose-600/80 font-mono">
-                                      {h.shareChange < -1000000 ? `${(h.shareChange / 1000000).toFixed(1)}M` : `${(h.shareChange / 1000).toFixed(0)}k`} shs
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-                              {h.changeType === 'CLOSED' && (
-                                <Badge className="bg-rose-500/15 text-rose-600 dark:text-rose-400 border-none font-bold text-[10px]">
-                                  🚫 SOLD OUT
-                                </Badge>
-                              )}
-                              {(!h.changeType || h.changeType === 'UNCHANGED') && (
-                                <span className="text-[11px] text-muted-foreground font-medium">Inchangé (0%)</span>
-                              )}
-                            </td>
-                            <td className="p-3 text-right font-semibold text-muted-foreground hidden sm:table-cell tabular-nums">
-                              {h.shares ? h.shares.toLocaleString() : '0'}
-                            </td>
-                            <td className="p-3 text-right font-bold text-foreground tabular-nums" title={formatFullMoney(h.valueUsd)}>
-                              {formatMoney(h.valueUsd)}
-                            </td>
-                            <td className="p-3 text-right font-mono text-xs font-semibold text-foreground/90 hidden md:table-cell tabular-nums">
-                              {h.reportedPrice && h.reportedPrice > 0 ? `$${h.reportedPrice.toFixed(2)}` : '—'}
-                            </td>
-                            <td className="p-3 text-right font-mono text-[11px] text-muted-foreground hidden lg:table-cell tabular-nums">
-                              {h.quarterPriceRange || '—'}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                      <WalletMinimal className="h-6 w-6 text-muted-foreground" />
-                    </div>
-                    <h3 className="mt-4 text-sm font-semibold text-foreground">Aucun actif trouvé</h3>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Aucune position ne correspond à votre filtre de recherche.
-                    </p>
-                  </div>
+        <section aria-labelledby="quarters-heading">
+          <div className="mb-2 flex items-center gap-2">
+            <CalendarDays className="h-4 w-4 text-primary" aria-hidden="true" />
+            <h2 id="quarters-heading" className="p-0 text-sm font-semibold text-foreground">Historique des déclarations</h2>
+          </div>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {investor.filings.map((filing, index) => (
+              <button
+                key={filing.snapshotId}
+                type="button"
+                onClick={() => setSelectedQuarter(index)}
+                className={cn(
+                  'shrink-0 rounded-md border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  selectedQuarter === index
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : 'border-border bg-card text-foreground hover:bg-muted'
                 )}
-              </CardContent>
-            </Card>
+              >
+                <span className="block text-xs font-semibold">{filing.quarterLabel}</span>
+                <span className={cn('mt-0.5 block text-[10px]', selectedQuarter === index ? 'text-primary-foreground/75' : 'text-muted-foreground')}>
+                  {filing.validationStatus === 'AMENDED' ? 'Amendé' : 'Validé'}
+                </span>
+              </button>
+            ))}
           </div>
+        </section>
 
-          {/* RIGHT COLUMN: ALLOCATION PIE & INVESTOR BIO (4/12) */}
-          <div className="w-full lg:w-4/12 space-y-6">
-            {/* ALLOCATION PIE CHART */}
-            <Card className="border-border/70 bg-card shadow-sm">
-              <CardHeader className="p-4 border-b border-border/50 bg-muted/20">
-                <CardTitle className="text-sm font-bold flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-primary" />
-                  Répartition du Portefeuille
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-4">
-                <AllocationPie data={allocationPieData} totalValue={totalValueUsd} />
-              </CardContent>
-            </Card>
-
-            {/* INVESTOR STRATEGY CARD */}
-            <Card className="border-border/70 bg-card shadow-sm space-y-3 p-5">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
-                <Sparkles className="h-4 w-4" />
-                <span>Style d&apos;Investissement</span>
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
+          <section className="min-w-0 overflow-hidden rounded-xl border border-border bg-card" aria-labelledby="positions-heading">
+            <div className="flex flex-col gap-4 border-b border-border px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 id="positions-heading" className="p-0 text-base font-semibold text-foreground">Positions déclarées</h2>
+                <p className="mb-0 mt-1 text-xs font-normal text-muted-foreground">Poids calculés séparément pour les actions et les options.</p>
               </div>
-              <p className="text-xs font-bold text-foreground">{investor.style}</p>
-              <p className="text-xs text-muted-foreground leading-relaxed">{investor.description}</p>
-            </Card>
-          </div>
+              <div className="relative w-full sm:w-72">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                <Input
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Ticker, émetteur ou CUSIP"
+                  aria-label="Rechercher dans les positions"
+                  className="h-9 bg-background pl-9"
+                />
+              </div>
+            </div>
 
+            <div className="flex border-b border-border px-4" role="tablist" aria-label="Type d'instrument">
+              <InstrumentTabButton active={instrumentTab === 'EQUITY'} onClick={() => setInstrumentTab('EQUITY')}>
+                Actions <span className="text-muted-foreground">({activeFiling.equityHoldings.length})</span>
+              </InstrumentTabButton>
+              <InstrumentTabButton active={instrumentTab === 'OPTION'} onClick={() => setInstrumentTab('OPTION')}>
+                Options <span className="text-muted-foreground">({activeFiling.optionHoldings.length})</span>
+              </InstrumentTabButton>
+            </div>
+
+            <HoldingsTable holdings={holdings} />
+          </section>
+
+          <aside className="space-y-4">
+            <section className="rounded-xl border border-border bg-card p-4" aria-labelledby="sources-heading">
+              <div className="flex items-center gap-2">
+                <FileCheck2 className="h-4 w-4 text-primary" aria-hidden="true" />
+                <h2 id="sources-heading" className="p-0 text-sm font-semibold text-foreground">Documents sources</h2>
+              </div>
+              <div className="mt-4 space-y-2">
+                {activeFiling.sources.map((source) => (
+                  <a
+                    key={source.accessionNumber}
+                    href={source.secUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group block rounded-md bg-muted/60 px-3 py-2.5 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <span className="flex items-center justify-between gap-2 text-xs font-semibold text-foreground">
+                      {source.formType}
+                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary" aria-hidden="true" />
+                    </span>
+                    <span className="mt-1 block break-all font-mono text-[10px] text-muted-foreground">{source.accessionNumber}</span>
+                  </a>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-xl bg-muted/60 p-4">
+              <h2 className="p-0 text-sm font-semibold text-foreground">Méthode et limites</h2>
+              <p className="mb-0 mt-2 text-xs font-normal leading-5 text-muted-foreground">{investor.disclaimer}</p>
+              <p className="mb-0 mt-2 text-xs font-normal leading-5 text-muted-foreground">
+                Les variations comparent les quantités de deux trimestres consécutifs. Un split ou un changement de CUSIP peut produire un faux signal.
+              </p>
+            </section>
+          </aside>
         </div>
       </div>
+    </main>
+  )
+}
+
+function SummaryMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="border-b border-border px-4 py-4 last:border-b-0 sm:border-r sm:[&:nth-child(2)]:border-r-0 xl:border-b-0 xl:[&:nth-child(2)]:border-r xl:last:border-r-0">
+      <p className="mb-0 text-xs font-medium text-muted-foreground">{label}</p>
+      <p className="mb-0 mt-1 text-base font-semibold tabular-nums text-foreground">{value}</p>
     </div>
+  )
+}
+
+function InstrumentTabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={cn(
+        'relative px-3 py-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        active ? 'text-foreground after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:bg-primary' : 'text-muted-foreground hover:text-foreground'
+      )}
+    >
+      {children}
+    </button>
+  )
+}
+
+function HoldingsTable({ holdings }: { holdings: HoldingView[] }) {
+  if (holdings.length === 0) {
+    return (
+      <div className="px-5 py-14 text-center">
+        <p className="mb-0 text-sm font-semibold text-foreground">Aucune position dans cette vue</p>
+        <p className="mb-0 mt-1 text-xs font-normal text-muted-foreground">Le dépôt SEC ne contient aucun instrument correspondant.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[800px] text-left text-sm">
+        <thead className="border-b border-border bg-muted/45 text-xs text-muted-foreground">
+          <tr>
+            <th className="px-4 py-3 font-semibold">Titre</th>
+            <th className="px-4 py-3 font-semibold">Activité</th>
+            <th className="px-4 py-3 text-right font-semibold">Quantité</th>
+            <th className="px-4 py-3 text-right font-semibold">Poids</th>
+            <th className="px-4 py-3 text-right font-semibold">Valeur déclarée</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border">
+          {holdings.map((holding) => (
+            <tr key={`${holding.cusip}-${holding.titleOfClass}-${holding.putCall || 'equity'}`} className="transition-colors hover:bg-muted/35">
+              <td className="px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-foreground">{holding.symbol || holding.cusip}</span>
+                  {!holding.symbol && <Badge variant="outline" className="text-[10px] text-muted-foreground">Ticker non résolu</Badge>}
+                  {holding.putCall && <Badge variant="secondary" className="text-[10px]">{holding.putCall}</Badge>}
+                </div>
+                <div className="mt-0.5 max-w-80 truncate text-xs text-muted-foreground">{holding.issuerName} · {holding.titleOfClass || 'Classe non précisée'}</div>
+                <div className="mt-0.5 font-mono text-[10px] text-muted-foreground">CUSIP {holding.cusip}</div>
+              </td>
+              <td className="px-4 py-3"><ChangeBadge holding={holding} /></td>
+              <td className="px-4 py-3 text-right font-medium tabular-nums text-foreground">{formatQuantity(holding.sharesOrPrincipal)}</td>
+              <td className="px-4 py-3 text-right font-medium tabular-nums text-foreground">{holding.weightPercent.toFixed(2)} %</td>
+              <td className="px-4 py-3 text-right font-semibold tabular-nums text-foreground">{formatMoney(holding.valueUsd)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+const changeLabels: Record<ChangeType, string> = {
+  NEW: 'Nouvelle position',
+  ADDED: 'Renforcée',
+  REDUCED: 'Allégée',
+  CLOSED: 'Clôturée',
+  UNCHANGED: 'Inchangée',
+  NOT_COMPUTABLE: 'Non calculable',
+}
+
+function ChangeBadge({ holding }: { holding: HoldingView }) {
+  const positive = holding.changeType === 'NEW' || holding.changeType === 'ADDED'
+  const negative = holding.changeType === 'REDUCED' || holding.changeType === 'CLOSED'
+  return (
+    <div>
+      <span className={cn(
+        'inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold',
+        positive && 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+        negative && 'bg-rose-500/10 text-rose-700 dark:text-rose-300',
+        !positive && !negative && 'bg-muted text-muted-foreground'
+      )}>
+        {holding.changeType === 'ADDED' && <ArrowUpRight className="h-3 w-3" aria-hidden="true" />}
+        {holding.changeType === 'REDUCED' && <ArrowDownRight className="h-3 w-3" aria-hidden="true" />}
+        {changeLabels[holding.changeType]}
+      </span>
+      {holding.changePercent != null && (
+        <div className="mt-1 text-xs tabular-nums text-muted-foreground">
+          {holding.changePercent > 0 ? '+' : ''}{holding.changePercent.toFixed(2)} %
+        </div>
+      )}
+    </div>
+  )
+}
+
+function DetailSkeleton() {
+  return (
+    <main className="mx-auto min-h-screen w-full max-w-[1500px] space-y-5 px-4 py-8 md:px-8" role="status" aria-label="Chargement de la déclaration">
+      <div className="h-5 w-40 animate-pulse rounded bg-muted" />
+      <div className="h-36 animate-pulse rounded-xl bg-muted" />
+      <div className="grid gap-3 sm:grid-cols-4">
+        {[0, 1, 2, 3].map((item) => <div key={item} className="h-20 animate-pulse rounded-lg bg-muted" />)}
+      </div>
+      <div className="h-96 animate-pulse rounded-xl bg-muted" />
+    </main>
   )
 }

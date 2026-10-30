@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Star, TrendingUp, Users, Wallet, BarChart3 } from 'lucide-react'
+import { TrendingUp, Users, BarChart3 } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { FavoritePortfolioButton } from '@/components/molecules/portfolio/FavoritePortfolioButton'
 
 export interface PortfolioSummery {
   id: string
@@ -17,22 +17,32 @@ export interface PortfolioSummery {
   variation?: number
   is_flagged?: boolean
   flagged_reason?: string
+  isFavorite?: boolean
+  onFavoriteChange?: (favorite: boolean) => void
 }
 
 export function PortfolioCard(p: PortfolioSummery) {
   return (
-    <Link
-      key={p.id}
-      href={`/app/portfolios/${p.id}`}
-      className="group block w-full"
-    >
-      <Card className={cn(
-        "relative overflow-hidden transition-all duration-300",
-        "border-border bg-card/50 backdrop-blur-sm",
-        p.is_flagged ? "border-rose-500/30 hover:border-rose-500/50" : "hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1"
-      )}>
-
-        <CardHeader className="flex flex-row items-start justify-between space-y-0 p-4 pb-2">
+    <Card className={cn(
+      'relative block w-full overflow-hidden transition-all duration-300',
+      'border-border bg-card/50 backdrop-blur-sm',
+      p.is_flagged ? 'border-rose-500/30 hover:border-rose-500/50' : 'hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1'
+    )}>
+      {p.isFavorite !== undefined && (
+        <div className="absolute right-3 top-3 z-10">
+          <FavoritePortfolioButton
+            id={p.id}
+            initialFavorite={p.isFavorite}
+            compact
+            onChanged={p.onFavoriteChange}
+          />
+        </div>
+      )}
+      <Link
+        href={`/app/portfolios/${p.id}`}
+        className="group block w-full"
+      >
+        <CardHeader className="flex flex-row items-start justify-between space-y-0 p-4 pb-2 pr-14">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
               <div className={cn(
@@ -70,17 +80,6 @@ export function PortfolioCard(p: PortfolioSummery) {
               )}
             </div>
           </div>
-          
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
-                  <Star className="h-3 w-3 fill-current" />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>Performance Annualisée</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
         </CardHeader>
 
         <CardContent className="p-4 pt-2">
@@ -103,10 +102,8 @@ export function PortfolioCard(p: PortfolioSummery) {
             )}
           </div>
         </CardContent>
-        
-        {/* Bottom accent line */}
-        <div className="h-0.5 w-full bg-primary origin-left transition-transform duration-500 scale-x-0 group-hover:scale-x-100" />
-      </Card>
-    </Link>
+        <div className="h-0.5 w-full origin-left scale-x-0 bg-primary transition-transform duration-500 group-hover:scale-x-100" />
+      </Link>
+    </Card>
   )
 }

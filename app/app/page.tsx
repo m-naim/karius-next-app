@@ -5,8 +5,10 @@ import SectionContainer from '@/components/organismes/layout/SectionContainer'
 import { MarketPulse } from '@/components/molecules/market/MarketPulse'
 import authService from '@/services/authService'
 import { getAll as getPortfolios } from '@/services/portfolioService'
+import { getFollowed } from '@/services/portfolioService'
 import { getAll as getWatchlists } from '@/services/watchListService'
 import { PortfolioCard, PortfolioSummery } from './portfolios/PortfolioCard'
+import { FavoritePortfoliosPanel } from '@/components/molecules/portfolio/FavoritePortfoliosPanel'
 import { WatchCard } from './watchlist/watchlistCard'
 import { WatchListInfos } from './watchlist/page'
 import { motion } from 'framer-motion'
@@ -34,6 +36,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export default function AppDashboard() {
   const [portfolios, setPortfolios] = useState<PortfolioSummery[]>([])
+  const [favoritePortfolios, setFavoritePortfolios] = useState<PortfolioSummery[]>([])
   const [watchlists, setWatchlists] = useState<WatchListInfos[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -50,6 +53,11 @@ export default function AppDashboard() {
       ])
       setPortfolios(portRes.ownPortfolios || [])
       setWatchlists(watchRes || [])
+      const followed = await getFollowed().catch((favoriteError) => {
+        console.error('Failed to fetch favorite portfolios', favoriteError)
+        return []
+      })
+      setFavoritePortfolios(followed || [])
     } catch (e: any) {
       console.error('Failed to fetch dashboard data', e)
       setError(e.message || 'Impossible de charger les données. Veuillez réessayer.')
@@ -214,7 +222,16 @@ export default function AppDashboard() {
             </div>
           </div>
 
-          {/* Watchlists Section */}
+          {/* Favorite Portfolios Section */}
+          <FavoritePortfoliosPanel
+            portfolios={favoritePortfolios}
+            loading={loading}
+            onRemoved={(id) => setFavoritePortfolios((current) => current.filter((portfolio) => portfolio.id !== id))}
+          />
+        </div>
+
+        {/* Watchlists Section */}
+        <div className="mt-8 space-y-4">
           <div className="space-y-4">
             <div className="flex items-center justify-between border-b border-border/60 pb-3">
               <h2 className="flex items-center gap-2.5 text-lg font-black tracking-tight">

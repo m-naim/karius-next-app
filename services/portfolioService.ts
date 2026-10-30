@@ -48,6 +48,10 @@ export function follow(id) {
   return http.post(`${host}/api/v1/portfolios/${id}/follow`, {})
 }
 
+export function getFollowed() {
+  return http.get(`${host}/api/v1/followed/portfolios`)
+}
+
 export function unfollow(id) {
   return http.post(`${host}/api/v1/portfolios/${id}/unfollow`, {})
 }

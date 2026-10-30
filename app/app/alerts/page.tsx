@@ -4,7 +4,7 @@ import React, { useEffect, useState, useMemo } from 'react'
 import alertService from '@/services/alertService'
 import authService from '@/services/authService'
 import { PushNotificationToggle } from '@/components/PushNotificationToggle'
-import { getAll as getPortfolios } from '@/services/portfolioService'
+import { getAll as getPortfolios, getFollowed } from '@/services/portfolioService'
 import { getAll as getWatchlists } from '@/services/watchListService'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -93,13 +93,14 @@ export default function AlertsPage() {
     setLoading(true)
     setError(null)
     try {
-      const [alertsData, settingsData, activationData, profileData, disabled, pfts, wls] = await Promise.all([
+      const [alertsData, settingsData, activationData, profileData, disabled, pfts, followedPortfolios, wls] = await Promise.all([
         alertService.getMyAlerts(),
         alertService.getNotificationSettings().catch(() => ({ channel: 'telegram' })),
         alertService.getTelegramActivationLink().catch(() => null),
         authService.getProfile().catch(() => ({})),
         authService.getDisabledEntities().catch(() => []),
-        getPortfolios().catch(() => []),
+        getPortfolios().catch(() => ({})),
+        getFollowed().catch(() => []),
         getWatchlists().catch(() => [])
       ])
       setAlerts(alertsData)
@@ -110,7 +111,12 @@ export default function AlertsPage() {
       setPortfolioNotifFreq(profileData.portfolioNotifFreq || 'WEEKLY')
       setWatchlistNotifFreq(profileData.watchlistNotifFreq || 'WEEKLY')
       setDisabledEntities(Array.isArray(disabled) ? disabled : [])
-      setPortfolios(Array.isArray(pfts) ? pfts : [])
+      const ownedPortfolios = Array.isArray(pfts?.ownPortfolios) ? pfts.ownPortfolios : []
+      const favoritePortfolios = Array.isArray(followedPortfolios) ? followedPortfolios : []
+      setPortfolios([
+        ...ownedPortfolios,
+        ...favoritePortfolios.filter((favorite) => !ownedPortfolios.some((owned) => owned.id === favorite.id)),
+      ])
       setWatchlists(Array.isArray(wls) ? wls : [])
     } catch (err: any) {
       console.error('Failed to fetch data', err)
@@ -519,6 +525,12 @@ export default function AlertsPage() {
                 <CardContent className="space-y-8 p-6">
                   <div className="space-y-4">
                     <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground border-b pb-2">Fréquences d'envoi</h3>
+                    <div className="flex gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-3">
+                      <Bell className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+                      <p className="mb-0 text-xs leading-relaxed text-muted-foreground">
+                        Vos portefeuilles favoris sont aussi surveillés : une alerte est envoyée dès qu&apos;un favori enregistre un mouvement, si les notifications sont activées.
+                      </p>
+                    </div>
                     <div className="grid gap-6 md:grid-cols-2">
                       <div className="space-y-2">
                         <Label className="text-xs font-bold uppercase">Portefeuilles</Label>

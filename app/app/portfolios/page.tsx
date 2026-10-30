@@ -20,7 +20,8 @@ import SectionContainer from '@/components/organismes/layout/SectionContainer'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { PortfolioCard, PortfolioSummery } from './PortfolioCard'
 import authService from '@/services/authService'
-import { getAll } from '@/services/portfolioService'
+import { getAll, getFollowed } from '@/services/portfolioService'
+import { FavoritePortfoliosPanel } from '@/components/molecules/portfolio/FavoritePortfoliosPanel'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
@@ -34,6 +35,7 @@ export default function PortfoliosHubPage() {
   const [mounted, setMounted] = useState(false)
   const [activeTab, setActiveTab] = useState<'my' | 'explore'>('my')
   const [data, setData] = useState<PortfoliosPresentation | null>(null)
+  const [favoritePortfolios, setFavoritePortfolios] = useState<PortfolioSummery[]>([])
   const [loading, setLoading] = useState(true)
 
   const { authentificated } = authService.getCurrentUser()
@@ -42,10 +44,11 @@ export default function PortfoliosHubPage() {
     setMounted(true)
     let isMounted = true
 
-    getAll()
-      .then((res) => {
+    Promise.all([getAll(), getFollowed().catch(() => [])])
+      .then(([res, followed]) => {
         if (isMounted) {
           setData(res)
+          setFavoritePortfolios(followed || [])
           setLoading(false)
         }
       })
@@ -159,29 +162,39 @@ export default function PortfoliosHubPage() {
                 <Skeleton key={i} className="h-36 rounded-xl" />
               ))}
             </div>
-          ) : ownList.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/80 bg-card/40 p-8 text-center sm:p-12">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-3">
-                <PieChart className="h-6 w-6" />
-              </div>
-              <h3 className="text-base font-bold text-foreground">Aucun portefeuille créé</h3>
-              <p className="mt-1 max-w-md text-xs text-muted-foreground">
-                Ajoutez vos comptes PEA, Compte-Titres ou Crypto pour suivre votre performance globale, vos dividendes et votre allocation sectorielle.
-              </p>
-              <div className="mt-5">
-                <Link href="/app/portfolios/new">
-                  <Button size="sm" className="gap-1.5 font-bold">
-                    <Plus className="h-4 w-4" />
-                    <span>Créer mon premier portefeuille</span>
-                  </Button>
-                </Link>
-              </div>
-            </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {ownList.map((p) => (
-                <PortfolioCard key={p.id} {...p} />
-              ))}
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+              <div>
+                {ownList.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {ownList.map((p) => (
+                      <PortfolioCard key={p.id} {...p} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/80 bg-card/40 p-8 text-center sm:p-12">
+                    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                      <PieChart className="h-6 w-6" />
+                    </div>
+                    <h3 className="text-base font-bold text-foreground">Aucun portefeuille créé</h3>
+                    <p className="mt-1 max-w-md text-xs text-muted-foreground">
+                      Ajoutez vos comptes PEA, Compte-Titres ou Crypto pour suivre votre performance globale, vos dividendes et votre allocation sectorielle.
+                    </p>
+                    <div className="mt-5">
+                      <Link href="/app/portfolios/new">
+                        <Button size="sm" className="gap-1.5 font-bold">
+                          <Plus className="h-4 w-4" />
+                          <span>Créer mon premier portefeuille</span>
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <FavoritePortfoliosPanel
+                portfolios={favoritePortfolios}
+                onRemoved={(id) => setFavoritePortfolios((current) => current.filter((portfolio) => portfolio.id !== id))}
+              />
             </div>
           )}
         </div>
