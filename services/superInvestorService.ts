@@ -109,6 +109,72 @@ export interface ConsensusReport {
   coverageLabel: string
 }
 
+export type ValuationState = 'PENDING' | 'RUNNING' | 'AVAILABLE' | 'INCOMPLETE' | 'FAILED'
+export type ValuationView = 'VALUE' | 'PERFORMANCE'
+
+export interface ValuationStatus {
+  status: ValuationState
+  updatedAt?: string | null
+  latestManagedValueUsd?: number | null
+  latestCoveragePercent?: number | null
+  methodologyVersion: string
+  message?: string | null
+}
+
+export interface CoverageExclusion {
+  cusip: string
+  symbol?: string | null
+  issuerName: string
+  instrumentType: 'EQUITY' | 'OPTION'
+  valueUsd: number
+  reason: 'OPTION_NO_DAILY_PRICE' | 'UNRESOLVED_CUSIP' | 'PRICE_HISTORY_UNAVAILABLE'
+}
+
+export interface ValuationCoverage {
+  reportDate?: string | null
+  coveragePercent: number
+  thresholdPercent: number
+  exclusions: CoverageExclusion[]
+}
+
+export interface PerformancePoint {
+  date: string
+  value: number
+  coveragePercent: number
+  pointType: 'OFFICIAL_ANCHOR' | 'RETROSPECTIVE_ESTIMATE' | 'PUBLIC_ESTIMATE'
+}
+
+export interface PerformanceSeries {
+  type: 'SUPER_INVESTOR' | 'INDEX' | 'PORTFOLIO'
+  id: string
+  label: string
+  points: PerformancePoint[]
+}
+
+export interface PerformanceEvent {
+  date: string
+  type: 'REPORT_DATE' | 'PUBLICATION_DATE'
+  accessionNumber: string
+  secUrl: string
+}
+
+export interface SuperInvestorPerformance {
+  status: ValuationState
+  view: ValuationView
+  currency: 'USD'
+  period: string
+  methodology: string
+  coverage: {
+    latestPercent: number
+    minimumPercent: number
+    thresholdPercent: number
+  }
+  series: PerformanceSeries[]
+  events: PerformanceEvent[]
+  updatedAt?: string | null
+  message?: string | null
+}
+
 function getApiBaseUrl(): string {
   return config.API_URL.replace(/\/$/, '')
 }
@@ -137,6 +203,25 @@ export async function getSuperInvestorById(slug: string): Promise<InvestorDetail
 
 export function getConsensusReport(): Promise<ConsensusReport> {
   return getJson('/api/v2/super-investors/consensus')
+}
+
+export function getSuperInvestorValuationStatus(slug: string): Promise<ValuationStatus> {
+  return getJson(`/api/v2/super-investors/${encodeURIComponent(slug)}/valuation/status`)
+}
+
+export function getSuperInvestorValuationCoverage(slug: string): Promise<ValuationCoverage> {
+  return getJson(`/api/v2/super-investors/${encodeURIComponent(slug)}/valuation/coverage`)
+}
+
+export function getSuperInvestorPerformance(
+  slug: string,
+  period: string,
+  view: ValuationView,
+  benchmarks: string[] = []
+): Promise<SuperInvestorPerformance> {
+  const search = new URLSearchParams({ period, view })
+  benchmarks.forEach((benchmark) => search.append('benchmarks', benchmark))
+  return getJson(`/api/v2/super-investors/${encodeURIComponent(slug)}/performance?${search.toString()}`)
 }
 
 export async function getStockSuperInvestors(symbol: string): Promise<ConsensusStock | null> {

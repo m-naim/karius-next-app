@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { X, Plus, Search, BarChart3 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { getSuperInvestors, InvestorSummary } from '@/services/superInvestorService'
 
 export const benchmarkOptions = [
   { value: '^GSPC', label: 'S&P 500' },
@@ -26,6 +27,7 @@ interface BenchmarkSelectorProps {
 }
 
 export function validateBenchmark(value: string) {
+  if (/^SUPER_INVESTOR:[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value)) return true
   const regex = /^\^?[A-Z0-9.]{1,10}$/
   return regex.test(value)
 }
@@ -36,6 +38,21 @@ export default function BenchmarkSelector({
   onRemoveBenchmark,
 }: BenchmarkSelectorProps) {
   const [customBenchmark, setCustomBenchmark] = React.useState('')
+  const [superInvestors, setSuperInvestors] = React.useState<InvestorSummary[]>([])
+
+  React.useEffect(() => {
+    getSuperInvestors().then(setSuperInvestors).catch(() => setSuperInvestors([]))
+  }, [])
+
+  const labelFor = (benchmark: string) => {
+    const market = benchmarkOptions.find((option) => option.value === benchmark)?.label
+    if (market) return market
+    if (benchmark.startsWith('SUPER_INVESTOR:')) {
+      const slug = benchmark.slice('SUPER_INVESTOR:'.length)
+      return superInvestors.find((investor) => investor.slug === slug)?.displayName || slug
+    }
+    return benchmark
+  }
 
   const handleAddCustomBenchmark = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -70,6 +87,28 @@ export default function BenchmarkSelector({
               </DropdownMenuItem>
             ))}
           </DropdownMenuGroup>
+          {superInvestors.length > 0 && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Super Investors</DropdownMenuLabel>
+              <DropdownMenuGroup>
+                {superInvestors.map((investor) => {
+                  const value = `SUPER_INVESTOR:${investor.slug}`
+                  return (
+                    <DropdownMenuItem
+                      key={value}
+                      disabled={selectedBenchmarks.includes(value)}
+                      onClick={() => onAddBenchmark(value)}
+                      className="cursor-pointer"
+                    >
+                      <BarChart3 className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <span>{investor.displayName}</span>
+                    </DropdownMenuItem>
+                  )
+                })}
+              </DropdownMenuGroup>
+            </>
+          )}
           <DropdownMenuSeparator />
           <div className="p-2">
             <div className="flex gap-2">
@@ -99,7 +138,7 @@ export default function BenchmarkSelector({
             variant="secondary"
             className="h-7 items-center gap-1 pl-2 pr-1 font-medium"
           >
-            {benchmarkOptions.find((b) => b.value === benchmark)?.label || benchmark}
+            {labelFor(benchmark)}
             <button
               onClick={() => onRemoveBenchmark(benchmark)}
               className="ml-0.5 rounded-full p-0.5 hover:bg-gray-200"
