@@ -13,6 +13,7 @@ interface AllocationPieProps {
     industry?: string
   }>
   totalValue: number
+  currency?: string
 }
 
 type ViewType = 'assets' | 'sectors' | 'industries'
@@ -36,7 +37,11 @@ const PALETTE = [
 ]
 const getItemColor = (index: number) => PALETTE[index % PALETTE.length]
 
-const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
+const AllocationPie = ({
+  data,
+  totalValue,
+  currency = 'EUR',
+}: AllocationPieProps) => {
   const [view, setView] = useState<ViewType>('assets')
   const [hoveredData, setHoveredData] = useState<HoveredData | null>(null)
 
@@ -51,23 +56,22 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
         .sort((a, b) => b.value - a.value)
     }
 
-    const groupedData = data.reduce(
-      (acc, item) => {
-        const key =
-          view === 'sectors' ? item.sector || 'Non catégorisé' : item.industry || 'Non catégorisé'
-        if (!acc[key]) {
-          acc[key] = {
-            name: key,
-            value: 0,
-            weight: 0,
-          }
+    const groupedData = data.reduce((acc, item) => {
+      const key =
+        view === 'sectors'
+          ? item.sector || 'Non catégorisé'
+          : item.industry || 'Non catégorisé'
+      if (!acc[key]) {
+        acc[key] = {
+          name: key,
+          value: 0,
+          weight: 0,
         }
-        acc[key].value += item.totalValue
-        acc[key].weight += item.weight * 100
-        return acc
-      },
-      {} as Record<string, HoveredData>
-    )
+      }
+      acc[key].value += item.totalValue
+      acc[key].weight += item.weight * 100
+      return acc
+    }, {} as Record<string, HoveredData>)
     return Object.values(groupedData).sort((a, b) => b.value - a.value)
   }, [data, view])
 
@@ -77,11 +81,21 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
     setHoveredData(pieData[index])
   }
 
+  const formatValue = (value: number) =>
+    new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency,
+      notation: Math.abs(value) >= 1_000_000 ? 'compact' : 'standard',
+      maximumFractionDigits: Math.abs(value) >= 1_000_000 ? 1 : 0,
+    }).format(value)
+
   return (
     <div className="flex w-full flex-col gap-4">
       {/* FILTER TABS HEADER */}
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-muted-foreground">Catégorisation</span>
+        <span className="text-xs font-medium text-muted-foreground">
+          Catégorisation
+        </span>
         <Tabs value={view} onValueChange={(v) => setView(v as ViewType)}>
           <TabsList className="h-7 bg-muted/60 p-0.5">
             <TabsTrigger value="assets" className="h-6 px-2 text-[11px]">
@@ -132,9 +146,11 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
               <div className="max-w-[120px] truncate text-xs font-semibold uppercase text-muted-foreground">
                 {hoveredData.name}
               </div>
-              <div className="text-lg font-black">{hoveredData.weight.toFixed(1)}%</div>
+              <div className="text-lg font-black">
+                {hoveredData.weight.toFixed(1)}%
+              </div>
               <div className="text-xs font-medium text-muted-foreground">
-                {hoveredData.value.toLocaleString()} €
+                {formatValue(hoveredData.value)}
               </div>
             </div>
           ) : (
@@ -142,7 +158,9 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
               <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Total
               </div>
-              <div className="text-lg font-black">{totalValue.toLocaleString()} €</div>
+              <div className="text-lg font-black">
+                {formatValue(totalValue)}
+              </div>
               <div className="text-[11px] font-medium text-muted-foreground">
                 {pieData.length} catégories
               </div>
@@ -165,9 +183,13 @@ const AllocationPie = ({ data, totalValue }: AllocationPieProps) => {
                     className="h-2 w-2 shrink-0 rounded-full"
                     style={{ backgroundColor: getItemColor(i) }}
                   />
-                  <span className="truncate font-medium text-foreground">{item.name}</span>
+                  <span className="truncate font-medium text-foreground">
+                    {item.name}
+                  </span>
                 </div>
-                <span className="font-bold tabular-nums">{item.weight.toFixed(1)}%</span>
+                <span className="font-bold tabular-nums">
+                  {item.weight.toFixed(1)}%
+                </span>
               </div>
               <div className="h-1 w-full overflow-hidden rounded-full bg-muted/50">
                 <div

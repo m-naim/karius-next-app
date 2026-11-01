@@ -53,48 +53,88 @@ interface ColumnViewPresetManagerProps {
   systemPresets?: ColumnViewPreset[]
 }
 
-export const ALL_COLUMNS_CONFIG: { id: string; label: string; group: string; description: string }[] = [
+export const ALL_COLUMNS_CONFIG: {
+  id: string
+  label: string
+  group: string
+  description: string
+}[] = [
   {
     id: 'symbol',
     label: 'Actif / Symbole',
     group: 'Général',
-    description: 'Ticker boursier et nom officiel de la société ou de l’indice.',
+    description:
+      'Ticker boursier et nom officiel de la société ou de l’indice.',
   },
   {
     id: 'regularMarketPrice',
     label: 'Prix Actuel',
     group: 'Général',
-    description: 'Dernier cours de bourse coté en temps réel (ou à la clôture) dans la devise de cotation.',
+    description:
+      'Dernier cours de bourse coté en temps réel (ou à la clôture) dans la devise de cotation.',
   },
   {
     id: 'variation',
     label: 'Variation (%)',
     group: 'Général',
-    description: 'Performance du cours de bourse sur la période temporelle sélectionnée (1j, 1w, 1m, 1y, 5y).',
+    description:
+      'Performance du cours de bourse sur la période temporelle sélectionnée (1j, 1w, 1m, 1y, 5y).',
   },
   {
     id: 'sector',
     label: 'Secteur',
     group: 'Général',
-    description: 'Secteur d’activité macro-économique global (ex: Technologie, Santé, Consommation).',
+    description:
+      'Secteur d’activité macro-économique global (ex: Technologie, Santé, Consommation).',
   },
   {
     id: 'industry',
     label: 'Industrie',
     group: 'Général',
-    description: 'Secteur industriel spécifique et détaillé au sein de la société.',
+    description:
+      'Secteur industriel spécifique et détaillé au sein de la société.',
   },
   {
     id: 'marketCap',
     label: 'Capitalisation Boursière',
     group: 'Général',
-    description: 'Valeur de marché totale des actions en circulation (Prix × Nombre d’actions).',
+    description:
+      'Valeur de marché totale des actions en circulation (Prix × Nombre d’actions).',
   },
   {
     id: 'weight',
     label: 'Pondération (%)',
     group: 'Général',
-    description: 'Poids relatif en pourcentage de la valeur au sein de l’indice ou du portefeuille.',
+    description:
+      'Poids relatif en pourcentage de la valeur au sein de l’indice ou du portefeuille.',
+  },
+  {
+    id: 'changeType',
+    label: 'Activité 13F',
+    group: 'Déclaration 13F',
+    description:
+      'Évolution de la position par rapport au trimestre précédent : nouvelle, renforcée, allégée ou clôturée.',
+  },
+  {
+    id: 'sharesOrPrincipal',
+    label: 'Quantité déclarée',
+    group: 'Déclaration 13F',
+    description:
+      'Nombre d’actions ou quantité principale déclarée officiellement à la SEC.',
+  },
+  {
+    id: 'declaredValue',
+    label: 'Valeur déclarée',
+    group: 'Déclaration 13F',
+    description:
+      'Valeur officielle de la ligne publiée dans le formulaire 13F.',
+  },
+  {
+    id: 'cusip',
+    label: 'CUSIP',
+    group: 'Déclaration 13F',
+    description:
+      'Identifiant du titre utilisé dans la déclaration réglementaire américaine.',
   },
   {
     id: 'bep',
@@ -106,125 +146,145 @@ export const ALL_COLUMNS_CONFIG: { id: string; label: string; group: string; des
     id: 'variationPercent',
     label: 'Plus-value / Retour',
     group: 'Portefeuille',
-    description: 'Plus-value latente et rendement de la position par rapport au PRU.',
+    description:
+      'Plus-value latente et rendement de la position par rapport au PRU.',
   },
   {
     id: 'tags',
     label: 'Tags',
     group: 'Général',
-    description: 'Étiquettes personnalisées utilisateur associées à la valeur (ex: Core, Value, Watch).',
+    description:
+      'Étiquettes personnalisées utilisateur associées à la valeur (ex: Core, Value, Watch).',
   },
   {
     id: 'hasFundamentals',
     label: 'Fondamentaux Dispos',
     group: 'Général',
-    description: 'Indique si les données et états financiers historiques complets sont disponibles.',
+    description:
+      'Indique si les données et états financiers historiques complets sont disponibles.',
   },
 
   {
     id: 'trailingPE',
     label: 'P/E (12m)',
     group: 'Valuation',
-    description: 'PER historique : Prix rapporté aux bénéfices nets par action des 12 derniers mois (TTM).',
+    description:
+      'PER historique : Prix rapporté aux bénéfices nets par action des 12 derniers mois (TTM).',
   },
   {
     id: 'forwardPE',
     label: 'P/E Fwd',
     group: 'Valuation',
-    description: 'PER estimé : Prix rapporté aux bénéfices futurs attendus par les analystes à 12 mois.',
+    description:
+      'PER estimé : Prix rapporté aux bénéfices futurs attendus par les analystes à 12 mois.',
   },
   {
     id: 'priceToSales',
     label: 'P/S (Prix / CA)',
     group: 'Valuation',
-    description: 'Price-to-Sales : capitalisation boursière rapportée au chiffre d’affaires annuel.',
+    description:
+      'Price-to-Sales : capitalisation boursière rapportée au chiffre d’affaires annuel.',
   },
   {
     id: 'pe5y',
     label: 'P/E (5a proxy)',
     group: 'Valuation',
-    description: 'PER lissé sur 5 ans : Prix rapporté à la moyenne des bénéfices nets des 5 derniers exercices.',
+    description:
+      'PER lissé sur 5 ans : Prix rapporté à la moyenne des bénéfices nets des 5 derniers exercices.',
   },
   {
     id: 'psGrowth5y',
     label: 'PEG CA (5a)',
     group: 'Valuation',
-    description: 'P/S divisé par la croissance moyenne du chiffre d’affaires sur 5 ans, exprimée en points de pourcentage.',
+    description:
+      'P/S divisé par la croissance moyenne du chiffre d’affaires sur 5 ans, exprimée en points de pourcentage.',
   },
   {
     id: 'peg5y',
     label: 'PEG BPA (5a)',
     group: 'Valuation',
-    description: 'P/E divisé par la croissance moyenne du bénéfice par action sur 5 ans, exprimée en points de pourcentage.',
+    description:
+      'P/E divisé par la croissance moyenne du bénéfice par action sur 5 ans, exprimée en points de pourcentage.',
   },
   {
     id: 'dividendYield',
     label: 'Rendement Div. (%)',
     group: 'Valuation',
-    description: 'Rendement du dividende brut annuel rapporté au cours actuel de l’action.',
+    description:
+      'Rendement du dividende brut annuel rapporté au cours actuel de l’action.',
   },
 
   {
     id: 'roe',
     label: 'ROE (%)',
     group: 'Rentabilité',
-    description: 'Rentabilité des capitaux propres (Return on Equity). Un ROE > 15-20% traduit un fort Moat.',
+    description:
+      'Rentabilité des capitaux propres (Return on Equity). Un ROE > 15-20% traduit un fort Moat.',
   },
   {
     id: 'roa',
     label: 'ROA (%)',
     group: 'Rentabilité',
-    description: 'Rentabilité des actifs totaux (Return on Assets). Efficacité à rentabiliser ses actifs.',
+    description:
+      'Rentabilité des actifs totaux (Return on Assets). Efficacité à rentabiliser ses actifs.',
   },
   {
     id: 'roic',
     label: 'ROIC (5a) (%)',
     group: 'Rentabilité',
-    description: 'Rentabilité moyenne du capital investi sur 5 ans. Mesure clé d’allocation de capital (François Rochon).',
+    description:
+      'Rentabilité moyenne du capital investi sur 5 ans. Mesure clé d’allocation de capital (François Rochon).',
   },
 
   {
     id: 'growth',
     label: 'Croissance CA (1a)',
     group: 'Croissance',
-    description: 'Taux de croissance du chiffre d’affaires sur le dernier exercice annuel.',
+    description:
+      'Taux de croissance du chiffre d’affaires sur le dernier exercice annuel.',
   },
   {
     id: 'revGrowth',
     label: 'Croissance CA (5a)',
     group: 'Croissance',
-    description: 'Taux de croissance annuel moyen du chiffre d’affaires sur les 5 dernières années.',
+    description:
+      'Taux de croissance annuel moyen du chiffre d’affaires sur les 5 dernières années.',
   },
   {
     id: 'cagr5y',
     label: 'TCAC 5a (%)',
     group: 'Croissance',
-    description: 'Taux de Croissance Annuel Composé (CAGR) du cours de l’action sur 5 ans.',
+    description:
+      'Taux de Croissance Annuel Composé (CAGR) du cours de l’action sur 5 ans.',
   },
   {
     id: 'cagr10y',
     label: 'TCAC 10a (%)',
     group: 'Croissance',
-    description: 'Taux de Croissance Annuel Composé (CAGR) du cours de l’action sur 10 ans.',
+    description:
+      'Taux de Croissance Annuel Composé (CAGR) du cours de l’action sur 10 ans.',
   },
 
   {
     id: 'linearity10y',
     label: 'Linéarité (10a) (%)',
     group: 'Qualité & Score',
-    description: 'Régularité et constance de la hausse du cours sur 10 ans (score R² de régression logarithmique).',
+    description:
+      'Régularité et constance de la hausse du cours sur 10 ans (score R² de régression logarithmique).',
   },
   {
     id: 'ret_lin',
     label: 'Score (Ret×Lin) (%)',
     group: 'Qualité & Score',
-    description: 'Score composite Horus combinant la performance annuelle moyenne et la linéarité du cours.',
+    description:
+      'Score composite Horus combinant la performance annuelle moyenne et la linéarité du cours.',
   },
   {
     id: 'relativePerformances',
     label: 'Perf. Relative',
     group: 'Qualité & Score',
-    description: 'Performance de l’action comparée à son indice de référence (Benchmark) sur la période.',
+    description:
+      'Performance de l’action comparée à son indice de référence (Benchmark) sur la période.',
   },
 ]
 
@@ -232,7 +292,8 @@ export const SYSTEM_VIEW_PRESETS: ColumnViewPreset[] = [
   {
     id: 'standard',
     name: 'Standard / Synthèse',
-    description: 'Vue principale équilibrée (Prix, Variation, Secteur, P/E, Yield, Cap)',
+    description:
+      'Vue principale équilibrée (Prix, Variation, Secteur, P/E, Yield, Cap)',
     icon: '⚡',
     isSystem: true,
     columns: {
@@ -265,7 +326,8 @@ export const SYSTEM_VIEW_PRESETS: ColumnViewPreset[] = [
   {
     id: 'metrics5a',
     name: 'Metrics 5A',
-    description: 'Focus historique 5 ans (ROIC 5a, P/E moyen, Croissance CA 5a)',
+    description:
+      'Focus historique 5 ans (ROIC 5a, P/E moyen, Croissance CA 5a)',
     icon: '📊',
     isSystem: true,
     columns: {
@@ -294,7 +356,8 @@ export const SYSTEM_VIEW_PRESETS: ColumnViewPreset[] = [
   {
     id: 'quality',
     name: 'Qualité & Moat',
-    description: 'Rentabilité du capital (ROE, ROA, ROIC) et régularité (Linéarité 10a)',
+    description:
+      'Rentabilité du capital (ROE, ROA, ROIC) et régularité (Linéarité 10a)',
     icon: '💎',
     isSystem: true,
     columns: {
@@ -323,7 +386,8 @@ export const SYSTEM_VIEW_PRESETS: ColumnViewPreset[] = [
   {
     id: 'valuation',
     name: 'Valuation & Rendement',
-    description: 'Multiples de valorisation complets (P/E, P/S, P/E Fwd, Dividende)',
+    description:
+      'Multiples de valorisation complets (P/E, P/S, P/E Fwd, Dividende)',
     icon: '💰',
     isSystem: true,
     columns: {
@@ -367,7 +431,11 @@ export const SYSTEM_VIEW_PRESETS: ColumnViewPreset[] = [
       (acc, col) => ({ ...acc, [col.id]: true }),
       { actions: true }
     ),
-    order: ['symbol', ...ALL_COLUMNS_CONFIG.map((c) => c.id).filter((id) => id !== 'symbol'), 'actions'],
+    order: [
+      'symbol',
+      ...ALL_COLUMNS_CONFIG.map((c) => c.id).filter((id) => id !== 'symbol'),
+      'actions',
+    ],
   },
 ]
 
@@ -379,14 +447,18 @@ export function ColumnViewPresetManager({
   systemPresets: systemPresetsProp,
 }: ColumnViewPresetManagerProps) {
   const systemPresets = systemPresetsProp || SYSTEM_VIEW_PRESETS
-  const customPresetsStorageKey = storageScope === 'global'
-    ? CUSTOM_PRESETS_STORAGE_KEY
-    : `${CUSTOM_PRESETS_STORAGE_KEY}_${storageScope}`
-  const activePresetStorageKey = storageScope === 'global'
-    ? ACTIVE_PRESET_KEY
-    : `${ACTIVE_PRESET_KEY}_${storageScope}`
+  const customPresetsStorageKey =
+    storageScope === 'global'
+      ? CUSTOM_PRESETS_STORAGE_KEY
+      : `${CUSTOM_PRESETS_STORAGE_KEY}_${storageScope}`
+  const activePresetStorageKey =
+    storageScope === 'global'
+      ? ACTIVE_PRESET_KEY
+      : `${ACTIVE_PRESET_KEY}_${storageScope}`
   const [open, setOpen] = React.useState(false)
-  const [customPresets, setCustomPresets] = React.useState<ColumnViewPreset[]>([])
+  const [customPresets, setCustomPresets] = React.useState<ColumnViewPreset[]>(
+    []
+  )
   const [activePresetId, setActivePresetId] = React.useState<string>('standard')
   const [savedPresetId, setSavedPresetId] = React.useState<string | null>(null)
   const [persistenceLoaded, setPersistenceLoaded] = React.useState(false)
@@ -523,11 +595,19 @@ export function ColumnViewPresetManager({
 
       let fullOrder: string[]
       if (preset.order && preset.order.length > 0) {
-        const rest = table.getAllColumns().map((c) => c.id).filter((id) => !preset.order!.includes(id))
+        const rest = table
+          .getAllColumns()
+          .map((c) => c.id)
+          .filter((id) => !preset.order!.includes(id))
         fullOrder = [...preset.order, ...rest]
       } else {
-        const defaultOrder = Object.keys(preset.columns).filter((id) => preset.columns[id])
-        const restCols = table.getAllColumns().map((c) => c.id).filter((id) => !defaultOrder.includes(id))
+        const defaultOrder = Object.keys(preset.columns).filter(
+          (id) => preset.columns[id]
+        )
+        const restCols = table
+          .getAllColumns()
+          .map((c) => c.id)
+          .filter((id) => !defaultOrder.includes(id))
         fullOrder = [...defaultOrder, ...restCols]
       }
       table.setColumnOrder(fullOrder)
@@ -548,7 +628,9 @@ export function ColumnViewPresetManager({
       return
     }
 
-    const savedPreset = allPresets.find((preset) => preset.id === savedPresetId) || systemPresets[0]
+    const savedPreset =
+      allPresets.find((preset) => preset.id === savedPresetId) ||
+      systemPresets[0]
     hasRestoredPreset.current = true
     applyPreset(savedPreset)
   }, [allPresets, applyPreset, persistenceLoaded, savedPresetId, systemPresets])
@@ -670,7 +752,10 @@ export function ColumnViewPresetManager({
 
     setCustomPresets(updatedPresets)
     try {
-      localStorage.setItem(customPresetsStorageKey, JSON.stringify(updatedPresets))
+      localStorage.setItem(
+        customPresetsStorageKey,
+        JSON.stringify(updatedPresets)
+      )
     } catch (e) {
       console.error(e)
     }
@@ -704,7 +789,10 @@ export function ColumnViewPresetManager({
           <span className="truncate max-w-[130px] sm:max-w-[180px]">
             {activePreset ? activePreset.name : 'Vues'}
           </span>
-          <Badge variant="secondary" className="ml-0.5 px-1.5 py-0 text-[10px] font-extrabold">
+          <Badge
+            variant="secondary"
+            className="ml-0.5 px-1.5 py-0 text-[10px] font-extrabold"
+          >
             {visibleColumnIds.length} col.
           </Badge>
           <ChevronDown className="h-3.5 w-3.5 opacity-60" />
@@ -723,7 +811,8 @@ export function ColumnViewPresetManager({
                   Gestionnaire de Vues & Colonnes
                 </DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                  Glissez-déposez les colonnes pour réordonner, supprimez avec '×' ou cherchez des métriques à ajouter.
+                  Glissez-déposez les colonnes pour réordonner, supprimez avec
+                  '×' ou cherchez des métriques à ajouter.
                 </DialogDescription>
               </div>
             </div>
@@ -733,11 +822,17 @@ export function ColumnViewPresetManager({
         <Tabs defaultValue="columns" className="flex-1 flex flex-col min-h-0">
           <div className="px-4 sm:px-5 pt-3 pb-2 border-b border-border/40 bg-card shrink-0">
             <TabsList className="grid w-full grid-cols-2 h-9 p-1 bg-muted/50 rounded-lg">
-              <TabsTrigger value="columns" className="text-xs font-bold gap-1.5 rounded-md">
+              <TabsTrigger
+                value="columns"
+                className="text-xs font-bold gap-1.5 rounded-md"
+              >
                 <Columns className="h-3.5 w-3.5 text-primary" />
                 Colonnes de la Vue ({visibleColumnIds.length})
               </TabsTrigger>
-              <TabsTrigger value="presets" className="text-xs font-bold gap-1.5 rounded-md">
+              <TabsTrigger
+                value="presets"
+                className="text-xs font-bold gap-1.5 rounded-md"
+              >
                 <Sparkles className="h-3.5 w-3.5 text-amber-500" />
                 Vues Prédéfinies ({allPresets.length})
               </TabsTrigger>
@@ -745,12 +840,16 @@ export function ColumnViewPresetManager({
           </div>
 
           {/* TAB 1: COLONNES & REORDERNEMENT (DRAG & DROP) */}
-          <TabsContent value="columns" className="flex-1 min-h-0 p-4 sm:p-5 overflow-y-auto space-y-4 m-0">
+          <TabsContent
+            value="columns"
+            className="flex-1 min-h-0 p-4 sm:p-5 overflow-y-auto space-y-4 m-0"
+          >
             {/* SECTION 1: COLONNES ACTIVES (DRAG & DROP) */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <GripVertical className="h-3.5 w-3.5 text-primary" /> Colonnes Actives (Glisser-Déposer pour réordonner)
+                  <GripVertical className="h-3.5 w-3.5 text-primary" /> Colonnes
+                  Actives (Glisser-Déposer pour réordonner)
                 </span>
                 {!activePreset.isSystem && (
                   <Button
@@ -786,9 +885,13 @@ export function ColumnViewPresetManager({
                       }}
                       className={cn(
                         'group flex items-center justify-between px-3 py-2 rounded-xl border bg-card text-xs transition-all cursor-grab active:cursor-grabbing select-none',
-                        isDragging && 'opacity-40 border-primary border-dashed bg-primary/5',
-                        isDragOver && 'border-primary ring-2 ring-primary/20 scale-[1.01]',
-                        !isDragging && !isDragOver && 'border-border/70 hover:border-border hover:bg-muted/30 shadow-2xs'
+                        isDragging &&
+                          'opacity-40 border-primary border-dashed bg-primary/5',
+                        isDragOver &&
+                          'border-primary ring-2 ring-primary/20 scale-[1.01]',
+                        !isDragging &&
+                          !isDragOver &&
+                          'border-border/70 hover:border-border hover:bg-muted/30 shadow-2xs'
                       )}
                     >
                       <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
@@ -801,7 +904,9 @@ export function ColumnViewPresetManager({
 
                         <div className="flex flex-col min-w-0 overflow-hidden">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-foreground truncate">{label}</span>
+                            <span className="font-bold text-foreground truncate">
+                              {label}
+                            </span>
                             <Badge
                               variant="outline"
                               className="text-[9px] px-1.5 py-0 font-normal text-muted-foreground shrink-0"
@@ -859,7 +964,8 @@ export function ColumnViewPresetManager({
             {/* SECTION 2: AJOUTER DES COLONNES (RECHERCHE RAPIDE) */}
             <div className="space-y-2 pt-3 border-t border-border/40">
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <Plus className="h-3.5 w-3.5 text-emerald-500" /> Ajouter des Colonnes
+                <Plus className="h-3.5 w-3.5 text-emerald-500" /> Ajouter des
+                Colonnes
               </span>
 
               <div className="relative">
@@ -916,8 +1022,8 @@ export function ColumnViewPresetManager({
                 ) : (
                   <div className="col-span-2 p-3 text-center text-xs text-muted-foreground border border-dashed rounded-lg">
                     {addSearchTerm
-                      ? "Aucune colonne ne correspond à votre recherche"
-                      : "Toutes les colonnes sont actuellement affichées dans cette vue"}
+                      ? 'Aucune colonne ne correspond à votre recherche'
+                      : 'Toutes les colonnes sont actuellement affichées dans cette vue'}
                   </div>
                 )}
               </div>
@@ -949,17 +1055,23 @@ export function ColumnViewPresetManager({
                 onClick={() => applyPreset(systemPresets[0])}
                 className="h-8 text-xs text-muted-foreground hover:text-foreground shrink-0"
               >
-                <RotateCcw className="h-3.5 w-3.5 mr-1" /> Reinitialiser Standard
+                <RotateCcw className="h-3.5 w-3.5 mr-1" /> Reinitialiser
+                Standard
               </Button>
             </div>
           </TabsContent>
 
           {/* TAB 2: PRESETS MANAGER */}
-          <TabsContent value="presets" className="flex-1 min-h-0 p-4 sm:p-5 overflow-y-auto space-y-4 m-0">
+          <TabsContent
+            value="presets"
+            className="flex-1 min-h-0 p-4 sm:p-5 overflow-y-auto space-y-4 m-0"
+          >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {allPresets.map((preset) => {
                 const isActive = activePresetId === preset.id
-                const count = Object.values(preset.columns).filter(Boolean).length
+                const count = Object.values(preset.columns).filter(
+                  Boolean
+                ).length
 
                 return (
                   <div
@@ -992,7 +1104,9 @@ export function ColumnViewPresetManager({
 
                       {!preset.isSystem && (
                         <button
-                          onClick={(e) => handleDeleteCustomPreset(preset.id, e)}
+                          onClick={(e) =>
+                            handleDeleteCustomPreset(preset.id, e)
+                          }
                           title="Supprimer cette vue custom"
                           className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-all shrink-0"
                         >
@@ -1009,7 +1123,9 @@ export function ColumnViewPresetManager({
                         {count} colonnes
                       </Badge>
                       {preset.isSystem ? (
-                        <span className="text-muted-foreground/70">Système</span>
+                        <span className="text-muted-foreground/70">
+                          Système
+                        </span>
                       ) : (
                         <span className="text-amber-500 font-bold">Custom</span>
                       )}
