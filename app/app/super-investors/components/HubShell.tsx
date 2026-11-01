@@ -2,13 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import {
-  CalendarDays,
-  Database,
-  FileCheck2,
-  ShieldCheck,
-  Users,
-} from 'lucide-react'
+import { CalendarDays, ShieldCheck } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
@@ -40,44 +34,31 @@ export function HubShell({
   return (
     <main className="min-h-screen w-full bg-background">
       <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-5 px-4 py-6 md:px-8 md:py-8">
-        <header className="rounded-2xl border border-border/70 bg-card px-4 py-5 shadow-sm sm:px-6">
-          <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
-            <div className="max-w-3xl">
-              <div className="mb-2 flex flex-wrap items-center gap-2">
-                <Badge
-                  variant="outline"
-                  className="gap-1.5 border-emerald-600/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                >
-                  <ShieldCheck className="h-3.5 w-3.5" /> Données vérifiées SEC
-                  EDGAR
-                </Badge>
-                {formattedDate && (
-                  <Badge variant="secondary">
-                    Dernière période : {formattedDate}
-                  </Badge>
-                )}
-              </div>
-              <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
-                Super investisseurs
-              </h1>
-              <p className="mt-1.5 max-w-2xl text-sm leading-6 text-muted-foreground">
-                Comparez les performances estimées et explorez les positions
-                officiellement déclarées dans les formulaires 13F.
-              </p>
-            </div>
-            <div className="grid grid-cols-3 gap-2 text-center lg:min-w-[440px]">
-              <Metric
-                icon={Users}
-                label="Déclarants"
-                value={total == null ? '—' : String(total)}
-              />
-              <Metric
-                icon={Database}
-                label="Couverture"
-                value={coverage || 'Dès 1 %'}
-              />
-              <Metric icon={FileCheck2} label="Source" value="SEC 13F" />
-            </div>
+        <header className="flex flex-col gap-4 border-b border-border pb-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl">
+            <h1 className="text-2xl font-black tracking-tight text-foreground">
+              Explorer les super investisseurs
+            </h1>
+            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+              Comparez les performances estimées et les positions déclarées dans
+              les formulaires 13F.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span className="font-black tabular-nums">{total ?? '—'}</span>
+            <span className="text-muted-foreground">déclarants</span>
+            <Badge
+              variant="outline"
+              className="gap-1.5 border-emerald-600/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+            >
+              <ShieldCheck className="h-3.5 w-3.5" /> SEC 13F
+            </Badge>
+            {coverage && <Badge variant="secondary">{coverage}</Badge>}
+            {formattedDate && (
+              <span className="text-xs text-muted-foreground">
+                au {formattedDate}
+              </span>
+            )}
           </div>
         </header>
 
@@ -116,25 +97,5 @@ export function HubShell({
         </aside>
       </div>
     </main>
-  )
-}
-
-function Metric({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: typeof Users
-  label: string
-  value: string
-}) {
-  return (
-    <div className="min-w-0 rounded-xl border border-border/60 bg-background px-2 py-2.5">
-      <Icon className="mx-auto h-4 w-4 text-primary" />
-      <p className="mt-1 truncate text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-        {label}
-      </p>
-      <p className="truncate text-xs font-black">{value}</p>
-    </div>
   )
 }

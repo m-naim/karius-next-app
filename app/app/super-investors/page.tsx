@@ -7,18 +7,18 @@ import {
   ArrowDown,
   ArrowRight,
   ArrowUp,
+  ArrowUpDown,
   Search,
   ShieldAlert,
   TrendingUp,
 } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { cn } from '@/lib/utils'
 import {
   getSuperInvestorExplore,
-  InvestorExploreItem,
   InvestorExplorePage,
 } from '@/services/superInvestorService'
 import { HubShell } from './components/HubShell'
@@ -27,6 +27,8 @@ import { Pager } from './components/Pager'
 const sorts = [
   ['annualizedPerformance', 'Performance annualisée'],
   ['oneYearPerformance', 'Performance 1 an'],
+  ['cumulativePerformance', 'Performance cumulée'],
+  ['coveragePercent', 'Couverture'],
   ['totalValueUsd', 'Valeur 13F'],
   ['resolvedEquityCount', 'Nombre d’actions'],
   ['availableQuarters', 'Historique'],
@@ -42,32 +44,65 @@ const money = (value?: number) =>
         notation: 'compact',
         maximumFractionDigits: 1,
       }).format(value)
-const percent = (value?: number | null) =>
-  value == null ? '—' : `${value >= 0 ? '+' : ''}${value.toFixed(1)} %`
 
-function Performance({ investor }: { investor: InvestorExploreItem }) {
-  const value = investor.annualizedPerformance
+function PerformanceValue({ value }: { value?: number | null }) {
+  if (value == null) return <span className="text-muted-foreground">—</span>
+  return (
+    <span
+      className={cn(
+        'font-semibold tabular-nums',
+        value > 0 && 'text-emerald-600 dark:text-emerald-400',
+        value < 0 && 'text-rose-600 dark:text-rose-400',
+        value === 0 && 'text-foreground'
+      )}
+    >
+      {value > 0 ? '+' : ''}
+      {value.toFixed(2)} %
+    </span>
+  )
+}
+
+function Coverage({ value }: { value?: number | null }) {
+  if (value == null) return <span className="text-muted-foreground">—</span>
+  const partial = value < 50
   return (
     <div className="text-right">
-      <p
-        className={
-          value == null
-            ? 'font-bold text-muted-foreground'
-            : value >= 0
-            ? 'font-black tabular-nums text-emerald-600'
-            : 'font-black tabular-nums text-rose-600'
-        }
+      <span
+        className={cn(
+          'font-semibold tabular-nums',
+          partial ? 'text-amber-700 dark:text-amber-400' : 'text-foreground'
+        )}
       >
-        {percent(value)}
-      </p>
-      <p className="mt-0.5 text-[11px] text-muted-foreground">
-        1 an {percent(investor.oneYearPerformance)}
-      </p>
-      {value == null && investor.cumulativePerformance != null && (
-        <p className="text-[11px] text-muted-foreground">
-          Cumul {percent(investor.cumulativePerformance)}
-        </p>
+        {value.toFixed(1)} %
+      </span>
+      {partial && (
+        <span className="mt-0.5 flex items-center justify-end gap-1 text-[10px] text-amber-700 dark:text-amber-400">
+          <ShieldAlert className="h-3 w-3" /> partielle
+        </span>
       )}
+    </div>
+  )
+}
+
+function LoadingTable() {
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="flex gap-8 border-b bg-muted/30 px-4 py-3">
+        {[1, 2, 3, 4, 5].map((item) => (
+          <Skeleton key={item} className="h-3 w-24" />
+        ))}
+      </div>
+      {Array.from({ length: 8 }, (_, index) => (
+        <div
+          key={index}
+          className="flex items-center gap-8 border-b px-4 py-4 last:border-0"
+        >
+          <Skeleton className="h-9 w-72" />
+          <Skeleton className="ml-auto h-4 w-20" />
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+      ))}
     </div>
   )
 }
@@ -77,7 +112,7 @@ export default function Page() {
     <Suspense
       fallback={
         <main className="p-8">
-          <LoadingRows />
+          <LoadingTable />
         </main>
       }
     >
@@ -143,99 +178,233 @@ function InvestorExplore() {
     setPage(0)
   }
 
+  const SortIcon = ({ column }: { column: string }) => {
+    if (sort !== column)
+      return <ArrowUpDown className="ml-1 h-3 w-3 opacity-30" />
+    return direction === 'ASC' ? (
+      <ArrowUp className="ml-1 h-3 w-3 text-primary" />
+    ) : (
+      <ArrowDown className="ml-1 h-3 w-3 text-primary" />
+    )
+  }
+
   return (
     <HubShell
       total={data?.totalElements}
       coverage="Classement dès 1 %"
       latestDate={data?.content[0]?.latestReportDate}
     >
-      <section className="rounded-2xl border border-border/70 bg-card p-3 shadow-sm sm:p-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="relative w-full lg:max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(event) => {
-                setQuery(event.target.value)
-                setPage(0)
-              }}
-              className="h-10 pl-9"
-              placeholder="Investisseur, fonds, style ou CIK…"
-            />
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <label className="text-xs font-semibold text-muted-foreground">
-              Trier par{' '}
-              <select
-                value={sort}
-                onChange={(event) => changeSort(event.target.value)}
-                className="ml-1 h-9 rounded-lg border bg-background px-2 font-bold text-foreground"
-              >
-                {sorts.map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setDirection(direction === 'ASC' ? 'DESC' : 'ASC')}
-              aria-label="Inverser le tri"
-            >
-              {direction === 'ASC' ? (
-                <ArrowUp className="h-4 w-4" />
-              ) : (
-                <ArrowDown className="h-4 w-4" />
-              )}
-            </Button>
-            <select
-              value={size}
-              onChange={(event) => {
-                setSize(Number(event.target.value))
-                setPage(0)
-              }}
-              className="h-9 rounded-lg border bg-background px-2 text-xs font-bold"
-            >
-              <option value={15}>15 / page</option>
-              <option value={30}>30 / page</option>
-              <option value={50}>50 / page</option>
-            </select>
-          </div>
+      <section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:max-w-sm">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(event) => {
+              setQuery(event.target.value)
+              setPage(0)
+            }}
+            className="h-10 pl-9"
+            placeholder="Investisseur, fonds, style ou CIK…"
+          />
         </div>
-        <p className="mt-3 border-t pt-3 text-xs text-muted-foreground">
-          {data?.totalElements ?? 0} investisseur
-          {data?.totalElements === 1 ? '' : 's'} · la couverture qualifie chaque
-          performance.
-        </p>
+        <div className="flex items-center gap-2">
+          <select
+            value={sort}
+            onChange={(event) => changeSort(event.target.value)}
+            aria-label="Trier les investisseurs"
+            className="h-9 min-w-0 rounded-lg border border-border bg-background px-2 text-xs font-semibold"
+          >
+            {sorts.map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-9 w-9"
+            onClick={() => setDirection(direction === 'ASC' ? 'DESC' : 'ASC')}
+            aria-label="Inverser le tri"
+          >
+            {direction === 'ASC' ? (
+              <ArrowUp className="h-4 w-4" />
+            ) : (
+              <ArrowDown className="h-4 w-4" />
+            )}
+          </Button>
+          <select
+            value={size}
+            onChange={(event) => {
+              setSize(Number(event.target.value))
+              setPage(0)
+            }}
+            aria-label="Résultats par page"
+            className="h-9 rounded-lg border border-border bg-background px-2 text-xs font-semibold"
+          >
+            <option value={15}>15</option>
+            <option value={30}>30</option>
+            <option value={50}>50</option>
+          </select>
+        </div>
       </section>
 
       {error ? (
         <ErrorState />
       ) : loading ? (
-        <LoadingRows />
+        <LoadingTable />
       ) : data?.content.length ? (
         <>
-          <Card className="hidden overflow-hidden rounded-2xl border-border/70 md:block">
-            <div className="grid grid-cols-[minmax(230px,1.5fr)_140px_130px_125px_110px_40px] gap-3 border-b bg-muted/30 px-5 py-3 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
-              <span>Investisseur</span>
-              <span className="text-right">Performance</span>
-              <span className="text-right">Actions résolues</span>
-              <span className="text-right">Valeur 13F</span>
-              <span className="text-right">Couverture</span>
-              <span />
-            </div>
-            <div className="divide-y">
-              {data.content.map((investor) => (
-                <InvestorRow key={investor.slug} investor={investor} />
-              ))}
-            </div>
-          </Card>
-          <div className="space-y-3 md:hidden">
-            {data.content.map((investor) => (
-              <InvestorCard key={investor.slug} investor={investor} />
-            ))}
+          <div className="overflow-x-auto rounded-xl border border-border bg-card">
+            <table className="w-full min-w-[1280px] border-collapse text-sm">
+              <thead className="border-b border-border bg-muted/35 text-xs text-muted-foreground">
+                <tr>
+                  <SortableHead
+                    label="Investisseur"
+                    column="displayName"
+                    onSort={changeSort}
+                    align="left"
+                  >
+                    <SortIcon column="displayName" />
+                  </SortableHead>
+                  <SortableHead
+                    label="Perf. annualisée"
+                    column="annualizedPerformance"
+                    onSort={changeSort}
+                  >
+                    <SortIcon column="annualizedPerformance" />
+                  </SortableHead>
+                  <SortableHead
+                    label="1 an"
+                    column="oneYearPerformance"
+                    onSort={changeSort}
+                  >
+                    <SortIcon column="oneYearPerformance" />
+                  </SortableHead>
+                  <SortableHead
+                    label="Cumulée"
+                    column="cumulativePerformance"
+                    onSort={changeSort}
+                  >
+                    <SortIcon column="cumulativePerformance" />
+                  </SortableHead>
+                  <SortableHead
+                    label="Couverture"
+                    column="coveragePercent"
+                    onSort={changeSort}
+                  >
+                    <SortIcon column="coveragePercent" />
+                  </SortableHead>
+                  <SortableHead
+                    label="Actions"
+                    column="resolvedEquityCount"
+                    onSort={changeSort}
+                  >
+                    <SortIcon column="resolvedEquityCount" />
+                  </SortableHead>
+                  <SortableHead
+                    label="Valeur 13F"
+                    column="totalValueUsd"
+                    onSort={changeSort}
+                  >
+                    <SortIcon column="totalValueUsd" />
+                  </SortableHead>
+                  <SortableHead
+                    label="Historique"
+                    column="availableQuarters"
+                    onSort={changeSort}
+                  >
+                    <SortIcon column="availableQuarters" />
+                  </SortableHead>
+                  <th className="w-14 px-3 py-3">
+                    <span className="sr-only">Ouvrir</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/70">
+                {data.content.map((investor, index) => (
+                  <tr
+                    key={investor.slug}
+                    className="group transition-colors hover:bg-muted/35"
+                  >
+                    <td className="sticky left-0 z-[1] min-w-[320px] bg-card px-4 py-3 group-hover:bg-muted">
+                      <div className="flex items-center gap-3">
+                        <span className="w-7 text-right text-xs font-semibold tabular-nums text-muted-foreground">
+                          {page * size + index + 1}
+                        </span>
+                        <Link
+                          href={`/app/super-investors/${investor.slug}`}
+                          className="flex min-w-0 items-center gap-2.5 hover:text-primary"
+                        >
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <TrendingUp className="h-3.5 w-3.5" />
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block max-w-[210px] truncate font-bold">
+                              {investor.displayName}
+                            </span>
+                            <span className="block max-w-[210px] truncate text-[11px] text-muted-foreground">
+                              {investor.fundDisplayName} · {investor.style}
+                            </span>
+                          </span>
+                        </Link>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <PerformanceValue
+                        value={investor.annualizedPerformance}
+                      />
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <PerformanceValue value={investor.oneYearPerformance} />
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <PerformanceValue
+                        value={investor.cumulativePerformance}
+                      />
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Coverage value={investor.coveragePercent} />
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <span className="font-semibold tabular-nums">
+                        {investor.resolvedEquityCount} /{' '}
+                        {investor.totalPositionCount}
+                      </span>
+                      <span className="block text-[10px] text-muted-foreground">
+                        résolues / lignes
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right font-semibold tabular-nums">
+                      {money(investor.totalValueUsd)}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <span className="font-semibold tabular-nums">
+                        {investor.availableQuarters}
+                      </span>
+                      <span className="block text-[10px] text-muted-foreground">
+                        trimestres
+                      </span>
+                    </td>
+                    <td className="px-3 py-3 text-right">
+                      <Button
+                        asChild
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                      >
+                        <Link
+                          href={`/app/super-investors/${investor.slug}`}
+                          aria-label={`Ouvrir ${investor.displayName}`}
+                        >
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
           <Pager page={page} totalPages={data.totalPages} onChange={setPage} />
         </>
@@ -252,111 +421,43 @@ function InvestorExplore() {
   )
 }
 
-function InvestorRow({ investor }: { investor: InvestorExploreItem }) {
+function SortableHead({
+  label,
+  column,
+  onSort,
+  children,
+  align = 'right',
+}: {
+  label: string
+  column: string
+  onSort: (column: string) => void
+  children: React.ReactNode
+  align?: 'left' | 'right'
+}) {
   return (
-    <Link
-      href={`/app/super-investors/${investor.slug}`}
-      className="group grid grid-cols-[minmax(230px,1.5fr)_140px_130px_125px_110px_40px] items-center gap-3 px-5 py-4 hover:bg-primary/[0.035]"
-    >
-      <Identity investor={investor} />
-      <Performance investor={investor} />
-      <div className="text-right">
-        <p className="font-bold tabular-nums">
-          {investor.resolvedEquityCount} / {investor.totalPositionCount}
-        </p>
-        <p className="text-[11px] text-muted-foreground">
-          {investor.availableQuarters} trimestres
-        </p>
-      </div>
-      <p className="text-right text-sm font-bold tabular-nums">
-        {money(investor.totalValueUsd)}
-      </p>
-      <Coverage value={investor.coveragePercent} />
-      <ArrowRight className="h-4 w-4 justify-self-end text-muted-foreground group-hover:text-primary" />
-    </Link>
-  )
-}
-
-function InvestorCard({ investor }: { investor: InvestorExploreItem }) {
-  return (
-    <Link href={`/app/super-investors/${investor.slug}`}>
-      <Card className="p-4 hover:border-primary/30">
-        <div className="flex items-start justify-between gap-3">
-          <Identity investor={investor} />
-          <Performance investor={investor} />
-        </div>
-        <div className="mt-4 grid grid-cols-3 gap-2 border-t pt-3 text-xs">
-          <div>
-            <p className="text-muted-foreground">Actions</p>
-            <p className="font-bold">
-              {investor.resolvedEquityCount}/{investor.totalPositionCount}
-            </p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Valeur</p>
-            <p className="font-bold">{money(investor.totalValueUsd)}</p>
-          </div>
-          <div>
-            <p className="text-muted-foreground">Couverture</p>
-            <Coverage value={investor.coveragePercent} />
-          </div>
-        </div>
-      </Card>
-    </Link>
-  )
-}
-
-function Identity({ investor }: { investor: InvestorExploreItem }) {
-  return (
-    <div className="flex min-w-0 items-center gap-3">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-        <TrendingUp className="h-4 w-4" />
-      </div>
-      <div className="min-w-0">
-        <p className="truncate text-sm font-black">{investor.displayName}</p>
-        <p className="truncate text-xs text-muted-foreground">
-          {investor.fundDisplayName} · {investor.style}
-        </p>
-        <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
-          CIK {investor.cik}
-        </p>
-      </div>
-    </div>
-  )
-}
-
-function Coverage({ value }: { value?: number | null }) {
-  const low = value != null && value < 50
-  return (
-    <div className="text-right">
-      <Badge
-        variant="outline"
-        className={
-          low
-            ? 'border-amber-500/40 bg-amber-500/10 text-amber-700'
-            : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700'
-        }
-      >
-        {value == null ? '—' : `${value.toFixed(1)} %`}
-      </Badge>
-      {low && (
-        <p className="mt-1 flex items-center justify-end gap-1 text-[10px] text-amber-700">
-          <ShieldAlert className="h-3 w-3" />
-          partielle
-        </p>
+    <th
+      className={cn(
+        'whitespace-nowrap px-4 py-3 font-semibold',
+        align === 'right'
+          ? 'text-right'
+          : 'sticky left-0 z-10 min-w-[320px] bg-muted text-left'
       )}
-    </div>
+    >
+      <button
+        type="button"
+        onClick={() => onSort(column)}
+        className={cn(
+          'inline-flex items-center hover:text-foreground',
+          align === 'right' && 'ml-auto'
+        )}
+      >
+        {label}
+        {children}
+      </button>
+    </th>
   )
 }
-function LoadingRows() {
-  return (
-    <div className="space-y-2">
-      {Array.from({ length: 6 }, (_, index) => (
-        <Skeleton key={index} className="h-20 w-full rounded-xl" />
-      ))}
-    </div>
-  )
-}
+
 function ErrorState() {
   return (
     <Card className="border-rose-500/25 p-10 text-center">
