@@ -1,342 +1,376 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import {
-  ArrowDownRight,
+  ArrowDown,
   ArrowRight,
-  ArrowUpRight,
-  Building2,
-  CalendarDays,
-  Database,
-  FileCheck2,
+  ArrowUp,
   Search,
-  ShieldCheck,
-  Users,
+  ShieldAlert,
+  TrendingUp,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
-  ConsensusReport,
-  ConsensusStock,
-  getConsensusReport,
-  getSuperInvestors,
-  InvestorSummary,
+  getSuperInvestorExplore,
+  InvestorExploreItem,
+  InvestorExplorePage,
 } from '@/services/superInvestorService'
-import { cn } from '@/lib/utils'
+import { HubShell } from './components/HubShell'
+import { Pager } from './components/Pager'
 
-type Tab = 'INVESTORS' | 'MOST_OWNED' | 'TOP_BUYS' | 'TOP_SELLS'
-
-const tabs: Array<{ id: Tab; label: string }> = [
-  { id: 'INVESTORS', label: 'Déclarants' },
-  { id: 'MOST_OWNED', label: 'Plus détenues' },
-  { id: 'TOP_BUYS', label: 'Renforcements' },
-  { id: 'TOP_SELLS', label: 'Allègements' },
+const sorts = [
+  ['annualizedPerformance', 'Performance annualisée'],
+  ['oneYearPerformance', 'Performance 1 an'],
+  ['totalValueUsd', 'Valeur 13F'],
+  ['resolvedEquityCount', 'Nombre d’actions'],
+  ['availableQuarters', 'Historique'],
+  ['displayName', 'Nom'],
 ]
 
-function formatMoney(value?: number) {
-  if (value == null || Number.isNaN(value)) return '—'
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'USD',
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  }).format(value)
+const money = (value?: number) =>
+  value == null
+    ? '—'
+    : new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: 'USD',
+        notation: 'compact',
+        maximumFractionDigits: 1,
+      }).format(value)
+const percent = (value?: number | null) =>
+  value == null ? '—' : `${value >= 0 ? '+' : ''}${value.toFixed(1)} %`
+
+function Performance({ investor }: { investor: InvestorExploreItem }) {
+  const value = investor.annualizedPerformance
+  return (
+    <div className="text-right">
+      <p
+        className={
+          value == null
+            ? 'font-bold text-muted-foreground'
+            : value >= 0
+            ? 'font-black tabular-nums text-emerald-600'
+            : 'font-black tabular-nums text-rose-600'
+        }
+      >
+        {percent(value)}
+      </p>
+      <p className="mt-0.5 text-[11px] text-muted-foreground">
+        1 an {percent(investor.oneYearPerformance)}
+      </p>
+      {value == null && investor.cumulativePerformance != null && (
+        <p className="text-[11px] text-muted-foreground">
+          Cumul {percent(investor.cumulativePerformance)}
+        </p>
+      )}
+    </div>
+  )
 }
 
-function formatDate(value?: string) {
-  if (!value) return '—'
-  return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(new Date(`${value}T12:00:00`))
+export default function Page() {
+  return (
+    <Suspense
+      fallback={
+        <main className="p-8">
+          <LoadingRows />
+        </main>
+      }
+    >
+      <InvestorExplore />
+    </Suspense>
+  )
 }
 
-export default function SuperInvestorsAppPage() {
-  const [investors, setInvestors] = useState<InvestorSummary[]>([])
-  const [consensus, setConsensus] = useState<ConsensusReport | null>(null)
-  const [activeTab, setActiveTab] = useState<Tab>('INVESTORS')
-  const [query, setQuery] = useState('')
+function InvestorExplore() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+  const [page, setPage] = useState(
+    Math.max(0, Number(searchParams.get('page') || 1) - 1)
+  )
+  const [size, setSize] = useState(
+    [15, 30, 50].includes(Number(searchParams.get('size')))
+      ? Number(searchParams.get('size'))
+      : 15
+  )
+  const [sort, setSort] = useState(
+    searchParams.get('sort') || 'annualizedPerformance'
+  )
+  const [direction, setDirection] = useState<'ASC' | 'DESC'>(
+    searchParams.get('direction') === 'ASC' ? 'ASC' : 'DESC'
+  )
+  const [query, setQuery] = useState(searchParams.get('query') || '')
+  const [data, setData] = useState<InvestorExplorePage | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState(false)
 
   useEffect(() => {
-    let active = true
-    Promise.all([getSuperInvestors(), getConsensusReport()])
-      .then(([investorData, consensusData]) => {
-        if (!active) return
-        setInvestors(investorData)
-        setConsensus(consensusData)
-      })
-      .catch(() => active && setError('Les données 13F vérifiées sont momentanément indisponibles.'))
-      .finally(() => active && setLoading(false))
-    return () => {
-      active = false
+    const timer = window.setTimeout(
+      () => {
+        setLoading(true)
+        setError(false)
+        getSuperInvestorExplore({ page, size, sort, direction, query })
+          .then(setData)
+          .catch(() => setError(true))
+          .finally(() => setLoading(false))
+        const params = new URLSearchParams()
+        if (page) params.set('page', String(page + 1))
+        if (size !== 15) params.set('size', String(size))
+        if (sort !== 'annualizedPerformance') params.set('sort', sort)
+        if (direction !== 'DESC') params.set('direction', direction)
+        if (query.trim()) params.set('query', query.trim())
+        router.replace(`${pathname}${params.size ? `?${params}` : ''}`, {
+          scroll: false,
+        })
+      },
+      query ? 300 : 0
+    )
+    return () => window.clearTimeout(timer)
+  }, [direction, page, pathname, query, router, size, sort])
+
+  const changeSort = (value: string) => {
+    if (value === sort)
+      setDirection((current) => (current === 'ASC' ? 'DESC' : 'ASC'))
+    else {
+      setSort(value)
+      setDirection(value === 'displayName' ? 'ASC' : 'DESC')
     }
-  }, [])
-
-  const filteredInvestors = useMemo(() => {
-    const needle = query.trim().toLocaleLowerCase('fr')
-    if (!needle) return investors
-    return investors.filter((investor) =>
-      [investor.displayName, investor.fundDisplayName, investor.style, investor.legalName, investor.cik]
-        .filter(Boolean)
-        .some((value) => value.toLocaleLowerCase('fr').includes(needle))
-    )
-  }, [investors, query])
-
-  const consensusRows = useMemo(() => {
-    const source =
-      activeTab === 'MOST_OWNED'
-        ? consensus?.mostOwned
-        : activeTab === 'TOP_BUYS'
-          ? consensus?.topBuys
-          : consensus?.topSells
-    const needle = query.trim().toLocaleLowerCase('fr')
-    if (!source) return []
-    if (!needle) return source
-    return source.filter((stock) =>
-      [stock.symbol, stock.issuerName, ...stock.holders.map((holder) => holder.investorName)]
-        .some((value) => value.toLocaleLowerCase('fr').includes(needle))
-    )
-  }, [activeTab, consensus, query])
-
-  const latestReportDate = investors
-    .map((investor) => investor.latestReportDate)
-    .filter(Boolean)
-    .sort()
-    .at(-1)
+    setPage(0)
+  }
 
   return (
-    <main className="min-h-screen w-full bg-background">
-      <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-6 px-4 py-6 md:px-8 md:py-8">
-        <header className="border-b border-border pb-6">
-          <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
-            <div className="max-w-3xl">
-              <div className="mb-3 flex flex-wrap items-center gap-2">
-                <Badge variant="outline" className="gap-1.5 border-emerald-600/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
-                  <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
-                  Données vérifiées sur SEC EDGAR
-                </Badge>
-                {latestReportDate && (
-                  <Badge variant="secondary" className="font-mono font-medium">
-                    Dernière période : {formatDate(latestReportDate)}
-                  </Badge>
-                )}
-              </div>
-              <h1 className="p-0 text-2xl font-bold tracking-[-0.025em] text-foreground sm:text-3xl">
-                Déclarations 13F des super investisseurs
-              </h1>
-              <p className="mb-0 mt-2 max-w-2xl text-sm font-normal leading-6 text-muted-foreground">
-                Consultez les positions officiellement déclarées, leur évolution trimestrielle et les documents sources. La SEC reste la référence de chaque donnée publiée.
-              </p>
-            </div>
-
-            <div className="relative w-full lg:w-80">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-              <Input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Rechercher un déclarant ou un titre"
-                aria-label="Rechercher un déclarant ou un titre"
-                className="h-10 bg-card pl-9"
-              />
-            </div>
+    <HubShell
+      total={data?.totalElements}
+      coverage="Classement dès 1 %"
+      latestDate={data?.content[0]?.latestReportDate}
+    >
+      <section className="rounded-2xl border border-border/70 bg-card p-3 shadow-sm sm:p-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="relative w-full lg:max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(event) => {
+                setQuery(event.target.value)
+                setPage(0)
+              }}
+              className="h-10 pl-9"
+              placeholder="Investisseur, fonds, style ou CIK…"
+            />
           </div>
-        </header>
-
-        <section aria-label="État des données" className="grid overflow-hidden rounded-xl border border-border bg-card sm:grid-cols-3">
-          <TrustMetric icon={Users} label="Déclarants publiés" value={`${investors.length} / 13`} />
-          <TrustMetric icon={Database} label="Couverture du consensus" value={consensus?.coverageLabel || 'En attente'} />
-          <TrustMetric icon={FileCheck2} label="Méthode" value="Accessions SEC auditées" />
-        </section>
-
-        <nav aria-label="Vues Super Investors" className="flex gap-1 overflow-x-auto border-b border-border">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              aria-current={activeTab === tab.id ? 'page' : undefined}
-              className={cn(
-                'relative shrink-0 px-3 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-                activeTab === tab.id && 'text-foreground after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:bg-primary'
-              )}
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="text-xs font-semibold text-muted-foreground">
+              Trier par{' '}
+              <select
+                value={sort}
+                onChange={(event) => changeSort(event.target.value)}
+                className="ml-1 h-9 rounded-lg border bg-background px-2 font-bold text-foreground"
+              >
+                {sorts.map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setDirection(direction === 'ASC' ? 'DESC' : 'ASC')}
+              aria-label="Inverser le tri"
             >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
+              {direction === 'ASC' ? (
+                <ArrowUp className="h-4 w-4" />
+              ) : (
+                <ArrowDown className="h-4 w-4" />
+              )}
+            </Button>
+            <select
+              value={size}
+              onChange={(event) => {
+                setSize(Number(event.target.value))
+                setPage(0)
+              }}
+              className="h-9 rounded-lg border bg-background px-2 text-xs font-bold"
+            >
+              <option value={15}>15 / page</option>
+              <option value={30}>30 / page</option>
+              <option value={50}>50 / page</option>
+            </select>
+          </div>
+        </div>
+        <p className="mt-3 border-t pt-3 text-xs text-muted-foreground">
+          {data?.totalElements ?? 0} investisseur
+          {data?.totalElements === 1 ? '' : 's'} · la couverture qualifie chaque
+          performance.
+        </p>
+      </section>
 
-        {error ? (
-          <ErrorState message={error} />
-        ) : loading ? (
-          <LoadingState />
-        ) : activeTab === 'INVESTORS' ? (
-          <InvestorList investors={filteredInvestors} />
-        ) : (
-          <ConsensusTable rows={consensusRows} tab={activeTab} />
-        )}
-
-        <aside className="flex items-start gap-3 rounded-lg bg-muted/60 px-4 py-3 text-xs leading-5 text-muted-foreground">
-          <CalendarDays className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-          <p className="mb-0 text-xs font-normal leading-5 text-muted-foreground">
-            Les formulaires 13F sont publiés après la fin du trimestre et ne couvrent pas nécessairement les liquidités, positions vendeuses, obligations ou titres étrangers du gestionnaire.
+      {error ? (
+        <ErrorState />
+      ) : loading ? (
+        <LoadingRows />
+      ) : data?.content.length ? (
+        <>
+          <Card className="hidden overflow-hidden rounded-2xl border-border/70 md:block">
+            <div className="grid grid-cols-[minmax(230px,1.5fr)_140px_130px_125px_110px_40px] gap-3 border-b bg-muted/30 px-5 py-3 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+              <span>Investisseur</span>
+              <span className="text-right">Performance</span>
+              <span className="text-right">Actions résolues</span>
+              <span className="text-right">Valeur 13F</span>
+              <span className="text-right">Couverture</span>
+              <span />
+            </div>
+            <div className="divide-y">
+              {data.content.map((investor) => (
+                <InvestorRow key={investor.slug} investor={investor} />
+              ))}
+            </div>
+          </Card>
+          <div className="space-y-3 md:hidden">
+            {data.content.map((investor) => (
+              <InvestorCard key={investor.slug} investor={investor} />
+            ))}
+          </div>
+          <Pager page={page} totalPages={data.totalPages} onChange={setPage} />
+        </>
+      ) : (
+        <Card className="border-dashed p-12 text-center">
+          <Search className="mx-auto h-6 w-6 text-muted-foreground" />
+          <h2 className="mt-3 font-bold">Aucun investisseur trouvé</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Essayez un autre nom, fonds, style ou CIK.
           </p>
-        </aside>
-      </div>
-    </main>
+        </Card>
+      )}
+    </HubShell>
   )
 }
 
-function TrustMetric({ icon: Icon, label, value }: { icon: typeof Users; label: string; value: string }) {
+function InvestorRow({ investor }: { investor: InvestorExploreItem }) {
   return (
-    <div className="flex min-h-20 items-center gap-3 border-b border-border px-4 py-3 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-        <Icon className="h-4 w-4" aria-hidden="true" />
+    <Link
+      href={`/app/super-investors/${investor.slug}`}
+      className="group grid grid-cols-[minmax(230px,1.5fr)_140px_130px_125px_110px_40px] items-center gap-3 px-5 py-4 hover:bg-primary/[0.035]"
+    >
+      <Identity investor={investor} />
+      <Performance investor={investor} />
+      <div className="text-right">
+        <p className="font-bold tabular-nums">
+          {investor.resolvedEquityCount} / {investor.totalPositionCount}
+        </p>
+        <p className="text-[11px] text-muted-foreground">
+          {investor.availableQuarters} trimestres
+        </p>
+      </div>
+      <p className="text-right text-sm font-bold tabular-nums">
+        {money(investor.totalValueUsd)}
+      </p>
+      <Coverage value={investor.coveragePercent} />
+      <ArrowRight className="h-4 w-4 justify-self-end text-muted-foreground group-hover:text-primary" />
+    </Link>
+  )
+}
+
+function InvestorCard({ investor }: { investor: InvestorExploreItem }) {
+  return (
+    <Link href={`/app/super-investors/${investor.slug}`}>
+      <Card className="p-4 hover:border-primary/30">
+        <div className="flex items-start justify-between gap-3">
+          <Identity investor={investor} />
+          <Performance investor={investor} />
+        </div>
+        <div className="mt-4 grid grid-cols-3 gap-2 border-t pt-3 text-xs">
+          <div>
+            <p className="text-muted-foreground">Actions</p>
+            <p className="font-bold">
+              {investor.resolvedEquityCount}/{investor.totalPositionCount}
+            </p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Valeur</p>
+            <p className="font-bold">{money(investor.totalValueUsd)}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Couverture</p>
+            <Coverage value={investor.coveragePercent} />
+          </div>
+        </div>
+      </Card>
+    </Link>
+  )
+}
+
+function Identity({ investor }: { investor: InvestorExploreItem }) {
+  return (
+    <div className="flex min-w-0 items-center gap-3">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        <TrendingUp className="h-4 w-4" />
       </div>
       <div className="min-w-0">
-        <p className="mb-0 text-xs font-medium text-muted-foreground">{label}</p>
-        <p className="mb-0 truncate text-sm font-semibold text-foreground">{value}</p>
+        <p className="truncate text-sm font-black">{investor.displayName}</p>
+        <p className="truncate text-xs text-muted-foreground">
+          {investor.fundDisplayName} · {investor.style}
+        </p>
+        <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">
+          CIK {investor.cik}
+        </p>
       </div>
     </div>
   )
 }
 
-function InvestorList({ investors }: { investors: InvestorSummary[] }) {
-  if (investors.length === 0) {
-    return <EmptyState title="Aucun déclarant trouvé" detail="Modifiez la recherche ou vérifiez que les CIK ont été validés." />
-  }
-
+function Coverage({ value }: { value?: number | null }) {
+  const low = value != null && value < 50
   return (
-    <section aria-label="Déclarants 13F" className="overflow-hidden rounded-xl border border-border bg-card">
-      <div className="hidden grid-cols-[minmax(240px,1.3fr)_minmax(180px,1fr)_150px_130px_44px] gap-4 border-b border-border bg-muted/50 px-5 py-2.5 text-xs font-semibold text-muted-foreground lg:grid">
-        <span>Déclarant</span>
-        <span>Identité SEC</span>
-        <span>Dernière période</span>
-        <span className="text-right">Valeur 13F</span>
-        <span className="sr-only">Ouvrir</span>
-      </div>
-      <div className="divide-y divide-border">
-        {investors.map((investor) => (
-          <Link
-            key={investor.slug}
-            href={`/app/super-investors/${investor.slug}`}
-            className="group grid gap-4 px-4 py-4 transition-colors hover:bg-muted/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring lg:grid-cols-[minmax(240px,1.3fr)_minmax(180px,1fr)_150px_130px_44px] lg:items-center lg:px-5"
-          >
-            <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
-                {investor.displayName.split(/\s+/).slice(0, 2).map((part) => part[0]).join('')}
-              </div>
-              <div className="min-w-0">
-                <h2 className="truncate p-0 text-sm font-semibold text-foreground group-hover:text-primary">{investor.displayName}</h2>
-                <p className="mb-0 mt-0.5 truncate text-xs font-normal text-muted-foreground">{investor.fundDisplayName} · {investor.style}</p>
-              </div>
-            </div>
-
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
-                <ShieldCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <span className="truncate">{investor.legalName}</span>
-              </div>
-              <p className="mb-0 mt-1 font-mono text-[11px] font-normal text-muted-foreground">CIK {investor.cik}</p>
-            </div>
-
-            <div>
-              <p className="mb-0 text-xs font-semibold text-foreground">{formatDate(investor.latestReportDate)}</p>
-              <p className="mb-0 mt-1 text-[11px] font-normal text-muted-foreground">{investor.availableQuarters}/{investor.targetQuarters} trimestres</p>
-            </div>
-
-            <p className="mb-0 text-sm font-semibold tabular-nums text-foreground lg:text-right">{formatMoney(investor.totalValueUsd)}</p>
-            <ArrowRight className="hidden h-4 w-4 justify-self-end text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary lg:block" aria-hidden="true" />
-          </Link>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-function ConsensusTable({ rows, tab }: { rows: ConsensusStock[]; tab: Tab }) {
-  if (rows.length === 0) {
-    return <EmptyState title="Aucune donnée de consensus" detail="Le consensus apparaîtra lorsque des snapshots vérifiés partageront des tickers résolus." />
-  }
-
-  return (
-    <section className="overflow-hidden rounded-xl border border-border bg-card" aria-label="Consensus des déclarants">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[820px] text-left text-sm">
-          <thead className="border-b border-border bg-muted/50 text-xs text-muted-foreground">
-            <tr>
-              <th className="px-4 py-3 font-semibold">Titre</th>
-              <th className="px-4 py-3 text-center font-semibold">Déclarants</th>
-              <th className="px-4 py-3 text-right font-semibold">Poids moyen</th>
-              <th className="px-4 py-3 text-right font-semibold">Valeur déclarée</th>
-              <th className="px-4 py-3 font-semibold">Détail et période</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {rows.map((stock) => (
-              <tr key={stock.symbol} className="align-top transition-colors hover:bg-muted/35">
-                <td className="px-4 py-3">
-                  <div className="font-semibold text-foreground">{stock.symbol}</div>
-                  <div className="mt-0.5 max-w-64 truncate text-xs text-muted-foreground">{stock.issuerName}</div>
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <Badge variant="secondary">{stock.investorCount}</Badge>
-                </td>
-                <td className="px-4 py-3 text-right font-medium tabular-nums">{stock.averageWeightPercent.toFixed(2)} %</td>
-                <td className="px-4 py-3 text-right font-medium tabular-nums">{formatMoney(stock.totalValueUsd)}</td>
-                <td className="px-4 py-3">
-                  <div className="flex max-w-xl flex-wrap gap-1.5">
-                    {stock.holders.map((holder) => (
-                      <Link
-                        key={`${stock.symbol}-${holder.investorSlug}`}
-                        href={`/app/super-investors/${holder.investorSlug}`}
-                        className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2 py-1 text-xs font-medium text-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        {holder.investorName}
-                        <span className="text-muted-foreground">{formatDate(holder.reportDate)}</span>
-                        {(tab === 'TOP_BUYS' || tab === 'TOP_SELLS') && holder.changePercent != null && (
-                          <span className={cn('inline-flex items-center font-semibold', tab === 'TOP_BUYS' ? 'text-emerald-600' : 'text-rose-600')}>
-                            {tab === 'TOP_BUYS' ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
-                            {Math.abs(holder.changePercent).toFixed(1)} %
-                          </span>
-                        )}
-                      </Link>
-                    ))}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  )
-}
-
-function LoadingState() {
-  return (
-    <div className="space-y-2" aria-label="Chargement des déclarations" role="status">
-      {[0, 1, 2, 3].map((item) => <div key={item} className="h-20 animate-pulse rounded-lg bg-muted" />)}
+    <div className="text-right">
+      <Badge
+        variant="outline"
+        className={
+          low
+            ? 'border-amber-500/40 bg-amber-500/10 text-amber-700'
+            : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700'
+        }
+      >
+        {value == null ? '—' : `${value.toFixed(1)} %`}
+      </Badge>
+      {low && (
+        <p className="mt-1 flex items-center justify-end gap-1 text-[10px] text-amber-700">
+          <ShieldAlert className="h-3 w-3" />
+          partielle
+        </p>
+      )}
     </div>
   )
 }
-
-function ErrorState({ message }: { message: string }) {
+function LoadingRows() {
   return (
-    <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-5 py-8 text-center">
-      <h2 className="p-0 text-base font-semibold text-foreground">Impossible de charger les déclarations</h2>
-      <p className="mb-0 mt-2 text-sm font-normal text-muted-foreground">{message}</p>
-      <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>Réessayer</Button>
+    <div className="space-y-2">
+      {Array.from({ length: 6 }, (_, index) => (
+        <Skeleton key={index} className="h-20 w-full rounded-xl" />
+      ))}
     </div>
   )
 }
-
-function EmptyState({ title, detail }: { title: string; detail: string }) {
+function ErrorState() {
   return (
-    <div className="rounded-xl border border-dashed border-border px-5 py-12 text-center">
-      <Building2 className="mx-auto h-7 w-7 text-muted-foreground" aria-hidden="true" />
-      <h2 className="mt-3 p-0 text-base font-semibold text-foreground">{title}</h2>
-      <p className="mx-auto mb-0 mt-1 max-w-lg text-sm font-normal text-muted-foreground">{detail}</p>
-    </div>
+    <Card className="border-rose-500/25 p-10 text-center">
+      <h2 className="font-bold">Impossible de charger le classement</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Le service est momentanément indisponible.
+      </p>
+      <Button
+        className="mt-4"
+        variant="outline"
+        onClick={() => location.reload()}
+      >
+        Réessayer
+      </Button>
+    </Card>
   )
 }

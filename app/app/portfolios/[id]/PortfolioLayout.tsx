@@ -3,7 +3,6 @@ import { motion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
-  ArrowLeft,
   ArrowLeftRight,
   GemIcon,
   StarIcon,
@@ -19,6 +18,7 @@ import Link from 'next/link'
 import { PortfolioHelpDrawer } from './components/PortfolioHelpDrawer'
 import { PortfolioSpotlightTour } from './components/PortfolioSpotlightTour'
 import { useToast } from '@/hooks/use-toast'
+import { BackButton } from '@/components/atoms/BackButton'
 
 const PortfolioLayout = ({
   id,
@@ -34,42 +34,92 @@ const PortfolioLayout = ({
   children: ReactNode
   isOwn: boolean
   followed?: boolean
-  setFollowed?: any
+  setFollowed?: React.Dispatch<React.SetStateAction<boolean>>
   followersSize?: number
-  setFollowersSize?: any
+  setFollowersSize?: React.Dispatch<React.SetStateAction<number>>
   name?: string
 }) => {
   const pathname = usePathname()
   const [isHelpOpen, setIsHelpOpen] = useState(false)
   const [isTourActive, setIsTourActive] = useState(false)
+  const [isFollowPending, setIsFollowPending] = useState(false)
   const { toast } = useToast()
 
   const handleFollowClick = async () => {
+    if (isFollowPending) return
+    const previousFollowed = Boolean(followed)
+    const previousFollowersSize = followersSize || 0
+    const optimisticFollowed = !previousFollowed
+
+    setIsFollowPending(true)
+    setFollowed?.(optimisticFollowed)
+    setFollowersSize?.(
+      Math.max(0, previousFollowersSize + (optimisticFollowed ? 1 : -1))
+    )
+
     try {
       const res = await follow(id)
-      if (setFollowed) setFollowed(res.followed)
-      if (setFollowersSize) setFollowersSize(res.followersSize)
+      const confirmedFollowed =
+        typeof res.followed === 'boolean' ? res.followed : optimisticFollowed
+      const confirmedFollowersSize = Number(res.followersSize)
+      setFollowed?.(confirmedFollowed)
+      setFollowersSize?.(() => {
+        if (
+          Number.isFinite(confirmedFollowersSize) &&
+          confirmedFollowersSize !== previousFollowersSize
+        ) {
+          return Math.max(0, confirmedFollowersSize)
+        }
+        return Math.max(0, previousFollowersSize + (confirmedFollowed ? 1 : -1))
+      })
       toast({
-        title: res.followed ? 'Portefeuille ajouté aux favoris' : 'Portefeuille retiré des favoris',
-        description: res.followed
+        title: confirmedFollowed
+          ? 'Portefeuille ajouté aux favoris'
+          : 'Portefeuille retiré des favoris',
+        description: confirmedFollowed
           ? 'Vous recevrez une alerte si ce portefeuille fait un mouvement et que vos notifications sont activées.'
           : 'Les alertes de ce portefeuille sont désactivées.',
       })
     } catch {
+      setFollowed?.(previousFollowed)
+      setFollowersSize?.(previousFollowersSize)
       toast({
         variant: 'destructive',
         title: 'Favori non modifié',
-        description: 'Impossible de mettre à jour ce portefeuille pour le moment.',
+        description:
+          'Impossible de mettre à jour ce portefeuille pour le moment.',
       })
+    } finally {
+      setIsFollowPending(false)
     }
   }
 
   const navItems = [
-    { name: 'Investissements', url: `/app/portfolios/${id}`, icon: WalletMinimal },
-    { name: 'Dividendes', url: `/app/portfolios/${id}/dividends`, icon: GemIcon },
-    { name: 'Performance', url: `/app/portfolios/${id}/performance`, icon: TrendingUp },
-    { name: 'Fondamentaux', url: `/app/portfolios/${id}/fundamentals`, icon: BarChart3 },
-    { name: 'Activité', url: `/app/portfolios/${id}/transactions`, icon: ArrowLeftRight },
+    {
+      name: 'Investissements',
+      url: `/app/portfolios/${id}`,
+      icon: WalletMinimal,
+    },
+    {
+      name: 'Dividendes',
+      url: `/app/portfolios/${id}/dividends`,
+      icon: GemIcon,
+    },
+    {
+      name: 'Performance',
+      url: `/app/portfolios/${id}/performance`,
+      icon: TrendingUp,
+    },
+    {
+      name: 'Fondamentaux',
+      url: `/app/portfolios/${id}/fundamentals`,
+      icon: BarChart3,
+    },
+    {
+      name: 'Activité',
+      url: `/app/portfolios/${id}/transactions`,
+      icon: ArrowLeftRight,
+    },
   ]
 
   return (
@@ -79,12 +129,13 @@ const PortfolioLayout = ({
           <div className="flex w-full max-w-full min-w-0 flex-col">
             <div className="flex w-full items-center justify-between mb-2 sm:mb-3">
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                <Link href={`/app/portfolios`} className="h-fit shrink-0">
-                  <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 rounded-full hover:bg-accent/50">
-                    <ArrowLeft size={16} />
-                  </Button>
-                </Link>
-                <h1 className="text-lg sm:text-2xl font-black capitalize tracking-tight text-foreground truncate">{name}</h1>
+                <BackButton
+                  fallbackHref="/app/portfolios"
+                  className="h-7 w-7 hover:bg-accent/50 sm:h-8 sm:w-8"
+                />
+                <h1 className="text-lg sm:text-2xl font-black capitalize tracking-tight text-foreground truncate">
+                  {name}
+                </h1>
               </div>
 
               <div className="flex items-center gap-2 sm:gap-3 shrink-0">
@@ -102,17 +153,27 @@ const PortfolioLayout = ({
 
                 {isOwn ? (
                   <Link href={`/app/portfolios/${id}/settings`}>
-                    <Button size="icon" variant="ghost" className="h-7 w-7 sm:h-8 sm:w-8 rounded-full hover:bg-accent/50" aria-label="Paramètres">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7 sm:h-8 sm:w-8 rounded-full hover:bg-accent/50"
+                      aria-label="Paramètres"
+                    >
                       <Settings size={16} />
                     </Button>
                   </Link>
                 ) : (
                   <Button
                     onClick={handleFollowClick}
+                    disabled={isFollowPending}
                     size="sm"
                     variant="outline"
                     aria-pressed={followed}
-                    aria-label={followed ? 'Retirer ce portefeuille des favoris' : 'Ajouter ce portefeuille aux favoris'}
+                    aria-label={
+                      followed
+                        ? 'Retirer ce portefeuille des favoris'
+                        : 'Ajouter ce portefeuille aux favoris'
+                    }
                     className="h-7 sm:h-8 gap-1.5 sm:gap-2 rounded-full border-border/50 bg-background text-xs hover:bg-accent/50"
                   >
                     <StarIcon
@@ -122,23 +183,40 @@ const PortfolioLayout = ({
                       color={followed ? '#eac54f' : 'currentColor'}
                     />
                     <span className="font-semibold">
-                      {followed ? 'Favori' : <><span className="sm:hidden">Favori</span><span className="hidden sm:inline">Ajouter aux favoris</span></>}
+                      {followed ? (
+                        'Favori'
+                      ) : (
+                        <>
+                          <span className="sm:hidden">Favori</span>
+                          <span className="hidden sm:inline">
+                            Ajouter aux favoris
+                          </span>
+                        </>
+                      )}
                     </span>
-                    <span className="text-muted-foreground">({followersSize || 0})</span>
+                    <span className="text-muted-foreground">
+                      ({followersSize || 0})
+                    </span>
                   </Button>
                 )}
               </div>
             </div>
 
             {/* Horizontal Navigation for Desktop & Mobile */}
-            <div id="tour-subnav-links" className="flex w-full max-w-full min-w-0 items-center gap-1 overflow-x-auto no-scrollbar border-b border-transparent">
+            <div
+              id="tour-subnav-links"
+              className="flex w-full max-w-full min-w-0 items-center gap-1 overflow-x-auto no-scrollbar border-b border-transparent"
+            >
               {navItems.map((item) => {
-                const isActive = pathname === item.url || pathname === `${item.url}/`
+                const isActive =
+                  pathname === item.url || pathname === `${item.url}/`
                 return (
                   <Link key={item.name} href={item.url} className="shrink-0">
                     <div
                       className={`relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium transition-colors hover:text-foreground whitespace-nowrap ${
-                        isActive ? 'text-foreground font-bold' : 'text-muted-foreground'
+                        isActive
+                          ? 'text-foreground font-bold'
+                          : 'text-muted-foreground'
                       }`}
                     >
                       <item.icon size={15} className="hidden sm:block" />
@@ -147,7 +225,11 @@ const PortfolioLayout = ({
                         <motion.div
                           layoutId="portfolio-subnav-indicator"
                           className="absolute bottom-0 left-0 h-0.5 w-full bg-primary rounded-full"
-                          transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                          transition={{
+                            type: 'spring',
+                            stiffness: 450,
+                            damping: 32,
+                          }}
                         />
                       )}
                     </div>
@@ -166,8 +248,14 @@ const PortfolioLayout = ({
       </SectionContainer>
 
       {/* Help Drawer & Spotlight Tour */}
-      <PortfolioHelpDrawer isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
-      <PortfolioSpotlightTour isActive={isTourActive} onClose={() => setIsTourActive(false)} />
+      <PortfolioHelpDrawer
+        isOpen={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
+      />
+      <PortfolioSpotlightTour
+        isActive={isTourActive}
+        onClose={() => setIsTourActive(false)}
+      />
     </div>
   )
 }

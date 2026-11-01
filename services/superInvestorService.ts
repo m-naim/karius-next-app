@@ -24,6 +24,31 @@ export interface InvestorSummary {
   lastSuccessfulSyncAt?: string
 }
 
+export interface InvestorExploreItem {
+  slug: string
+  displayName: string
+  fundDisplayName: string
+  style: string
+  cik: string
+  latestReportDate: string
+  totalValueUsd: number
+  availableQuarters: number
+  resolvedEquityCount: number
+  totalPositionCount: number
+  annualizedPerformance?: number | null
+  cumulativePerformance?: number | null
+  oneYearPerformance?: number | null
+  coveragePercent?: number | null
+}
+
+export interface InvestorExplorePage {
+  content: InvestorExploreItem[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+}
+
 export interface ManagerView {
   cik: string
   legalName: string
@@ -109,7 +134,12 @@ export interface ConsensusReport {
   coverageLabel: string
 }
 
-export type ValuationState = 'PENDING' | 'RUNNING' | 'AVAILABLE' | 'INCOMPLETE' | 'FAILED'
+export type ValuationState =
+  | 'PENDING'
+  | 'RUNNING'
+  | 'AVAILABLE'
+  | 'INCOMPLETE'
+  | 'FAILED'
 export type ValuationView = 'VALUE' | 'PERFORMANCE'
 
 export interface ValuationStatus {
@@ -127,7 +157,10 @@ export interface CoverageExclusion {
   issuerName: string
   instrumentType: 'EQUITY' | 'OPTION'
   valueUsd: number
-  reason: 'OPTION_NO_DAILY_PRICE' | 'UNRESOLVED_CUSIP' | 'PRICE_HISTORY_UNAVAILABLE'
+  reason:
+    | 'OPTION_NO_DAILY_PRICE'
+    | 'UNRESOLVED_CUSIP'
+    | 'PRICE_HISTORY_UNAVAILABLE'
 }
 
 export interface ValuationCoverage {
@@ -184,7 +217,8 @@ async function getJson<T>(path: string): Promise<T> {
     cache: 'no-store',
     headers: { Accept: 'application/json' },
   })
-  if (!response.ok) throw new Error(`Super Investors API: HTTP ${response.status}`)
+  if (!response.ok)
+    throw new Error(`Super Investors API: HTTP ${response.status}`)
   return response.json() as Promise<T>
 }
 
@@ -192,11 +226,31 @@ export function getSuperInvestors(): Promise<InvestorSummary[]> {
   return getJson('/api/v2/super-investors')
 }
 
-export async function getSuperInvestorById(slug: string): Promise<InvestorDetail | null> {
+export function getSuperInvestorExplore(params: {
+  page: number
+  size: number
+  sort: string
+  direction: 'ASC' | 'DESC'
+  query?: string
+}): Promise<InvestorExplorePage> {
+  const search = new URLSearchParams({
+    page: String(params.page),
+    size: String(params.size),
+    sort: params.sort,
+    direction: params.direction,
+  })
+  if (params.query?.trim()) search.set('query', params.query.trim())
+  return getJson(`/api/v2/super-investors/explore?${search.toString()}`)
+}
+
+export async function getSuperInvestorById(
+  slug: string
+): Promise<InvestorDetail | null> {
   try {
     return await getJson(`/api/v2/super-investors/${encodeURIComponent(slug)}`)
   } catch (error) {
-    if (error instanceof Error && error.message.includes('HTTP 404')) return null
+    if (error instanceof Error && error.message.includes('HTTP 404'))
+      return null
     throw error
   }
 }
@@ -205,12 +259,20 @@ export function getConsensusReport(): Promise<ConsensusReport> {
   return getJson('/api/v2/super-investors/consensus')
 }
 
-export function getSuperInvestorValuationStatus(slug: string): Promise<ValuationStatus> {
-  return getJson(`/api/v2/super-investors/${encodeURIComponent(slug)}/valuation/status`)
+export function getSuperInvestorValuationStatus(
+  slug: string
+): Promise<ValuationStatus> {
+  return getJson(
+    `/api/v2/super-investors/${encodeURIComponent(slug)}/valuation/status`
+  )
 }
 
-export function getSuperInvestorValuationCoverage(slug: string): Promise<ValuationCoverage> {
-  return getJson(`/api/v2/super-investors/${encodeURIComponent(slug)}/valuation/coverage`)
+export function getSuperInvestorValuationCoverage(
+  slug: string
+): Promise<ValuationCoverage> {
+  return getJson(
+    `/api/v2/super-investors/${encodeURIComponent(slug)}/valuation/coverage`
+  )
 }
 
 export function getSuperInvestorPerformance(
@@ -221,14 +283,23 @@ export function getSuperInvestorPerformance(
 ): Promise<SuperInvestorPerformance> {
   const search = new URLSearchParams({ period, view })
   benchmarks.forEach((benchmark) => search.append('benchmarks', benchmark))
-  return getJson(`/api/v2/super-investors/${encodeURIComponent(slug)}/performance?${search.toString()}`)
+  return getJson(
+    `/api/v2/super-investors/${encodeURIComponent(
+      slug
+    )}/performance?${search.toString()}`
+  )
 }
 
-export async function getStockSuperInvestors(symbol: string): Promise<ConsensusStock | null> {
+export async function getStockSuperInvestors(
+  symbol: string
+): Promise<ConsensusStock | null> {
   try {
-    return await getJson(`/api/v2/super-investors/consensus/stocks/${encodeURIComponent(symbol)}`)
+    return await getJson(
+      `/api/v2/super-investors/consensus/stocks/${encodeURIComponent(symbol)}`
+    )
   } catch (error) {
-    if (error instanceof Error && error.message.includes('HTTP 404')) return null
+    if (error instanceof Error && error.message.includes('HTTP 404'))
+      return null
     throw error
   }
 }
