@@ -23,10 +23,7 @@ import Loader from '@/components/molecules/loader/loader'
 import { useLocalStorage } from '@/hooks/useLocalStorage' // Re-import useLocalStorage
 import { useToast } from '@/hooks/use-toast'
 
-import {
-  getSavedColumnVisibility,
-  getSavedColumnOrder,
-} from '@/lib/column-persistence'
+import { getSavedColumnVisibility, getSavedColumnOrder } from '@/lib/column-persistence'
 import {
   getSavedTableFilters,
   saveTableFilters,
@@ -67,6 +64,7 @@ import { RightSidebar } from '@/components/organismes/layout/RightSidebar'
 import { SplitScreenLayout } from '@/components/organismes/layout/SplitScreenLayout'
 import { AnalysisDrawerTitle } from '@/components/molecules/market/AnalysisDrawerTitle'
 import { cn } from '@/lib/utils'
+import { EntityNotificationButton } from '@/components/notifications/EntityNotificationButton'
 
 const TickerChart = dynamic(
   () => import('./components/TickerChart').then((module) => module.TickerChart),
@@ -118,7 +116,9 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
     }
   })
   const [view, setView] = React.useState<'table' | 'analysis'>('table')
-  const [allWatchlists, setAllWatchlists] = React.useState<watchList[]>(() => cachedAllWatchlists || [])
+  const [allWatchlists, setAllWatchlists] = React.useState<watchList[]>(
+    () => cachedAllWatchlists || []
+  )
   const [owned, setOwned] = React.useState(() => cachedWatchlist?.owned ?? false)
   const [loading, setLoading] = React.useState(() => !cachedWatchlist)
   const [selectedTicker, setSelectedTicker] = React.useState<string | null>(() => {
@@ -126,7 +126,9 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
   })
   const [showChart, setShowChart] = React.useState(false)
   const savedFilters = React.useMemo(() => getSavedTableFilters(WATCHLIST_FILTERS_STORAGE_KEY), [])
-  const [activeScreener, setActiveScreener] = React.useState<string | null>(() => savedFilters.activeScreener ?? null)
+  const [activeScreener, setActiveScreener] = React.useState<string | null>(
+    () => savedFilters.activeScreener ?? null
+  )
 
   const [allAvailableTags, setAllAvailableTags] = React.useState<string[]>([])
 
@@ -150,7 +152,7 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
       'Yield %',
       'Revenue Growth %',
       'ROE %',
-      'ROA %'
+      'ROA %',
     ]
 
     const csvRows = data.securities.map((s) => {
@@ -170,7 +172,7 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
         (s.dividendYield ? s.dividendYield * 100 : 0).toFixed(2),
         (s.score?.growth ? s.score.growth * 100 : 0).toFixed(2),
         (s.lastYearFundamental?.roe ? s.lastYearFundamental.roe * 100 : 0).toFixed(2),
-        (s.lastYearFundamental?.roa ? s.lastYearFundamental.roa * 100 : 0).toFixed(2)
+        (s.lastYearFundamental?.roa ? s.lastYearFundamental.roa * 100 : 0).toFixed(2),
       ].join(',')
     })
 
@@ -184,7 +186,7 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    
+
     toast({
       title: 'CSV Téléchargé',
       description: `Le fichier watchlist_${data.name || id}.csv a été généré avec succès.`,
@@ -198,7 +200,9 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
   }, [])
 
   const [sorting, setSorting] = React.useState<SortingState>(() => savedFilters.sorting ?? [])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(() => savedFilters.columnFilters ?? [])
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    () => savedFilters.columnFilters ?? []
+  )
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(() =>
     getSavedColumnOrder([])
   )
@@ -207,7 +211,9 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
     getSavedColumnVisibility(DEFAULT_WATCHLIST_VISIBILITY)
   )
   const [rowSelection, setRowSelection] = React.useState({})
-  const [selectedPeriod, setSelectedPeriod] = React.useState(() => savedFilters.selectedPeriod ?? '1d')
+  const [selectedPeriod, setSelectedPeriod] = React.useState(
+    () => savedFilters.selectedPeriod ?? '1d'
+  )
   const [showMetrics, setShowMetrics] = React.useState(false)
 
   // Automatically persist user filters across sessions
@@ -373,10 +379,12 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
           ? JSON.parse(storedLocalSecurityTagsString)
           : {}
 
-        const securitiesWithLocalTags = (listResponse.watchlist?.securities || []).map((sec: any) => ({
-          ...sec,
-          tags: storedLocalSecurityTags[sec.symbol] || [],
-        }))
+        const securitiesWithLocalTags = (listResponse.watchlist?.securities || []).map(
+          (sec: any) => ({
+            ...sec,
+            tags: storedLocalSecurityTags[sec.symbol] || [],
+          })
+        )
 
         if (isMounted) {
           setData({
@@ -396,7 +404,8 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
           toast({
             variant: 'destructive',
             title: 'Watchlist temporairement inaccessible',
-            description: 'Impossible de récupérer vos actions suivies. Vérifiez votre connexion et réessayez.',
+            description:
+              'Impossible de récupérer vos actions suivies. Vérifiez votre connexion et réessayez.',
           })
         }
       } finally {
@@ -430,6 +439,15 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
           </div>
 
           <div className="flex items-center gap-2">
+            {owned && (
+              <EntityNotificationButton
+                entityId={id}
+                entityType="watchlist"
+                label="Recevoir un résumé"
+                mobileLabel="Résumé"
+                description={`Recevoir le résumé périodique de ${data.name || 'cette watchlist'}`}
+              />
+            )}
             <ViewToggleSwitch view={view} onViewChange={setView} />
 
             <Button
@@ -447,7 +465,9 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
               size="icon"
               className={cn(
                 'h-8 w-8 shrink-0 rounded-full',
-                showChart ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground'
+                showChart
+                  ? 'bg-muted text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
               onClick={() => setShowChart(!showChart)}
             >
@@ -474,13 +494,17 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
       }
       showDrawer={showChart}
       onCloseDrawer={() => setShowChart(false)}
-      drawerTitle={selectedTicker ? (
-        <AnalysisDrawerTitle
-          symbol={selectedTicker}
-          price={selectedSecurity?.regularMarketPrice}
-          currency={selectedSecurity?.currency}
-        />
-      ) : 'ANALYSE'}
+      drawerTitle={
+        selectedTicker ? (
+          <AnalysisDrawerTitle
+            symbol={selectedTicker}
+            price={selectedSecurity?.regularMarketPrice}
+            currency={selectedSecurity?.currency}
+          />
+        ) : (
+          'ANALYSE'
+        )
+      }
       drawerContent={
         selectedTicker ? (
           <TickerChart
@@ -500,8 +524,9 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
         )
       }
     >
-      {!loading && data!.securities != null && (
-        view === 'table' ? (
+      {!loading &&
+        data!.securities != null &&
+        (view === 'table' ? (
           <TableView
             table={table}
             id={id}
@@ -509,14 +534,7 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
             setData={setData}
             selectedPeriod={selectedPeriod}
             setSelectedPeriod={setSelectedPeriod}
-            columns={columns(
-              id,
-              owned,
-              data.benchMark,
-              deleteRow,
-              selectedPeriod,
-              allWatchlists
-            )}
+            columns={columns(id, owned, data.benchMark, deleteRow, selectedPeriod, allWatchlists)}
             onRowClick={(row) => {
               setSelectedTicker(row.symbol)
               if (!showChart) setShowChart(true)
@@ -535,8 +553,7 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
             selectedPeriod={selectedPeriod}
             onPeriodChange={setSelectedPeriod}
           />
-        )
-      )}
+        ))}
     </SplitScreenLayout>
   )
 }

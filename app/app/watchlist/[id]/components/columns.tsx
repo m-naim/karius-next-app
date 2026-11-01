@@ -18,30 +18,32 @@ type FiltrProps = {
 }
 
 const COLUMN_DESCRIPTIONS: Record<string, string> = {
-  'Actif': 'Ticker boursier et nom officiel de la société',
-  'Prix': 'Dernier cours de bourse coté en temps réel (ou à la clôture)',
-  'Variation': 'Performance du cours sur la période temporelle sélectionnée',
+  Actif: 'Ticker boursier et nom officiel de la société',
+  Prix: 'Dernier cours de bourse coté en temps réel (ou à la clôture)',
+  Variation: 'Performance du cours sur la période temporelle sélectionnée',
   'TCAC 5y': 'Taux de Croissance Annuel Composé (CAGR) du cours sur 5 ans',
   'TCAC 10y': 'Taux de Croissance Annuel Composé (CAGR) du cours sur 10 ans',
   'Perf. Rel.': 'Performance comparée à l’indice de référence (Benchmark)',
-  'Secteur': 'Secteur d’activité macro-économique global',
-  'Industrie': 'Secteur industriel spécifique et détaillé',
+  Secteur: 'Secteur d’activité macro-économique global',
+  Industrie: 'Secteur industriel spécifique et détaillé',
   'P/E': 'PER 12 mois glissants (Prix / Bénéfice par action TTM)',
   'P/E Fwd': 'PER estimé à 12 mois (Prix / Bénéfices futurs attendus)',
   'P/S': 'Price-to-Sales : capitalisation boursière rapportée au chiffre d’affaires annuel',
   'PE (5a proxy)': 'PER moyen lissé sur 5 ans (bénéfices moyens 5 ans)',
-  'PEG CA (5a)': 'P/S divisé par la croissance moyenne du chiffre d’affaires sur 5 ans, exprimée en points de pourcentage',
-  'PEG BPA (5a)': 'P/E divisé par la croissance moyenne du bénéfice par action sur 5 ans, exprimée en points de pourcentage',
+  'PEG CA (5a)':
+    'P/S divisé par la croissance moyenne du chiffre d’affaires sur 5 ans, exprimée en points de pourcentage',
+  'PEG BPA (5a)':
+    'P/E divisé par la croissance moyenne du bénéfice par action sur 5 ans, exprimée en points de pourcentage',
   'Linéarité (10a)': 'Régularité et constance de la hausse du cours sur 10 ans (R²)',
   'Score (Ret×Lin)': 'Score Horus combinant rendement annuel moyen et linéarité',
-  'Yield': 'Rendement du dividende brut annuel (Dividende / Prix)',
-  'ROA': 'Rentabilité des actifs totaux (Return on Assets)',
-  'ROE': 'Rentabilité des capitaux propres (Return on Equity - Moat)',
+  Yield: 'Rendement du dividende brut annuel (Dividende / Prix)',
+  ROA: 'Rentabilité des actifs totaux (Return on Assets)',
+  ROE: 'Rentabilité des capitaux propres (Return on Equity - Moat)',
   'Croissance CA': 'Taux de croissance du chiffre d’affaires sur 1 an',
   'Croissance CA (5a)': 'Taux de croissance annuel moyen du chiffre d’affaires sur 5 ans',
   'ROIC (5a)': 'Rentabilité du capital investi moyen sur 5 ans (ROIC)',
   'Cap. Boursière': 'Valorisation boursière totale (Prix × Nombre d’actions)',
-  'Poids': 'Poids relatif en pourcentage (%) dans l’indice',
+  Poids: 'Poids relatif en pourcentage (%) dans l’indice',
 }
 
 const SortingButton = (title: string, customDesc?: string) => {
@@ -96,15 +98,17 @@ export const columns = (
                 <span className="truncate text-xs font-semibold flex items-center gap-1">
                   <span className="truncate">{row.original.longname}</span>
                 </span>
-                <span className="text-[10px] font-bold uppercase text-muted-foreground truncate">{row.original.symbol}</span>
+                <span className="text-[10px] font-bold uppercase text-muted-foreground truncate">
+                  {row.original.symbol}
+                </span>
               </div>
             </div>
-            
-            <div className="hidden sm:flex items-center gap-1 opacity-0 transition-opacity group-hover/row:opacity-100 shrink-0">
-              <a 
-                target="_blank" 
+
+            <div className="flex shrink-0 items-center gap-0.5">
+              <a
+                target="_blank"
                 href={`https://www.gurufocus.com/stock/${ticker}`}
-                className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="hidden rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex sm:opacity-0 sm:group-hover/row:opacity-100"
                 title="Voir sur GuruFocus"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
@@ -133,7 +137,11 @@ export const columns = (
         const med = calculateMedian(vals)
         return med != null ? (
           <div className="font-medium text-[10px]" title="Médiane">
-            {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', currencyDisplay: 'narrowSymbol' }).format(med)}
+            {new Intl.NumberFormat('fr-FR', {
+              style: 'currency',
+              currency: 'EUR',
+              currencyDisplay: 'narrowSymbol',
+            }).format(med)}
           </div>
         ) : null
       },
@@ -346,7 +354,9 @@ export const columns = (
       header: SortingButton('P/E'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => r.getValue('trailingPE') as number).filter((v) => v != null && !isNaN(v))
+        const vals = rows
+          .map((r) => r.getValue('trailingPE') as number)
+          .filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
         return <div className="text-[10px]">{med != null ? round10(med, -2) : ''}</div>
       },
@@ -360,7 +370,9 @@ export const columns = (
       header: SortingButton('P/E Fwd'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => r.getValue('forwardPE') as number).filter((v) => v != null && !isNaN(v))
+        const vals = rows
+          .map((r) => r.getValue('forwardPE') as number)
+          .filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
         return <div className="text-[10px]">{med != null ? round10(med, -2) : ''}</div>
       },
@@ -370,7 +382,8 @@ export const columns = (
       filterFn: genericNumericFilterFn,
     },
     {
-      accessorFn: (row) => priceToSalesMultiple(row.marketCap, row.lastYearFundamental?.totalRevenue),
+      accessorFn: (row) =>
+        priceToSalesMultiple(row.marketCap, row.lastYearFundamental?.totalRevenue),
       id: 'priceToSales',
       header: SortingButton('P/S'),
       footer: (info) => {
@@ -383,7 +396,11 @@ export const columns = (
       },
       cell: ({ row }) => {
         const value = row.getValue('priceToSales') as number
-        return <div className="lowercase">{value != null && !isNaN(value) ? round10(value, -2) : 'N/A'}</div>
+        return (
+          <div className="lowercase">
+            {value != null && !isNaN(value) ? round10(value, -2) : 'N/A'}
+          </div>
+        )
       },
       filterFn: genericNumericFilterFn,
     },
@@ -398,7 +415,9 @@ export const columns = (
       header: SortingButton('Linéarité'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => r.getValue('linearity10y') as number).filter((v) => v != null && !isNaN(v))
+        const vals = rows
+          .map((r) => r.getValue('linearity10y') as number)
+          .filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
         return med != null ? (
           <VariationContainer
@@ -413,7 +432,8 @@ export const columns = (
       },
       cell: ({ row }) => {
         const val = row.getValue('linearity10y') as number
-        if (val == null || isNaN(val)) return <div className="text-[11px] text-muted-foreground">N/A</div>
+        if (val == null || isNaN(val))
+          return <div className="text-[11px] text-muted-foreground">N/A</div>
         return (
           <VariationContainer
             value={val}
@@ -448,7 +468,9 @@ export const columns = (
       header: SortingButton('Score (Ret×Lin)'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => r.getValue('ret_lin') as number).filter((v) => v != null && !isNaN(v))
+        const vals = rows
+          .map((r) => r.getValue('ret_lin') as number)
+          .filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
         return med != null ? (
           <VariationContainer
@@ -461,7 +483,8 @@ export const columns = (
       },
       cell: ({ row }) => {
         const val = row.getValue('ret_lin') as number
-        if (val == null || isNaN(val)) return <div className="text-[11px] text-muted-foreground">N/A</div>
+        if (val == null || isNaN(val))
+          return <div className="text-[11px] text-muted-foreground">N/A</div>
         return (
           <VariationContainer
             value={val}
@@ -484,7 +507,9 @@ export const columns = (
       header: SortingButton('Rendement Div.'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => r.getValue('dividendYield') as number).filter((v) => v != null && !isNaN(v))
+        const vals = rows
+          .map((r) => r.getValue('dividendYield') as number)
+          .filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
         return med != null ? (
           <VariationContainer
@@ -498,7 +523,8 @@ export const columns = (
       },
       cell: ({ row }) => {
         const val = row.getValue('dividendYield') as number
-        if (val == null || isNaN(val)) return <div className="text-[11px] text-muted-foreground">N/A</div>
+        if (val == null || isNaN(val))
+          return <div className="text-[11px] text-muted-foreground">N/A</div>
         return (
           <VariationContainer
             value={round10(val, -2) || 0}
@@ -545,11 +571,13 @@ export const columns = (
       },
     },
     {
-      accessorFn: (row) => (row.qualityMetrics?.hasFundamentals || !!row.lastYearFundamental) ? 'yes' : 'no',
+      accessorFn: (row) =>
+        row.qualityMetrics?.hasFundamentals || !!row.lastYearFundamental ? 'yes' : 'no',
       id: 'hasFundamentals',
       header: SortingButton('Fondamentaux'),
       cell: ({ row }) => {
-        const hasFund = row.original.qualityMetrics?.hasFundamentals || !!row.original.lastYearFundamental
+        const hasFund =
+          row.original.qualityMetrics?.hasFundamentals || !!row.original.lastYearFundamental
         return (
           <div className="flex items-center gap-1">
             {hasFund ? (
@@ -584,7 +612,9 @@ export const columns = (
       header: SortingButton('ROA'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => r.getValue('roa') as number).filter((v) => v != null && !isNaN(v))
+        const vals = rows
+          .map((r) => r.getValue('roa') as number)
+          .filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
         return med != null ? (
           <VariationContainer
@@ -598,7 +628,8 @@ export const columns = (
       },
       cell: ({ row }) => {
         const val = row.getValue('roa') as number
-        if (val == null || isNaN(val)) return <div className="text-[11px] text-muted-foreground">N/A</div>
+        if (val == null || isNaN(val))
+          return <div className="text-[11px] text-muted-foreground">N/A</div>
         return (
           <VariationContainer
             value={val}
@@ -622,7 +653,9 @@ export const columns = (
       header: SortingButton('ROE'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => r.getValue('roe') as number).filter((v) => v != null && !isNaN(v))
+        const vals = rows
+          .map((r) => r.getValue('roe') as number)
+          .filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
         return med != null ? (
           <VariationContainer
@@ -636,7 +669,8 @@ export const columns = (
       },
       cell: ({ row }) => {
         const val = row.getValue('roe') as number
-        if (val == null || isNaN(val)) return <div className="text-[11px] text-muted-foreground">N/A</div>
+        if (val == null || isNaN(val))
+          return <div className="text-[11px] text-muted-foreground">N/A</div>
         return (
           <VariationContainer
             value={val}
@@ -658,7 +692,9 @@ export const columns = (
       header: SortingButton('Croiss. Est.'),
       footer: (info) => {
         const rows = info.table.getFilteredRowModel().rows
-        const vals = rows.map((r) => percentVariation(r.getValue('forwardPE'), r.getValue('trailingPE')))
+        const vals = rows.map((r) =>
+          percentVariation(r.getValue('forwardPE'), r.getValue('trailingPE'))
+        )
         const med = calculateMedian(vals)
         return med != null ? (
           <VariationContainer
@@ -692,13 +728,25 @@ export const columns = (
         const vals = rows.map((r) => r.getValue('revGrowth') as number)
         const med = calculateMedian(vals)
         return med != null ? (
-          <VariationContainer value={med} entity="%" background={false} className="m-0 p-0 text-[10px]" />
+          <VariationContainer
+            value={med}
+            entity="%"
+            background={false}
+            className="m-0 p-0 text-[10px]"
+          />
         ) : null
       },
       cell: ({ row }) => {
         const val = row.original.qualityMetrics?.revenueGrowth5yAvg
         if (val == null) return <div className="text-[11px] text-muted-foreground">N/A</div>
-        return <VariationContainer value={val * 100} entity="%" background={false} className="m-0 p-0 py-1 text-[11px]" />
+        return (
+          <VariationContainer
+            value={val * 100}
+            entity="%"
+            background={false}
+            className="m-0 p-0 py-1 text-[11px]"
+          />
+        )
       },
       filterFn: genericNumericFilterFn,
     },
@@ -714,13 +762,25 @@ export const columns = (
         const vals = rows.map((r) => r.getValue('roic') as number)
         const med = calculateMedian(vals)
         return med != null ? (
-          <VariationContainer value={med} entity="%" background={false} className="m-0 p-0 text-[10px]" />
+          <VariationContainer
+            value={med}
+            entity="%"
+            background={false}
+            className="m-0 p-0 text-[10px]"
+          />
         ) : null
       },
       cell: ({ row }) => {
         const val = row.original.qualityMetrics?.roic5yAvg
         if (val == null) return <div className="text-[11px] text-muted-foreground">N/A</div>
-        return <VariationContainer value={val * 100} entity="%" background={false} className="m-0 p-0 py-1 text-[11px]" />
+        return (
+          <VariationContainer
+            value={val * 100}
+            entity="%"
+            background={false}
+            className="m-0 p-0 py-1 text-[11px]"
+          />
+        )
       },
       filterFn: genericNumericFilterFn,
     },
@@ -744,43 +804,55 @@ export const columns = (
       filterFn: genericNumericFilterFn,
     },
     {
-      accessorFn: (row) => growthAdjustedMultiple(
-        priceToSalesMultiple(row.marketCap, row.lastYearFundamental?.totalRevenue),
-        row.qualityMetrics?.revenueGrowth5yAvg
-      ),
+      accessorFn: (row) =>
+        growthAdjustedMultiple(
+          priceToSalesMultiple(row.marketCap, row.lastYearFundamental?.totalRevenue),
+          row.qualityMetrics?.revenueGrowth5yAvg
+        ),
       id: 'psGrowth5y',
       header: SortingButton('PEG CA (5a)'),
       footer: (info) => {
-        const vals = info.table.getFilteredRowModel().rows
-          .map((r) => r.getValue('psGrowth5y') as number)
+        const vals = info.table
+          .getFilteredRowModel()
+          .rows.map((r) => r.getValue('psGrowth5y') as number)
           .filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
-        return med != null ? <div className="lowercase text-[10px] font-medium">{med.toFixed(1)}x</div> : null
+        return med != null ? (
+          <div className="lowercase text-[10px] font-medium">{med.toFixed(1)}x</div>
+        ) : null
       },
       cell: ({ row }) => {
         const val = row.getValue('psGrowth5y') as number
-        return val == null || isNaN(val)
-          ? <div className="text-[11px] text-muted-foreground">N/A</div>
-          : <div className="lowercase text-[11px] font-medium">{val.toFixed(1)}x</div>
+        return val == null || isNaN(val) ? (
+          <div className="text-[11px] text-muted-foreground">N/A</div>
+        ) : (
+          <div className="lowercase text-[11px] font-medium">{val.toFixed(1)}x</div>
+        )
       },
       filterFn: genericNumericFilterFn,
     },
     {
-      accessorFn: (row) => growthAdjustedMultiple(row.trailingPE, row.qualityMetrics?.epsGrowth5yAvg),
+      accessorFn: (row) =>
+        growthAdjustedMultiple(row.trailingPE, row.qualityMetrics?.epsGrowth5yAvg),
       id: 'peg5y',
       header: SortingButton('PEG BPA (5a)'),
       footer: (info) => {
-        const vals = info.table.getFilteredRowModel().rows
-          .map((r) => r.getValue('peg5y') as number)
+        const vals = info.table
+          .getFilteredRowModel()
+          .rows.map((r) => r.getValue('peg5y') as number)
           .filter((v) => v != null && !isNaN(v))
         const med = calculateMedian(vals)
-        return med != null ? <div className="lowercase text-[10px] font-medium">{med.toFixed(1)}x</div> : null
+        return med != null ? (
+          <div className="lowercase text-[10px] font-medium">{med.toFixed(1)}x</div>
+        ) : null
       },
       cell: ({ row }) => {
         const val = row.getValue('peg5y') as number
-        return val == null || isNaN(val)
-          ? <div className="text-[11px] text-muted-foreground">N/A</div>
-          : <div className="lowercase text-[11px] font-medium">{val.toFixed(1)}x</div>
+        return val == null || isNaN(val) ? (
+          <div className="text-[11px] text-muted-foreground">N/A</div>
+        ) : (
+          <div className="lowercase text-[11px] font-medium">{val.toFixed(1)}x</div>
+        )
       },
       filterFn: genericNumericFilterFn,
     },
@@ -788,4 +860,3 @@ export const columns = (
 
   return cols
 }
-

@@ -19,6 +19,7 @@ import { PortfolioHelpDrawer } from './components/PortfolioHelpDrawer'
 import { PortfolioSpotlightTour } from './components/PortfolioSpotlightTour'
 import { useToast } from '@/hooks/use-toast'
 import { BackButton } from '@/components/atoms/BackButton'
+import { EntityNotificationButton } from '@/components/notifications/EntityNotificationButton'
 
 const PortfolioLayout = ({
   id,
@@ -45,17 +46,16 @@ const PortfolioLayout = ({
   const [isFollowPending, setIsFollowPending] = useState(false)
   const { toast } = useToast()
 
-  const handleFollowClick = async () => {
-    if (isFollowPending) return
+  const handleFollowClick = async (targetState?: boolean): Promise<boolean> => {
+    if (isFollowPending) return false
     const previousFollowed = Boolean(followed)
+    if (typeof targetState === 'boolean' && targetState === previousFollowed) return true
     const previousFollowersSize = followersSize || 0
     const optimisticFollowed = !previousFollowed
 
     setIsFollowPending(true)
     setFollowed?.(optimisticFollowed)
-    setFollowersSize?.(
-      Math.max(0, previousFollowersSize + (optimisticFollowed ? 1 : -1))
-    )
+    setFollowersSize?.(Math.max(0, previousFollowersSize + (optimisticFollowed ? 1 : -1)))
 
     try {
       const res = await follow(id)
@@ -77,18 +77,19 @@ const PortfolioLayout = ({
           ? 'Portefeuille ajouté aux favoris'
           : 'Portefeuille retiré des favoris',
         description: confirmedFollowed
-          ? 'Vous recevrez une alerte si ce portefeuille fait un mouvement et que vos notifications sont activées.'
-          : 'Les alertes de ce portefeuille sont désactivées.',
+          ? 'Vous le retrouverez désormais dans vos favoris.'
+          : 'Ce portefeuille a été retiré de vos favoris.',
       })
+      return confirmedFollowed === optimisticFollowed
     } catch {
       setFollowed?.(previousFollowed)
       setFollowersSize?.(previousFollowersSize)
       toast({
         variant: 'destructive',
         title: 'Favori non modifié',
-        description:
-          'Impossible de mettre à jour ce portefeuille pour le moment.',
+        description: 'Impossible de mettre à jour ce portefeuille pour le moment.',
       })
+      return false
     } finally {
       setIsFollowPending(false)
     }
@@ -151,6 +152,19 @@ const PortfolioLayout = ({
                   <span className="hidden sm:inline">Aide & Glossaire</span>
                 </Button>
 
+                <EntityNotificationButton
+                  entityId={id}
+                  entityType="portfolio"
+                  eligible={isOwn || Boolean(followed)}
+                  label={isOwn ? 'Recevoir mon bilan' : 'M’alerter'}
+                  description={
+                    isOwn
+                      ? `Recevoir les bilans périodiques de ${name || 'ce portefeuille'}`
+                      : `Être prévenu des nouveaux mouvements de ${name || 'ce portefeuille'}`
+                  }
+                  onBeforeEnable={isOwn || followed ? undefined : () => handleFollowClick(true)}
+                />
+
                 {isOwn ? (
                   <Link href={`/app/portfolios/${id}/settings`}>
                     <Button
@@ -164,7 +178,7 @@ const PortfolioLayout = ({
                   </Link>
                 ) : (
                   <Button
-                    onClick={handleFollowClick}
+                    onClick={() => void handleFollowClick()}
                     disabled={isFollowPending}
                     size="sm"
                     variant="outline"
@@ -188,15 +202,11 @@ const PortfolioLayout = ({
                       ) : (
                         <>
                           <span className="sm:hidden">Favori</span>
-                          <span className="hidden sm:inline">
-                            Ajouter aux favoris
-                          </span>
+                          <span className="hidden sm:inline">Ajouter aux favoris</span>
                         </>
                       )}
                     </span>
-                    <span className="text-muted-foreground">
-                      ({followersSize || 0})
-                    </span>
+                    <span className="text-muted-foreground">({followersSize || 0})</span>
                   </Button>
                 )}
               </div>
@@ -208,15 +218,12 @@ const PortfolioLayout = ({
               className="flex w-full max-w-full min-w-0 items-center gap-1 overflow-x-auto no-scrollbar border-b border-transparent"
             >
               {navItems.map((item) => {
-                const isActive =
-                  pathname === item.url || pathname === `${item.url}/`
+                const isActive = pathname === item.url || pathname === `${item.url}/`
                 return (
                   <Link key={item.name} href={item.url} className="shrink-0">
                     <div
                       className={`relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium transition-colors hover:text-foreground whitespace-nowrap ${
-                        isActive
-                          ? 'text-foreground font-bold'
-                          : 'text-muted-foreground'
+                        isActive ? 'text-foreground font-bold' : 'text-muted-foreground'
                       }`}
                     >
                       <item.icon size={15} className="hidden sm:block" />
@@ -248,14 +255,8 @@ const PortfolioLayout = ({
       </SectionContainer>
 
       {/* Help Drawer & Spotlight Tour */}
-      <PortfolioHelpDrawer
-        isOpen={isHelpOpen}
-        onClose={() => setIsHelpOpen(false)}
-      />
-      <PortfolioSpotlightTour
-        isActive={isTourActive}
-        onClose={() => setIsTourActive(false)}
-      />
+      <PortfolioHelpDrawer isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+      <PortfolioSpotlightTour isActive={isTourActive} onClose={() => setIsTourActive(false)} />
     </div>
   )
 }

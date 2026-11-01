@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -28,26 +29,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import watchListService from '@/services/watchListService'
 import alertService from '@/services/alertService'
-import {
-  Bell,
-  Copy,
-  MoreHorizontal,
-  Move,
-  Plus,
-  Trash2,
-  Calendar as CalendarIcon,
-  Smartphone,
-  Send,
-  Clock,
-  Activity,
-} from 'lucide-react'
+import { Bell, CheckCircle2, Copy, MoreHorizontal, Move, Plus, Trash2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { watchList } from '../page'
-import { Textarea } from '@/components/ui/textarea'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { security } from '../data/security'
+import { PushNotificationToggle } from '@/components/PushNotificationToggle'
 
 interface ActionsProps {
   allWatchlists: watchList[]
@@ -57,9 +45,17 @@ interface ActionsProps {
   security?: security
 }
 
-export const Actions = ({ symbol, id = '', deleteRow, allWatchlists = [], security }: ActionsProps) => {
+export const Actions = ({
+  symbol,
+  id = '',
+  deleteRow,
+  allWatchlists = [],
+  security,
+}: ActionsProps) => {
   const { toast } = useToast()
-  const [activeDialog, setActiveDialog] = React.useState<'copy' | 'alert' | null>(null)
+  const [activeDialog, setActiveDialog] = React.useState<'copy' | 'alert' | 'alert-success' | null>(
+    null
+  )
 
   // Alert State
   const [alertType, setAlertType] = React.useState<string>('PRICE')
@@ -67,31 +63,21 @@ export const Actions = ({ symbol, id = '', deleteRow, allWatchlists = [], securi
   const [value, setValue] = React.useState<string>(security?.regularMarketPrice?.toString() || '')
   const [loading, setLoading] = React.useState(false)
 
-  // New UI states
-  const [option, setOption] = React.useState('once')
-  const [expiration, setExpiration] = React.useState('30')
-  const [message, setMessage] = React.useState(
-    `Alerte sur ${symbol} : le ${alertType} est ${operator} ${value}`
-  )
-
-  React.useEffect(() => {
-    setMessage(
-      `Alerte sur ${symbol} : le ${alertType === 'PRICE' ? 'Prix' : 'P/E'} est ${operator} ${value}`
-    )
-  }, [alertType, operator, value, symbol])
-
   const otherWatchlists = id ? allWatchlists.filter((w) => (w._id || w.id) !== id) : allWatchlists
   const canMove = Boolean(id && deleteRow)
   const watchlistActionLabel = canMove
     ? 'Copier ou déplacer vers...'
     : id
-      ? 'Copier vers...'
-      : 'Ajouter à une watchlist...'
+    ? 'Copier vers...'
+    : 'Ajouter à une watchlist...'
 
   const handleAction = async (targetId: string, targetName: string, isMove: boolean) => {
     try {
       await watchListService.addStock(targetId, {
-        security: { symbol: symbol, date: new Date().toISOString().split('T')[0] },
+        security: {
+          symbol: symbol,
+          date: new Date().toISOString().split('T')[0],
+        },
       })
 
       if (isMove && id && deleteRow) {
@@ -102,7 +88,10 @@ export const Actions = ({ symbol, id = '', deleteRow, allWatchlists = [], securi
           description: `${symbol} a été déplacé vers ${targetName}`,
         })
       } else {
-        toast({ title: 'Action ajoutée', description: `${symbol} a été ajouté à ${targetName}` })
+        toast({
+          title: 'Action ajoutée',
+          description: `${symbol} a été ajouté à ${targetName}`,
+        })
       }
       setActiveDialog(null)
     } catch (error) {
@@ -127,9 +116,13 @@ export const Actions = ({ symbol, id = '', deleteRow, allWatchlists = [], securi
       })
       toast({
         title: 'Alerte créée',
-        description: `Une alerte a été configurée pour ${symbol} sur le ${alertType}.`,
+        description: `Nous surveillons maintenant ${symbol}.`,
       })
-      setActiveDialog(null)
+      void alertService.trackEvent('first_alert_created', 'telegram', {
+        symbol,
+        type: alertType,
+      })
+      setActiveDialog('alert-success')
     } catch (error) {
       console.error('Failed to create alert:', error)
       toast({
@@ -144,19 +137,33 @@ export const Actions = ({ symbol, id = '', deleteRow, allWatchlists = [], securi
 
   return (
     <>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 text-muted-foreground hover:bg-primary/10 hover:text-primary"
+        onClick={(event) => {
+          event.stopPropagation()
+          setActiveDialog('alert')
+        }}
+        aria-label={`Créer une alerte sur ${symbol}`}
+        title={`Créer une alerte sur ${symbol}`}
+      >
+        <Bell className="h-4 w-4" />
+      </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
+          <Button
+            variant="ghost"
+            className="h-8 w-8 p-0"
+            onClick={(event) => event.stopPropagation()}
+          >
             <span className="sr-only">Open menu</span>
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem onSelect={() => setTimeout(() => setActiveDialog('alert'), 100)}>
-            <Bell className="mr-2 h-4 w-4" /> Ajouter une Alerte
-          </DropdownMenuItem>
-
           <DropdownMenuItem onSelect={() => setTimeout(() => setActiveDialog('copy'), 100)}>
             <Plus className="mr-2 h-4 w-4" /> {watchlistActionLabel}
           </DropdownMenuItem>
@@ -251,13 +258,13 @@ export const Actions = ({ symbol, id = '', deleteRow, allWatchlists = [], securi
         </DialogContent>
       </Dialog>
 
-      {/* Alert Dialog */}
+      {/* Alert composer */}
       <Dialog
         open={activeDialog === 'alert'}
         onOpenChange={(open) => !open && setActiveDialog(null)}
       >
-        <DialogContent className="gap-0 overflow-hidden border-none p-0 shadow-2xl sm:max-w-[480px]">
-          <div className="bg-foreground p-6 text-background">
+        <DialogContent className="gap-0 overflow-hidden p-0 [&>button]:bg-white/10 [&>button]:text-white sm:max-w-[480px]">
+          <div className="bg-foreground p-5 text-background">
             <div className="flex items-center gap-4">
               <Avatar className="h-12 w-12 border-2 border-border bg-background">
                 <AvatarImage src={security?.logo} alt={symbol} />
@@ -273,190 +280,98 @@ export const Actions = ({ symbol, id = '', deleteRow, allWatchlists = [], securi
               </div>
             </div>
           </div>
+          <div className="space-y-5 p-6">
+            <div>
+              <DialogTitle className="text-lg">Quand devons-nous vous prévenir ?</DialogTitle>
+              <DialogDescription className="mt-1">
+                Cette règle apparaîtra aussi dans votre Centre d&apos;alertes.
+              </DialogDescription>
+            </div>
 
-          <ScrollArea className="max-h-[80vh]">
-            <div className="space-y-8 p-6">
-              {/* Section: Condition */}
-              <div className="space-y-4">
-                <div className="mb-2 flex items-center gap-2">
-                  <div className="h-4 w-1 rounded-full bg-primary" />
-                  <h3 className="text-sm font-bold uppercase tracking-tight text-muted-foreground">
-                    Condition
-                  </h3>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-bold uppercase text-muted-foreground">
-                      Type d'indicateur
-                    </Label>
-                    <Select value={alertType} onValueChange={setAlertType}>
-                      <SelectTrigger className="h-10 border-border">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="PRICE">Prix</SelectItem>
-                        <SelectItem value="PE">P/E Ratio</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-bold uppercase text-muted-foreground">
-                      Croisement
-                    </Label>
-                    <Select value={operator} onValueChange={setOperator}>
-                      <SelectTrigger className="h-10 border-border">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="<">Inférieur à</SelectItem>
-                        <SelectItem value=">">Supérieur à</SelectItem>
-                        <SelectItem value="<=">Inférieur ou égal</SelectItem>
-                        <SelectItem value=">=">Supérieur ou égal</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase text-muted-foreground">
-                    Valeur cible
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      value={value}
-                      onChange={(e) => setValue(e.target.value)}
-                      placeholder="Ex: 150.50"
-                      className="h-10 border-border pl-8 font-bold"
-                    />
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-muted-foreground">
-                      $
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Section: Options */}
-              <div className="space-y-4">
-                <div className="mb-2 flex items-center gap-2">
-                  <div className="h-4 w-1 rounded-full bg-primary" />
-                  <h3 className="text-sm font-bold uppercase tracking-tight text-muted-foreground">
-                    Options
-                  </h3>
-                </div>
-
-                <RadioGroup
-                  value={option}
-                  onValueChange={setOption}
-                  className="grid grid-cols-2 gap-4"
-                >
-                  <Label
-                    htmlFor="once"
-                    className={`flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 transition-all hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-primary ${option === 'once' ? 'border-primary bg-primary/5' : ''}`}
-                  >
-                    <RadioGroupItem value="once" id="once" className="sr-only" />
-                    <Clock className="mb-2 h-5 w-5 text-muted-foreground" />
-                    <span className="text-[10px] font-bold uppercase">Une seule fois</span>
-                  </Label>
-                  <Label
-                    htmlFor="every"
-                    className={`flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 transition-all hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-primary ${option === 'every' ? 'border-primary bg-primary/5' : ''}`}
-                  >
-                    <RadioGroupItem value="every" id="every" className="sr-only" />
-                    <Activity className="mb-2 h-5 w-5 text-muted-foreground" />
-                    <span className="text-[10px] font-bold uppercase">À chaque fois</span>
-                  </Label>
-                </RadioGroup>
-
-                <div className="pt-2">
-                  <Label className="mb-2 block text-[10px] font-bold uppercase text-muted-foreground">
-                    Expiration
-                  </Label>
-                  <Select value={expiration} onValueChange={setExpiration}>
-                    <SelectTrigger className="h-10 border-border">
-                      <div className="flex items-center gap-2">
-                        <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                        <SelectValue />
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="7">Dans 7 jours</SelectItem>
-                      <SelectItem value="30">Dans 30 jours</SelectItem>
-                      <SelectItem value="90">Dans 90 jours</SelectItem>
-                      <SelectItem value="never">Jamais</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Section: Notifications */}
-              <div className="space-y-4">
-                <div className="mb-2 flex items-center gap-2">
-                  <div className="h-4 w-1 rounded-full bg-primary" />
-                  <h3 className="text-sm font-bold uppercase tracking-tight text-muted-foreground">
-                    Actions
-                  </h3>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between rounded-lg border border-border bg-muted p-3">
-                    <div className="flex items-center gap-3">
-                      <div className="rounded-md bg-primary p-1.5 text-primary-foreground">
-                        <Send className="h-3.5 w-3.5" />
-                      </div>
-                      <span className="text-xs font-bold text-foreground">
-                        Notification Telegram
-                      </span>
-                    </div>
-                    <div className="relative h-5 w-10 cursor-pointer rounded-full bg-primary">
-                      <div className="absolute right-1 top-1 h-3 w-3 rounded-full bg-white shadow-sm" />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between rounded-lg border border-border bg-muted p-3 opacity-50">
-                    <div className="flex items-center gap-3">
-                      <div className="rounded-md bg-muted-foreground p-1.5 text-background">
-                        <Smartphone className="h-3.5 w-3.5" />
-                      </div>
-                      <span className="text-xs font-bold text-foreground">
-                        App Push (Indisponible)
-                      </span>
-                    </div>
-                    <div className="relative h-5 w-10 cursor-not-allowed rounded-full bg-muted">
-                      <div className="absolute left-1 top-1 h-3 w-3 rounded-full bg-white shadow-sm" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase text-muted-foreground">
-                  Message d'alerte
-                </Label>
-                <Textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="min-h-[80px] border-border text-sm italic"
-                />
+                <Label>Indicateur</Label>
+                <Select value={alertType} onValueChange={setAlertType}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="PRICE">Cours</SelectItem>
+                    <SelectItem value="PE">Ratio P/E</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Condition</Label>
+                <Select value={operator} onValueChange={setOperator}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="<">Descend sous</SelectItem>
+                    <SelectItem value=">">Monte au-dessus de</SelectItem>
+                    <SelectItem value="<=">Inférieur ou égal à</SelectItem>
+                    <SelectItem value=">=">Supérieur ou égal à</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-          </ScrollArea>
 
-          <div className="flex gap-3 border-t bg-muted p-6">
-            <Button
-              variant="outline"
-              className="h-11 flex-1 font-bold uppercase tracking-tight"
-              onClick={() => setActiveDialog(null)}
-            >
+            <div className="space-y-2">
+              <Label htmlFor={`alert-value-${symbol}`}>Valeur cible</Label>
+              <Input
+                id={`alert-value-${symbol}`}
+                type="number"
+                step="0.01"
+                value={value}
+                onChange={(event) => setValue(event.target.value)}
+                placeholder="Ex. 130,00"
+                className="font-semibold"
+              />
+            </div>
+
+            <p className="mb-0 rounded-lg bg-muted/60 p-3 text-sm text-foreground">
+              Vous serez prévenu lorsque <strong>{symbol}</strong>{' '}
+              {operator.includes('<') ? 'descendra sous' : 'montera au-dessus de'}{' '}
+              <strong>{value || '—'}</strong>.
+            </p>
+          </div>
+
+          <div className="flex gap-3 border-t bg-muted/40 p-5">
+            <Button variant="outline" className="flex-1" onClick={() => setActiveDialog(null)}>
               Annuler
             </Button>
-            <Button
-              className="h-11 flex-1 font-bold uppercase tracking-tight shadow-lg shadow-primary/20"
-              onClick={handleCreateAlert}
-              disabled={loading || !value}
-            >
+            <Button className="flex-1" onClick={handleCreateAlert} disabled={loading || !value}>
               {loading ? 'Création...' : "Créer l'alerte"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* First value and delivery setup */}
+      <Dialog
+        open={activeDialog === 'alert-success'}
+        onOpenChange={(open) => !open && setActiveDialog(null)}
+      >
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
+              <CheckCircle2 className="h-5 w-5" />
+            </div>
+            <DialogTitle>Alerte {symbol} enregistrée</DialogTitle>
+            <DialogDescription>
+              Activez un canal de réception si ce n&apos;est pas déjà fait.
+            </DialogDescription>
+          </DialogHeader>
+
+          <PushNotificationToggle compact />
+
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button asChild variant="outline" className="flex-1">
+              <Link href="/app/alerts?tab=settings">Configurer Telegram</Link>
+            </Button>
+            <Button asChild className="flex-1">
+              <Link href="/app/alerts">Voir mes alertes</Link>
             </Button>
           </div>
         </DialogContent>
