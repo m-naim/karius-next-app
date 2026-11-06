@@ -34,8 +34,6 @@ interface PortfolioSummary {
   cumulativePerformance: number | string | null
   allocation: string[]
   annualizedReturn: number | null
-  totalValue: number | null
-  baseCurrency: string | null
   followed: boolean
   own: boolean
 }
@@ -52,7 +50,6 @@ const sortOptions = [
   { value: 'annualized_return', label: 'Performance annualisée' },
   { value: 'day_change_percent', label: 'Variation 24 h' },
   { value: 'cumulative_performance', label: 'Performance cumulée' },
-  { value: 'total_value', label: 'Valeur du portefeuille' },
   { value: 'followers_size', label: 'Plus suivis' },
   { value: 'name', label: 'Nom' },
 ]
@@ -61,16 +58,6 @@ const numeric = (value: number | string | null | undefined) => {
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : null
 }
-
-const money = (value: number | null | undefined, currency?: string | null) =>
-  value == null
-    ? '—'
-    : new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: currency || 'EUR',
-        notation: 'compact',
-        maximumFractionDigits: 1,
-      }).format(value)
 
 function PerformanceValue({
   value,
@@ -365,7 +352,7 @@ export default function ExplorePortfoliosPage() {
         <LoadingTable />
       ) : filteredContent.length ? (
         <div className="overflow-x-auto rounded-xl border border-border bg-card">
-          <table className="w-full min-w-[1080px] border-collapse text-sm">
+          <table className="w-full min-w-[960px] border-collapse text-sm">
             <thead className="border-b border-border bg-muted/35 text-xs text-muted-foreground">
               <tr>
                 <th className="sticky left-0 z-10 min-w-[280px] bg-muted px-4 py-3 text-left font-semibold">
@@ -391,13 +378,6 @@ export default function ExplorePortfoliosPage() {
                   onSort={handleSort}
                 >
                   <SortIcon column="cumulative_performance" />
-                </SortableHead>
-                <SortableHead
-                  label="Valeur"
-                  column="total_value"
-                  onSort={handleSort}
-                >
-                  <SortIcon column="total_value" />
                 </SortableHead>
                 <SortableHead
                   label="Abonnés"
@@ -472,9 +452,6 @@ export default function ExplorePortfoliosPage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <PerformanceValue value={portfolio.cumulativePerformance} />
-                  </td>
-                  <td className="px-4 py-3 text-right font-semibold tabular-nums">
-                    {money(portfolio.totalValue, portfolio.baseCurrency)}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <span className="inline-flex items-center justify-end gap-1.5 font-semibold tabular-nums">
