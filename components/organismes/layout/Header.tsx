@@ -37,7 +37,9 @@ const Header = () => {
   }, [])
 
   const primaryLinks = headerNavLinks.filter(
-    (link) => !link.draft && ['/app/portfolios', '/app/watchlist', '/app/market'].includes(link.href)
+    (link) =>
+      !link.draft &&
+      ['/app/portfolios', '/app/watchlist', '/app/calendar', '/app/market'].includes(link.href)
   )
   const secondaryLinks = headerNavLinks.filter(
     (link) => !link.draft && ['/app/super-investors'].includes(link.href)

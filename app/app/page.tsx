@@ -33,6 +33,7 @@ import {
   Compass,
 } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { UpcomingEarnings } from '@/components/earnings/UpcomingEarnings'
 
 export default function AppDashboard() {
   const [portfolios, setPortfolios] = useState<PortfolioSummery[]>([])
@@ -176,6 +177,10 @@ export default function AppDashboard() {
             </Link>
           </Button>
         </div>
+      </SectionContainer>
+
+      <SectionContainer>
+        <UpcomingEarnings />
       </SectionContainer>
 
       {/* 3. USER WORKSPACES (Portfolios & Watchlists) */}

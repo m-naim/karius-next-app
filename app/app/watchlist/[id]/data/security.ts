@@ -18,6 +18,9 @@ export interface security {
   dividendYield: number
   earningsTimestamp: number
   earningsTimestampStart: number
+  earningsDate?: string
+  earningsEstimated?: boolean
+  earningsSource?: string
   marketCap: number
   score: score
   variations: Record<string, number>

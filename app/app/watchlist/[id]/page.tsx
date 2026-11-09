@@ -37,6 +37,7 @@ const DEFAULT_WATCHLIST_VISIBILITY: VisibilityState = {
   symbol: true,
   regularMarketPrice: true,
   variation: true,
+  earningsDate: true,
   sector: true,
   trailingPE: true,
   priceToSales: true,
@@ -65,6 +66,10 @@ import { SplitScreenLayout } from '@/components/organismes/layout/SplitScreenLay
 import { AnalysisDrawerTitle } from '@/components/molecules/market/AnalysisDrawerTitle'
 import { cn } from '@/lib/utils'
 import { EntityNotificationButton } from '@/components/notifications/EntityNotificationButton'
+import {
+  EarningsCalendarEvent,
+  getEarningsCalendar,
+} from '@/services/earningsCalendarService'
 
 const TickerChart = dynamic(
   () => import('./components/TickerChart').then((module) => module.TickerChart),
@@ -361,9 +366,17 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
         if (!cachedWatchlist) {
           setLoading(true)
         }
-        const [listResponse, allResponse] = await Promise.all([
+        const today = new Date()
+        const horizon = new Date(today)
+        horizon.setDate(horizon.getDate() + 90)
+        const [listResponse, allResponse, earningsEvents] = await Promise.all([
           watchListService.get(id),
           watchListService.getAll(),
+          getEarningsCalendar(
+            today.toISOString().slice(0, 10),
+            horizon.toISOString().slice(0, 10),
+            'watchlist'
+          ).catch(() => []),
         ])
 
         // Load global tags from local storage
@@ -379,11 +392,22 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
           ? JSON.parse(storedLocalSecurityTagsString)
           : {}
 
+        const earningsBySymbol = new Map<string, EarningsCalendarEvent>(
+          earningsEvents.map(
+            (event): [string, EarningsCalendarEvent] => [event.symbol.toUpperCase(), event]
+          )
+        )
         const securitiesWithLocalTags = (listResponse.watchlist?.securities || []).map(
-          (sec: any) => ({
-            ...sec,
-            tags: storedLocalSecurityTags[sec.symbol] || [],
-          })
+          (sec: any) => {
+            const earnings = earningsBySymbol.get(sec.symbol.toUpperCase())
+            return {
+              ...sec,
+              tags: storedLocalSecurityTags[sec.symbol] || [],
+              earningsDate: earnings?.date,
+              earningsEstimated: earnings?.estimated,
+              earningsSource: earnings?.source,
+            }
+          }
         )
 
         if (isMounted) {

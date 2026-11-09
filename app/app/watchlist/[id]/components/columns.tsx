@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { Column, ColumnDef } from '@tanstack/react-table'
-import { ChevronUp, ArrowUpDown, ChevronDown, ExternalLink, FileText } from 'lucide-react'
+import { ChevronUp, ArrowUpDown, ChevronDown, ExternalLink, FileText, CalendarClock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Actions } from './Actions'
@@ -21,6 +21,7 @@ const COLUMN_DESCRIPTIONS: Record<string, string> = {
   Actif: 'Ticker boursier et nom officiel de la société',
   Prix: 'Dernier cours de bourse coté en temps réel (ou à la clôture)',
   Variation: 'Performance du cours sur la période temporelle sélectionnée',
+  Résultats: 'Prochaine publication de résultats connue. Les dates fournisseur sont généralement estimées.',
   'TCAC 5y': 'Taux de Croissance Annuel Composé (CAGR) du cours sur 5 ans',
   'TCAC 10y': 'Taux de Croissance Annuel Composé (CAGR) du cours sur 10 ans',
   'Perf. Rel.': 'Performance comparée à l’indice de référence (Benchmark)',
@@ -156,6 +157,41 @@ export const columns = (
         }).format(prix)
 
         return <div className="font-medium">{formatted}</div>
+      },
+    },
+    {
+      id: 'earningsDate',
+      accessorFn: (row) => {
+        if (row.earningsDate) return new Date(`${row.earningsDate}T12:00:00`).getTime()
+        const timestamp = row.earningsTimestampStart
+        return timestamp && timestamp * 1000 >= Date.now() ? timestamp * 1000 : null
+      },
+      header: SortingButton('Résultats'),
+      cell: ({ row }) => {
+        const value = row.getValue('earningsDate') as number | null
+        if (!value) return <span className="text-xs text-muted-foreground">—</span>
+        const date = new Date(value)
+        const days = Math.max(0, Math.ceil((value - Date.now()) / 86_400_000))
+        return (
+          <div
+            className="flex min-w-[96px] items-center gap-2"
+            title={
+              row.original.earningsEstimated !== false
+                ? 'Date estimée par le fournisseur'
+                : 'Date annoncée'
+            }
+          >
+            <CalendarClock className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
+            <div className="flex flex-col">
+              <span className="text-xs font-medium">
+                {new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(date)}
+              </span>
+              <span className="text-[10px] text-muted-foreground">
+                {days === 0 ? 'Aujourd’hui' : `dans ${days} j`}
+              </span>
+            </div>
+          </div>
+        )
       },
     },
     {
