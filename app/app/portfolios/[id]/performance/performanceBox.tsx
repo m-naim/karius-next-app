@@ -29,7 +29,6 @@ const chartTypes = [
     unit: '€',
     defaultPeriod: '1M',
     primary: true,
-    showBenchmarks: true,
   },
   {
     id: 'dailyGains',
@@ -94,11 +93,15 @@ export default function PerformanceBox({
   const [benchValues, setBenchValues] = useState<{ [key: string]: number[] }>({})
   const [loading, setLoading] = useState(false)
   const [isMasked, setIsMasked] = useState(false)
+  const [baseCurrency, setBaseCurrency] = useState('EUR')
 
   const availableChartTypes = isMasked
     ? chartTypes.filter((chart) => chart.id === 'CumulativePerformance')
     : chartTypes
   const selectedChart = availableChartTypes.find((chart) => chart.id === chartType) || availableChartTypes[0]
+  const hasCurrencyAdjustedBenchmark = selectedBenchmarks.some(
+    (benchmark) => !benchmark.startsWith('SUPER_INVESTOR:')
+  )
 
   const fetchData = async () => {
     try {
@@ -110,7 +113,10 @@ export default function PerformanceBox({
         days = Math.floor((now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24))
       }
 
-      const res = await getPerformances(id, selectedBenchmarks, days)
+      const benchmarksForRequest = selectedChart?.showBenchmarks
+        ? selectedBenchmarks
+        : []
+      const res = await getPerformances(id, benchmarksForRequest, days)
       const formattedDates = res.timestamp.map((timestamp) =>
         new Date(timestamp * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR')
       )
@@ -118,6 +124,7 @@ export default function PerformanceBox({
       const nextChartType = masked ? 'CumulativePerformance' : chartType
 
       setIsMasked(masked)
+      setBaseCurrency(res.baseCurrency || 'EUR')
       if (masked && chartType !== 'CumulativePerformance') setChartType('CumulativePerformance')
       setDates(formattedDates)
       setChartValues(res[nextChartType] || [])
@@ -205,6 +212,13 @@ export default function PerformanceBox({
           <div className="mb-3 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
             Les montants du portefeuille sont masqués. La performance relative reste disponible.
           </div>
+        )}
+
+        {selectedChart?.showBenchmarks && hasCurrencyAdjustedBenchmark && (
+          <p className="mb-3 text-xs text-muted-foreground">
+            Benchmarks convertis en {baseCurrency} : l'effet devise est inclus
+            dans la comparaison.
+          </p>
         )}
 
         <div className="relative h-[280px] sm:h-[390px]">
