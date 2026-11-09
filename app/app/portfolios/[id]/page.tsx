@@ -43,6 +43,7 @@ import {
 } from '@/services/portfolioService'
 import { v4 as uuidv4 } from 'uuid'
 import StatsCard from './StatsCard'
+import PortfolioBenchmarkSummary from './PortfolioBenchmarkSummary'
 import AccountsMouvements from './AccountsMouvements'
 import Loader from '@/components/molecules/loader/loader'
 import { round10 } from '@/lib/decimalAjustement'
@@ -425,6 +426,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
         {/* HERO SECTION: Stats at the top */}
         <div id="tour-stats-card" className="w-full space-y-2">
           <StatsCard pftData={portfolio} own={own} />
+          <PortfolioBenchmarkSummary portfolioId={id} baseCurrency={portfolio.baseCurrency || 'EUR'} />
           {data.length > 0 && (
             <PortfolioInsightsBar
               portfolio={portfolio}
