@@ -86,6 +86,18 @@ const StatsCard = ({ pftData, own = true }) => {
           </div>
         </div>
 
+        {own && pftData?.currencyGain != null && (
+          <div className="flex items-center gap-1.5 font-medium" title="Estimation de l’effet des taux de change sur les positions encore détenues, calculée depuis les taux aux dates d’achat.">
+            <span className="text-[11px]">Effet devises:</span>
+            <VariationContainer
+              value={pftData.currencyGain}
+              entity={currencySymbol}
+              background={false}
+              className="p-0 text-xs font-bold"
+            />
+          </div>
+        )}
+
         <div className="h-3.5 w-px bg-border/60 shrink-0 hidden sm:block" />
 
         {/* Rendement Annuel */}
