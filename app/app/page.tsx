@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react'
 import SectionContainer from '@/components/organismes/layout/SectionContainer'
-import { MarketPulse } from '@/components/molecules/market/MarketPulse'
 import authService from '@/services/authService'
 import { getAll as getPortfolios } from '@/services/portfolioService'
 import { getFollowed } from '@/services/portfolioService'
@@ -378,7 +377,6 @@ export default function AppDashboard() {
             Signaux Vitaux du Marché
           </h3>
         </div>
-        <MarketPulse />
       </SectionContainer>
     </div>
   )

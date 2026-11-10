@@ -1,68 +1,108 @@
-'use client'
+"use client";
 
-import React, { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
-import { getQuotes } from '@/services/stock.service'
-import VariationContainer from '@/components/molecules/portfolio/variationContainer'
-import { Skeleton } from '@/components/ui/skeleton'
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { ArrowUpRight, Activity } from "lucide-react";
+import { getQuotes } from "@/services/stock.service";
+import VariationContainer from "@/components/molecules/portfolio/variationContainer";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const macroSymbols = ['SPY', 'QQQ', '^VIX']
+const marketSymbols = [
+  { symbol: "^GSPC", label: "S&P 500" },
+  { symbol: "^IXIC", label: "NASDAQ" },
+  { symbol: "^FCHI", label: "CAC 40" },
+  { symbol: "^STOXX50E", label: "EURO STOXX 50" },
+];
 
 export function MarketPulse() {
-  const [marketData, setMarketData] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [marketData, setMarketData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let active = true;
     const fetchMarketPulse = async () => {
       try {
-        const data = await getQuotes(macroSymbols)
-        setMarketData(data)
-      } catch (e) {
-        console.error('Failed to fetch market pulse', e)
+        const data = await getQuotes(marketSymbols.map(({ symbol }) => symbol));
+        if (active) setMarketData(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Failed to fetch market pulse", error);
       } finally {
-        setLoading(false)
+        if (active) setLoading(false);
       }
-    }
-    fetchMarketPulse()
-  }, [])
+    };
 
-  if (loading) {
-    return (
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-        {Array(6).fill(0).map((_, i) => (
-          <Skeleton key={i} className="h-20 w-full rounded-2xl" />
-        ))}
-      </div>
-    )
-  }
+    fetchMarketPulse();
+    const intervalId = window.setInterval(fetchMarketPulse, 90_000);
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-      {marketData.map((item, i) => (
-        <motion.div
-          key={item.symbol}
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: i * 0.05 }}
-          className="group relative flex flex-col items-center justify-center rounded-2xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-lg"
+    <div className="h-9 w-full border-b border-border/70 bg-muted/35">
+      <div className="mx-auto flex h-full w-full max-w-[1600px] items-center gap-3 px-3 sm:px-4 lg:px-6">
+        <Link
+          href="/app/market"
+          className="inline-flex h-full shrink-0 items-center gap-1.5 text-[10px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+          aria-label="Voir les marchés"
         >
-          <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground group-hover:text-primary">
-            {item.symbol}
-          </span>
-          <span className="mt-1 text-sm font-black text-foreground">
-            {item.regularMarketPrice?.toLocaleString('en-US', { 
-                style: 'currency', 
-                currency: item.currency || 'USD',
-                maximumFractionDigits: 1 
-            })}
-          </span>
-          <VariationContainer
-            value={item.regularMarketChangePercent}
-            className="mt-1 p-0 text-xs font-bold"
-            background={false}
-          />
-        </motion.div>
-      ))}
+          <Activity className="h-3 w-3 text-primary" />
+          <span className="hidden sm:inline">MARCHÉS</span>
+        </Link>
+        <div className="flex h-full min-w-0 flex-1 items-center gap-0 overflow-x-auto no-scrollbar">
+          {loading
+            ? marketSymbols.slice(0, 3).map(({ symbol }) => (
+                <div
+                  key={symbol}
+                  className="flex h-full shrink-0 items-center gap-2 border-l border-border/60 px-3 first:border-l-0"
+                >
+                  <Skeleton className="h-3 w-14" />
+                  <Skeleton className="h-3 w-10" />
+                </div>
+              ))
+            : marketSymbols.map(({ symbol, label }) => {
+                const quote = marketData.find((item) => item.symbol === symbol);
+                return (
+                  <div
+                    key={symbol}
+                    className="flex h-full shrink-0 items-center gap-2 border-l border-border/60 px-3 first:border-l-0"
+                  >
+                    <span className="text-[10px] font-semibold text-muted-foreground">
+                      {label}
+                    </span>
+                    <span className="text-[10px] font-medium tabular-nums text-foreground">
+                      {quote?.regularMarketPrice != null
+                        ? Number(quote.regularMarketPrice).toLocaleString(
+                            "fr-FR",
+                            { maximumFractionDigits: 2 }
+                          )
+                        : "—"}
+                    </span>
+                    {quote?.regularMarketChangePercent != null ? (
+                      <VariationContainer
+                        value={quote.regularMarketChangePercent}
+                        entity="%"
+                        background={false}
+                        className="m-0 p-0 text-[10px] font-semibold"
+                      />
+                    ) : (
+                      <span className="text-[10px] text-muted-foreground">
+                        —
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+        </div>
+        <Link
+          href="/app/market"
+          className="hidden shrink-0 items-center text-muted-foreground hover:text-foreground sm:inline-flex"
+          aria-label="Ouvrir les marchés"
+        >
+          <ArrowUpRight className="h-3.5 w-3.5" />
+        </Link>
+      </div>
     </div>
-  )
+  );
 }

@@ -66,6 +66,7 @@ const DEFAULT_PORTFOLIO_VISIBILITY: VisibilityState = {
   bep: true,
   variationPercent: true,
   variation: true,
+  currencyGain: true,
   trailingPE: false,
   forwardPE: false,
   priceToSales: false,
@@ -98,8 +99,9 @@ const PORTFOLIO_VIEW_PRESETS: ColumnViewPreset[] = [
       bep: true,
       variationPercent: true,
       variation: true,
+      currencyGain: true,
     },
-    order: ['symbol', 'weight', 'regularMarketPrice', 'bep', 'variationPercent', 'variation'],
+    order: ['symbol', 'weight', 'regularMarketPrice', 'bep', 'variationPercent', 'currencyGain', 'variation'],
   },
   {
     id: 'valuation',
@@ -149,6 +151,7 @@ const PORTFOLIO_VIEW_PRESETS: ColumnViewPreset[] = [
       bep: true,
       variationPercent: true,
       variation: true,
+      currencyGain: true,
       trailingPE: true,
       forwardPE: true,
       priceToSales: true,
@@ -167,7 +170,7 @@ const PORTFOLIO_VIEW_PRESETS: ColumnViewPreset[] = [
       hasFundamentals: true,
     },
     order: [
-      'symbol', 'regularMarketPrice', 'weight', 'bep', 'variationPercent', 'variation',
+      'symbol', 'regularMarketPrice', 'weight', 'bep', 'variationPercent', 'currencyGain', 'variation',
       'trailingPE', 'forwardPE', 'priceToSales', 'dividendYield', 'marketCap', 'roa', 'roe',
       'revGrowth', 'roic', 'pe5y', 'psGrowth5y', 'peg5y', 'linearity10y', 'sector', 'industry', 'hasFundamentals',
     ],
@@ -202,7 +205,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>(() => getSavedColumnOrder([], 'portfolio'))
   const [rowSelection, setRowSelection] = React.useState({})
   const [selectedPeriod, setSelectedPeriod] = React.useState('1d')
-  const [useNativeCurrency, setUseNativeCurrency] = React.useState(false)
+  const [useNativeCurrency, setUseNativeCurrency] = React.useState(true)
   const [isOnboardingModalOpen, setIsOnboardingModalOpen] = React.useState(false)
   const [isTourActive, setIsTourActive] = React.useState(false)
 

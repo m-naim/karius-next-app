@@ -51,6 +51,8 @@ export interface PortfolioSecurity {
   roe?: number | null
   currency?: string
   nativeBep?: number
+  nativeLast?: number
+  currencyGain?: number | null
   shortname?: string
   dailyVariationPercent?: number | null
   regularMarketChangePercent?: number | null
@@ -75,6 +77,7 @@ const COLUMN_DESCRIPTIONS: Record<string, string> = {
   ROE: 'Rentabilité des capitaux propres : résultat généré par rapport aux fonds propres.',
   PRU: 'Prix de revient unitaire moyen de vos achats, hors impact des ventes.',
   Retour: 'Performance depuis votre prix de revient : montant latent puis pourcentage latent.',
+  'Effet devise': 'Gain ou perte lié à la variation du taux de change depuis vos achats, valorisé au cours actuel.',
   Variation: 'Variation du cours sur la période sélectionnée. La ligne « Impact » estime sa contribution au portefeuille selon le poids de la position.',
   'Croissance CA (5a)': 'Croissance annuelle moyenne du chiffre d’affaires sur les cinq dernières années disponibles.',
   'ROIC (5a)': 'Rentabilité moyenne du capital investi sur les cinq dernières années disponibles.',
@@ -217,7 +220,7 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
       accessorKey: 'weight',
       header: SortingButton('Poids', false),
       cell: ({ row }) => {
-        const currencyToUse = useNativeCurrency && row.original.currency ? row.original.currency : baseCurrency
+        const currencyToUse = row.original.currency || baseCurrency
         const symbol = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: currencyToUse }).formatToParts(0).find(p => p.type === 'currency')?.value || '€'
         return (
           <div className="flex flex-col">
@@ -225,7 +228,7 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
               {round10((row.getValue('weight') as number) * 100, -1)}%
             </div>
             {own && row.original.totalValue != null && row.original.qty !== 0 && (
-              <div className="text-muted-foreground">{round10(row.original.totalValue, -2).toLocaleString() + ' ' + symbol}</div>
+              <div className="text-muted-foreground">{round10(useNativeCurrency && row.original.nativeLast != null ? row.original.nativeLast * row.original.qty : row.original.totalValue, -2).toLocaleString() + ' ' + symbol}</div>
             )}
           </div>
         )
@@ -237,7 +240,7 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
       id: 'regularMarketPrice',
       header: SortingButton('Cours', false),
       cell: ({ row }) => {
-        const last = parseFloat(row.getValue('regularMarketPrice'))
+        const last = useNativeCurrency && row.original.nativeLast != null ? row.original.nativeLast : parseFloat(row.getValue('regularMarketPrice'))
         const currencyToUse = useNativeCurrency && row.original.currency ? row.original.currency : baseCurrency
         const formatted = new Intl.NumberFormat('fr-FR', {
           style: 'currency',
@@ -343,6 +346,20 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
     },
     enableHiding: true,
   })
+  if (own) {
+    colList.push({
+      accessorKey: 'currencyGain',
+      header: SortingButton('Effet devise', false),
+      cell: ({ row }) => {
+        const value = row.original.currencyGain
+        if (value == null || !row.original.currency || row.original.currency === baseCurrency) {
+          return <span className="font-mono text-xs text-muted-foreground">—</span>
+        }
+        return <VariationContainer value={value} entity={baseCurrency} background={false} className="m-0 p-0 text-xs font-semibold" />
+      },
+      enableHiding: true,
+    })
+  }
   colList.push(
     {
       accessorFn: (row) => {
