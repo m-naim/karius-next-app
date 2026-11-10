@@ -14,7 +14,7 @@ export function getAll() {
 }
 
 export function search(query: string) {
-  return http.get(`${host}/api/v1/stocks/search?query=${query}`)
+  return http.get(`${host}/api/v1/stocks/search?query=${encodeURIComponent(query)}`)
 }
 
 export function getProductsSymbols(products: any) {

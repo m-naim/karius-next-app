@@ -54,7 +54,7 @@ export function StockSearchCommand({ onSelect }: { onSelect: (value: string) => 
   return (
     <div className="pointer-events-auto">
       <Command shouldFilter={false}>
-        <CommandInput placeholder="Chercher une action..." onValueChange={handler} />
+        <CommandInput placeholder="Chercher une valeur ou une devise..." onValueChange={handler} />
         <CommandList className="pointer-events-auto">
           <CommandEmpty>Aucun résultat trouvé.</CommandEmpty>
           <CommandGroup heading="Actions">
@@ -124,6 +124,56 @@ export function StockSearchCommand({ onSelect }: { onSelect: (value: string) => 
                 >
                   <span className="text-foreground">{security.symbol}</span> | {security.longname || security.shortname} | {security.exchange}{' '}
                   ({security.quoteType})
+                </CommandItem>
+              ))}
+          </CommandGroup>
+          <CommandSeparator />
+
+          <CommandGroup heading="Devises">
+            {data
+              .filter((security) => security.quoteType === 'CURRENCY')
+              .map((security) => (
+                <CommandItem
+                  key={`${security.symbol}-${security.quoteType}-${security.exchange}`}
+                  onSelect={() => handleSelection(security.symbol)}
+                  className="cursor-pointer hover:bg-accent hover:text-accent-foreground"
+                  onPointerDown={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    handleSelection(security.symbol)
+                  }}
+                >
+                  <div className="flex flex-col">
+                    <span className="font-medium text-foreground">{security.symbol}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {security.longname || security.shortname || 'Paire de devises'}
+                    </span>
+                  </div>
+                </CommandItem>
+              ))}
+          </CommandGroup>
+          <CommandSeparator />
+
+          <CommandGroup heading="Indices">
+            {data
+              .filter((security) => security.quoteType === 'INDEX')
+              .map((security) => (
+                <CommandItem
+                  key={`${security.symbol}-${security.quoteType}-${security.exchange}`}
+                  onSelect={() => handleSelection(security.symbol)}
+                  className="cursor-pointer hover:bg-accent hover:text-accent-foreground"
+                  onPointerDown={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    handleSelection(security.symbol)
+                  }}
+                >
+                  <div className="flex flex-col">
+                    <span className="font-medium text-foreground">{security.symbol}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {security.longname || security.shortname || 'Indice boursier'}
+                    </span>
+                  </div>
                 </CommandItem>
               ))}
           </CommandGroup>
