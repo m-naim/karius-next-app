@@ -1,7 +1,7 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Star, CalendarDays, BarChart3, Bookmark, Globe, Lock } from 'lucide-react'
+import { Star, CalendarDays, Bookmark, Globe, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { WatchListInfos } from './page'
 import { cn } from '@/lib/utils'
@@ -14,7 +14,7 @@ export function WatchCard({
   data: WatchListInfos
   displayContent?: boolean
 }) {
-  const securityCount = data?.securities?.length || 0
+  const securityCount = data?.securityCount ?? data?.securities?.length ?? 0
   const lastUpdate = data?.updatedAt ? new Date(data.updatedAt).toLocaleDateString('fr-FR', {
     day: '2-digit',
     month: '2-digit',

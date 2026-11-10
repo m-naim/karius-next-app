@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Plus, Bookmark, Globe, Sparkles, Eye, Lock } from 'lucide-react'
+import { Plus, Bookmark, Globe, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import SectionContainer from '@/components/organismes/layout/SectionContainer'
 import { WatchCard } from './watchlistCard'
 import watchListService from '@/services/watchListService'
 import authService from '@/services/authService'
@@ -18,6 +17,7 @@ export interface WatchListInfos {
   is_public?: boolean
   isPublic?: boolean
   securities?: { symbol: string; date?: string }[]
+  securityCount?: number
   createdAt?: string
   updatedAt?: string
 }
