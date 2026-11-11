@@ -353,7 +353,7 @@ export default function PortfolioView() {
     try {
       setLoading(true)
       await addTransactions(id, transactions)
-      router.back()
+      router.push(`/app/portfolios/${id}`)
     } catch (error) {
       console.error('error dumping ...', error)
       setImportError(

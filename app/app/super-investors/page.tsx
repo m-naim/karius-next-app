@@ -31,7 +31,7 @@ const sorts = [
   ['coveragePercent', 'Couverture'],
   ['totalValueUsd', 'Valeur 13F'],
   ['resolvedEquityCount', 'Nombre d’actions'],
-  ['availableQuarters', 'Historique'],
+  ['latestFilingDate', 'Dernière déclaration récupérée'],
   ['displayName', 'Nom'],
 ]
 
@@ -310,11 +310,11 @@ function InvestorExplore() {
                     <SortIcon column="totalValueUsd" />
                   </SortableHead>
                   <SortableHead
-                    label="Historique"
-                    column="availableQuarters"
+                    label="Dernière déclaration récupérée"
+                    column="latestFilingDate"
                     onSort={changeSort}
                   >
-                    <SortIcon column="availableQuarters" />
+                    <SortIcon column="latestFilingDate" />
                   </SortableHead>
                   <th className="w-14 px-3 py-3">
                     <span className="sr-only">Ouvrir</span>
@@ -380,10 +380,11 @@ function InvestorExplore() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <span className="font-semibold tabular-nums">
-                        {investor.availableQuarters}
-                      </span>
-                      <span className="block text-[10px] text-muted-foreground">
-                        trimestres
+                        {investor.latestFilingDate
+                          ? new Intl.DateTimeFormat('fr-FR', { timeZone: 'UTC' }).format(
+                              new Date(investor.latestFilingDate)
+                            )
+                          : '—'}
                       </span>
                     </td>
                     <td className="px-3 py-3 text-right">

@@ -31,6 +31,7 @@ export interface InvestorExploreItem {
   style: string
   cik: string
   latestReportDate: string
+  latestFilingDate?: string | null
   totalValueUsd: number
   availableQuarters: number
   resolvedEquityCount: number

@@ -59,7 +59,7 @@ export default function SuperInvestorLayout({
               <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                 <BackButton
                   fallbackHref="/app/super-investors"
-                  label="Retour à la page précédente"
+                  label="Retour aux Super Investors"
                   className="h-8 w-8"
                 />
                 <div className="min-w-0">

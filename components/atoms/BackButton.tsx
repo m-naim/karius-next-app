@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 
 export function BackButton({
   fallbackHref,
-  label = 'Retour à la page précédente',
+  label = 'Retour au niveau supérieur',
   className,
 }: {
   fallbackHref: string
@@ -17,10 +17,6 @@ export function BackButton({
   const router = useRouter()
 
   const goBack = () => {
-    if (window.history.length > 1) {
-      router.back()
-      return
-    }
     router.push(fallbackHref)
   }
 
