@@ -72,6 +72,28 @@ export function getStockHistory(symbols: string[], period: string, options: Requ
   return http.get(`${host}/api/v1/stocks/history?symbols=${encodedSymbols}&period=${mappedPeriod}`, options)
 }
 
+export type StockHistoryAsyncResponse = {
+  data: Record<string, { day: number; close: number }[]>
+  status: 'READY' | 'LOADING' | 'ERROR'
+  requestedDays: number
+  availableDays: Record<string, number>
+  requestId: string | null
+  error?: string | null
+}
+
+export function getStockHistoryAsync(
+  symbols: string[],
+  period: string,
+  options: RequestOptions = {}
+): Promise<StockHistoryAsyncResponse> {
+  const mappedPeriod = period === '1d' ? 'day' : period
+  const encodedSymbols = symbols.map((symbol) => encodeURIComponent(symbol)).join(',')
+  return http.get(
+    `${host}/api/v1/stocks/history/async?symbols=${encodedSymbols}&period=${mappedPeriod}`,
+    options
+  )
+}
+
 // In-memory cache for quotes & variations to avoid duplicate calls
 const quotesCache = new Map<string, { data: any; timestamp: number }>()
 const inFlightQuotes = new Map<string, Promise<any>>()

@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { getStockHistory, search } from '@/services/stock.service'
+import { getStockHistoryAsync, search } from '@/services/stock.service'
 import { format } from 'date-fns'
 import { LineValue } from '@/components/molecules/charts/LineValue'
 import { Label } from '@/components/ui/label'
@@ -14,7 +14,8 @@ import MultiSelectTagDropdown from '@/components/molecules/MultiSelectTagDropdow
 import { PerHistoryChart } from './PerHistoryChart'
 import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Database, Loader2 } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 // Define interfaces for data structures
 interface ChartData {
   labels: string[]
@@ -48,6 +49,17 @@ const periodes = [
   { value: 'max', label: 'MAX' },
 ]
 
+const periodLoadingLabels: Record<string, string> = {
+  '1w': 'une semaine',
+  '1m': 'un mois',
+  '3m': 'trois mois',
+  '6m': 'six mois',
+  '1y': 'un an',
+  '5y': 'cinq ans',
+  '10y': 'dix ans',
+  max: "l'historique complet",
+}
+
 export function TickerChart({
   symbol,
   compact = false,
@@ -70,6 +82,8 @@ export function TickerChart({
   const [chartData, setChartData] = useState<ChartData>({ labels: [], datasets: [] })
   const [period, setPeriod] = useState('1y')
   const [loading, setLoading] = useState(true)
+  const [historyStatus, setHistoryStatus] = useState<'READY' | 'LOADING' | 'ERROR'>('READY')
+  const [availableDays, setAvailableDays] = useState<Record<string, number>>({})
   const [selectedBenchmarks, setSelectedBenchmarks] = useState<string[]>([])
   const [isLogarithmic, setIsLogarithmic] = useState(false)
   const [isDrawdown, setIsDrawdown] = useState(false)
@@ -108,29 +122,54 @@ export function TickerChart({
   }, [compQuery])
 
   useEffect(() => {
+    let cancelled = false
+    const controller = new AbortController()
     setLoading(true)
+    setHistoryStatus('LOADING')
     const symbolsToFetch = [symbol, ...selectedBenchmarks]
-    const historyPromises = getStockHistory(symbolsToFetch, period)
+    const applyHistory = (results: { [key: string]: StockHistoryItem[] }) => {
+      setFullHistory(results)
+      const allPoints = Object.values(results).flat()
+      if (allPoints.length > 0) {
+        const years = allPoints.map((p) => new Date(p.day * 24 * 60 * 60 * 1000).getFullYear())
+        const minYear = Math.min(...years)
+        const maxYear = Math.max(...years)
+        setYearRange([minYear, maxYear])
+        setSelectedRange([minYear, maxYear])
+      }
+    }
 
-    historyPromises
-      .then((results: { [key: string]: StockHistoryItem[] }) => {
-        setFullHistory(results)
-
-        const allPoints = Object.values(results).flat()
-        if (allPoints.length > 0) {
-          const years = allPoints.map((p) => new Date(p.day * 24 * 60 * 60 * 1000).getFullYear())
-          const minYear = Math.min(...years)
-          const maxYear = Math.max(...years)
-          setYearRange([minYear, maxYear])
-          setSelectedRange([minYear, maxYear])
+    const load = async () => {
+      try {
+        // Keep the partial chart visible while polling. The first request uses
+        // a skeleton only when no previous history is available.
+        for (let attempt = 0; attempt < 30 && !cancelled; attempt += 1) {
+          const response = await getStockHistoryAsync(symbolsToFetch, period, {
+            signal: controller.signal,
+          })
+          if (cancelled) return
+          applyHistory(response.data || {})
+          setAvailableDays(response.availableDays || {})
+          setHistoryStatus(response.status)
+          setLoading(false)
+          if (response.status === 'READY' || response.status === 'ERROR') return
+          await new Promise((resolve) => window.setTimeout(resolve, 2000))
         }
+        if (!cancelled) setHistoryStatus('ERROR')
+      } catch (error: any) {
+        if (error?.name !== 'AbortError') {
+          console.error('Failed to fetch historical data:', error)
+          setHistoryStatus('ERROR')
+          setLoading(false)
+        }
+      }
+    }
+    load()
 
-        setLoading(false)
-      })
-      .catch((error) => {
-        console.error('Failed to fetch historical data:', error)
-        setLoading(false)
-      })
+    return () => {
+      cancelled = true
+      controller.abort()
+    }
   }, [symbol, period, selectedBenchmarks])
 
   useEffect(() => {
@@ -498,6 +537,7 @@ export function TickerChart({
             }
             if (
               !loading &&
+              historyStatus !== 'LOADING' &&
               totalAvailableDays > 0 &&
               period !== 'max' &&
               periodMinDays[period] > totalAvailableDays
@@ -521,9 +561,61 @@ export function TickerChart({
             return null
           })()}
 
+          {!loading && historyStatus === 'LOADING' && (
+            <div
+              className={`flex items-start gap-2 rounded-md border border-primary/20 bg-primary/5 text-primary ${compact ? 'px-2 py-1 text-[10px]' : 'px-3 py-2 text-xs'}`}
+              role="status"
+              aria-live="polite"
+            >
+              <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+              <span>
+                Extension de l’historique à {periodLoadingLabels[period] || period} en cours.
+                {availableDays[symbol] > 0 && (
+                  <> Le graphique affiche déjà environ {Math.max(1, Math.round(availableDays[symbol] / 365))} an(s) disponible(s).</>
+                )}
+              </span>
+            </div>
+          )}
+
+          {!loading && historyStatus === 'ERROR' && (
+            <div className={`rounded-md border border-destructive/25 bg-destructive/10 text-destructive ${compact ? 'px-2 py-1 text-[10px]' : 'px-3 py-2 text-xs'}`} role="alert">
+              L’historique complet n’a pas pu être récupéré. Les données déjà disponibles restent affichées.
+            </div>
+          )}
+
           <div className={`${compact ? 'h-[220px] sm:h-[280px] p-0.5' : 'h-[250px] p-1'} w-full rounded-lg border bg-card/30`}>
             {loading ? (
-              <div className="flex h-full items-center justify-center text-sm">Chargement...</div>
+              <div
+                className="flex h-full flex-col justify-between overflow-hidden rounded-md p-3 sm:p-4"
+                role="status"
+                aria-live="polite"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <Database className="h-4 w-4" aria-hidden="true" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                      Chargement sur {periodLoadingLabels[period] || period}
+                    </div>
+                    <p className="mt-1 max-w-md text-xs leading-relaxed text-muted-foreground">
+                      Vérification de la couverture et récupération des données manquantes. Le premier affichage peut prendre quelques secondes.
+                    </p>
+                  </div>
+                </div>
+                <div className="space-y-3" aria-hidden="true">
+                  <div className="flex items-end gap-2">
+                    <Skeleton className="h-16 flex-1 rounded-md" />
+                    <Skeleton className="h-24 flex-1 rounded-md" />
+                    <Skeleton className="h-12 flex-1 rounded-md" />
+                    <Skeleton className="h-28 flex-1 rounded-md" />
+                    <Skeleton className="h-20 flex-1 rounded-md" />
+                    <Skeleton className="h-32 flex-1 rounded-md" />
+                  </div>
+                  <Skeleton className="h-2 w-full rounded-full" />
+                </div>
+              </div>
             ) : (
               <LineValue
                 data={chartData}
