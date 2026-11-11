@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/hooks/useAuth'
+import { getLoginDestination } from '@/lib/app-navigation'
 
 function Login() {
   const router = useRouter()
@@ -30,7 +31,7 @@ function Login() {
     try {
       const response = await authService.login(email, password)
       login(response.accessToken)
-      router.push('/app/portfolios')
+      router.replace(getLoginDestination(new URLSearchParams(window.location.search).get('redirect')))
     } catch (error) {
       console.error(error)
       const resMessage =
@@ -43,12 +44,12 @@ function Login() {
   return (
     <section className="flex  w-full place-content-center items-center justify-center py-7">
       <div className="m-4 w-full max-w-xl p-4 sm:p-6  lg:p-12 ">
-        <form className="space-y-6" action="#">
+        <form className="space-y-6" onSubmit={logIn}>
           <h2>Se connecter à Boursehorus</h2>
           <span>Bon retour Parmis nous 😊</span>
 
           <div className="w-full">
-            <Label className="mb-2 block text-left text-sm font-medium text-gray-900 dark:text-gray-300">
+            <Label htmlFor="email" className="mb-2 block text-left text-sm font-medium text-gray-900 dark:text-gray-300">
               Email
             </Label>
             <Input
@@ -62,7 +63,7 @@ function Login() {
             />
           </div>
           <div>
-            <Label className="mb-2 block text-left text-sm font-medium text-gray-900 dark:text-gray-300">
+            <Label htmlFor="password" className="mb-2 block text-left text-sm font-medium text-gray-900 dark:text-gray-300">
               Mot de passe
             </Label>
             <Input
@@ -97,7 +98,7 @@ function Login() {
               Mot de passe oublié?
             </Button>
           </div>
-          <Button type="submit" className="btn-primary" onClick={logIn}>
+          <Button type="submit" className="btn-primary">
             Se connecter
           </Button>
 

@@ -1,7 +1,7 @@
 const isProduction = process.env.NODE_ENV === 'production'
 
 const headerNavLinks = [
-  { href: '/', title: 'Home' },
+  { href: '/', title: 'Accueil' },
   { draft: false, href: '/app/portfolios', title: 'Portefeuilles' },
   { draft: false, href: '/app/watchlist', title: 'Watchlists' },
   { draft: false, href: '/app/calendar', title: 'Calendrier' },

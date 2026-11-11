@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import Link from '../../atoms/Link'
 import headerNavLinks from '@/data/headerNavLinks'
 import { Menu, X } from 'lucide-react'
@@ -8,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
 
 const MobileNav = ({ onOpenSearch }: { onOpenSearch?: () => void }) => {
+  const pathname = usePathname()
   const [navShow, setNavShow] = useState(false)
   const { user } = useAuth()
 
@@ -119,7 +121,7 @@ const MobileNav = ({ onOpenSearch }: { onOpenSearch?: () => void }) => {
                 <div key={link.title} className="py-2">
                   <Link
                     data-umami-event={`mobile-header-${link.title}`}
-                    href={link.href}
+                    href={link.href === '/' && (user || pathname?.startsWith('/app')) ? '/app' : link.href}
                     className="text-2xl font-bold tracking-widest text-foreground"
                     onClick={onToggleNav}
                   >

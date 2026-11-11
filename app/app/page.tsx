@@ -1,383 +1,332 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
-import SectionContainer from '@/components/organismes/layout/SectionContainer'
-import authService from '@/services/authService'
-import { getAll as getPortfolios } from '@/services/portfolioService'
-import { getFollowed } from '@/services/portfolioService'
-import { getAll as getWatchlists } from '@/services/watchListService'
-import { PortfolioCard, PortfolioSummery } from './portfolios/PortfolioCard'
-import { FavoritePortfoliosPanel } from '@/components/molecules/portfolio/FavoritePortfoliosPanel'
-import { WatchCard } from './watchlist/watchlistCard'
-import { WatchListInfos } from './watchlist/page'
-import { motion } from 'framer-motion'
-import { Button } from '@/components/ui/button'
+import { useContext, useEffect, useState } from 'react'
 import Link from 'next/link'
-import {
-  ArrowRight,
-  Briefcase,
-  ListTodo,
-  GraduationCap,
-  Telescope,
-  Play,
-  Activity,
-  AlertCircle,
-  Plus,
-  Bell,
-  Users,
-  TrendingUp,
-  TrendingDown,
-  Sparkles,
-  Wallet,
-  Compass,
-} from 'lucide-react'
+import { ArrowRight, Bell, BookOpen, ListTodo, Users } from 'lucide-react'
+import { AuthContext } from 'hooks/authContext'
+import SectionContainer from '@/components/organismes/layout/SectionContainer'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { UpcomingEarnings } from '@/components/earnings/UpcomingEarnings'
+import { getAll as getPortfolios } from '@/services/portfolioService'
+import {
+  DashboardMovers,
+  getDashboardMovers,
+} from '@/services/dashboardService'
+import { cn } from '@/lib/utils'
 
-export default function AppDashboard() {
-  const [portfolios, setPortfolios] = useState<PortfolioSummery[]>([])
-  const [favoritePortfolios, setFavoritePortfolios] = useState<PortfolioSummery[]>([])
-  const [watchlists, setWatchlists] = useState<WatchListInfos[]>([])
+interface DailyPortfolio {
+  id: string
+  name: string
+  dayChangePercent: number | string | null
+}
+
+const loadPortfolios = async (
+  signal: AbortSignal
+): Promise<DailyPortfolio[]> => {
+  const response = await getPortfolios({ signal })
+  return response.ownPortfolios || []
+}
+
+function useDashboardResource<T>(
+  load: (signal: AbortSignal) => Promise<T>,
+  enabled: boolean
+) {
+  const [data, setData] = useState<T | null>(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const user = authService.getCurrentUser()?.user
-
-  const fetchData = async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const [portRes, watchRes] = await Promise.all([
-        getPortfolios(),
-        getWatchlists(),
-      ])
-      setPortfolios(portRes.ownPortfolios || [])
-      setWatchlists(watchRes || [])
-      const followed = await getFollowed().catch((favoriteError) => {
-        console.error('Failed to fetch favorite portfolios', favoriteError)
-        return []
-      })
-      setFavoritePortfolios(followed || [])
-    } catch (e: any) {
-      console.error('Failed to fetch dashboard data', e)
-      setError(e.message || 'Impossible de charger les données. Veuillez réessayer.')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const [error, setError] = useState(false)
+  const [version, setVersion] = useState(0)
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    if (!enabled) {
+      setData(null)
+      return
+    }
+    const controller = new AbortController()
+    setLoading(true)
+    setError(false)
+    load(controller.signal)
+      .then((result) => {
+        if (!controller.signal.aborted) setData(result)
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setError(true)
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false)
+      })
+    return () => controller.abort()
+  }, [load, enabled, version])
 
-  const getGreeting = () => {
-    const hour = new Date().getHours()
-    if (hour < 12) return 'Bonjour'
-    if (hour < 18) return 'Bon après-midi'
-    return 'Bonsoir'
+  return {
+    data,
+    loading,
+    error,
+    retry: () => setVersion((current) => current + 1),
   }
+}
 
-  // Calculate cumulative capital and average daily performance
-  const totalCapital = portfolios.reduce((sum, p) => sum + (p.totalValue || (p as any).totalValue || 0), 0)
-  const averageDayChange = portfolios.length > 0
-    ? portfolios.reduce((sum, p) => sum + (p.dayChangePercent || 0), 0) / portfolios.length
-    : 0
-  const isPositiveDaily = averageDayChange >= 0
+const loadMovers = (signal: AbortSignal) => getDashboardMovers({ signal })
+
+function Change({
+  value,
+  highlight = false,
+}: {
+  value: number | string | null | undefined
+  highlight?: boolean
+}) {
+  const number = value == null || value === '' ? NaN : Number(value)
+  if (!Number.isFinite(number))
+    return <span className="text-muted-foreground">—</span>
+  return (
+    <span
+      className={cn(
+        'whitespace-nowrap tabular-nums',
+        number > 0 && 'text-emerald-700 dark:text-emerald-400',
+        number < 0 && 'text-rose-700 dark:text-rose-400',
+        highlight && Math.abs(number) > 5 ? 'font-extrabold' : 'font-medium'
+      )}
+    >
+      {number > 0 ? '+' : ''}
+      {number.toFixed(2)} %
+    </span>
+  )
+}
+
+function LoadError({ retry }: { retry: () => void }) {
+  return (
+    <div className="flex items-center justify-between gap-3 py-3 text-sm">
+      <p className="m-0 text-muted-foreground">Chargement impossible.</p>
+      <Button variant="outline" size="sm" onClick={retry}>
+        Réessayer
+      </Button>
+    </div>
+  )
+}
+
+function RowsSkeleton() {
+  return (
+    <div className="space-y-2 py-2" aria-label="Chargement en cours">
+      {[0, 1, 2].map((i) => (
+        <Skeleton key={i} className="h-10 rounded-md" />
+      ))}
+    </div>
+  )
+}
+
+function Movers({ data }: { data: DashboardMovers }) {
+  return (
+    <>
+      {data.movers.length ? (
+        <table className="w-full table-fixed text-xs sm:text-sm">
+          <caption className="sr-only">
+            Variations des actions de vos portefeuilles et watchlists dépassant
+            5 % en valeur absolue sur au moins une période.
+          </caption>
+          <thead className="border-b border-border text-[11px] text-muted-foreground">
+            <tr>
+              <th scope="col" className="w-[42%] py-2 text-left font-medium">
+                Action
+              </th>
+              <th scope="col" className="py-2 text-right font-medium">
+                1 j
+              </th>
+              <th scope="col" className="py-2 text-right font-medium">
+                1 sem.
+              </th>
+              <th scope="col" className="py-2 text-right font-medium">
+                1 mois
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/60">
+            {data.movers.map((stock) => {
+              const portfolio = stock.contexts.some(
+                (context) => context.type === 'PORTFOLIO'
+              )
+              const watchlist = stock.contexts.some(
+                (context) => context.type === 'WATCHLIST'
+              )
+              return (
+                <tr key={stock.symbol}>
+                  <th
+                    scope="row"
+                    className="min-w-0 py-2.5 pr-2 text-left font-normal"
+                  >
+                    <Link
+                      href={`/app/stocks/${encodeURIComponent(stock.symbol)}`}
+                      className="block truncate font-bold hover:text-primary"
+                      title={stock.name}
+                    >
+                      {stock.symbol}
+                      <span className="ml-2 hidden font-normal text-muted-foreground sm:inline">
+                        {stock.name}
+                      </span>
+                    </Link>
+                    <span
+                      className="mt-0.5 block text-[10px] text-muted-foreground"
+                      title={stock.contexts
+                        .map((context) => context.name)
+                        .join(', ')}
+                    >
+                      {portfolio && watchlist
+                        ? 'Portefeuille · Watchlist'
+                        : portfolio
+                        ? 'Portefeuille'
+                        : 'Watchlist'}
+                    </span>
+                  </th>
+                  <td className="py-2.5 text-right">
+                    <Change value={stock.dayChangePercent} highlight />
+                  </td>
+                  <td className="py-2.5 text-right">
+                    <Change value={stock.weekChangePercent} highlight />
+                  </td>
+                  <td className="py-2.5 text-right">
+                    <Change value={stock.monthChangePercent} highlight />
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      ) : (
+        <p className="my-3 text-sm text-muted-foreground">
+          {data.trackedCount === 0
+            ? 'Ajoutez des actions à un portefeuille ou une watchlist pour retrouver leurs mouvements ici.'
+            : 'Aucun mouvement supérieur à ±5 % sur les périodes disponibles.'}
+        </p>
+      )}
+      {data.incompleteCount > 0 && (
+        <p className="mb-0 mt-2 text-xs text-muted-foreground">
+          Certaines variations sont indisponibles pour {data.incompleteCount}{' '}
+          action{data.incompleteCount > 1 ? 's' : ''}.
+        </p>
+      )}
+    </>
+  )
+}
+
+export default function AppDashboard() {
+  const { user } = useContext(AuthContext)
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  const portfolios = useDashboardResource(loadPortfolios, Boolean(user))
+  const movers = useDashboardResource(loadMovers, Boolean(user))
 
   return (
-    <div className="space-y-8 py-6">
-      {/* 1. HERO SECTION & TOTAL WEALTH SUMMARY */}
-      <SectionContainer>
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-xl"
-          >
-            <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary">
-              <Activity className="h-4 w-4" />
-              <span>Tableau de Bord Financier</span>
-            </div>
-            <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
-              {getGreeting()}, <span className="text-primary">{user?.name?.split(' ')[0] || 'Investisseur'}</span>.
-            </h1>
-            <p className="mt-2 text-sm font-medium text-muted-foreground">
-              Voici l'état global de vos investissements et vos opportunités du jour.
-            </p>
-          </motion.div>
-
-          {/* TOTAL WEALTH CARD */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 }}
-            className="relative overflow-hidden rounded-2xl border border-border/80 bg-card/80 p-5 shadow-xl backdrop-blur-md min-w-[280px] sm:min-w-[340px]"
-          >
-            <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
-              <span className="flex items-center gap-1.5 uppercase tracking-wider">
-                <Wallet className="h-3.5 w-3.5 text-primary" /> Capital Total Cumulé
-              </span>
-              <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold text-primary">
-                {portfolios.length} Portefeuille{portfolios.length > 1 ? 's' : ''}
-              </span>
-            </div>
-
-            <div className="mt-3 flex items-baseline gap-3">
-              <span className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">
-                {loading ? (
-                  <Skeleton className="h-9 w-36 rounded-lg" />
-                ) : (
-                  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(totalCapital)
-                )}
-              </span>
-            </div>
-
-            <div className="mt-2 flex items-center gap-2">
-              <div
-                className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-bold ${
-                  isPositiveDaily
-                    ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                    : 'bg-red-500/10 text-red-500 border border-red-500/20'
-                }`}
+    <SectionContainer className="max-w-4xl space-y-5 py-4 sm:py-6 xl:max-w-4xl">
+      <h1 className="m-0 p-0 text-xl font-bold tracking-tight text-foreground">
+        Aujourd’hui
+      </h1>
+      {!mounted ? (
+        <RowsSkeleton />
+      ) : !user ? (
+        <div className="space-y-3 rounded-lg border border-border p-4">
+          <p className="m-0 text-sm text-muted-foreground">
+            Connectez-vous pour retrouver vos portefeuilles, les mouvements de
+            vos actions et vos prochaines publications.
+          </p>
+          <Button asChild>
+            <Link href="/login?redirect=/app">Se connecter</Link>
+          </Button>
+        </div>
+      ) : (
+        <>
+          <section aria-labelledby="daily-portfolios">
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <h2
+                id="daily-portfolios"
+                className="m-0 p-0 text-base font-bold text-foreground"
               >
-                {isPositiveDaily ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
-                <span>
-                  {isPositiveDaily ? '+' : ''}
-                  {averageDayChange.toFixed(2)} %
-                </span>
-              </div>
-              <span className="text-[11px] text-muted-foreground">moyenne du jour</span>
-            </div>
-          </motion.div>
-        </div>
-      </SectionContainer>
-
-      {/* 2. QUICK ACTIONS BAR */}
-      <SectionContainer>
-        <div className="flex w-full items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-          <Button asChild size="sm" className="rounded-full gap-2 shrink-0 shadow-sm">
-            <Link href="/app/portfolios/new">
-              <Plus className="h-4 w-4" /> Nouveau Portefeuille
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm" className="rounded-full gap-2 shrink-0 border-border/80 bg-card hover:bg-accent">
-            <Link href="/app/alerts">
-              <Bell className="h-4 w-4 text-amber-500" /> Alertes Prix
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm" className="rounded-full gap-2 shrink-0 border-border/80 bg-card hover:bg-accent">
-            <Link href="/app/super-investors">
-              <Users className="h-4 w-4 text-indigo-500" /> Super Investisseurs
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="sm" className="rounded-full gap-2 shrink-0 border-border/80 bg-card hover:bg-accent">
-            <Link href="/app/market">
-              <Telescope className="h-4 w-4 text-blue-500" /> Scanner de Marché
-            </Link>
-          </Button>
-        </div>
-      </SectionContainer>
-
-      <SectionContainer>
-        <UpcomingEarnings />
-      </SectionContainer>
-
-      {/* 3. USER WORKSPACES (Portfolios & Watchlists) */}
-      <SectionContainer>
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          {/* Portfolios Section */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between border-b border-border/60 pb-3">
-              <h2 className="flex items-center gap-2.5 text-lg font-black tracking-tight">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500">
-                  <Briefcase size={16} />
-                </div>
-                Portefeuilles d'Investissement
+                Mes portefeuilles · 1 j
               </h2>
-              <Link href="/app/portfolios" className="text-xs font-bold uppercase tracking-wider text-primary hover:underline">
-                Voir Tout ({portfolios.length})
+              <Link
+                href="/app/portfolios"
+                className="shrink-0 text-xs font-semibold text-primary hover:underline"
+              >
+                Tous <ArrowRight className="ml-1 inline h-3 w-3" />
               </Link>
             </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {loading ? (
-                Array(2).fill(0).map((_, i) => <Skeleton key={i} className="h-32 w-full rounded-2xl" />)
-              ) : error ? (
-                <div className="col-span-2 flex flex-col items-center justify-center rounded-2xl border border-dashed border-destructive/25 bg-destructive/5 py-8 text-center px-4">
-                  <AlertCircle className="mb-2 h-6 w-6 text-destructive" />
-                  <p className="text-xs font-medium text-muted-foreground">{error}</p>
-                  <Button onClick={fetchData} variant="outline" size="sm" className="mt-3 rounded-full">
-                    Réessayer
-                  </Button>
-                </div>
-              ) : portfolios.length > 0 ? (
-                portfolios.slice(0, 4).map((p) => (
-                  <PortfolioCard key={p.id} {...p} />
-                ))
-              ) : (
-                <div className="col-span-2 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border/60 bg-muted/10 py-10 text-center transition-colors hover:bg-muted/20">
-                  <Briefcase className="mb-3 h-8 w-8 text-muted-foreground/40" />
-                  <p className="text-sm font-bold text-muted-foreground">Aucun portefeuille configuré</p>
-                  <Button asChild size="sm" className="mt-4 rounded-full">
-                    <Link href="/app/portfolios/new">Créer un portefeuille</Link>
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Favorite Portfolios Section */}
-          <FavoritePortfoliosPanel
-            portfolios={favoritePortfolios}
-            loading={loading}
-            onRemoved={(id) => setFavoritePortfolios((current) => current.filter((portfolio) => portfolio.id !== id))}
-          />
-        </div>
-
-        {/* Watchlists Section */}
-        <div className="mt-8 space-y-4">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between border-b border-border/60 pb-3">
-              <h2 className="flex items-center gap-2.5 text-lg font-black tracking-tight">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/10 text-blue-500">
-                  <ListTodo size={16} />
-                </div>
-                Watchlists Suivies
-              </h2>
-              <Link href="/app/watchlist" className="text-xs font-bold uppercase tracking-wider text-primary hover:underline">
-                Voir Tout ({watchlists.length})
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {loading ? (
-                Array(2).fill(0).map((_, i) => <Skeleton key={i} className="h-32 w-full rounded-2xl" />)
-              ) : error ? (
-                <div className="col-span-2 flex flex-col items-center justify-center rounded-2xl border border-dashed border-destructive/25 bg-destructive/5 py-8 text-center px-4">
-                  <AlertCircle className="mb-2 h-6 w-6 text-destructive" />
-                  <p className="text-xs font-medium text-muted-foreground">{error}</p>
-                  <Button onClick={fetchData} variant="outline" size="sm" className="mt-3 rounded-full">
-                    Réessayer
-                  </Button>
-                </div>
-              ) : watchlists.length > 0 ? (
-                watchlists.slice(0, 4).map((w, index) => (
-                  <WatchCard key={w._id || w.id || index} data={w} displayContent={true} />
-                ))
-              ) : (
-                <div className="col-span-2 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border/60 bg-muted/10 py-10 text-center transition-colors hover:bg-muted/20">
-                  <ListTodo className="mb-3 h-8 w-8 text-muted-foreground/40" />
-                  <p className="text-sm font-bold text-muted-foreground">Aucune liste créée</p>
-                  <Button asChild variant="outline" size="sm" className="mt-4 rounded-full">
-                    <Link href="/app/watchlist/new">Créer une watchlist</Link>
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </SectionContainer>
-
-      {/* 4. FEATURED BANNER : SUPER INVESTORS (13F Tracker) */}
-      <SectionContainer>
-        <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-r from-primary/10 via-card to-card p-6 shadow-xl backdrop-blur-md">
-          <div className="absolute right-0 top-0 -mt-10 -mr-10 h-48 w-48 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between relative z-10">
-            <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
-                <Users className="h-6 w-6" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-primary">Suivi 13F SEC EDGAR</span>
-                  <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-extrabold text-primary">15 Gérants d'Élite</span>
-                </div>
-                <h3 className="text-xl font-black text-foreground">Portefeuilles des Super Investisseurs</h3>
-                <p className="mt-1 text-xs text-muted-foreground max-w-xl">
-                  Découvrez où investissent François Rochon, Warren Buffett, Sir Chris Hohn et Terry Smith. Analysez leurs plus fortes convictions en temps réel.
-                </p>
-              </div>
-            </div>
-            <Button asChild className="rounded-full shrink-0 gap-2 shadow-md hover:scale-105 transition-transform">
-              <Link href="/app/super-investors">
-                Explorer les Portefeuilles <ArrowRight size={16} />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </SectionContainer>
-
-      {/* 5. EXPLORATION & ACADEMY */}
-      <SectionContainer>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {/* Learning Action Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="group relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 p-6 text-white shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl"
-          >
-            <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl transition-all group-hover:scale-150" />
-            <div className="relative z-10 flex h-full flex-col justify-between">
-              <div>
-                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md">
-                  <GraduationCap className="h-6 w-6 text-white" />
-                </div>
-                <h2 className="text-2xl font-black">Académie Bourse Horus</h2>
-                <p className="mt-2 max-w-[85%] text-xs font-medium text-indigo-100 leading-relaxed">
-                  Perfectionnez vos stratégies d'investissement. Comprenez l'allocation de capital et les modèles de valorisation.
-                </p>
-              </div>
-              <div className="mt-6">
-                <Button asChild className="rounded-full bg-white text-indigo-700 hover:bg-white/90 font-bold shadow-md transition-all group-hover:scale-105">
-                  <Link href="/fr/guide" className="flex items-center gap-2">
-                    <Play size={15} className="fill-current" />
-                    Explorer les Guides
+            {portfolios.error ? (
+              <LoadError retry={portfolios.retry} />
+            ) : portfolios.loading ? (
+              <RowsSkeleton />
+            ) : portfolios.data?.length ? (
+              <div className="divide-y divide-border/60 border-y border-border/70">
+                {portfolios.data.map((portfolio) => (
+                  <Link
+                    key={portfolio.id}
+                    href={`/app/portfolios/${portfolio.id}`}
+                    className="flex items-center justify-between gap-4 py-3 text-sm transition-colors hover:bg-muted/40"
+                  >
+                    <span className="min-w-0 truncate font-semibold">
+                      {portfolio.name}
+                    </span>
+                    <Change value={portfolio.dayChangePercent} />
                   </Link>
-                </Button>
+                ))}
               </div>
-            </div>
-          </motion.div>
+            ) : (
+              <p className="my-3 text-sm text-muted-foreground">
+                Aucun portefeuille.{' '}
+                <Link
+                  href="/app/portfolios/new"
+                  className="font-semibold text-primary hover:underline"
+                >
+                  Créer mon premier portefeuille
+                </Link>
+              </p>
+            )}
+          </section>
 
-          {/* Market Exploration Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="group relative overflow-hidden rounded-3xl bg-card border border-border p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md hover:border-primary/40"
+          <section aria-labelledby="tracked-movers">
+            <h2
+              id="tracked-movers"
+              className="m-0 p-0 text-base font-bold text-foreground"
+            >
+              Ce qui bouge
+            </h2>
+            <p className="mb-2 mt-1 text-xs text-muted-foreground">
+              Portefeuilles et watchlists · hausses et baisses de plus de 5 %
+            </p>
+            {movers.error ? (
+              <LoadError retry={movers.retry} />
+            ) : movers.loading ? (
+              <RowsSkeleton />
+            ) : (
+              movers.data && <Movers data={movers.data} />
+            )}
+          </section>
+
+          <UpcomingEarnings />
+        </>
+      )}
+
+      <nav
+        aria-label="Autres outils"
+        className="flex flex-wrap gap-x-5 gap-y-3 border-t border-border pt-4 text-xs font-semibold text-muted-foreground"
+      >
+        {[
+          { href: '/app/watchlist', label: 'Mes watchlists', Icon: ListTodo },
+          { href: '/app/alerts', label: 'Mes alertes', Icon: Bell },
+          {
+            href: '/app/super-investors',
+            label: 'Super Investors',
+            Icon: Users,
+          },
+          { href: '/fr/guide', label: 'Guides', Icon: BookOpen },
+        ].map(({ href, label, Icon }) => (
+          <Link
+            key={href}
+            href={href}
+            className="inline-flex items-center gap-1.5 hover:text-primary"
           >
-            <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-primary/5 blur-3xl transition-all group-hover:bg-primary/15" />
-            <div className="relative z-10 flex h-full flex-col justify-between">
-              <div>
-                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
-                  <Telescope className="h-6 w-6 text-primary" />
-                </div>
-                <h2 className="text-2xl font-black text-foreground">Scanner de Marché</h2>
-                <p className="mt-2 max-w-[85%] text-xs font-medium text-muted-foreground leading-relaxed">
-                  Filtrez les actions selon les critères d'évaluation des maîtres de la valeur. Découvrez les opportunités du jour.
-                </p>
-              </div>
-              <div className="mt-6">
-                <Button asChild variant="outline" className="rounded-full border-border/80 bg-background font-bold shadow-sm transition-all group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary">
-                  <Link href="/app/market" className="flex items-center gap-2">
-                    Lancer le Scanner <ArrowRight size={15} />
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </SectionContainer>
-
-      {/* 6. MARKET PULSE */}
-      <SectionContainer>
-        <div className="mb-4 flex items-center justify-between border-b border-border/60 pb-3">
-          <h3 className="flex items-center gap-2 text-lg font-black tracking-tight">
-            <Activity className="h-4 w-4 text-primary" />
-            Signaux Vitaux du Marché
-          </h3>
-        </div>
-      </SectionContainer>
-    </div>
+            <Icon className="h-3.5 w-3.5" />
+            {label}
+          </Link>
+        ))}
+      </nav>
+    </SectionContainer>
   )
 }

@@ -42,7 +42,7 @@ export default function AppLayoutContainer({
       <div className="flex h-screen w-full flex-col overflow-hidden bg-background">
         <div className="z-50 shrink-0">
           <Header />
-          <MarketPulse />
+          {pathname !== "/app" && <MarketPulse />}
         </div>
         <main className="flex-1 w-full min-h-0 flex flex-col overflow-y-auto">
           {children}

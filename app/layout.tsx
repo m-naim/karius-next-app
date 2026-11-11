@@ -12,6 +12,7 @@ import SupportBubble from '@/components/molecules/support/SupportBubble'
 import PwaRegister from '@/components/PwaRegister'
 
 export const metadata: Metadata = {
+  manifest: '/manifest.webmanifest',
   metadataBase: new URL(siteMetadata.siteUrl),
   title: {
     default: siteMetadata.title,

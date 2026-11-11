@@ -22,7 +22,7 @@ self.addEventListener('push', (event) => {
     try {
       const json = event.data.json()
       data = { ...data, ...json }
-    } catch (e) {
+    } catch {
       data.body = event.data.text()
     }
   }
@@ -45,22 +45,29 @@ self.addEventListener('push', (event) => {
   )
 })
 
-// Notification Click Handler (opens or focuses app on /app/alerts)
+// Open the notification's actual destination, including in an existing app window.
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
-  const targetUrl = event.notification.data?.url || '/app/alerts'
+  let target = new URL('/app/alerts', self.location.origin)
+  try {
+    const requested = new URL(event.notification.data?.url || '/app/alerts', self.location.origin)
+    if (requested.origin === self.location.origin &&
+        (requested.pathname === '/app' || requested.pathname.startsWith('/app/'))) target = requested
+  } catch {
+    // Fall back to alerts for malformed notification URLs.
+  }
 
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      for (let i = 0; i < windowClients.length; i++) {
-        const client = windowClients[i]
-        if (client.url.includes('/app') && 'focus' in client) {
-          return client.focus()
-        }
-      }
-      if (clients.openWindow) {
-        return clients.openWindow(targetUrl)
-      }
+  event.waitUntil((async () => {
+    const windows = await clients.matchAll({ type: 'window', includeUncontrolled: true })
+    const app = windows.find((client) => {
+      const url = new URL(client.url)
+      return url.origin === self.location.origin &&
+        (url.pathname === '/app' || url.pathname.startsWith('/app/'))
     })
-  )
+    if (app && 'navigate' in app) {
+      const navigated = await app.navigate(target.href)
+      if (navigated) return navigated.focus()
+    }
+    return clients.openWindow(target.href)
+  })())
 })

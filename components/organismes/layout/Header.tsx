@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import siteMetadata from '@/data/siteMetadata'
 import headerNavLinks from '@/data/headerNavLinks'
 import Link from '../../atoms/Link'
@@ -21,6 +22,7 @@ import { ChevronDown, Bell, Search } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/tooltip'
 
 const Header = () => {
+  const pathname = usePathname()
   const { user } = useAuth()
   const [stockCommandOpen, setStockCommandOpen] = useState(false)
 
@@ -52,7 +54,7 @@ const Header = () => {
         <div className="shrink-0">
           <Link 
             data-umami-event={'header-home'} 
-            href={user ? '/app' : '/'} 
+            href={user || pathname?.startsWith('/app') ? '/app' : '/'}
             aria-label={siteMetadata.headerTitle}
           >
             <div className="text-base font-extrabold tracking-tight text-primary sm:text-lg">

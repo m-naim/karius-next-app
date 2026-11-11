@@ -3,6 +3,7 @@ import siteMetadata from '@/data/siteMetadata'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    id: '/app',
     name: siteMetadata.title,
     short_name: 'Bourse Horus',
     description: siteMetadata.description,

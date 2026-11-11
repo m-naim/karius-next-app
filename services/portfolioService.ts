@@ -6,8 +6,8 @@ import { fr } from 'date-fns/locale'
 const host = config.API_URL
 const qwantHost = config.QWANTAPI_URL
 
-export function getAll() {
-  return http.get(`${host}/api/v1/portfolios`)
+export function getAll(options: { signal?: AbortSignal } = {}) {
+  return http.get(`${host}/api/v1/portfolios`, options)
 }
 
 export function getPublicPortfolios(page = 0, limit = 10, sortBy = 'annualized_return', direction = 'DESC', followedOnly = false) {
