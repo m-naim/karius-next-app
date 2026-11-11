@@ -1,0 +1,61 @@
+- generic [active] [ref=e1]:
+  - region "Notifications (F8)":
+    - list
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - banner [ref=e4]:
+        - generic [ref=e5]:
+          - link "BourseHorus" [ref=e7] [cursor=pointer]:
+            - /url: /
+          - navigation [ref=e9]:
+            - link "Portefeuilles" [ref=e10] [cursor=pointer]:
+              - /url: /app/portfolios
+            - link "Watchlists" [ref=e11] [cursor=pointer]:
+              - /url: /app/watchlist
+            - link "Calendrier" [ref=e12] [cursor=pointer]:
+              - /url: /app/calendar
+            - link "Marchés" [ref=e13] [cursor=pointer]:
+              - /url: /app/market
+            - button "Plus" [ref=e14] [cursor=pointer]
+          - generic [ref=e18]:
+            - link [ref=e19] [cursor=pointer]:
+              - /url: /login
+              - button "Se connecter" [ref=e20]
+            - link [ref=e21] [cursor=pointer]:
+              - /url: /signup
+              - button "Créer un compte" [ref=e22]
+      - generic [ref=e24]:
+        - link "Voir les marchés" [ref=e25] [cursor=pointer]:
+          - /url: /app/market
+          - generic [ref=e28]: MARCHÉS
+        - link "Ouvrir les marchés" [ref=e39] [cursor=pointer]:
+          - /url: /app/market
+    - main [ref=e43]:
+      - generic [ref=e44]:
+        - generic [ref=e45]:
+          - generic [ref=e46]:
+            - heading "Portefeuilles" [level=1] [ref=e47]
+            - paragraph [ref=e48]: Retrouvez vos investissements et découvrez d’autres stratégies.
+          - link "Créer un portefeuille" [ref=e49] [cursor=pointer]:
+            - /url: /app/portfolios/new
+        - generic [ref=e52]:
+          - heading "Explorer" [level=2] [ref=e53]
+          - paragraph [ref=e54]: Comparez les portefeuilles publics et suivez vos favoris.
+        - group "Afficher les portefeuilles" [ref=e55]:
+          - button "Tous" [pressed] [ref=e56] [cursor=pointer]
+        - generic [ref=e57]:
+          - textbox "Rechercher dans la page de portefeuilles" [ref=e62]:
+            - /placeholder: Rechercher un portefeuille ou un ticker…
+          - generic [ref=e63]:
+            - combobox "Trier les portefeuilles" [ref=e64]:
+              - option "Performance annualisée" [selected]
+              - option "Variation 24 h"
+              - option "Performance cumulée"
+              - option "Plus suivis"
+              - option "Nom"
+            - button "Inverser le tri" [ref=e65] [cursor=pointer]
+            - combobox "Résultats par page" [ref=e68]:
+              - option "15" [selected]
+              - option "30"
+              - option "50"
+  - button "Open Next.js Dev Tools" [ref=e121] [cursor=pointer]

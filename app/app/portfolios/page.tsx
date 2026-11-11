@@ -1,309 +1,648 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
+import { AuthContext } from 'hooks/authContext'
 import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
 import {
-  Plus,
-  Briefcase,
-  Flame,
-  Star,
-  Users,
+  AlertCircle,
+  ArrowDown,
   ArrowRight,
+  ArrowUp,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  Search,
+  Star,
   TrendingUp,
-  Globe,
-  Sparkles,
-  PieChart,
+  Users,
+  X,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import SectionContainer from '@/components/organismes/layout/SectionContainer'
-import VariationContainer from '@/components/molecules/portfolio/variationContainer'
-import { PortfolioCard, PortfolioSummery } from './PortfolioCard'
-import authService from '@/services/authService'
-import { getAll, getFollowed } from '@/services/portfolioService'
-import { FavoritePortfoliosPanel } from '@/components/molecules/portfolio/FavoritePortfoliosPanel'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
+import { OwnPortfolios } from './OwnPortfolios'
+import { follow, getPublicPortfolios } from '@/services/portfolioService'
 
-interface PortfoliosPresentation {
-  ownPortfolios: PortfolioSummery[]
-  bestPerformingPortfolios: PortfolioSummery[]
-  mostFollowedPortfolios: PortfolioSummery[]
+interface PortfolioSummary {
+  id: string
+  name: string
+  followersSize: number
+  dayChangePercent: number | string | null
+  cumulativePerformance: number | string | null
+  allocation: string[]
+  annualizedReturn: number | null
+  followed: boolean
+  own: boolean
 }
 
-export default function PortfoliosHubPage() {
-  const [mounted, setMounted] = useState(false)
-  const [activeTab, setActiveTab] = useState<'my' | 'explore'>('my')
-  const [data, setData] = useState<PortfoliosPresentation | null>(null)
-  const [favoritePortfolios, setFavoritePortfolios] = useState<PortfolioSummery[]>([])
-  const [loading, setLoading] = useState(true)
+interface PagedResponse {
+  content: PortfolioSummary[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+}
 
-  const { authentificated } = authService.getCurrentUser()
+const sortOptions = [
+  { value: 'annualized_return', label: 'Performance annualisée' },
+  { value: 'day_change_percent', label: 'Variation 24 h' },
+  { value: 'cumulative_performance', label: 'Performance cumulée' },
+  { value: 'followers_size', label: 'Plus suivis' },
+  { value: 'name', label: 'Nom' },
+]
 
-  useEffect(() => {
-    setMounted(true)
-    let isMounted = true
+const numeric = (value: number | string | null | undefined) => {
+  if (value == null || value === '') return null
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
 
-    Promise.all([getAll(), getFollowed().catch(() => [])])
-      .then(([res, followed]) => {
-        if (isMounted) {
-          setData(res)
-          setFavoritePortfolios(followed || [])
-          setLoading(false)
-        }
-      })
-      .catch((err) => {
-        console.error('Failed to load portfolios:', err)
-        if (isMounted) setLoading(false)
-      })
-
-    if (!authentificated) {
-      setActiveTab('explore')
-    }
-
-    return () => {
-      isMounted = false
-    }
-  }, [authentificated])
-
-  if (!mounted) {
-    return (
-      <div className="space-y-6 py-6 max-w-6xl mx-auto px-4">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <Skeleton className="h-8 w-64 rounded-lg" />
-          <Skeleton className="h-4 w-96 rounded-lg" />
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-40 rounded-xl" />
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  const ownList = data?.ownPortfolios || []
-  const bestList = data?.bestPerformingPortfolios || []
-  const followedList = data?.mostFollowedPortfolios || []
-
+function PerformanceValue({
+  value,
+  muted = false,
+}: {
+  value: number | string | null
+  muted?: boolean
+}) {
+  const parsed = numeric(value)
+  if (parsed == null) return <span className="text-muted-foreground">—</span>
   return (
-    <div className="flex flex-col gap-6 py-4 md:py-6 max-w-6xl mx-auto w-full px-3 md:px-6">
-      {/* 1. Header Unifié avec CTA & Description */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-border/40 pb-4">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground">
-              Gestion de <span className="text-primary">Portefeuilles</span>
-            </h1>
-            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-black uppercase text-primary">
-              <Sparkles className="h-2.5 w-2.5" /> Performance
-            </span>
-          </div>
-          <p className="mt-1 text-xs sm:text-sm text-muted-foreground">
-            Suivez vos actifs, analysez vos plus-values et comparez vos résultats avec les meilleurs investisseurs.
-          </p>
-        </div>
+    <span
+      className={cn(
+        'font-semibold tabular-nums',
+        !muted && parsed > 0 && 'text-emerald-600 dark:text-emerald-400',
+        !muted && parsed < 0 && 'text-rose-600 dark:text-rose-400',
+        (muted || parsed === 0) && 'text-foreground'
+      )}
+    >
+      {parsed > 0 ? '+' : ''}
+      {parsed.toFixed(2)} %
+    </span>
+  )
+}
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Link href="/app/portfolios/new" className="w-full sm:w-auto">
-            <Button size="sm" className="w-full sm:w-auto gap-1.5 font-bold shadow-xs">
-              <Plus className="h-4 w-4" />
-              <span>Créer un portefeuille</span>
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      {/* 2. Onglets de Navigation Fluide */}
-      <div className="flex items-center justify-between gap-3 border-b border-border/40 pb-2">
-        <div className="flex items-center gap-2">
-          {authentificated && (
-            <button
-              onClick={() => setActiveTab('my')}
-              className={cn(
-                'inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition-all',
-                activeTab === 'my'
-                  ? 'bg-primary text-primary-foreground shadow-xs'
-                  : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
-              )}
-            >
-              <Briefcase className="h-3.5 w-3.5" />
-              <span>Mes Portefeuilles ({loading ? '...' : ownList.length})</span>
-            </button>
-          )}
-
-          <button
-            onClick={() => setActiveTab('explore')}
-            className={cn(
-              'inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition-all',
-              activeTab === 'explore'
-                ? 'bg-primary text-primary-foreground shadow-xs'
-                : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'
-            )}
-          >
-            <Globe className="h-3.5 w-3.5" />
-            <span>Inspiration Communautaire</span>
-          </button>
-        </div>
-
-        <span className="text-[11px] text-muted-foreground hidden sm:inline">
-          {activeTab === 'my'
-            ? 'Vos portefeuilles d’investissement actifs'
-            : 'Explorez et suivez les stratégies les plus performantes'}
+function Allocation({ allocation }: { allocation?: string[] }) {
+  if (!allocation?.length)
+    return <span className="text-xs text-muted-foreground">Non renseignée</span>
+  return (
+    <div className="flex items-center gap-1.5">
+      {allocation.slice(0, 3).map((symbol) => (
+        <span
+          key={symbol}
+          className="rounded border border-border bg-muted/50 px-1.5 py-0.5 text-[10px] font-bold uppercase"
+        >
+          {symbol}
         </span>
-      </div>
-
-      {/* 3. Contenu de l'onglet actif */}
-      {activeTab === 'my' ? (
-        <div>
-          {loading ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {[...Array(4)].map((_, i) => (
-                <Skeleton key={i} className="h-36 rounded-xl" />
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
-              <div>
-                {ownList.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {ownList.map((p) => (
-                      <PortfolioCard key={p.id} {...p} />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/80 bg-card/40 p-8 text-center sm:p-12">
-                    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                      <PieChart className="h-6 w-6" />
-                    </div>
-                    <h3 className="text-base font-bold text-foreground">Aucun portefeuille créé</h3>
-                    <p className="mt-1 max-w-md text-xs text-muted-foreground">
-                      Ajoutez vos comptes PEA, Compte-Titres ou Crypto pour suivre votre performance globale, vos dividendes et votre allocation sectorielle.
-                    </p>
-                    <div className="mt-5">
-                      <Link href="/app/portfolios/new">
-                        <Button size="sm" className="gap-1.5 font-bold">
-                          <Plus className="h-4 w-4" />
-                          <span>Créer mon premier portefeuille</span>
-                        </Button>
-                      </Link>
-                    </div>
-                  </div>
-                )}
-              </div>
-              <FavoritePortfoliosPanel
-                portfolios={favoritePortfolios}
-                onRemoved={(id) => setFavoritePortfolios((current) => current.filter((portfolio) => portfolio.id !== id))}
-              />
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {loading ? (
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <Skeleton className="h-64 rounded-2xl" />
-              <Skeleton className="h-64 rounded-2xl" />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              {/* Les Plus Performants */}
-              <Card className="border-border/60 bg-card/40 shadow-xs">
-                <CardHeader className="flex flex-row items-center justify-between px-5 pb-3 pt-5">
-                  <CardTitle className="flex items-center gap-2.5 text-sm font-bold">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-500/10 text-rose-500">
-                      <Flame className="h-4 w-4" fill="currentColor" />
-                    </div>
-                    <span>Les plus performants</span>
-                  </CardTitle>
-                  <Link
-                    href="/app/portfolios/explore"
-                    className="flex items-center gap-1 text-xs font-bold text-primary hover:underline"
-                  >
-                    Explorer tout <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </CardHeader>
-                <CardContent className="px-3 pb-4">
-                  <CommunityList items={bestList} />
-                </CardContent>
-              </Card>
-
-              {/* Les Plus Suivis */}
-              <Card className="border-border/60 bg-card/40 shadow-xs">
-                <CardHeader className="flex flex-row items-center justify-between px-5 pb-3 pt-5">
-                  <CardTitle className="flex items-center gap-2.5 text-sm font-bold">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
-                      <Star className="h-4 w-4" fill="currentColor" />
-                    </div>
-                    <span>Les plus suivis</span>
-                  </CardTitle>
-                  <Link
-                    href="/app/portfolios/explore"
-                    className="flex items-center gap-1 text-xs font-bold text-primary hover:underline"
-                  >
-                    Explorer tout <ArrowRight className="h-3 w-3" />
-                  </Link>
-                </CardHeader>
-                <CardContent className="px-3 pb-4">
-                  <CommunityList items={followedList} />
-                </CardContent>
-              </Card>
-            </div>
-          )}
-        </div>
+      ))}
+      {allocation.length > 3 && (
+        <span className="text-[10px] font-semibold text-muted-foreground">
+          +{allocation.length - 3}
+        </span>
       )}
     </div>
   )
 }
 
-function CommunityList({ items }: { items: PortfolioSummery[] }) {
-  if (!items?.length) {
-    return (
-      <div className="flex h-32 items-center justify-center text-xs text-muted-foreground italic">
-        Aucune donnée disponible pour le moment
+function LoadingTable() {
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="flex gap-8 border-b bg-muted/30 px-4 py-3">
+        {[1, 2, 3, 4, 5].map((item) => (
+          <Skeleton key={item} className="h-3 w-24" />
+        ))}
       </div>
+      {Array.from({ length: 8 }, (_, index) => (
+        <div
+          key={index}
+          className="flex items-center gap-8 border-b px-4 py-4 last:border-0"
+        >
+          <Skeleton className="h-9 w-64" />
+          <Skeleton className="ml-auto h-4 w-20" />
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export default function PortfoliosPage() {
+  const router = useRouter()
+  const pathname = usePathname()
+  const { toast } = useToast()
+  const [data, setData] = useState<PagedResponse | null>(null)
+  const { user } = useContext(AuthContext)
+  const authenticated = Boolean(user)
+  const [favoritesOnly, setFavoritesOnly] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
+  const [page, setPage] = useState(0)
+  const [limit, setLimit] = useState(15)
+  const [sortBy, setSortBy] = useState('annualized_return')
+  const [direction, setDirection] = useState<'ASC' | 'DESC'>('DESC')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [pendingFavorites, setPendingFavorites] = useState<Set<string>>(
+    new Set()
+  )
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
+
+  useEffect(() => {
+    if (!authenticated) {
+      setFavoritesOnly(false)
+      setPage(0)
+    }
+  }, [authenticated])
+
+  useEffect(() => {
+    let active = true
+    setLoading(true)
+    setError(false)
+    getPublicPortfolios(page, limit, sortBy, direction, favoritesOnly)
+      .then((result: PagedResponse) => {
+        if (!active) return
+        // Removing the final favorite on a page can reduce the page count.
+        if (page > 0 && page >= result.totalPages) {
+          setPage(Math.max(0, result.totalPages - 1))
+          return
+        }
+        setData(result)
+      })
+      .catch(() => {
+        if (active) setError(true)
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [page, limit, sortBy, direction, favoritesOnly, refreshKey])
+
+  const handleSort = (column: string) => {
+    if (sortBy === column)
+      setDirection((current) => (current === 'ASC' ? 'DESC' : 'ASC'))
+    else {
+      setSortBy(column)
+      setDirection(column === 'name' ? 'ASC' : 'DESC')
+    }
+    setPage(0)
+  }
+
+  const updatePortfolio = (
+    id: string,
+    update: (portfolio: PortfolioSummary) => PortfolioSummary
+  ) => {
+    setData((current) =>
+      current
+        ? {
+            ...current,
+            content: current.content.map((portfolio) =>
+              portfolio.id === id ? update(portfolio) : portfolio
+            ),
+          }
+        : current
+    )
+  }
+
+  const toggleFavorite = async (portfolio: PortfolioSummary) => {
+    if (portfolio.own || pendingFavorites.has(portfolio.id)) return
+    if (!localStorage.getItem('accessToken')) {
+      router.push(`/login?redirect=${encodeURIComponent(pathname)}`)
+      return
+    }
+
+    const nextFollowed = !portfolio.followed
+    setPendingFavorites((current) => new Set(current).add(portfolio.id))
+    updatePortfolio(portfolio.id, (item) => ({
+      ...item,
+      followed: nextFollowed,
+      followersSize: Math.max(0, item.followersSize + (nextFollowed ? 1 : -1)),
+    }))
+
+    try {
+      const result = await follow(portfolio.id)
+      updatePortfolio(portfolio.id, (item) => ({
+        ...item,
+        followed: Boolean(result.followed),
+        followersSize: Number(result.followersSize),
+      }))
+      setRefreshKey((current) => current + 1)
+    } catch {
+      updatePortfolio(portfolio.id, () => portfolio)
+      toast({
+        variant: 'destructive',
+        title: 'Favori non modifié',
+        description: 'Le portefeuille n’a pas pu être ajouté à vos favoris.',
+      })
+    } finally {
+      setPendingFavorites((current) => {
+        const next = new Set(current)
+        next.delete(portfolio.id)
+        return next
+      })
+    }
+  }
+
+  const filteredContent = useMemo(() => {
+    const query = searchTerm.trim().toLocaleLowerCase('fr')
+    if (!query) return data?.content || []
+    return (data?.content || []).filter((portfolio) =>
+      [portfolio.name, ...(portfolio.allocation || [])].some((value) =>
+        value.toLocaleLowerCase('fr').includes(query)
+      )
+    )
+  }, [data, searchTerm])
+
+  const pageNumbers = useMemo(() => {
+    if (!data || data.totalPages <= 1) return []
+    return Array.from(
+      new Set(
+        [0, page - 1, page, page + 1, data.totalPages - 1].filter(
+          (index) => index >= 0 && index < data.totalPages
+        )
+      )
+    )
+  }, [data, page])
+
+  const SortIcon = ({ column }: { column: string }) => {
+    if (sortBy !== column)
+      return <ArrowUpDown className="ml-1 h-3 w-3 opacity-30" />
+    return direction === 'ASC' ? (
+      <ArrowUp className="ml-1 h-3 w-3 text-primary" />
+    ) : (
+      <ArrowDown className="ml-1 h-3 w-3 text-primary" />
     )
   }
 
   return (
-    <div className="space-y-1">
-      {items.map((p, index) => (
-        <Link
-          key={p.id}
-          href={`/app/portfolios/${p.id}`}
-          className="group flex items-center justify-between rounded-xl p-2.5 transition-all hover:bg-accent/60 hover:shadow-xs"
-        >
-          <div className="flex items-center gap-3">
-            <span className="flex h-6 w-6 items-center justify-center text-xs font-black text-muted-foreground/50 group-hover:text-primary">
-              {String(index + 1).padStart(2, '0')}
-            </span>
-            <div className="flex flex-col">
-              <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
-                {p.name}
-              </span>
-              <span className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground uppercase tracking-tight">
-                <Users className="h-2.5 w-2.5" />
-                {p.followersSize || 0} abonnés
-              </span>
-            </div>
-          </div>
+    <SectionContainer className="space-y-5 py-5 sm:py-8">
+      <header className="flex flex-col gap-4 border-b border-border pb-5 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight text-foreground">
+            Portefeuilles
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Retrouvez vos investissements et découvrez d’autres stratégies.
+          </p>
+        </div>
+        <Button asChild className="shrink-0 gap-2">
+          <Link href="/app/portfolios/new">
+            <Plus className="h-4 w-4" />
+            Créer un portefeuille
+          </Link>
+        </Button>
+      </header>
 
-          <div className="flex items-center gap-3">
-            <div className="flex flex-col items-end">
-              <span className="text-[9px] font-bold text-muted-foreground uppercase">Annualisé</span>
-              <VariationContainer
-                value={p.annualizedReturn}
-                entity="%"
-                background={false}
-                className="p-0 text-xs font-black"
-              />
-            </div>
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-              <ArrowRight className="h-3.5 w-3.5" />
-            </div>
+      <OwnPortfolios authenticated={authenticated} />
+
+      <div className="flex flex-wrap items-end justify-between gap-3 border-t border-border pt-6">
+        <div>
+          <h2 className="text-lg font-bold">Explorer</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Comparez les portefeuilles publics et suivez vos favoris.
+          </p>
+        </div>
+        {!loading && !error && data && (
+          <span className="text-xs tabular-nums text-muted-foreground">
+            {data.totalElements}{' '}
+            {favoritesOnly
+              ? data.totalElements > 1
+                ? 'favoris'
+                : 'favori'
+              : data.totalElements > 1
+              ? 'portefeuilles publics'
+              : 'portefeuille public'}
+          </span>
+        )}
+      </div>
+
+      <div
+        className="flex gap-2"
+        role="group"
+        aria-label="Afficher les portefeuilles"
+      >
+        {[
+          { value: false, label: 'Tous' },
+          ...(authenticated ? [{ value: true, label: 'Mes favoris' }] : []),
+        ].map(({ value, label }) => (
+          <Button
+            key={label}
+            variant={favoritesOnly === value ? 'default' : 'outline'}
+            size="sm"
+            aria-pressed={favoritesOnly === value}
+            onClick={() => {
+              setFavoritesOnly(value)
+              setPage(0)
+            }}
+            className="gap-1.5"
+          >
+            {value && <Star className="h-3.5 w-3.5" />}
+            {label}
+          </Button>
+        ))}
+      </div>
+
+      <section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:max-w-sm">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="Rechercher un portefeuille ou un ticker…"
+            aria-label="Rechercher dans la page de portefeuilles"
+            className="h-10 pl-9 pr-9"
+          />
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={() => setSearchTerm('')}
+              aria-label="Effacer la recherche"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:bg-muted"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <select
+            value={sortBy}
+            onChange={(event) => handleSort(event.target.value)}
+            aria-label="Trier les portefeuilles"
+            className="h-9 min-w-0 rounded-lg border border-border bg-background px-2 text-xs font-semibold"
+          >
+            {sortOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-9 w-9"
+            onClick={() => setDirection(direction === 'ASC' ? 'DESC' : 'ASC')}
+            aria-label="Inverser le tri"
+          >
+            {direction === 'ASC' ? (
+              <ArrowUp className="h-4 w-4" />
+            ) : (
+              <ArrowDown className="h-4 w-4" />
+            )}
+          </Button>
+          <select
+            value={limit}
+            onChange={(event) => {
+              setLimit(Number(event.target.value))
+              setPage(0)
+            }}
+            aria-label="Résultats par page"
+            className="h-9 rounded-lg border border-border bg-background px-2 text-xs font-semibold"
+          >
+            <option value={15}>15</option>
+            <option value={30}>30</option>
+            <option value={50}>50</option>
+          </select>
+        </div>
+      </section>
+
+      {error ? (
+        <Card className="border-rose-500/30 p-10 text-center">
+          <AlertCircle className="mx-auto h-7 w-7 text-rose-500" />
+          <h2 className="mt-3 font-bold">
+            Impossible de charger l’exploration
+          </h2>
+          <Button
+            variant="outline"
+            className="mt-4"
+            onClick={() => setRefreshKey((current) => current + 1)}
+          >
+            Réessayer
+          </Button>
+        </Card>
+      ) : loading ? (
+        <LoadingTable />
+      ) : filteredContent.length ? (
+        <div className="overflow-x-auto rounded-xl border border-border bg-card">
+          <table className="w-full min-w-[960px] border-collapse text-sm">
+            <thead className="border-b border-border bg-muted/35 text-xs text-muted-foreground">
+              <tr>
+                <th className="sticky left-0 z-10 min-w-[280px] bg-muted px-4 py-3 text-left font-semibold">
+                  Portefeuille
+                </th>
+                <SortableHead
+                  label="Perf. annualisée"
+                  column="annualized_return"
+                  onSort={handleSort}
+                >
+                  <SortIcon column="annualized_return" />
+                </SortableHead>
+                <SortableHead
+                  label="24 h"
+                  column="day_change_percent"
+                  onSort={handleSort}
+                >
+                  <SortIcon column="day_change_percent" />
+                </SortableHead>
+                <SortableHead
+                  label="Cumulée"
+                  column="cumulative_performance"
+                  onSort={handleSort}
+                >
+                  <SortIcon column="cumulative_performance" />
+                </SortableHead>
+                <SortableHead
+                  label="Abonnés"
+                  column="followers_size"
+                  onSort={handleSort}
+                >
+                  <SortIcon column="followers_size" />
+                </SortableHead>
+                <th className="min-w-[190px] px-4 py-3 text-left font-semibold">
+                  Principales positions
+                </th>
+                <th className="w-14 px-3 py-3">
+                  <span className="sr-only">Ouvrir</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/70">
+              {filteredContent.map((portfolio, index) => (
+                <tr
+                  key={portfolio.id}
+                  className="group transition-colors hover:bg-muted/35"
+                >
+                  <td className="sticky left-0 z-[1] bg-card px-4 py-3 group-hover:bg-muted">
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-7 text-right text-xs font-semibold tabular-nums text-muted-foreground">
+                        {page * limit + index + 1}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={
+                          portfolio.own || pendingFavorites.has(portfolio.id)
+                        }
+                        onClick={() => toggleFavorite(portfolio)}
+                        title={
+                          portfolio.own
+                            ? 'Votre portefeuille'
+                            : portfolio.followed
+                            ? 'Retirer des favoris'
+                            : 'Ajouter aux favoris'
+                        }
+                        aria-label={
+                          portfolio.followed
+                            ? `Retirer ${portfolio.name} des favoris`
+                            : `Ajouter ${portfolio.name} aux favoris`
+                        }
+                        aria-pressed={portfolio.followed}
+                        className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-amber-500/10 hover:text-amber-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        <Star
+                          className="h-4 w-4"
+                          fill={portfolio.followed ? 'currentColor' : 'none'}
+                        />
+                      </button>
+                      <Link
+                        href={`/app/portfolios/${portfolio.id}`}
+                        className="flex min-w-0 items-center gap-2.5 font-bold hover:text-primary"
+                      >
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <TrendingUp className="h-3.5 w-3.5" />
+                        </span>
+                        <span className="max-w-[175px] truncate">
+                          {portfolio.name}
+                        </span>
+                      </Link>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <PerformanceValue value={portfolio.annualizedReturn} />
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <PerformanceValue value={portfolio.dayChangePercent} />
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <PerformanceValue value={portfolio.cumulativePerformance} />
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <span className="inline-flex items-center justify-end gap-1.5 font-semibold tabular-nums">
+                      <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                      {portfolio.followersSize || 0}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <Allocation allocation={portfolio.allocation} />
+                  </td>
+                  <td className="px-3 py-3 text-right">
+                    <Button
+                      asChild
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                    >
+                      <Link
+                        href={`/app/portfolios/${portfolio.id}`}
+                        aria-label={`Ouvrir ${portfolio.name}`}
+                      >
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <Card className="border-dashed p-12 text-center">
+          <Search className="mx-auto h-6 w-6 text-muted-foreground" />
+          <h3 className="mt-3 font-bold">
+            {favoritesOnly && !searchTerm
+              ? 'Aucun favori pour le moment'
+              : 'Aucun portefeuille trouvé'}
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {favoritesOnly && !searchTerm
+              ? 'Dans Tous, cliquez sur l’étoile d’un portefeuille pour le retrouver ici.'
+              : 'Essayez un autre nom ou ticker.'}
+          </p>
+        </Card>
+      )}
+
+      {!error && data && data.totalPages > 1 && (
+        <div className="flex flex-col items-center justify-between gap-3 border-t pt-4 sm:flex-row">
+          <p className="text-xs text-muted-foreground">
+            Page <strong className="text-foreground">{page + 1}</strong> sur{' '}
+            <strong className="text-foreground">{data.totalPages}</strong>
+          </p>
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(Math.max(0, page - 1))}
+              disabled={page === 0 || loading}
+            >
+              <ChevronLeft className="mr-1 h-4 w-4" />
+              Précédent
+            </Button>
+            {pageNumbers.map((pageIndex, index) => (
+              <React.Fragment key={pageIndex}>
+                {index > 0 && pageNumbers[index - 1] !== pageIndex - 1 && (
+                  <span className="px-1 text-muted-foreground">…</span>
+                )}
+                <Button
+                  variant={page === pageIndex ? 'default' : 'ghost'}
+                  size="sm"
+                  className="h-9 w-9"
+                  onClick={() => setPage(pageIndex)}
+                >
+                  {pageIndex + 1}
+                </Button>
+              </React.Fragment>
+            ))}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(Math.min(data.totalPages - 1, page + 1))}
+              disabled={page >= data.totalPages - 1 || loading}
+            >
+              Suivant
+              <ChevronRight className="ml-1 h-4 w-4" />
+            </Button>
           </div>
-        </Link>
-      ))}
-    </div>
+        </div>
+      )}
+    </SectionContainer>
+  )
+}
+
+function SortableHead({
+  label,
+  column,
+  onSort,
+  children,
+}: {
+  label: string
+  column: string
+  onSort: (column: string) => void
+  children: React.ReactNode
+}) {
+  return (
+    <th className="whitespace-nowrap px-4 py-3 text-right font-semibold">
+      <button
+        type="button"
+        onClick={() => onSort(column)}
+        className="ml-auto inline-flex items-center hover:text-foreground"
+      >
+        {label}
+        {children}
+      </button>
+    </th>
   )
 }
