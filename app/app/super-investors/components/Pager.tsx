@@ -24,7 +24,7 @@ export function Pager({
         Page <strong className="text-foreground">{page + 1}</strong> sur{' '}
         <strong className="text-foreground">{totalPages}</strong>
       </p>
-      <div className="flex items-center gap-1.5">
+      <div className="flex max-w-full flex-wrap items-center justify-center gap-1.5">
         <Button
           variant="outline"
           size="sm"

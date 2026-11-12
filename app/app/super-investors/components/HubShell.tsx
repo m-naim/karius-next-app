@@ -32,8 +32,8 @@ export function HubShell({
     : null
 
   return (
-    <main className="min-h-screen w-full bg-background">
-      <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-5 px-4 py-6 md:px-8 md:py-8">
+    <div className="w-full min-w-0 shrink-0 bg-background">
+      <div className="mx-auto flex w-full min-w-0 max-w-[1500px] flex-col gap-5 px-2 py-5 sm:px-4 md:px-8 md:py-8">
         <header className="flex flex-col gap-4 border-b border-border pb-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <h1 className="text-2xl font-black tracking-tight text-foreground">
@@ -96,6 +96,6 @@ export function HubShell({
           </p>
         </aside>
       </div>
-    </main>
+    </div>
   )
 }

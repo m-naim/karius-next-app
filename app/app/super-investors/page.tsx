@@ -17,6 +17,7 @@ import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
+import { ExploreTable } from '@/components/molecules/table/ExploreTable'
 import {
   getSuperInvestorExplore,
   InvestorExplorePage,
@@ -207,12 +208,12 @@ function InvestorExplore() {
             placeholder="Investisseur, fonds, style ou CIK…"
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <select
             value={sort}
             onChange={(event) => changeSort(event.target.value)}
             aria-label="Trier les investisseurs"
-            className="h-9 min-w-0 rounded-lg border border-border bg-background px-2 text-xs font-semibold"
+            className="h-11 min-w-0 flex-1 sm:h-9 sm:flex-none rounded-lg border border-border bg-background px-2 text-xs font-semibold"
           >
             {sorts.map(([value, label]) => (
               <option key={value} value={value}>
@@ -223,7 +224,7 @@ function InvestorExplore() {
           <Button
             variant="outline"
             size="icon"
-            className="h-9 w-9"
+            className="h-11 w-11 shrink-0 sm:h-9 sm:w-9"
             onClick={() => setDirection(direction === 'ASC' ? 'DESC' : 'ASC')}
             aria-label="Inverser le tri"
           >
@@ -255,158 +256,152 @@ function InvestorExplore() {
         <LoadingTable />
       ) : data?.content.length ? (
         <>
-          <div className="overflow-x-auto rounded-xl border border-border bg-card">
-            <table className="w-full min-w-[1280px] border-collapse text-sm">
-              <thead className="border-b border-border bg-muted/35 text-xs text-muted-foreground">
-                <tr>
-                  <SortableHead
-                    label="Investisseur"
-                    column="displayName"
-                    onSort={changeSort}
-                    align="left"
-                  >
-                    <SortIcon column="displayName" />
-                  </SortableHead>
-                  <SortableHead
-                    label="Perf. annualisée"
-                    column="annualizedPerformance"
-                    onSort={changeSort}
-                  >
-                    <SortIcon column="annualizedPerformance" />
-                  </SortableHead>
-                  <SortableHead
-                    label="1 an"
-                    column="oneYearPerformance"
-                    onSort={changeSort}
-                  >
-                    <SortIcon column="oneYearPerformance" />
-                  </SortableHead>
-                  <SortableHead
-                    label="Cumulée"
-                    column="cumulativePerformance"
-                    onSort={changeSort}
-                  >
-                    <SortIcon column="cumulativePerformance" />
-                  </SortableHead>
-                  <SortableHead
-                    label="Couverture"
-                    column="coveragePercent"
-                    onSort={changeSort}
-                  >
-                    <SortIcon column="coveragePercent" />
-                  </SortableHead>
-                  <SortableHead
-                    label="Actions"
-                    column="resolvedEquityCount"
-                    onSort={changeSort}
-                  >
-                    <SortIcon column="resolvedEquityCount" />
-                  </SortableHead>
-                  <SortableHead
-                    label="Valeur 13F"
-                    column="totalValueUsd"
-                    onSort={changeSort}
-                  >
-                    <SortIcon column="totalValueUsd" />
-                  </SortableHead>
-                  <SortableHead
-                    label="Dernière déclaration récupérée"
-                    column="latestFilingDate"
-                    onSort={changeSort}
-                  >
-                    <SortIcon column="latestFilingDate" />
-                  </SortableHead>
-                  <th className="w-14 px-3 py-3">
-                    <span className="sr-only">Ouvrir</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/70">
-                {data.content.map((investor, index) => (
-                  <tr
-                    key={investor.slug}
-                    className="group transition-colors hover:bg-muted/35"
-                  >
-                    <td className="sticky left-0 z-[1] min-w-[320px] bg-card px-4 py-3 group-hover:bg-muted">
-                      <div className="flex items-center gap-3">
-                        <span className="w-7 text-right text-xs font-semibold tabular-nums text-muted-foreground">
-                          {page * size + index + 1}
-                        </span>
-                        <Link
-                          href={`/app/super-investors/${investor.slug}`}
-                          className="flex min-w-0 items-center gap-2.5 hover:text-primary"
-                        >
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                            <TrendingUp className="h-3.5 w-3.5" />
-                          </span>
-                          <span className="min-w-0">
-                            <span className="block max-w-[210px] truncate font-bold">
-                              {investor.displayName}
-                            </span>
-                            <span className="block max-w-[210px] truncate text-[11px] text-muted-foreground">
-                              {investor.fundDisplayName} · {investor.style}
-                            </span>
-                          </span>
-                        </Link>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <PerformanceValue
-                        value={investor.annualizedPerformance}
-                      />
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <PerformanceValue value={investor.oneYearPerformance} />
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <PerformanceValue
-                        value={investor.cumulativePerformance}
-                      />
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <Coverage value={investor.coveragePercent} />
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span className="font-semibold tabular-nums">
-                        {investor.resolvedEquityCount} /{' '}
-                        {investor.totalPositionCount}
+          <ExploreTable metricCount={8} label="Classement des investisseurs">
+            <thead className="border-b border-border bg-muted/35 text-xs text-muted-foreground">
+              <tr>
+                <SortableHead
+                  label="Investisseur"
+                  column="displayName"
+                  onSort={changeSort}
+                  align="left"
+                >
+                  <SortIcon column="displayName" />
+                </SortableHead>
+                <SortableHead
+                  label="Perf. annualisée"
+                  column="annualizedPerformance"
+                  onSort={changeSort}
+                >
+                  <SortIcon column="annualizedPerformance" />
+                </SortableHead>
+                <SortableHead
+                  label="1 an"
+                  column="oneYearPerformance"
+                  onSort={changeSort}
+                >
+                  <SortIcon column="oneYearPerformance" />
+                </SortableHead>
+                <SortableHead
+                  label="Cumulée"
+                  column="cumulativePerformance"
+                  onSort={changeSort}
+                >
+                  <SortIcon column="cumulativePerformance" />
+                </SortableHead>
+                <SortableHead
+                  label="Couverture"
+                  column="coveragePercent"
+                  onSort={changeSort}
+                >
+                  <SortIcon column="coveragePercent" />
+                </SortableHead>
+                <SortableHead
+                  label="Actions"
+                  column="resolvedEquityCount"
+                  onSort={changeSort}
+                >
+                  <SortIcon column="resolvedEquityCount" />
+                </SortableHead>
+                <SortableHead
+                  label="Valeur 13F"
+                  column="totalValueUsd"
+                  onSort={changeSort}
+                >
+                  <SortIcon column="totalValueUsd" />
+                </SortableHead>
+                <SortableHead
+                  label="Dernière déclaration récupérée"
+                  column="latestFilingDate"
+                  onSort={changeSort}
+                >
+                  <SortIcon column="latestFilingDate" />
+                </SortableHead>
+                <th className="w-14 px-3 py-3">
+                  <span className="sr-only">Ouvrir</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/70">
+              {data.content.map((investor, index) => (
+                <tr
+                  key={investor.slug}
+                  className="group transition-colors hover:bg-muted/35"
+                >
+                  <td className="sticky left-0 z-[1] md:min-w-[320px] bg-card px-4 py-3 group-hover:bg-muted">
+                    <div className="flex min-w-0 items-center gap-1 md:gap-3">
+                      <span className="hidden w-7 shrink-0 md:block text-right text-xs font-semibold tabular-nums text-muted-foreground">
+                        {page * size + index + 1}
                       </span>
-                      <span className="block text-[10px] text-muted-foreground">
-                        résolues / lignes
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right font-semibold tabular-nums">
-                      {money(investor.totalValueUsd)}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span className="font-semibold tabular-nums">
-                        {investor.latestFilingDate
-                          ? new Intl.DateTimeFormat('fr-FR', { timeZone: 'UTC' }).format(
-                              new Date(investor.latestFilingDate)
-                            )
-                          : '—'}
-                      </span>
-                    </td>
-                    <td className="px-3 py-3 text-right">
-                      <Button
-                        asChild
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
+                      <Link
+                        href={`/app/super-investors/${investor.slug}`}
+                        className="flex min-w-0 flex-1 items-center gap-1 md:gap-2.5 hover:text-primary"
                       >
-                        <Link
-                          href={`/app/super-investors/${investor.slug}`}
-                          aria-label={`Ouvrir ${investor.displayName}`}
-                        >
-                          <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                        <span className="hidden h-8 w-8 shrink-0 md:flex items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <TrendingUp className="h-3.5 w-3.5" />
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block truncate md:max-w-[210px] font-bold">
+                            {investor.displayName}
+                          </span>
+                          <span className="block truncate md:max-w-[210px] text-[11px] text-muted-foreground">
+                            {investor.fundDisplayName} · {investor.style}
+                          </span>
+                        </span>
+                      </Link>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <PerformanceValue value={investor.annualizedPerformance} />
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <PerformanceValue value={investor.oneYearPerformance} />
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <PerformanceValue value={investor.cumulativePerformance} />
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <Coverage value={investor.coveragePercent} />
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <span className="font-semibold tabular-nums">
+                      {investor.resolvedEquityCount} /{' '}
+                      {investor.totalPositionCount}
+                    </span>
+                    <span className="block text-[10px] text-muted-foreground">
+                      résolues / lignes
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right font-semibold tabular-nums">
+                    {money(investor.totalValueUsd)}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <span className="font-semibold tabular-nums">
+                      {investor.latestFilingDate
+                        ? new Intl.DateTimeFormat('fr-FR', {
+                            timeZone: 'UTC',
+                          }).format(new Date(investor.latestFilingDate))
+                        : '—'}
+                    </span>
+                  </td>
+                  <td className="px-3 py-3 text-right">
+                    <Button
+                      asChild
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                    >
+                      <Link
+                        href={`/app/super-investors/${investor.slug}`}
+                        aria-label={`Ouvrir ${investor.displayName}`}
+                      >
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </ExploreTable>
           <Pager page={page} totalPages={data.totalPages} onChange={setPage} />
         </>
       ) : (
@@ -441,18 +436,26 @@ function SortableHead({
         'whitespace-nowrap px-4 py-3 font-semibold',
         align === 'right'
           ? 'text-right'
-          : 'sticky left-0 z-10 min-w-[320px] bg-muted text-left'
+          : 'sticky left-0 z-10 md:min-w-[320px] bg-muted text-left'
       )}
     >
       <button
         type="button"
+        aria-label={`Trier par ${label}`}
         onClick={() => onSort(column)}
         className={cn(
           'inline-flex items-center hover:text-foreground',
           align === 'right' && 'ml-auto'
         )}
       >
-        {label}
+        <span className="md:hidden">
+          {column === 'annualizedPerformance'
+            ? 'Perf. / an'
+            : column === 'latestFilingDate'
+            ? 'Déclaré le'
+            : label}
+        </span>
+        <span className="hidden md:inline">{label}</span>
         {children}
       </button>
     </th>

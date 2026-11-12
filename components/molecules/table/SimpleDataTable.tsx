@@ -18,6 +18,8 @@ interface SimpleDataTableProps {
   onRowClick?: (row: any) => void
   selectedId?: string | null
   compactMobile?: boolean
+  canOpenRow?: (row: any) => boolean
+  showFooter?: boolean
 }
 
 const SimpleDataTable = ({
@@ -26,13 +28,15 @@ const SimpleDataTable = ({
   onRowClick,
   selectedId,
   compactMobile = false,
+  canOpenRow,
+  showFooter = true,
 }: SimpleDataTableProps) => {
   const visibleColumns = table.getVisibleLeafColumns()
   const hasSymbol = visibleColumns.some((column) => column.id === 'symbol')
   return (
     <div
       className={cn(
-        'flex h-full w-full min-h-0 flex-col',
+        'flex h-full w-full min-w-0 min-h-0 flex-col',
         compactMobile && 'market-table-container'
       )}
       style={{ '--metric-count': visibleColumns.length - (hasSymbol ? 1 : 0) } as CSSProperties}
@@ -45,7 +49,7 @@ const SimpleDataTable = ({
       )}
       <Table
         className={compactMobile ? 'market-data-table' : undefined}
-        containerClassName="w-full flex-1 min-h-0 overflow-auto overscroll-x-contain"
+        containerClassName="w-full min-w-0 flex-1 min-h-0 overflow-auto overscroll-x-contain"
       >
         <colgroup>
           {visibleColumns.map((column) => (
@@ -93,10 +97,10 @@ const SimpleDataTable = ({
                 data-state={row.getIsSelected() && 'selected'}
                 className={cn(
                   'group/row border-b border-border/30 transition-colors hover:bg-accent/30',
-                  onRowClick && 'cursor-pointer',
+                  onRowClick && (!canOpenRow || canOpenRow(row.original)) && 'cursor-pointer',
                   selectedId === row.original.symbol && 'bg-accent/50'
                 )}
-                onClick={() => onRowClick && onRowClick(row.original)}
+                onClick={() => onRowClick && (!canOpenRow || canOpenRow(row.original)) && onRowClick(row.original)}
               >
                 {row.getVisibleCells().map((cell, index) => {
                   const isFirst = compactMobile ? cell.column.id === 'symbol' : index === 0
@@ -124,7 +128,7 @@ const SimpleDataTable = ({
             </TableRow>
           )}
         </TableBody>
-        <TableFooter className="sticky bottom-0 z-30 bg-background font-semibold shadow-[0_-1px_0_0_hsl(var(--border))]">
+        {showFooter && <TableFooter className="sticky bottom-0 z-30 bg-background font-semibold shadow-[0_-1px_0_0_hsl(var(--border))]">
           {table.getFooterGroups().map((footerGroup) => (
             <TableRow key={footerGroup.id} className="border-b-0 hover:bg-transparent">
               {footerGroup.headers.map((header, index) => {
@@ -145,7 +149,7 @@ const SimpleDataTable = ({
               })}
             </TableRow>
           ))}
-        </TableFooter>
+        </TableFooter>}
       </Table>
     </div>
   )

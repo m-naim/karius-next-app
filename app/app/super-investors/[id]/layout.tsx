@@ -51,7 +51,7 @@ export default function SuperInvestorLayout({
   ]
 
   return (
-    <div className="flex min-h-screen w-full min-w-0 flex-1 flex-col overflow-x-hidden bg-background">
+    <div className="flex w-full min-w-0 shrink-0 flex-col bg-background">
       <div className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/95 pt-2 backdrop-blur supports-[backdrop-filter]:bg-background/75 sm:pt-4">
         <SectionContainer>
           <div className="flex min-w-0 flex-col">

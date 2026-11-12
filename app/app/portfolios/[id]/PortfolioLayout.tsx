@@ -124,7 +124,7 @@ const PortfolioLayout = ({
   ]
 
   return (
-    <div className="flex w-full max-w-full min-w-0 min-h-screen flex-1 flex-col overflow-y-auto overflow-x-hidden bg-background">
+    <div className="flex w-full max-w-full min-w-0 shrink-0 flex-col bg-background">
       <div className="border-b border-border/50 bg-background/95 pb-0 pt-2 sm:pt-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40 w-full max-w-full min-w-0">
         <SectionContainer>
           <div className="flex w-full max-w-full min-w-0 flex-col">

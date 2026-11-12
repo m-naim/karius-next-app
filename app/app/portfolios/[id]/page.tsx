@@ -403,7 +403,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
   return loading ? (
     <Loader />
   ) : (
-    <div className="flex w-full min-h-screen flex-1 flex-col overflow-y-auto bg-background">
+    <div className="flex w-full min-w-0 flex-col bg-background">
       {/* LEFT PANE: Stats, Table & Allocation */}
       <div className="flex flex-1 min-w-0 flex-col gap-3 sm:gap-6 p-2 sm:p-4 pb-4 sm:pb-8">
         {/* SUSPICIOUS / MANIPULATED PERFORMANCE ALERT BANNER */}
@@ -452,7 +452,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
 
         <div className="flex w-full flex-col lg:flex-row gap-3 sm:gap-6">
           {/* LEFT COLUMN: Table */}
-          <div className="w-full flex-grow lg:w-8/12">
+          <div className="w-full min-w-0 flex-grow lg:w-8/12">
             <Card id="tour-table-section" className="overflow-hidden border-border bg-card shadow-sm">
               <CardHeader className="border-b border-border bg-muted/30 p-3 sm:p-4 space-y-3">
                 {/* ROW 1: Title, Cash & Primary Actions */}
@@ -635,7 +635,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
           </div>
 
           {/* RIGHT COLUMN: Allocation */}
-          <div className="w-full flex flex-grow flex-col gap-6 lg:max-w-xs">
+          <div className="w-full min-w-0 flex flex-grow flex-col gap-6 lg:max-w-xs">
             {data.length > 0 && (
               <Card className="overflow-hidden border-border bg-card shadow-sm">
                 <CardHeader className="px-4 py-3 border-b border-border/50">

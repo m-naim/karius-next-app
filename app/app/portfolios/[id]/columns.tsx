@@ -13,6 +13,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { InfoTooltip } from '@/components/ui/info-tooltip'
+import { MetricColumnHeader } from '@/components/molecules/table/MetricColumnHeader'
 import { round10 } from '@/lib/decimalAjustement'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { genericNumericFilterFn } from '@/lib/table-filters'
@@ -118,6 +119,9 @@ const FilterButton = ({ column }: FiltrProps) => (
 
 const SortingButton = (title: string, activateFilter = true) => {
   return function GhostButton({ column }: FiltrProps) {
+    if (!activateFilter) {
+      return <MetricColumnHeader column={column} title={title} description={COLUMN_DESCRIPTIONS[title] || title} />
+    }
     return (
       <div className="flex items-center">
         <Button
@@ -350,12 +354,12 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
           : undefined
 
         return (
-          <div className="flex min-w-[92px] flex-col gap-0.5">
+          <div className="flex min-w-0 flex-col gap-0.5 md:min-w-[92px]">
             {chg == null ? (
               <span className="font-mono text-xs text-muted-foreground">—</span>
             ) : (
               <div className="flex items-center gap-1">
-                <span className="text-[9px] font-medium uppercase text-muted-foreground">Cours</span>
+                <span className="hidden text-[9px] font-medium uppercase text-muted-foreground md:inline">Cours</span>
                 <VariationContainer
                   value={chg}
                   entity="%"

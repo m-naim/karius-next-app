@@ -31,7 +31,7 @@ export default function AppLayoutContainer({
             <Header />
             <MarketPulse />
           </div>
-          <main className="flex-1 w-full min-h-0 flex flex-col overflow-hidden">
+          <main className="flex-1 w-full min-w-0 min-h-0 flex flex-col overflow-hidden">
             {children}
           </main>
         </div>
@@ -44,7 +44,7 @@ export default function AppLayoutContainer({
           <Header />
           {pathname !== "/app" && <MarketPulse />}
         </div>
-        <main className="flex-1 w-full min-h-0 flex flex-col overflow-y-auto">
+        <main className="flex-1 w-full min-w-0 min-h-0 flex flex-col overflow-y-auto">
           {children}
         </main>
       </div>

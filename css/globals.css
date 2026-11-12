@@ -222,6 +222,40 @@
   }
   .market-data-table td, .market-data-table tfoot th { overflow: hidden; }
   .market-data-table .metric-column-header { font-size: 11px; }
+
+  .explore-table th, .explore-table td {
+    padding: 0.5rem 0.25rem;
+    font-size: 11px;
+  }
+  .explore-table th {
+    white-space: normal;
+    vertical-align: middle;
+  }
+  .explore-table th button {
+    min-height: 44px;
+    max-width: 100%;
+    white-space: normal;
+    text-align: inherit;
+  }
+  .explore-table th button svg { flex-shrink: 0; }
+  .explore-table td { white-space: nowrap; }
+  .explore-table td:first-child, .explore-table th:first-child {
+    position: sticky;
+    left: 0;
+    box-shadow: 1px 0 0 hsl(var(--border));
+  }
+  .portfolio-table th > div {
+    flex-wrap: wrap;
+    gap: 0.125rem;
+  }
+  .portfolio-table th button {
+    height: auto;
+    min-height: 44px;
+    max-width: 100%;
+    white-space: normal;
+    font-size: 11px;
+  }
+  .portfolio-table th button svg { flex-shrink: 0; }
 }
 
 .list-action-menu button, .list-action-menu a {

@@ -450,7 +450,7 @@ export default function SuperInvestorPositionsPage() {
     return <div className="h-72 animate-pulse rounded-2xl bg-muted/60" />
 
   return (
-    <main className="space-y-5">
+    <div className="min-w-0 space-y-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="mb-0 text-xs font-bold text-primary">
@@ -519,7 +519,7 @@ export default function SuperInvestorPositionsPage() {
         />
       </div>
 
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <Tabs
           value={instrument}
           onValueChange={(value) => {
@@ -648,7 +648,7 @@ export default function SuperInvestorPositionsPage() {
         }}
         own={false}
       />
-    </main>
+    </div>
   )
 }
 
