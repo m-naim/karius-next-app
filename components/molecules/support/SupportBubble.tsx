@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { usePathname } from 'next/navigation'
 import config from '@/services/config'
 import http from '@/services/http'
 
@@ -17,7 +18,16 @@ interface Message {
 }
 
 export default function SupportBubble() {
+  const pathname = usePathname()
+  const isListDetail = Boolean(
+    (pathname?.startsWith('/app/watchlist/') && pathname !== '/app/watchlist/new' && !pathname.endsWith('/settings')) || pathname?.startsWith('/app/market/')
+  )
   const [isOpen, setIsOpen] = useState(false)
+  useEffect(() => {
+    const openSupport = () => setIsOpen(true)
+    window.addEventListener('open-support', openSupport)
+    return () => window.removeEventListener('open-support', openSupport)
+  }, [])
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
   const [userId, setUserId] = useState<string>('')
@@ -156,7 +166,7 @@ export default function SupportBubble() {
           </CardHeader>
 
           <CardContent className="bg-background p-0">
-            <ScrollArea className="h-[400px] p-4">
+            <ScrollArea className="h-[min(400px,45dvh)] p-4">
               <div className="space-y-4">
                 <div className="rounded-xl border border-primary/10 bg-primary/5 p-3 text-[11px] italic text-muted-foreground">
                   Bonjour ! Posez votre question ici, nous vous répondrons directement sur ce chat.
@@ -219,7 +229,7 @@ export default function SupportBubble() {
       <Button
         size="icon"
         aria-label={isOpen ? 'Fermer le support' : 'Ouvrir le support'}
-        className={`h-11 w-11 rounded-full shadow-lg transition-all duration-300 sm:h-14 sm:w-14 sm:shadow-2xl ${isOpen ? 'rotate-90 scale-90 bg-muted hover:bg-muted' : 'bg-primary hover:scale-105'}`}
+        className={`${isListDetail && !isOpen ? 'hidden md:inline-flex' : ''} h-11 w-11 rounded-full shadow-lg transition-all duration-300 sm:h-14 sm:w-14 sm:shadow-2xl ${isOpen ? 'rotate-90 scale-90 bg-muted hover:bg-muted' : 'bg-primary hover:scale-105'}`}
         onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen ? (

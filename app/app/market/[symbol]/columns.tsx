@@ -1,14 +1,16 @@
 'use client'
 
 import * as React from 'react'
-import { Column, ColumnDef, GroupColumnDef } from '@tanstack/react-table'
-import { ChevronUp, ArrowUpDown, ChevronDown, ExternalLink, FileText } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { MetricColumnHeader } from '@/components/molecules/table/MetricColumnHeader'
+import { Actions } from 'app/app/watchlist/[id]/components/Actions'
+import { PriceValue } from '@/components/molecules/table/PriceValue'
+import { SecurityIdentity } from '@/components/molecules/table/SecurityIdentity'
+import { Column, ColumnDef } from '@tanstack/react-table'
+import { FileText } from 'lucide-react'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { round10 } from '@/lib/decimalAjustement'
-import { percentVariation, calculateMedian } from '@/lib/math'
+import { calculateMedian } from '@/lib/math'
 import { security } from 'app/app/watchlist/[id]/data/security'
-import { cn } from '@/lib/utils'
 import { genericNumericFilterFn } from '@/lib/table-filters'
 import { growthAdjustedMultiple, priceToSalesMultiple } from '@/lib/valuation-metrics'
 
@@ -38,41 +40,11 @@ const COLUMN_DESCRIPTIONS: Record<string, string> = {
   'Cap. Boursière': 'Valorisation boursière totale (Prix × Nombre d’actions)',
 }
 
-const SortingButton = (title, alignRight = false) => {
-  const desc = COLUMN_DESCRIPTIONS[title] || title
-  return function GhostButton({ column }: FiltrProps) {
-    return (
-      <div className={cn("flex w-full items-center", alignRight ? "justify-end" : "justify-start")} title={desc}>
-        <Button
-          className={cn(
-            "text-xs capitalize px-2 h-8 font-semibold",
-            alignRight ? "-mr-2 text-right" : "-ml-2 text-left"
-          )}
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          {alignRight ? (
-            <>
-              {column.getIsSorted() === 'asc' ? <ChevronUp className="mr-1.5 h-3.5 w-3.5 shrink-0" /> : null}
-              {column.getIsSorted() === 'desc' ? <ChevronDown className="mr-1.5 h-3.5 w-3.5 shrink-0" /> : null}
-              {!column.getIsSorted() ? <ArrowUpDown className="mr-1.5 h-3.5 w-3.5 shrink-0 opacity-40" /> : null}
-              {title}
-            </>
-          ) : (
-            <>
-              {title}
-              {column.getIsSorted() === 'asc' ? <ChevronUp className="ml-1.5 h-3.5 w-3.5 shrink-0" /> : null}
-              {column.getIsSorted() === 'desc' ? <ChevronDown className="ml-1.5 h-3.5 w-3.5 shrink-0" /> : null}
-              {!column.getIsSorted() ? <ArrowUpDown className="ml-1.5 h-3.5 w-3.5 shrink-0 opacity-40" /> : null}
-            </>
-          )}
-        </Button>
-      </div>
-    )
+const SortingButton = (title: string, alignRight = false) => {
+  return function Header({ column }: FiltrProps) {
+    return <MetricColumnHeader column={column} title={title} description={COLUMN_DESCRIPTIONS[title] || title} alignRight={alignRight} />
   }
 }
-
-import { Actions } from 'app/app/watchlist/[id]/components/Actions'
 
 export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnDef<security, any>[] => {
   const cols: ColumnDef<security, any>[] = [
@@ -82,47 +54,7 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
       footer: (info) => (
         <div className="text-[10px]">Total: {info.table.getFilteredRowModel().rows.length}</div>
       ),
-      cell: ({ row }) => {
-        const t = row.original.symbol.split('.')
-        let ticker = t[0]
-        if (t[1] == 'PA') ticker = 'xpar:' + ticker
-
-        return (
-          <div className="flex max-w-[110px] sm:max-w-[160px] md:max-w-[220px] min-w-0 items-center justify-between gap-1.5 pr-1">
-            <div className="flex min-w-0 items-center gap-1.5 overflow-hidden">
-              <img
-                className="h-5 w-5 shrink-0 rounded-full bg-white/10 p-0.5 ring-1 ring-white/20"
-                src={`https://financialmodelingprep.com/image-stock/${row.original.symbol.toLocaleUpperCase()}.png`}
-                alt=""
-              />
-              <div className="flex flex-col min-w-0 overflow-hidden">
-                <span className="truncate text-xs font-semibold flex items-center gap-1">
-                  <span className="truncate">{row.original.longname}</span>
-                </span>
-                <span className="text-[10px] font-bold uppercase text-muted-foreground truncate">{row.original.symbol}</span>
-              </div>
-            </div>
-            
-            <div className="hidden sm:flex items-center gap-1 opacity-0 transition-opacity group-hover/row:opacity-100 shrink-0">
-              <Actions
-                id=""
-                symbol={row.original.symbol}
-                allWatchlists={allWatchlists}
-                security={row.original}
-              />
-              <a 
-                target="_blank" 
-                href={`https://www.gurufocus.com/stock/${ticker}`}
-                className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                title="Voir sur GuruFocus"
-                aria-label="Voir sur GuruFocus"
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-            </div>
-          </div>
-        )
-      },
+      cell: ({ row }) => <SecurityIdentity security={row.original} allWatchlists={allWatchlists} />,
     },
 
     {
@@ -163,25 +95,11 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
         const med = calculateMedian(vals)
         return med != null ? (
           <div className="font-mono tabular-nums text-right px-2 py-1 text-xs font-medium">
-            {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', currencyDisplay: 'narrowSymbol' }).format(med)}
+            <PriceValue value={med} currency="EUR" />
           </div>
         ) : null
       },
-      cell: ({ row }) => {
-        const prix = parseFloat(row.getValue('regularMarketPrice'))
-
-        const formatted = new Intl.NumberFormat('fr-Fr', {
-          style: 'currency',
-          currency: row.original.currency || 'EUR',
-          currencyDisplay: 'narrowSymbol',
-        }).format(prix)
-
-        return (
-          <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm font-medium">
-            {formatted}
-          </div>
-        )
-      },
+      cell: ({ row }) => <PriceValue value={Number(row.getValue('regularMarketPrice'))} currency={row.original.currency || 'EUR'} />,
     },
     {
       accessorFn: (row) => {

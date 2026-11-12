@@ -68,6 +68,7 @@ export function TableView({
         )}
       >
         <SimpleDataTable
+          compactMobile
           table={table}
           colSpan={columns.length}
           onRowClick={onRowClick}

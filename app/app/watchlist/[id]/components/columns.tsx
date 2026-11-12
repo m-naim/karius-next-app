@@ -1,11 +1,12 @@
 'use client'
 
 import * as React from 'react'
+import { MetricColumnHeader } from '@/components/molecules/table/MetricColumnHeader'
+import { InfoTooltip } from '@/components/ui/info-tooltip'
+import { PriceValue } from '@/components/molecules/table/PriceValue'
+import { SecurityIdentity } from '@/components/molecules/table/SecurityIdentity'
 import { Column, ColumnDef } from '@tanstack/react-table'
-import { ChevronUp, ArrowUpDown, ChevronDown, ExternalLink, FileText, CalendarClock } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Actions } from './Actions'
+import { FileText, CalendarClock } from 'lucide-react'
 import { security } from '../data/security'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { round10 } from '@/lib/decimalAjustement'
@@ -48,22 +49,8 @@ const COLUMN_DESCRIPTIONS: Record<string, string> = {
 }
 
 const SortingButton = (title: string, customDesc?: string) => {
-  const desc = customDesc || COLUMN_DESCRIPTIONS[title] || title
-  return function GhostButton({ column }: FiltrProps) {
-    return (
-      <div className="flex items-center" title={desc}>
-        <Button
-          className="p-0 capitalize"
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          <span>{title}</span>
-          {column.getIsSorted() === 'asc' ? <ChevronUp className="ml-1.5 h-3.5 w-3.5" /> : null}
-          {column.getIsSorted() === 'desc' ? <ChevronDown className="ml-1.5 h-3.5 w-3.5" /> : null}
-          {!column.getIsSorted() ? <ArrowUpDown className="ml-1.5 h-3.5 w-3.5 opacity-40" /> : null}
-        </Button>
-      </div>
-    )
+  return function Header({ column }: FiltrProps) {
+    return <MetricColumnHeader column={column} title={title} description={customDesc || COLUMN_DESCRIPTIONS[title] || title} />
   }
 }
 
@@ -82,51 +69,7 @@ export const columns = (
       footer: (info) => (
         <div className="text-[10px]">Total: {info.table.getFilteredRowModel().rows.length}</div>
       ),
-      cell: ({ row }) => {
-        const t = row.original.symbol.split('.')
-        let ticker = t[0]
-        if (t[1] == 'PA') ticker = 'xpar:' + ticker
-
-        return (
-          <div className="flex max-w-[110px] sm:max-w-[160px] md:max-w-[220px] min-w-0 items-center justify-between gap-1.5 pr-1">
-            <div className="flex min-w-0 items-center gap-1.5 overflow-hidden">
-              <img
-                className="h-5 w-5 shrink-0 rounded-full bg-white/10 p-0.5 ring-1 ring-white/20"
-                src={`https://financialmodelingprep.com/image-stock/${row.original.symbol.toLocaleUpperCase()}.png`}
-                alt={row.original.symbol}
-              />
-              <div className="flex flex-col min-w-0 overflow-hidden">
-                <span className="truncate text-xs font-semibold flex items-center gap-1">
-                  <span className="truncate">{row.original.longname}</span>
-                </span>
-                <span className="text-[10px] font-bold uppercase text-muted-foreground truncate">
-                  {row.original.symbol}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex shrink-0 items-center gap-0.5">
-              <a
-                target="_blank"
-                href={`https://www.gurufocus.com/stock/${ticker}`}
-                className="hidden rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex sm:opacity-0 sm:group-hover/row:opacity-100"
-                title="Voir sur GuruFocus"
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-              {owned && (
-                <Actions
-                  id={id}
-                  symbol={row.original.symbol}
-                  deleteRow={deleteRow}
-                  allWatchlists={allWatchlists}
-                  security={row.original}
-                />
-              )}
-            </div>
-          </div>
-        )
-      },
+      cell: ({ row }) => <SecurityIdentity security={row.original} id={id} owned={owned} deleteRow={deleteRow} allWatchlists={allWatchlists} />,
     },
 
     {
@@ -137,27 +80,10 @@ export const columns = (
         const vals = rows.map((r) => parseFloat(r.getValue('regularMarketPrice')))
         const med = calculateMedian(vals)
         return med != null ? (
-          <div className="font-medium text-[10px]" title="Médiane">
-            {new Intl.NumberFormat('fr-FR', {
-              style: 'currency',
-              currency: 'EUR',
-              currencyDisplay: 'narrowSymbol',
-            }).format(med)}
-          </div>
+          <PriceValue value={med} currency="EUR" />
         ) : null
       },
-      cell: ({ row }) => {
-        const prix = parseFloat(row.getValue('regularMarketPrice'))
-
-        // Format the prix as a dollar prix
-        const formatted = new Intl.NumberFormat('fr-Fr', {
-          style: 'currency',
-          currency: row.original.currency || 'EUR',
-          currencyDisplay: 'narrowSymbol',
-        }).format(prix)
-
-        return <div className="font-medium">{formatted}</div>
-      },
+      cell: ({ row }) => <PriceValue value={Number(row.getValue('regularMarketPrice'))} currency={row.original.currency || 'EUR'} />,
     },
     {
       id: 'earningsDate',
@@ -173,24 +99,17 @@ export const columns = (
         const date = new Date(value)
         const days = Math.max(0, Math.ceil((value - Date.now()) / 86_400_000))
         return (
-          <div
-            className="flex min-w-[96px] items-center gap-2"
-            title={
-              row.original.earningsEstimated !== false
-                ? 'Date estimée par le fournisseur'
-                : 'Date annoncée'
-            }
+          <InfoTooltip
+            label={`Publication des résultats de ${row.original.symbol}`}
+            content={row.original.earningsEstimated !== false ? 'Date estimée par le fournisseur' : 'Date annoncée'}
+            className="w-full min-w-0 justify-start gap-1 text-left"
           >
-            <CalendarClock className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
-            <div className="flex flex-col">
-              <span className="text-xs font-medium">
-                {new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(date)}
-              </span>
-              <span className="text-[10px] text-muted-foreground">
-                {days === 0 ? 'Aujourd’hui' : `dans ${days} j`}
-              </span>
-            </div>
-          </div>
+            <CalendarClock className="hidden h-3.5 w-3.5 shrink-0 text-primary md:block" aria-hidden="true" />
+            <span className="flex flex-col">
+              <span className="text-xs font-medium">{new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(date)}</span>
+              <span className="text-[10px] text-muted-foreground">{days === 0 ? 'Aujourd’hui' : `dans ${days} j`}</span>
+            </span>
+          </InfoTooltip>
         )
       },
     },

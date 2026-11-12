@@ -203,3 +203,41 @@
   mask: radial-gradient(60% var(--c) at bottom, #0000 calc(100% - 2px), #000);
   background: hsl(var(--primary));
 }
+
+/* Four mobile columns: the asset and three metrics; further metrics scroll. */
+@media (max-width: 767px) {
+  .market-table-container { container-type: inline-size; }
+  .market-data-table {
+    table-layout: fixed;
+    width: max(100%, calc(38cqw + var(--metric-count) * (62cqw / 3)));
+  }
+  .market-data-table .asset-column { width: 38cqw; }
+  .market-data-table .metric-column { width: calc(62cqw / 3); }
+  .market-data-table th { overflow-wrap: anywhere; }
+  .market-data-table td { font-size: 11px; }
+  .market-data-table td > div, .market-data-table tfoot th > div {
+    max-width: 100%;
+    padding-inline: 0;
+    font-size: 11px;
+  }
+  .market-data-table td, .market-data-table tfoot th { overflow: hidden; }
+  .market-data-table .metric-column-header { font-size: 11px; }
+}
+
+.list-action-menu button, .list-action-menu a {
+  width: 100%;
+  min-height: 44px;
+  height: auto;
+  justify-content: flex-start;
+  gap: 0.5rem;
+  border-radius: 0.375rem;
+}
+.list-action-menu .mobile-action-label {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}

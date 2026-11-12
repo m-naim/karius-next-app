@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { Column } from '@tanstack/react-table'
-import { ChevronUp, ArrowUpDown, ChevronDown, Info, ListFilterIcon } from 'lucide-react'
+import { ChevronUp, ArrowUpDown, ChevronDown, ListFilterIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { InfoTooltip } from '@/components/ui/info-tooltip'
 import { round10 } from '@/lib/decimalAjustement'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { genericNumericFilterFn } from '@/lib/table-filters'
@@ -93,24 +93,7 @@ const COLUMN_DESCRIPTIONS: Record<string, string> = {
 const HeaderTooltip = ({ title, children }: { title: string; children?: React.ReactNode }) => {
   const description = COLUMN_DESCRIPTIONS[title]
   if (!description) return <>{children || title}</>
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span
-          tabIndex={0}
-          className="inline-flex items-center gap-1 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label={`À propos de ${title}`}
-        >
-          {children || title}
-          <Info className="h-3 w-3 shrink-0 text-muted-foreground/70" aria-hidden="true" />
-        </span>
-      </TooltipTrigger>
-      <TooltipContent side="top" className="max-w-xs text-xs leading-relaxed">
-        {description}
-      </TooltipContent>
-    </Tooltip>
-  )
+  return <span className="inline-flex items-center gap-1">{children || title}<InfoTooltip label={title} content={description} /></span>
 }
 
 const FilterButton = ({ column }: FiltrProps) => (
@@ -137,25 +120,18 @@ const SortingButton = (title: string, activateFilter = true) => {
   return function GhostButton({ column }: FiltrProps) {
     return (
       <div className="flex items-center">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              className="gap-1 p-0 capitalize"
-              variant="ghost"
-              aria-label={`Trier par ${title}. ${COLUMN_DESCRIPTIONS[title] || ''}`}
-              onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-            >
-              <span>{title}</span>
-              <Info className="h-3 w-3 shrink-0 text-muted-foreground/70" aria-hidden="true" />
-              {column.getIsSorted() === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : null}
-              {column.getIsSorted() === 'desc' ? <ChevronDown className="ml-1 h-4 w-4" /> : null}
-              {!column.getIsSorted() ? <ArrowUpDown className="ml-1 h-4 w-4" /> : null}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="max-w-xs text-xs leading-relaxed">
-            {COLUMN_DESCRIPTIONS[title] || `Trier par ${title}.`}
-          </TooltipContent>
-        </Tooltip>
+        <Button
+          className="gap-1 p-0 capitalize"
+          variant="ghost"
+          aria-label={`Trier par ${title}. ${COLUMN_DESCRIPTIONS[title] || ''}`}
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          <span>{title}</span>
+          {column.getIsSorted() === 'asc' ? <ChevronUp className="ml-1 h-4 w-4" /> : null}
+          {column.getIsSorted() === 'desc' ? <ChevronDown className="ml-1 h-4 w-4" /> : null}
+          {!column.getIsSorted() ? <ArrowUpDown className="ml-1 h-4 w-4" /> : null}
+        </Button>
+        <InfoTooltip label={title} content={COLUMN_DESCRIPTIONS[title] || `Trier par ${title}.`} />
 
         {activateFilter ? <FilterButton column={column}></FilterButton> : null}
       </div>

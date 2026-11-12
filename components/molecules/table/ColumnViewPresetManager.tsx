@@ -782,7 +782,7 @@ export function ColumnViewPresetManager({
         <Button
           variant="outline"
           size="sm"
-          className="h-8 gap-1.5 rounded-full border-border/70 text-xs font-bold transition-all hover:bg-muted hover:text-foreground"
+          className="h-11 min-w-0 max-w-full flex-1 gap-1.5 rounded-full md:h-8 md:flex-none border-border/70 text-xs font-bold transition-all hover:bg-muted hover:text-foreground"
           title="Gérer les vues et l'affichage des colonnes"
         >
           <LayoutGrid className="h-3.5 w-3.5 text-primary" />
@@ -1108,7 +1108,7 @@ export function ColumnViewPresetManager({
                             handleDeleteCustomPreset(preset.id, e)
                           }
                           title="Supprimer cette vue custom"
-                          className="opacity-0 group-hover:opacity-100 p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-all shrink-0"
+                          className="p-1 md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-all shrink-0"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>

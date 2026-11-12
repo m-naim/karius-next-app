@@ -1,13 +1,11 @@
+import { InfoTooltip } from '@/components/ui/info-tooltip'
 import React from 'react'
 import type { RiskMetrics } from '@/hooks/useRiskMetrics'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
-  Tooltip,
-  TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { Info, ShieldAlert, TrendingUp } from 'lucide-react'
+import { ShieldAlert, TrendingUp } from 'lucide-react'
 
 interface RiskAnalysisCardProps {
   metrics: RiskMetrics | null
@@ -103,16 +101,7 @@ export function RiskAnalysisCard({ metrics, loading, period }: RiskAnalysisCardP
                 <p className="text-[10px] font-black uppercase tracking-[0.12em] text-muted-foreground">Creux maximal</p>
                 <p className="mt-1 text-xl font-black tabular-nums text-foreground">{formatPercent(metrics.maxDrawdown)}</p>
               </div>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button type="button" className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-background hover:text-primary" aria-label="À propos du creux maximal">
-                    <Info className="h-4 w-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent className="max-w-xs text-xs">
-                  Perte maximale observée entre un sommet et le point bas suivant sur la période.
-                </TooltipContent>
-              </Tooltip>
+              <InfoTooltip label="Creux maximal" content="Perte maximale observée entre un sommet et le point bas suivant sur la période." />
             </div>
             <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-background">
               <div className={`h-full rounded-full ${drawdownColor}`} style={{ width: `${drawdownPercentage}%` }} />
@@ -166,14 +155,7 @@ function InsightTile({
     <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
       <div className="flex items-center gap-1.5">
         <span className="text-[10px] font-black uppercase tracking-[0.12em] text-muted-foreground">{label}</span>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button type="button" className="rounded-full text-muted-foreground hover:text-primary" aria-label={`À propos de ${label}`}>
-              <Info className="h-3 w-3" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-xs text-xs">{description}</TooltipContent>
-        </Tooltip>
+        <InfoTooltip label={label} content={description} />
       </div>
       <p className={`mt-1 text-xl font-black tabular-nums ${color}`}>{value}</p>
     </div>

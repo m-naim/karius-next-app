@@ -25,9 +25,10 @@ interface Watchlist {
 interface WatchlistSelectorProps {
   watchlists: Watchlist[]
   currentId: string
+  currentName?: string
 }
 
-export function WatchlistSelector({ watchlists, currentId }: WatchlistSelectorProps) {
+export function WatchlistSelector({ watchlists, currentId, currentName }: WatchlistSelectorProps) {
   const router = useRouter()
   const [open, setOpen] = React.useState(false)
 
@@ -36,7 +37,7 @@ export function WatchlistSelector({ watchlists, currentId }: WatchlistSelectorPr
     label: w.name,
   }))
 
-  const currentValue = frameworks.find((f) => f.value === currentId)?.label
+  const currentValue = frameworks.find((f) => f.value === currentId)?.label || currentName
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -45,17 +46,19 @@ export function WatchlistSelector({ watchlists, currentId }: WatchlistSelectorPr
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full max-w-[300px] justify-between border-transparent text-lg font-bold sm:text-xl truncate"
+          className="h-auto min-h-11 w-full justify-between gap-2 whitespace-normal border-transparent px-1 py-1 text-left text-base font-bold md:h-9 md:min-h-9 md:max-w-[400px] md:whitespace-nowrap md:text-xl"
         >
-          <span className="truncate">{currentValue || 'Select a watchlist...'}</span>
+          <span className="min-w-0 break-words md:truncate md:break-normal">
+            {currentValue || 'Choisir une watchlist…'}
+          </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] min-w-[200px] p-0">
         <Command>
-          <CommandInput placeholder="Search watchlist..." />
+          <CommandInput placeholder="Rechercher une watchlist…" />
           <CommandList>
-            <CommandEmpty>No watchlist found.</CommandEmpty>
+            <CommandEmpty>Aucune watchlist trouvée.</CommandEmpty>
             <CommandGroup>
               {frameworks.map((framework) => (
                 <CommandItem

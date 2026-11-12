@@ -13,9 +13,8 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, LineChart } from 'lucide-react'
+import { LineChart } from 'lucide-react'
 import Loader from '@/components/molecules/loader/loader'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
@@ -24,19 +23,16 @@ import { TableView } from '../../watchlist/[id]/components/TableView'
 import { TickerChart } from '../../watchlist/[id]/components/TickerChart'
 import { AnalysisView } from '@/components/organismes/market/AnalysisView'
 import { columns } from './columns'
-import { LayoutDashboard, Table as TableIcon } from 'lucide-react'
 import { SplitScreenLayout } from '@/components/organismes/layout/SplitScreenLayout'
 import { AnalysisDrawerTitle } from '@/components/molecules/market/AnalysisDrawerTitle'
 import { filterSecuritiesByScreener } from '@/lib/screeners'
 
 import watchListService from '@/services/watchListService'
 
-import { ViewToggleSwitch } from '@/components/atoms/ViewToggleSwitch'
+import { ListPageHeader } from '@/components/molecules/table/ListPageHeader'
 import {
   getSavedColumnVisibility,
   getSavedColumnOrder,
-  saveColumnVisibility,
-  saveColumnOrder,
 } from '@/lib/column-persistence'
 import {
   getSavedTableFilters,
@@ -247,32 +243,22 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
     <SplitScreenLayout
       isFixedLayout={true}
       header={
-        <div className="bg-dark flex shrink-0 items-center justify-between gap-2 rounded-xl border px-3 py-2 md:p-4">
-          <div className="flex min-w-0 items-center gap-3">
-            <Link href="/app/market" className="inline-flex shrink-0">
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-            <div className="min-w-0 truncate">
-              <h1 className="truncate text-sm font-bold text-foreground md:text-lg">{indexInfo.name}</h1>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <ViewToggleSwitch view={view} onViewChange={setView} />
-
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn('h-8 w-8 shrink-0 rounded-full', showChart ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground')}
-              onClick={() => setShowChart(!showChart)}
-            >
-              <LineChart className="h-4 w-4" />
-              <span className="sr-only">Afficher/Masquer le graphique</span>
-            </Button>
-          </div>
-        </div>
+        <ListPageHeader
+          backHref="/app/market"
+          title={<h1 className="py-2 text-base font-bold leading-snug [overflow-wrap:anywhere] md:py-0 md:text-lg">{indexInfo.name}</h1>}
+          view={view}
+          onViewChange={setView}
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn('h-8 w-8 shrink-0 rounded-full', showChart ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground')}
+            onClick={() => setShowChart(!showChart)}
+          >
+            <LineChart className="h-4 w-4" />
+            <span className="mobile-action-label sr-only">Afficher / masquer le graphique</span>
+          </Button>
+        </ListPageHeader>
       }
       showDrawer={showChart}
       onCloseDrawer={() => setShowChart(false)}

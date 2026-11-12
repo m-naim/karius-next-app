@@ -26,7 +26,7 @@ export default function AppLayoutContainer({
   if (isAppRoute) {
     if (isFixedRoute) {
       return (
-        <div className="flex h-screen w-full flex-col overflow-hidden bg-background">
+        <div className="flex h-dvh w-full flex-col overflow-hidden bg-background">
           <div className="z-50 shrink-0">
             <Header />
             <MarketPulse />
@@ -39,7 +39,7 @@ export default function AppLayoutContainer({
     }
 
     return (
-      <div className="flex h-screen w-full flex-col overflow-hidden bg-background">
+      <div className="flex h-dvh w-full flex-col overflow-hidden bg-background">
         <div className="z-50 shrink-0">
           <Header />
           {pathname !== "/app" && <MarketPulse />}

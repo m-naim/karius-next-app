@@ -18,7 +18,7 @@ import {
 } from '../../ui/dropdown-menu'
 
 import { useAuth } from '@/hooks/useAuth'
-import { ChevronDown, Bell, Search } from 'lucide-react'
+import { ChevronDown, Bell, Search, MessageCircle } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/tooltip'
 
 const Header = () => {
@@ -96,6 +96,11 @@ const Header = () => {
         </nav>
 
         <div className="flex shrink-0 items-center gap-0.5">
+          {(pathname?.startsWith('/app/watchlist/') && pathname !== '/app/watchlist/new' && !pathname.endsWith('/settings') || pathname?.startsWith('/app/market/')) && (
+            <Button variant="ghost" size="icon" className="h-8 w-8 md:hidden" aria-label="Ouvrir le support" onClick={() => window.dispatchEvent(new Event('open-support'))}>
+              <MessageCircle className="h-4 w-4" />
+            </Button>
+          )}
           {user && (
             <Tooltip>
               <TooltipTrigger asChild>

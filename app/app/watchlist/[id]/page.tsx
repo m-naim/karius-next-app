@@ -2,7 +2,6 @@
 
 import React, { useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
-import { usePathname } from 'next/navigation'
 import watchListService from '@/services/watchListService'
 import { security } from './data/security'
 import {
@@ -18,7 +17,7 @@ import {
 import { columns } from './components/columns'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, LineChart, Settings, Download } from 'lucide-react'
+import { LineChart, Settings, Download } from 'lucide-react'
 import Loader from '@/components/molecules/loader/loader'
 import { useLocalStorage } from '@/hooks/useLocalStorage' // Re-import useLocalStorage
 import { useToast } from '@/hooks/use-toast'
@@ -30,7 +29,7 @@ import {
   WATCHLIST_FILTERS_STORAGE_KEY,
 } from '@/lib/filter-persistence'
 import { filterSecuritiesByScreener } from '@/lib/screeners'
-import { ViewToggleSwitch } from '@/components/atoms/ViewToggleSwitch'
+import { ListPageHeader } from '@/components/molecules/table/ListPageHeader'
 
 const DEFAULT_WATCHLIST_VISIBILITY: VisibilityState = {
   actions: true,
@@ -60,8 +59,6 @@ const DEFAULT_WATCHLIST_VISIBILITY: VisibilityState = {
 }
 import { TableView } from './components/TableView'
 import { WatchlistSelector } from './components/WatchlistSelector'
-import { LayoutDashboard, Table as TableIcon } from 'lucide-react'
-import { RightSidebar } from '@/components/organismes/layout/RightSidebar'
 import { SplitScreenLayout } from '@/components/organismes/layout/SplitScreenLayout'
 import { AnalysisDrawerTitle } from '@/components/molecules/market/AnalysisDrawerTitle'
 import { cn } from '@/lib/utils'
@@ -450,71 +447,56 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
     <SplitScreenLayout
       isFixedLayout={true}
       header={
-        <div className="bg-dark flex shrink-0 items-center justify-between gap-4 rounded-lg border p-4">
-          <div className="flex min-w-0 items-center gap-3">
-            <Link href="/app/watchlist" className="inline-flex shrink-0">
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-            <div className="min-w-0 truncate">
-              <WatchlistSelector watchlists={allWatchlists} currentId={id} />
-            </div>
-          </div>
+        <ListPageHeader
+          backHref="/app/watchlist"
+          title={<WatchlistSelector watchlists={allWatchlists} currentId={id} currentName={data.name} />}
+          view={view}
+          onViewChange={setView}
+        >
+          {owned && (
+            <EntityNotificationButton
+              entityId={id}
+              entityType="watchlist"
+              label="Recevoir un résumé"
+              mobileLabel="Résumé"
+              description={`Recevoir le résumé périodique de ${data.name || 'cette watchlist'}`}
+            />
+          )}
 
-          <div className="flex items-center gap-2">
-            {owned && (
-              <EntityNotificationButton
-                entityId={id}
-                entityType="watchlist"
-                label="Recevoir un résumé"
-                mobileLabel="Résumé"
-                description={`Recevoir le résumé périodique de ${data.name || 'cette watchlist'}`}
-              />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0"
+            onClick={downloadCSV}
+            aria-label="Télécharger en CSV"
+            title="Télécharger en CSV"
+          >
+            <Download className="h-4 w-4" /><span className="mobile-action-label sr-only">Exporter en CSV</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn(
+              'h-8 w-8 shrink-0 rounded-full',
+              showChart
+                ? 'bg-muted text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
             )}
-            <ViewToggleSwitch view={view} onViewChange={setView} />
+            onClick={() => setShowChart(!showChart)}
+          >
+            <LineChart className="h-4 w-4" />
+            <span className="mobile-action-label sr-only">Afficher / masquer le graphique</span>
+          </Button>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0"
-              onClick={downloadCSV}
-              aria-label="Télécharger en CSV"
-              title="Télécharger en CSV"
-            >
-              <Download className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                'h-8 w-8 shrink-0 rounded-full',
-                showChart
-                  ? 'bg-muted text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-              onClick={() => setShowChart(!showChart)}
-            >
-              <LineChart className="h-4 w-4" />
-              <span className="sr-only">Afficher/Masquer le graphique</span>
-            </Button>
-
-            {owned && (
+          {owned && (
+            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" aria-label="Paramètres de la watchlist" title="Paramètres" asChild>
               <Link href={`/app/watchlist/${id}/settings`}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 shrink-0"
-                  aria-label="Paramètres de la watchlist"
-                  title="Paramètres"
-                  asChild={false}
-                >
-                  <Settings className="h-4 w-4" strokeWidth={1.5} />
-                </Button>
+                <Settings className="h-4 w-4" strokeWidth={1.5} />
+                <span className="mobile-action-label sr-only">Paramètres de la watchlist</span>
               </Link>
-            )}
-          </div>
-        </div>
+            </Button>
+          )}
+        </ListPageHeader>
       }
       showDrawer={showChart}
       onCloseDrawer={() => setShowChart(false)}

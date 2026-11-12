@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { InfoTooltip } from '@/components/ui/info-tooltip'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -98,7 +99,7 @@ export const TableContextHeader = ({
           <div
             className={cn(
               'relative min-w-0 transition-[width] duration-200 ease-out md:max-w-sm',
-              searchExpanded ? 'w-full' : 'w-10 md:w-[250px]'
+              searchExpanded ? 'w-full' : 'w-11 md:w-[250px]'
             )}
           >
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -117,7 +118,7 @@ export const TableContextHeader = ({
               }}
               aria-label="Rechercher une action par nom ou symbole"
               className={cn(
-                'h-9 w-full pl-8 text-xs transition-colors md:h-8 md:w-[250px]',
+                'h-11 w-full pl-8 text-xs transition-colors md:h-8 md:w-[250px]',
                 !searchExpanded && 'cursor-pointer text-transparent placeholder:text-transparent md:cursor-text md:text-foreground md:placeholder:text-muted-foreground'
               )}
             />
@@ -127,7 +128,7 @@ export const TableContextHeader = ({
             variant={showFilters ? 'default' : hasActiveFilter ? 'outline' : 'outline'}
             size="sm"
             className={cn(
-              'h-8 gap-1.5 rounded-full text-xs font-bold transition-all border border-border/70',
+              'h-11 shrink-0 gap-1.5 rounded-full text-xs font-bold md:h-8 transition-all border border-border/70',
               showFilters
                 ? 'bg-primary text-primary-foreground border-primary shadow-xs'
                 : hasActiveFilter
@@ -149,13 +150,13 @@ export const TableContextHeader = ({
           </Button>
         </div>
 
-        <div className="flex w-full items-center gap-2 sm:w-auto">
+        <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto">
           {/* Unified Column View & Preset Manager */}
           <ColumnViewPresetManager table={table} />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="outline" className="h-9 min-w-0 flex-1 justify-between whitespace-nowrap sm:h-8 sm:flex-none">
+              <Button size="sm" variant="outline" className="h-11 min-w-20 flex-1 justify-between whitespace-nowrap sm:h-8 sm:flex-none">
                 {periods.find((p) => p.value === selectedPeriod)?.label || 'Sélectionner'}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
@@ -203,10 +204,9 @@ export const TableContextHeader = ({
                 {RECOMMENDED_SCREENERS.map((scr) => {
                   const isActive = activeScreener === scr.id
                   return (
+                    <span key={scr.id} className="inline-flex items-center gap-0.5">
                     <button
-                      key={scr.id}
                       onClick={() => setActiveScreener(isActive ? null : scr.id)}
-                      title={scr.desc}
                       aria-pressed={isActive}
                       className={cn(
                         'flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition-all border',
@@ -218,6 +218,8 @@ export const TableContextHeader = ({
                       {isActive && <Check className="h-3 w-3" />}
                       <span>{scr.label}</span>
                     </button>
+                    <InfoTooltip label={scr.label} content={scr.desc} />
+                    </span>
                   )
                 })}
               </div>

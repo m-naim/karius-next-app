@@ -141,7 +141,7 @@ export const Actions = ({
         type="button"
         variant="ghost"
         size="icon"
-        className="h-8 w-8 text-muted-foreground hover:bg-primary/10 hover:text-primary"
+        className="hidden h-8 w-8 md:inline-flex text-muted-foreground hover:bg-primary/10 hover:text-primary"
         onClick={(event) => {
           event.stopPropagation()
           setActiveDialog('alert')
@@ -155,15 +155,18 @@ export const Actions = ({
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="h-8 w-8 p-0"
+            className="h-11 w-11 shrink-0 p-0 md:h-8 md:w-8"
             onClick={(event) => event.stopPropagation()}
           >
-            <span className="sr-only">Open menu</span>
+            <span className="sr-only">Actions pour {symbol}</span>
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuItem className="md:hidden" onSelect={() => setTimeout(() => setActiveDialog('alert'), 100)}>
+            <Bell className="mr-2 h-4 w-4" /> Créer une alerte
+          </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => setTimeout(() => setActiveDialog('copy'), 100)}>
             <Plus className="mr-2 h-4 w-4" /> {watchlistActionLabel}
           </DropdownMenuItem>
