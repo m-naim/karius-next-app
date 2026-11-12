@@ -120,22 +120,16 @@ function Movers({ data }: { data: DashboardMovers }) {
       {data.movers.length ? (
         <table className="w-full table-fixed text-xs sm:text-sm">
           <caption className="sr-only">
-            Variations des actions de vos portefeuilles et watchlists dépassant
-            5 % en valeur absolue sur au moins une période.
+            Les 5 plus fortes variations en valeur absolue sur une semaine parmi
+            les actions de vos portefeuilles et watchlists.
           </caption>
           <thead className="border-b border-border text-[11px] text-muted-foreground">
             <tr>
-              <th scope="col" className="w-[42%] py-2 text-left font-medium">
+              <th scope="col" className="w-[75%] py-2 text-left font-medium">
                 Action
               </th>
               <th scope="col" className="py-2 text-right font-medium">
-                1 j
-              </th>
-              <th scope="col" className="py-2 text-right font-medium">
                 1 sem.
-              </th>
-              <th scope="col" className="py-2 text-right font-medium">
-                1 mois
               </th>
             </tr>
           </thead>
@@ -177,13 +171,7 @@ function Movers({ data }: { data: DashboardMovers }) {
                     </span>
                   </th>
                   <td className="py-2.5 text-right">
-                    <Change value={stock.dayChangePercent} highlight />
-                  </td>
-                  <td className="py-2.5 text-right">
                     <Change value={stock.weekChangePercent} highlight />
-                  </td>
-                  <td className="py-2.5 text-right">
-                    <Change value={stock.monthChangePercent} highlight />
                   </td>
                 </tr>
               )
@@ -194,12 +182,13 @@ function Movers({ data }: { data: DashboardMovers }) {
         <p className="my-3 text-sm text-muted-foreground">
           {data.trackedCount === 0
             ? 'Ajoutez des actions à un portefeuille ou une watchlist pour retrouver leurs mouvements ici.'
-            : 'Aucun mouvement supérieur à ±5 % sur les périodes disponibles.'}
+            : 'Aucune variation disponible sur une semaine.'}
         </p>
       )}
       {data.incompleteCount > 0 && (
         <p className="mb-0 mt-2 text-xs text-muted-foreground">
-          Certaines variations sont indisponibles pour {data.incompleteCount}{' '}
+          La variation sur une semaine est indisponible pour{' '}
+          {data.incompleteCount}{' '}
           action{data.incompleteCount > 1 ? 's' : ''}.
         </p>
       )}
@@ -281,14 +270,24 @@ export default function AppDashboard() {
           </section>
 
           <section aria-labelledby="tracked-movers">
-            <h2
-              id="tracked-movers"
-              className="m-0 p-0 text-base font-bold text-foreground"
-            >
-              Ce qui bouge
-            </h2>
+            <div className="flex items-center justify-between gap-3">
+              <h2
+                id="tracked-movers"
+                className="m-0 p-0 text-base font-bold text-foreground"
+              >
+                Ce qui bouge
+              </h2>
+              <Link
+                href="/app/watchlist"
+                className="shrink-0 text-xs font-semibold text-primary hover:underline"
+              >
+                Voir plus{' '}
+                <ArrowRight aria-hidden="true" className="ml-1 inline h-3 w-3" />
+              </Link>
+            </div>
             <p className="mb-2 mt-1 text-xs text-muted-foreground">
-              Portefeuilles et watchlists · hausses et baisses de plus de 5 %
+              Portefeuilles et watchlists · 5 plus fortes hausses ou baisses sur
+              1 semaine
             </p>
             {movers.error ? (
               <LoadError retry={movers.retry} />
