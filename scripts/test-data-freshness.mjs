@@ -13,16 +13,44 @@ import {
 
 const today = '2026-11-15T12:00:00Z' // Sunday: Friday prices must still be orange.
 
+test('portfolio dots allow exactly 24 hours before becoming stale', () => {
+  const source = (asOf) => ({ sources: [{ symbol: 'A', asOf }] })
+  assert.equal(freshnessState(source('2026-11-14T12:00:00Z'), today, 1).isStale, false)
+  assert.equal(freshnessState(source('2026-11-14T11:59:59Z'), today, 1).isStale, true)
+  assert.equal(freshnessState(source('2026-11-14T20:00:00Z'), today, 1).isStale, false)
+})
+
+test('daily closes allow the previous calendar day when their time is unknown', () => {
+  assert.equal(
+    freshnessState({ sources: [{ symbol: 'A', asOf: '2026-11-14' }] }, today, 1).isStale,
+    false
+  )
+  assert.equal(
+    freshnessState({ sources: [{ symbol: 'A', asOf: '2026-11-13' }] }, today, 1).isStale,
+    true
+  )
+  assert.equal(
+    freshnessState({ calculatedAt: '2026-11-13T12:00:00Z', sources: [] }, today, 1).isStale,
+    true
+  )
+})
+
 test('a single row marker retains old performance data even when its quote is current', () => {
-  const info = securityFreshness({ symbol: 'A', quoteAsOf: today,
-    variationsAsOf: '2026-11-13', variationsCalculatedAt: today }, '1d')
+  const info = securityFreshness(
+    { symbol: 'A', quoteAsOf: today, variationsAsOf: '2026-11-13', variationsCalculatedAt: today },
+    '1d'
+  )
   assert.equal(freshnessState(info, today).isStale, true)
-  assert.deepEqual(info.sources.map(source => source.label), ['Cours', 'Performance'])
+  assert.deepEqual(
+    info.sources.map((source) => source.label),
+    ['Cours', 'Performance']
+  )
 })
 
 test('a row marker includes stale FX calculations alongside current quotes', () => {
-  const info = securityFreshness({ symbol: 'A', quoteAsOf: today }, '1d', false,
-    [{ calculatedAt: '2026-11-13', sources: [{ symbol: 'USD/EUR', asOf: '2026-11-13' }] }])
+  const info = securityFreshness({ symbol: 'A', quoteAsOf: today }, '1d', false, [
+    { calculatedAt: '2026-11-13', sources: [{ symbol: 'USD/EUR', asOf: '2026-11-13' }] },
+  ])
   assert.equal(freshnessState(info, today).isStale, true)
   assert.equal(info.sources.length, 2)
 })

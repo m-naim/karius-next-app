@@ -48,22 +48,28 @@ export function calendarDate(value: DateInput): string | null {
   }).format(date)
 }
 
-export function freshnessState(info: FreshnessInfo, now: DateInput = new Date()) {
+export function freshnessState(info: FreshnessInfo, now: DateInput = new Date(), graceDays = 0) {
   const today = calendarDate(now)!
+  const cutoffDay = new Date(new Date(`${today}T12:00:00Z`).getTime() - graceDays * 86_400_000)
+    .toISOString()
+    .slice(0, 10)
+  const isOld = (value: DateInput) => {
+    const day = calendarDate(value)
+    if (!day) return false
+    // Timestamped inputs use elapsed time; daily closes keep their day precision.
+    const hasTimeZone = typeof value !== 'string' || /(?:Z|[+-]\d{2}:?\d{2})$/.test(value)
+    if (graceDays > 0 && hasTimeZone)
+      return new Date(now!).getTime() - new Date(value!).getTime() > graceDays * 86_400_000
+    return day < cutoffDay
+  }
   const stale = info.sources.filter((source) => {
-    const date = calendarDate(sourceFreshnessDate(source))
-    return date != null && date < today
+    return isOld(sourceFreshnessDate(source))
   })
   const unknown = info.sources.filter((source) => calendarDate(sourceFreshnessDate(source)) == null)
-  const calculatedDate = calendarDate(info.calculatedAt)
   return {
     stale,
     unknown,
-    isStale:
-      stale.length > 0 ||
-      (calculatedDate != null && calculatedDate < today) ||
-      (calendarDate(info.upstreamCalculatedAt) != null &&
-        calendarDate(info.upstreamCalculatedAt)! < today),
+    isStale: stale.length > 0 || isOld(info.calculatedAt) || isOld(info.upstreamCalculatedAt),
   }
 }
 

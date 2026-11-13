@@ -144,8 +144,7 @@ export default function StockDetailPage() {
         {/* Quote and mini search */}
         <div className="mt-4">
           <div className="text-left">
-            <div className="text-2xl font-bold text-foreground">{formattedPrice}</div>
-            <DataFreshness display="date" info={quoteFreshness(stock)} />
+            <div className="text-2xl font-bold text-foreground"><DataFreshness info={quoteFreshness(stock)}>{formattedPrice}</DataFreshness></div>
             <div className={`flex items-center gap-1 text-sm font-semibold ${hasChange ? (isPositive ? 'text-emerald-500' : 'text-rose-500') : 'text-muted-foreground'}`}>
               {hasChange && (isPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />)}
               <span>{formattedChange}</span>

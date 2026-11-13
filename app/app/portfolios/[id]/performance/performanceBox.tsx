@@ -1,3 +1,4 @@
+import { usePortfolioFreshness } from '@/components/molecules/portfolio/PortfolioFreshness'
 import { DataFreshness } from '@/components/molecules/DataFreshness'
 import { FreshnessInfo } from '@/lib/data-freshness'
 import React, { useEffect, useState } from 'react'
@@ -90,6 +91,7 @@ export default function PerformanceBox({
   onPeriodChange,
 }: PerformanceBoxProps) {
   const [freshness, setFreshness] = useState<FreshnessInfo | null>(null)
+  usePortfolioFreshness('Évolution', freshness)
   const [chartType, setChartType] = useState(chartTypes[0].id)
   const [dates, setDates] = useState<string[]>([])
   const [chartValues, setChartValues] = useState<number[]>([])
@@ -159,8 +161,7 @@ export default function PerformanceBox({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <p className="mb-1 text-[10px] font-black uppercase tracking-[0.16em] text-primary">Évolution</p>
-            <CardTitle className="text-lg font-black tracking-tight">{selectedChart?.label}</CardTitle>
-            {!loading && <DataFreshness display="status" info={freshness} calculation />}
+            <CardTitle className="text-lg font-black tracking-tight"><DataFreshness info={freshness} calculation>{selectedChart?.label}</DataFreshness></CardTitle>
             <p className="mt-1 text-xs text-muted-foreground">{selectedChart?.description}</p>
           </div>
 

@@ -54,8 +54,9 @@ export function PortfolioCard(p: PortfolioSummery) {
               )}>
                 <BarChart3 className="h-3.5 w-3.5" />
               </div>
-              <CardTitle className="line-clamp-1 text-sm font-bold tracking-tight text-foreground sm:text-base">
-                {p.name}
+              <CardTitle className="flex min-w-0 items-center gap-1 text-sm font-bold tracking-tight text-foreground sm:text-base">
+                <span className="truncate">{p.name}</span>
+                <DataFreshness display="dot" graceDays={1} info={p.performanceFreshness} calculation interactive={false} label="Dates du portefeuille" />
               </CardTitle>
             </div>
             
@@ -74,6 +75,8 @@ export function PortfolioCard(p: PortfolioSummery) {
                     <TrendingUp className="h-3 w-3 text-primary" />
                     <VariationContainer
                       value={p.annualizedReturn}
+                      freshness={p.performanceFreshness}
+                      interactiveFreshness={false}
                       entity="%"
                       background={false}
                       className="p-0 font-bold"
@@ -107,7 +110,6 @@ export function PortfolioCard(p: PortfolioSummery) {
         </CardContent>
         <div className="h-0.5 w-full origin-left scale-x-0 bg-primary transition-transform duration-500 group-hover:scale-x-100" />
       </Link>
-      <div className="px-4 pb-3"><DataFreshness display="status" info={p.performanceFreshness} calculation /></div>
     </Card>
   )
 }

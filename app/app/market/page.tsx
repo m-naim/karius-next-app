@@ -341,7 +341,8 @@ export default function MarketListingPage() {
                   <span className="block truncate text-xs font-bold text-foreground leading-tight">
                     {market.name}
                   </span>
-                  <span className="block text-[9px] font-medium text-muted-foreground leading-none">
+                  <DataFreshness info={combinedFreshness([quoteFreshness(quote || { symbol: market.symbol }), getPerformanceFreshness(market.symbol)])} interactive={false}>
+<span className="block text-[9px] font-medium text-muted-foreground leading-none">
                     {quote?.regularMarketPrice != null
                       ? quote.regularMarketPrice.toLocaleString('fr-FR', {
                           style: 'currency',
@@ -350,7 +351,7 @@ export default function MarketListingPage() {
                         })
                       : market.symbol}
                   </span>
-                  <DataFreshness info={combinedFreshness([quoteFreshness(quote || { symbol: market.symbol }), getPerformanceFreshness(market.symbol)])} interactive={false} />
+                  </DataFreshness>
                 </div>
               </div>
 
@@ -392,7 +393,7 @@ export default function MarketListingPage() {
           <div className="h-5 w-[1px] bg-border/60 hidden sm:block" />
 
           <div className="flex shrink-0 items-baseline gap-2">
-            <span className="text-xs font-black text-foreground">
+            <span className="text-xs font-black text-foreground"><DataFreshness info={combinedFreshness([quoteFreshness(activeQuote || { symbol: activeMarket.symbol }), getPerformanceFreshness(activeMarket.symbol)])}>
               {activeQuote?.regularMarketPrice != null
                 ? activeQuote.regularMarketPrice.toLocaleString('fr-FR', {
                     style: 'currency',
@@ -400,8 +401,7 @@ export default function MarketListingPage() {
                     maximumFractionDigits: 2,
                   })
                 : '--'}
-              <DataFreshness info={combinedFreshness([quoteFreshness(activeQuote || { symbol: activeMarket.symbol }), getPerformanceFreshness(activeMarket.symbol)])} />
-            </span>
+            </DataFreshness></span>
             {activePerf != null && (
               <VariationContainer
                 value={activePerf}

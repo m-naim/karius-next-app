@@ -195,8 +195,7 @@ export default function PortfolioAssetDrawer({
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-card border rounded-xl p-3 shadow-sm">
               <div className="space-y-0.5">
                 <span className="text-xs font-semibold text-muted-foreground">Cours Actuel</span>
-                <div className="text-base font-bold tabular-nums">{formatMoney(security.last)}</div>
-                <DataFreshness display="date" info={quoteFreshness(security, true)} />
+                <div className="text-base font-bold tabular-nums"><DataFreshness info={quoteFreshness(security, true)}>{formatMoney(security.last)}</DataFreshness></div>
               </div>
               <div className="space-y-0.5">
                 <span className="text-xs font-semibold text-muted-foreground">PRU Moyen</span>

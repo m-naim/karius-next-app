@@ -235,9 +235,9 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
           style: 'currency',
           currency: currencyToUse,
         }).format(last)
-        return <div className="inline-flex items-center gap-0.5 font-medium">{formatted}<DataFreshness
+        return <div className="font-medium"><DataFreshness
           info={securityFreshness(row.original, selectedPeriod, true, row.original.currencyGainFreshness ? [row.original.currencyGainFreshness] : [])}
-        /></div>
+        >{formatted}</DataFreshness></div>
       },
       enableHiding: true,
     },
@@ -320,6 +320,7 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
           {own && varValue != null && row.original.qty !== 0 && (
             <VariationContainer
               value={varValue}
+              freshness={securityFreshness(row.original, selectedPeriod, true)}
               background={false}
               entity={symbol}
               className="m-0 p-0"
@@ -328,6 +329,7 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
           {varPercent != null && (
             <VariationContainer
               value={varPercent}
+              freshness={securityFreshness(row.original, selectedPeriod, true)}
               background={false}
               className="m-0 p-0"
             />
@@ -346,7 +348,7 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
         if (value == null || !row.original.currency || row.original.currency === baseCurrency) {
           return <span className="font-mono text-xs text-muted-foreground">—</span>
         }
-        return <VariationContainer value={value} entity={baseCurrency} background={false} className="m-0 p-0 text-xs font-semibold" />
+        return <VariationContainer value={value} freshness={row.original.currencyGainFreshness} entity={baseCurrency} background={false} className="m-0 p-0 text-xs font-semibold" />
       },
       enableHiding: true,
     })
@@ -373,6 +375,7 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
                 <span className="hidden text-[9px] font-medium uppercase text-muted-foreground md:inline">Cours</span>
                 <VariationContainer
                   value={chg}
+                  freshness={securityFreshness(row.original, selectedPeriod, true)}
                   entity="%"
                   background={false}
                   className="m-0 p-0"
@@ -384,6 +387,7 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
                 <span className="text-[9px] font-medium uppercase text-muted-foreground">Impact</span>
                 <VariationContainer
                   value={portfolioImpact}
+                  freshness={securityFreshness(row.original, selectedPeriod, true)}
                   entity="%"
                   background={false}
                   className="m-0 p-0 text-[10px]"

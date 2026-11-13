@@ -32,8 +32,7 @@ export function AnalysisDrawerTitle({ symbol, price, currency, quoteAsOf, lastUp
       <span className="truncate text-base font-black tracking-tight text-foreground">{symbol}</span>
       {formattedPrice && (
         <span className="shrink-0 text-xs font-semibold tabular-nums text-muted-foreground">
-          {formattedPrice}
-          <DataFreshness info={quoteFreshness({ symbol, quoteAsOf, lastUpdated })} />
+          <DataFreshness info={quoteFreshness({ symbol, quoteAsOf, lastUpdated })}>{formattedPrice}</DataFreshness>
         </span>
       )}
     </div>

@@ -1,7 +1,6 @@
 'use client'
 
-import { useSyncExternalStore } from 'react'
-import { Clock3 } from 'lucide-react'
+import { ReactNode, useSyncExternalStore } from 'react'
 import { InfoTooltip } from '@/components/ui/info-tooltip'
 import { cn } from '@/lib/utils'
 import {
@@ -42,28 +41,34 @@ export function DataFreshness({
   label,
   className,
   interactive = true,
-  display = 'icon',
+  display,
   sections,
+  children,
+  valueLabel,
+  graceDays = 0,
 }: {
   info?: FreshnessInfo | null
   calculation?: boolean
   interactive?: boolean
-  compact?: boolean
-  display?: 'icon' | 'status' | 'date'
+  display?: 'dot'
   sections?: FreshnessSection[]
   label?: string
   className?: string
+  children?: ReactNode
+  valueLabel?: string
+  graceDays?: number
 }) {
   const now = useSyncExternalStore(
     subscribe,
     () => clock,
     () => 0
   )
-  if (!now) return <span className="inline-block h-6 w-6 shrink-0 align-middle" />
+  if (!now) return children != null ? <span>{children}</span> : null
   const data = sections
     ? combinedFreshness(sections.map((section) => section.info || { sources: [] }))
     : info || { sources: [] }
-  const { stale, unknown, isStale } = freshnessState(data, now)
+  const { stale, unknown, isStale } = freshnessState(data, now, graceDays)
+  if (children == null && (display !== 'dot' || !isStale)) return null
   const dated = data.sources.length === 1 ? formatSourceFreshnessDate(data.sources[0], now) : null
   const status = isStale
     ? 'Données anciennes'
@@ -73,25 +78,24 @@ export function DataFreshness({
   const totalCount = new Set(data.sources.map((source) => source.symbol)).size
   const staleCount = new Set(stale.map((source) => source.symbol)).size
   const issue = staleCount
-    ? `${staleCount} cours sur ${totalCount} antérieur${staleCount > 1 ? 's' : ''} à aujourd’hui`
+    ? `${staleCount} cours sur ${totalCount} ${
+        graceDays > 0
+          ? 'en retard de plus d’un jour'
+          : `antérieur${staleCount > 1 ? 's' : ''} à aujourd’hui`
+      }`
     : null
-  const accessibleLabel = `${label ? `${label} — ` : ''}${status}${issue ? ` — ${issue}` : ''}${
-    dated ? ` — ${dated}` : ''
-  }`
-  const visible = (
-    <>
-      {isStale ? (
-        <span
-          aria-hidden="true"
-          data-freshness="stale"
-          className="h-1.5 w-1.5 shrink-0 rounded-full bg-orange-500"
-        />
-      ) : (
-        <Clock3 aria-hidden="true" className="h-3 w-3 shrink-0" />
-      )}
-      {display === 'status' && isStale && <span>Données anciennes</span>}
-      {display === 'date' && <span>{dated || formatFreshnessDate(data.calculatedAt, now)}</span>}
-    </>
+  const valueText =
+    valueLabel ||
+    (typeof children === 'string' || typeof children === 'number' ? String(children) : '')
+  const accessibleLabel = `${valueText ? `${valueText} — ` : ''}${
+    label ? `${label} — ` : ''
+  }${status}${issue ? ` — ${issue}` : ''}${dated ? ` — ${dated}` : ''}`
+  const visible = children ?? (
+    <span
+      aria-hidden="true"
+      data-freshness="stale"
+      className="h-1 w-1 shrink-0 rounded-full bg-orange-500"
+    />
   )
 
   const details = (value: FreshnessInfo, showCalculation: boolean) => (
@@ -130,7 +134,9 @@ export function DataFreshness({
     return (
       <span
         className={cn(
-          'inline-flex h-6 items-center gap-1.5 text-[10px] font-normal text-muted-foreground',
+          children != null
+            ? 'inline-flex items-center text-inherit'
+            : 'inline-flex h-6 items-center',
           className
         )}
         title={`${accessibleLabel}${
@@ -147,7 +153,9 @@ export function DataFreshness({
     <InfoTooltip
       label={accessibleLabel}
       className={cn(
-        'h-6 min-h-6 min-w-6 gap-1.5 px-1 text-[10px] font-normal leading-snug text-muted-foreground md:min-h-6 md:min-w-6',
+        children != null
+          ? 'min-h-0 min-w-0 rounded-sm p-0 text-inherit [font:inherit] hover:bg-transparent hover:text-inherit md:min-h-0 md:min-w-0'
+          : 'h-6 min-h-6 min-w-6 p-0 md:min-h-6 md:min-w-6',
         className
       )}
       content={

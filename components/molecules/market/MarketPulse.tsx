@@ -73,6 +73,7 @@ export function MarketPulse() {
                     <span className="text-[10px] font-semibold text-muted-foreground">
                       {label}
                     </span>
+                    <DataFreshness info={quoteFreshness(quote || { symbol })}>
                     <span className="text-[10px] font-medium tabular-nums text-foreground">
                       {quote?.regularMarketPrice != null
                         ? Number(quote.regularMarketPrice).toLocaleString(
@@ -81,7 +82,7 @@ export function MarketPulse() {
                           )
                         : "—"}
                     </span>
-                    <DataFreshness info={quoteFreshness(quote || { symbol })} />
+                    </DataFreshness>
                     {quote?.regularMarketChangePercent != null ? (
                       <VariationContainer
                         value={quote.regularMarketChangePercent}

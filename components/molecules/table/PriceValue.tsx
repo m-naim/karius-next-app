@@ -17,14 +17,20 @@ export function PriceValue({
     currency,
     currencyDisplay: 'narrowSymbol',
   }).format(value)
-  return (
+  const content = (
     <span className="inline-flex max-w-full items-center gap-0.5 font-medium tabular-nums">
       <span className="flex flex-col md:hidden">
         <span className="whitespace-normal [overflow-wrap:anywhere]">{amount}</span>
         <span className="text-[10px] text-muted-foreground">{currency}</span>
       </span>
       <span className="hidden md:inline">{formatted}</span>
-      {freshness && <DataFreshness info={freshness} />}
     </span>
+  )
+  return freshness ? (
+    <DataFreshness info={freshness} valueLabel={formatted}>
+      {content}
+    </DataFreshness>
+  ) : (
+    content
   )
 }

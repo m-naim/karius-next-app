@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import PortfolioLayout from 'app/app/portfolios/[id]/PortfolioLayout'
 import React, { useState, useEffect } from 'react'
 
+import { PortfolioFreshnessProvider } from '@/components/molecules/portfolio/PortfolioFreshness'
 import { getMetadata } from '@/services/portfolioService'
 
 export default function PortfolioView({ children }: { children: React.ReactNode }) {
@@ -39,6 +40,7 @@ export default function PortfolioView({ children }: { children: React.ReactNode 
   }, [id, router])
 
   return (
+    <PortfolioFreshnessProvider key={id}>
     <PortfolioLayout
       id={id}
       isOwn={own}
@@ -50,5 +52,6 @@ export default function PortfolioView({ children }: { children: React.ReactNode 
     >
       {children}
     </PortfolioLayout>
+    </PortfolioFreshnessProvider>
   )
 }

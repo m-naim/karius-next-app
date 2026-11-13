@@ -1,3 +1,4 @@
+import { FreshnessInfo } from '@/lib/data-freshness'
 import { DataFreshness } from '@/components/molecules/DataFreshness'
 import { InfoTooltip } from '@/components/ui/info-tooltip'
 import React from 'react'
@@ -78,18 +79,17 @@ export function RiskAnalysisCard({ metrics, loading, period }: RiskAnalysisCardP
               {period}
             </span>
           </div>
-          <DataFreshness display="status" info={metrics.freshness} calculation />
         </CardHeader>
 
         <CardContent className="space-y-3 p-4">
           <div className="grid grid-cols-2 gap-2">
-            <InsightTile
+            <InsightTile freshness={metrics.freshness}
               label="Sortino"
               value={formatNumber(metrics.sortino)}
               color={getScoreColor(metrics.sortino)}
               description="Rendement ajusté du risque baissier."
             />
-            <InsightTile
+            <InsightTile freshness={metrics.freshness}
               label="Calmar"
               value={metrics.calmar !== undefined ? formatNumber(metrics.calmar) : '—'}
               color={metrics.calmar !== undefined ? getScoreColor(metrics.calmar) : 'text-muted-foreground'}
@@ -101,7 +101,7 @@ export function RiskAnalysisCard({ metrics, loading, period }: RiskAnalysisCardP
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.12em] text-muted-foreground">Creux maximal</p>
-                <p className="mt-1 text-xl font-black tabular-nums text-foreground">{formatPercent(metrics.maxDrawdown)}</p>
+                <p className="mt-1 text-xl font-black tabular-nums text-foreground"><DataFreshness info={metrics.freshness} calculation>{formatPercent(metrics.maxDrawdown)}</DataFreshness></p>
               </div>
               <InfoTooltip label="Creux maximal" content="Perte maximale observée entre un sommet et le point bas suivant sur la période." />
             </div>
@@ -128,9 +128,9 @@ export function RiskAnalysisCard({ metrics, loading, period }: RiskAnalysisCardP
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/50">
-                    <ComparisonRow label="Sharpe" portfolio={formatNumber(metrics.sharpe)} benchmarks={Object.values(metrics.benchmarks).map((value) => formatNumber(value.sharpe))} />
-                    <ComparisonRow label="Drawdown" portfolio={formatPercent(metrics.maxDrawdown)} benchmarks={Object.values(metrics.benchmarks).map((value) => formatPercent(value.maxDrawdown))} />
-                    <ComparisonRow label="Volatilité" portfolio={formatPercent(metrics.volatility)} benchmarks={Object.values(metrics.benchmarks).map((value) => formatPercent(value.volatility))} />
+                    <ComparisonRow freshness={metrics.freshness} label="Sharpe" portfolio={formatNumber(metrics.sharpe)} benchmarks={Object.values(metrics.benchmarks).map((value) => formatNumber(value.sharpe))} />
+                    <ComparisonRow freshness={metrics.freshness} label="Drawdown" portfolio={formatPercent(metrics.maxDrawdown)} benchmarks={Object.values(metrics.benchmarks).map((value) => formatPercent(value.maxDrawdown))} />
+                    <ComparisonRow freshness={metrics.freshness} label="Volatilité" portfolio={formatPercent(metrics.volatility)} benchmarks={Object.values(metrics.benchmarks).map((value) => formatPercent(value.volatility))} />
                   </tbody>
                 </table>
               </div>
@@ -147,11 +147,13 @@ function InsightTile({
   value,
   color,
   description,
+  freshness,
 }: {
   label: string
   value: string
   color: string
   description: string
+  freshness?: FreshnessInfo
 }) {
   return (
     <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
@@ -159,18 +161,18 @@ function InsightTile({
         <span className="text-[10px] font-black uppercase tracking-[0.12em] text-muted-foreground">{label}</span>
         <InfoTooltip label={label} content={description} />
       </div>
-      <p className={`mt-1 text-xl font-black tabular-nums ${color}`}>{value}</p>
+      <p className={`mt-1 text-xl font-black tabular-nums ${color}`}><DataFreshness info={freshness} calculation label={label}>{value}</DataFreshness></p>
     </div>
   )
 }
 
-function ComparisonRow({ label, portfolio, benchmarks }: { label: string; portfolio: string; benchmarks: string[] }) {
+function ComparisonRow({ label, portfolio, benchmarks, freshness }: { label: string; portfolio: string; benchmarks: string[]; freshness?: FreshnessInfo }) {
   return (
     <tr>
       <td className="px-3 py-2 font-medium text-muted-foreground">{label}</td>
-      <td className="px-3 py-2 text-right font-black text-foreground">{portfolio}</td>
+      <td className="px-3 py-2 text-right font-black text-foreground"><DataFreshness info={freshness} calculation label={label}>{portfolio}</DataFreshness></td>
       {benchmarks.map((value, index) => (
-        <td key={`${label}-${index}`} className="px-3 py-2 text-right text-muted-foreground">{value}</td>
+        <td key={`${label}-${index}`} className="px-3 py-2 text-right text-muted-foreground"><DataFreshness info={freshness} calculation label={label}>{value}</DataFreshness></td>
       ))}
     </tr>
   )

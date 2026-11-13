@@ -1,5 +1,4 @@
 'use client'
-import { DataFreshness } from '@/components/molecules/DataFreshness'
 import { FreshnessInfo } from '@/lib/data-freshness'
 import { useEffect, useState } from 'react'
 import { getStockHistoryAsync, search } from '@/services/stock.service'
@@ -653,8 +652,7 @@ export function TickerChart({
             </div>
           )}
 
-          {!loading && <DataFreshness display="status" info={freshness} calculation label="Graphique et indicateurs" />}
-          <MetricsDisplay metrics={metrics} loading={loading} period={period} />
+          <MetricsDisplay freshness={freshness || undefined} metrics={metrics} loading={loading} period={period} />
         </TabsContent>
 
         <TabsContent value="fundamental">

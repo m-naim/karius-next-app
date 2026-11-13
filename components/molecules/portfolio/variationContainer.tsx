@@ -55,16 +55,19 @@ export default function variationContainer({
         className
       )}
     >
-      <span className="whitespace-nowrap">
-        {numberFormatter.format(getVariation(value))}
-        {entity}
-      </span>
-      {freshness && (
+      {freshness ? (
         <DataFreshness
           info={freshness}
           calculation={calculation}
           interactive={interactiveFreshness}
-        />
+        >
+          {`${numberFormatter.format(getVariation(value))}${entity}`}
+        </DataFreshness>
+      ) : (
+        <span className="whitespace-nowrap">
+          {numberFormatter.format(getVariation(value))}
+          {entity}
+        </span>
       )}
     </div>
   )

@@ -519,7 +519,7 @@ export default function PortfoliosPage() {
                     </button>
                     <Link
                       href={`/app/portfolios/${portfolio.id}`}
-                      className="flex min-w-0 flex-1 items-center gap-1 md:gap-2.5 font-bold hover:text-primary"
+                      className="flex min-w-0 items-center gap-1 md:gap-2.5 font-bold hover:text-primary"
                     >
                       <span className="hidden h-8 w-8 shrink-0 md:flex items-center justify-center rounded-lg bg-primary/10 text-primary">
                         <TrendingUp className="h-3.5 w-3.5" />
@@ -528,17 +528,17 @@ export default function PortfoliosPage() {
                         {portfolio.name}
                       </span>
                     </Link>
+                    <DataFreshness className="-ml-2" display="dot" graceDays={1} info={portfolio.performanceFreshness} calculation label="Dates du portefeuille" />
                   </div>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <PerformanceValue value={portfolio.annualizedReturn} />
+                  <DataFreshness info={portfolio.performanceFreshness} calculation valueLabel={String(portfolio.annualizedReturn)}><PerformanceValue value={portfolio.annualizedReturn} /></DataFreshness>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <PerformanceValue value={portfolio.dayChangePercent} />
+                  <DataFreshness info={portfolio.performanceFreshness} calculation valueLabel={String(portfolio.dayChangePercent)}><PerformanceValue value={portfolio.dayChangePercent} /></DataFreshness>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <PerformanceValue value={portfolio.cumulativePerformance} />
-                  <DataFreshness info={portfolio.performanceFreshness} calculation className="ml-auto" />
+                  <DataFreshness info={portfolio.performanceFreshness} calculation valueLabel={String(portfolio.cumulativePerformance)}><PerformanceValue value={portfolio.cumulativePerformance} /></DataFreshness>
                 </td>
                 <td className="px-4 py-3 text-right">
                   <span className="inline-flex items-center justify-end gap-1.5 font-semibold tabular-nums">

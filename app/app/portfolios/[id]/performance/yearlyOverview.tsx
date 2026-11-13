@@ -1,4 +1,4 @@
-import { DataFreshness } from '@/components/molecules/DataFreshness'
+import { usePortfolioFreshness } from '@/components/molecules/portfolio/PortfolioFreshness'
 import { combinedFreshness, FreshnessInfo } from '@/lib/data-freshness'
 import React, { useEffect, useState, useMemo } from 'react'
 import Loader from '@/components/molecules/loader/loader'
@@ -112,6 +112,13 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
     }
   }, [perf])
 
+  const sourceDates = useMemo(() => combinedFreshness([
+        perf[0]?.freshness || { sources: [{ symbol: 'Portefeuille', asOf: null }] },
+        ...selectedBenchmarks.map(symbol => benchmarksPerf[symbol]?.slice().sort((a, b) => b.year - a.year)[0]?.freshness
+          || { sources: [{ symbol, asOf: null }] }),
+      ]), [perf, selectedBenchmarks, benchmarksPerf])
+  usePortfolioFreshness('Synthèse historique', perf.length ? sourceDates : null)
+
   return loading ? (
     <Loader />
   ) : (
@@ -145,11 +152,7 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
           )}
         </div>
       </CardHeader>
-      <div className="px-4 sm:px-5"><DataFreshness display="status" info={combinedFreshness([
-        perf[0]?.freshness || { sources: [{ symbol: 'Portefeuille', asOf: null }] },
-        ...selectedBenchmarks.map(symbol => benchmarksPerf[symbol]?.slice().sort((a, b) => b.year - a.year)[0]?.freshness
-          || { sources: [{ symbol, asOf: null }] }),
-      ])} calculation label="Synthèse historique" /></div>
+
       <CardContent className="p-0">
         <ScrollArea className="w-full">
           <div className="min-w-[1000px] p-2">
@@ -197,7 +200,7 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
                               getHeatmapClass(val)
                             )}>
                               {val ? (
-                                <VariationContainer background={false} value={val} className="text-xs font-bold" />
+                                <VariationContainer freshness={yearPerf.freshness} background={false} value={val} className="text-xs font-bold" />
                               ) : (
                                 <span className="text-muted-foreground/30">—</span>
                               )}

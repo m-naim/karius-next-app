@@ -93,7 +93,7 @@ export function MarketVixCockpit({ vixQuote, period }: MarketVixCockpitProps) {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-black text-foreground">
-              {currentVal.toFixed(2)} pts
+              <DataFreshness info={quoteFreshness(vixQuote || { symbol: '^VIX' })}>{`${currentVal.toFixed(2)} pts`}</DataFreshness>
             </span>
             <span
               className={`rounded px-1.5 py-0.2 text-[10px] font-black ${
@@ -108,7 +108,6 @@ export function MarketVixCockpit({ vixQuote, period }: MarketVixCockpitProps) {
           </div>
         </div>
 
-        <DataFreshness display="status" info={quoteFreshness(vixQuote || { symbol: '^VIX' })} label="Cours et baromètre VIX" />
         {/* Sparkline Graph */}
         <div className="h-[220px] sm:h-[260px] w-full pt-1">
           <MarketIndexSparkline

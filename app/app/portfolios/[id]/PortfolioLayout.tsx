@@ -1,3 +1,4 @@
+import { PortfolioFreshnessIndicator } from '@/components/molecules/portfolio/PortfolioFreshness'
 import React, { ReactNode, useState } from 'react'
 import { motion } from 'framer-motion'
 import { usePathname } from 'next/navigation'
@@ -137,6 +138,7 @@ const PortfolioLayout = ({
                 <h1 className="text-lg sm:text-2xl font-black capitalize tracking-tight text-foreground truncate">
                   {name}
                 </h1>
+                <PortfolioFreshnessIndicator />
               </div>
 
               <div className="flex items-center gap-2 sm:gap-3 shrink-0">

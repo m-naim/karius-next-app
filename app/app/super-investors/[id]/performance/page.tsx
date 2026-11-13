@@ -66,7 +66,7 @@ export default function SuperInvestorPerformancePage() {
   return (
     <main className="space-y-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div><p className="mb-0 text-xs font-bold uppercase tracking-wider text-primary">Historique reconstruit</p><h2 className="mt-1 p-0 text-2xl font-black">Valeur et performance</h2><p className="mb-0 mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">Les points trimestriels proviennent de la SEC. Les valeurs quotidiennes entre ces points sont estimées à partir des cours historiques.</p></div>
+        <div><p className="mb-0 text-xs font-bold uppercase tracking-wider text-primary">Historique reconstruit</p><h2 className="mt-1 p-0 text-2xl font-black"><DataFreshness info={data?.freshness} calculation>Valeur et performance</DataFreshness></h2><p className="mb-0 mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">Les points trimestriels proviennent de la SEC. Les valeurs quotidiennes entre ces points sont estimées à partir des cours historiques.</p></div>
         {coverage != null && <Badge variant="outline" className="w-fit gap-1.5 px-3 py-1.5"><ShieldCheck className="h-4 w-4 text-emerald-600" />{coverage.toFixed(1)} % du portefeuille valorisé</Badge>}
       </div>
 
@@ -77,7 +77,6 @@ export default function SuperInvestorPerformancePage() {
         </div>
 
         <div className="p-4 sm:p-5">
-          {!loading && data && <DataFreshness display="status" info={data.freshness} calculation label="Valorisation reconstruite" />}
           {view === 'PERFORMANCE' && <div className="mb-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><Badge variant="secondary">Comparaison : SPY</Badge><span>Les changements trimestriels de capital et de composition sont neutralisés. Les dividendes sont exclus.</span></div>}
           <div className="h-[360px] sm:h-[460px]">
             {loading ? <ChartState icon={BarChart3} title="Calcul de la série…" />

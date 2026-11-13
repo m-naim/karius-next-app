@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-import { DataFreshness } from '@/components/molecules/DataFreshness'
 import { TrendingUp, TrendingDown, Layers } from 'lucide-react'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { MarketBreadthStats } from './MarketTopFlop'
@@ -15,7 +14,7 @@ export function MarketBreadthAndSectors({ stats }: MarketBreadthAndSectorsProps)
 
   return (
     <div className="mt-3 flex flex-col gap-2 rounded-lg border border-border/40 bg-muted/20 p-2.5">
-      <DataFreshness display="status" info={stats.freshness} calculation={!!stats.freshness?.calculatedAt} label="Répartition et secteurs" />
+
       {/* 1. Advance / Decline Breadth Bar */}
       <div className="space-y-1">
         <div className="flex items-center justify-between text-[10px] font-bold">
@@ -62,7 +61,7 @@ export function MarketBreadthAndSectors({ stats }: MarketBreadthAndSectorsProps)
                 className="flex items-center gap-1 rounded bg-emerald-500/10 px-1.5 py-0.5 font-bold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
               >
                 <span>{s.sector}</span>
-                <VariationContainer
+                <VariationContainer freshness={stats.freshness}
                   value={s.avgPerf}
                   entity="%"
                   className="p-0 text-[9px] font-black"
@@ -77,7 +76,7 @@ export function MarketBreadthAndSectors({ stats }: MarketBreadthAndSectorsProps)
                 className="flex items-center gap-1 rounded bg-rose-500/10 px-1.5 py-0.5 font-bold text-rose-600 dark:text-rose-400 border border-rose-500/20"
               >
                 <span>{s.sector}</span>
-                <VariationContainer
+                <VariationContainer freshness={stats.freshness}
                   value={s.avgPerf}
                   entity="%"
                   className="p-0 text-[9px] font-black"

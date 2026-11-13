@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { FreshnessInfo } from '@/lib/data-freshness'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 
 export interface TickerChartMetrics {
@@ -18,9 +19,10 @@ interface MetricsDisplayProps {
   metrics: TickerChartMetrics
   period: string
   loading: boolean
+  freshness?: FreshnessInfo
 }
 
-const MetricsDisplay: React.FC<MetricsDisplayProps> = ({ metrics, period, loading }) => {
+const MetricsDisplay: React.FC<MetricsDisplayProps> = ({ metrics, period, loading, freshness }) => {
   const renderMetric = (
     label: string,
     value: number | null,
@@ -33,6 +35,7 @@ const MetricsDisplay: React.FC<MetricsDisplayProps> = ({ metrics, period, loadin
       {value !== null ? (
         <VariationContainer
           value={isPercentage ? value : value}
+          freshness={freshness}
           entity={isPercentage ? '%' : ''}
           background={false}
           vaiationColor={variationColor}
