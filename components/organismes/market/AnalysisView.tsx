@@ -235,7 +235,7 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
 
   return (
     <div className="scrollbar-hide flex h-full flex-col gap-6 overflow-y-auto bg-background/50 p-6">
-      <DataFreshness info={freshness} calculation label="Données de l’analyse" />
+      <DataFreshness display="status" info={freshness} calculation label="Données de l’analyse" />
       {/* 1. Ultra-Compact Top Bar */}
       <div className="flex flex-col gap-4 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-4">

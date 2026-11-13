@@ -50,13 +50,22 @@ export default function variationContainer({
     <div
       className={cn(
         vaiationColor && getVariationColor(value),
-        freshness && 'flex flex-col items-start gap-0.5',
+        freshness && 'inline-flex items-center gap-0.5',
         'm-1 h-fit  rounded-md p-1 text-xs font-medium ',
         className
       )}
     >
-      <span className="whitespace-nowrap">{numberFormatter.format(getVariation(value))}{entity}</span>
-      {freshness && <DataFreshness compact info={freshness} calculation={calculation} interactive={interactiveFreshness} className="flex" />}
+      <span className="whitespace-nowrap">
+        {numberFormatter.format(getVariation(value))}
+        {entity}
+      </span>
+      {freshness && (
+        <DataFreshness
+          info={freshness}
+          calculation={calculation}
+          interactive={interactiveFreshness}
+        />
+      )}
     </div>
   )
 }

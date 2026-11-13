@@ -92,8 +92,6 @@ const StatsCard = ({ pftData, own = true }) => {
             <span className="text-[11px]">Effet devises:</span>
             <VariationContainer
               value={pftData.currencyGain}
-              freshness={pftData.currencyGainFreshness || { sources: [] }}
-              calculation
               entity={currencySymbol}
               background={false}
               className="p-0 text-xs font-bold"
@@ -114,10 +112,14 @@ const StatsCard = ({ pftData, own = true }) => {
           />
         </div>
 
-        <div className="flex w-full flex-wrap items-start gap-x-4 gap-y-1 sm:w-auto">
-          <DataFreshness info={pftData?.valuationFreshness} calculation label="Valorisation" />
-          <DataFreshness info={pftData?.performanceFreshness} calculation label="Performances historiques" />
-        </div>
+        <DataFreshness
+          display="status" label="Dates du portefeuille"
+          sections={[
+            { label: 'Valorisation', info: pftData?.valuationFreshness },
+            { label: 'Performances historiques', info: pftData?.performanceFreshness },
+            ...(own && pftData?.currencyGain != null ? [{ label: 'Effet devises', info: pftData.currencyGainFreshness }] : []),
+          ]}
+        />
       </div>
     </div>
   )

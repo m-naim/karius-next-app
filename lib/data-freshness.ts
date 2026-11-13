@@ -3,7 +3,9 @@ export const FRESHNESS_TIME_ZONE = 'Europe/Paris'
 
 export interface FreshnessSource {
   symbol: string
+  label?: string
   asOf?: DateInput
+  updatedAt?: DateInput
 }
 
 export interface FreshnessInfo {
@@ -19,6 +21,8 @@ export interface DatedSecurity {
   valuationAsOf?: DateInput
   variationsAsOf?: DateInput
   variationsCalculatedAt?: DateInput
+  lastUpdated?: DateInput
+  valuationUpdatedAt?: DateInput
 }
 
 export function calendarDate(value: DateInput): string | null {
@@ -47,10 +51,10 @@ export function calendarDate(value: DateInput): string | null {
 export function freshnessState(info: FreshnessInfo, now: DateInput = new Date()) {
   const today = calendarDate(now)!
   const stale = info.sources.filter((source) => {
-    const date = calendarDate(source.asOf)
+    const date = calendarDate(sourceFreshnessDate(source))
     return date != null && date < today
   })
-  const unknown = info.sources.filter((source) => calendarDate(source.asOf) == null)
+  const unknown = info.sources.filter((source) => calendarDate(sourceFreshnessDate(source)) == null)
   const calculatedDate = calendarDate(info.calculatedAt)
   return {
     stale,
@@ -61,6 +65,21 @@ export function freshnessState(info: FreshnessInfo, now: DateInput = new Date())
       (calendarDate(info.upstreamCalculatedAt) != null &&
         calendarDate(info.upstreamCalculatedAt)! < today),
   }
+}
+
+export function sourceFreshnessDate(source: FreshnessSource): DateInput {
+  return calendarDate(source.asOf) ? source.asOf : source.updatedAt
+}
+
+export function formatSourceFreshnessDate(
+  source: FreshnessSource,
+  now: DateInput,
+  full = false
+): string {
+  if (calendarDate(source.asOf)) return formatFreshnessDate(source.asOf, now, full)
+  if (calendarDate(source.updatedAt))
+    return `Données mises à jour : ${formatFreshnessDate(source.updatedAt, now, full)}`
+  return 'Date du cours inconnue'
 }
 
 export function formatFreshnessDate(
@@ -99,6 +118,7 @@ export function quoteFreshness(security: DatedSecurity, valuation = false): Fres
       {
         symbol: security.symbol || 'Cours',
         asOf: valuation ? security.valuationAsOf : security.quoteAsOf,
+        updatedAt: valuation ? security.valuationUpdatedAt : security.lastUpdated,
       },
     ],
   }
@@ -110,6 +130,30 @@ export function performanceFreshness(security: DatedSecurity, period = '1d'): Fr
     calculatedAt: security.variationsCalculatedAt,
     sources: [{ symbol: security.symbol || 'Cours', asOf: security.variationsAsOf }],
   }
+}
+
+/** One marker describes all dated inputs shown in a security's table row. */
+export function securityFreshness(
+  security: DatedSecurity,
+  period = '1d',
+  valuation = false,
+  extra: FreshnessInfo[] = []
+): FreshnessInfo {
+  const quote = quoteFreshness(security, valuation)
+  quote.sources = quote.sources.map((source) => ({ ...source, label: 'Cours' }))
+  const inputs = [quote]
+  if (
+    period !== '1d' ||
+    security.variationsAsOf != null ||
+    security.variationsCalculatedAt != null
+  ) {
+    const performance = performanceFreshness(security, period === '1d' ? '1m' : period)
+    inputs.push({
+      ...performance,
+      sources: performance.sources.map((source) => ({ ...source, label: 'Performance' })),
+    })
+  }
+  return combinedFreshness([...inputs, ...extra])
 }
 
 export function combinedFreshness(infos: FreshnessInfo[]): FreshnessInfo {

@@ -145,7 +145,7 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
           )}
         </div>
       </CardHeader>
-      <div className="px-4 sm:px-5"><DataFreshness info={combinedFreshness([
+      <div className="px-4 sm:px-5"><DataFreshness display="status" info={combinedFreshness([
         perf[0]?.freshness || { sources: [{ symbol: 'Portefeuille', asOf: null }] },
         ...selectedBenchmarks.map(symbol => benchmarksPerf[symbol]?.slice().sort((a, b) => b.year - a.year)[0]?.freshness
           || { sources: [{ symbol, asOf: null }] }),

@@ -108,7 +108,7 @@ export function MarketVixCockpit({ vixQuote, period }: MarketVixCockpitProps) {
           </div>
         </div>
 
-        <DataFreshness info={quoteFreshness(vixQuote || { symbol: '^VIX' })} label="Cours et baromètre VIX" />
+        <DataFreshness display="status" info={quoteFreshness(vixQuote || { symbol: '^VIX' })} label="Cours et baromètre VIX" />
         {/* Sparkline Graph */}
         <div className="h-[220px] sm:h-[260px] w-full pt-1">
           <MarketIndexSparkline

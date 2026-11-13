@@ -16,6 +16,7 @@ import { ArrowLeft, Loader2, TrendingUp, TrendingDown } from 'lucide-react'
 interface StockDetails {
   symbol: string
   quoteAsOf?: string
+  lastUpdated?: string
   exchange: string
   shortname: string
   longname: string
@@ -144,7 +145,7 @@ export default function StockDetailPage() {
         <div className="mt-4">
           <div className="text-left">
             <div className="text-2xl font-bold text-foreground">{formattedPrice}</div>
-            <DataFreshness info={quoteFreshness(stock)} />
+            <DataFreshness display="date" info={quoteFreshness(stock)} />
             <div className={`flex items-center gap-1 text-sm font-semibold ${hasChange ? (isPositive ? 'text-emerald-500' : 'text-rose-500') : 'text-muted-foreground'}`}>
               {hasChange && (isPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />)}
               <span>{formattedChange}</span>

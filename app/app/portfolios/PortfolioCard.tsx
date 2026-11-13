@@ -107,7 +107,7 @@ export function PortfolioCard(p: PortfolioSummery) {
         </CardContent>
         <div className="h-0.5 w-full origin-left scale-x-0 bg-primary transition-transform duration-500 group-hover:scale-x-100" />
       </Link>
-      <div className="px-4 pb-3"><DataFreshness info={p.performanceFreshness} calculation /></div>
+      <div className="px-4 pb-3"><DataFreshness display="status" info={p.performanceFreshness} calculation /></div>
     </Card>
   )
 }

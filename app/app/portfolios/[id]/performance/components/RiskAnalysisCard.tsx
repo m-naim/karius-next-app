@@ -78,7 +78,7 @@ export function RiskAnalysisCard({ metrics, loading, period }: RiskAnalysisCardP
               {period}
             </span>
           </div>
-          <DataFreshness info={metrics.freshness} calculation />
+          <DataFreshness display="status" info={metrics.freshness} calculation />
         </CardHeader>
 
         <CardContent className="space-y-3 p-4">

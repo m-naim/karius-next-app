@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { quoteFreshness, performanceFreshness, combinedFreshness } from '@/lib/data-freshness'
+import { securityFreshness, performanceFreshness, combinedFreshness } from '@/lib/data-freshness'
 import { MetricColumnHeader } from '@/components/molecules/table/MetricColumnHeader'
 import { InfoTooltip } from '@/components/ui/info-tooltip'
 import { PriceValue } from '@/components/molecules/table/PriceValue'
@@ -81,10 +81,10 @@ export const columns = (
         const vals = rows.map((r) => parseFloat(r.getValue('regularMarketPrice')))
         const med = calculateMedian(vals)
         return med != null ? (
-          <PriceValue value={med} currency="EUR" freshness={combinedFreshness(rows.map(r => quoteFreshness(r.original)))} />
+          <PriceValue value={med} currency="EUR" freshness={combinedFreshness(rows.map(r => securityFreshness(r.original, selectedPeriod)))} />
         ) : null
       },
-      cell: ({ row }) => <PriceValue value={Number(row.getValue('regularMarketPrice'))} currency={row.original.currency || 'EUR'} freshness={quoteFreshness(row.original)} />,
+      cell: ({ row }) => <PriceValue value={Number(row.getValue('regularMarketPrice'))} currency={row.original.currency || 'EUR'} freshness={securityFreshness(row.original, selectedPeriod, false, benchmark?.symbol ? [performanceFreshness(benchmark, selectedPeriod)] : [])} />,
     },
     {
       id: 'earningsDate',
@@ -136,8 +136,6 @@ export const columns = (
         return med != null ? (
           <VariationContainer
             value={med}
-            freshness={combinedFreshness(rows.map(r => performanceFreshness(r.original, selectedPeriod)))}
-            calculation={selectedPeriod !== '1d'}
             entity="%"
             background={false}
             className="m-0 p-0 text-[10px]"
@@ -155,8 +153,6 @@ export const columns = (
         return (
           <VariationContainer
             value={chg}
-            freshness={performanceFreshness(row.original, selectedPeriod)}
-            calculation={selectedPeriod !== '1d'}
             entity="%"
             background={false}
             className="m-0 p-0 py-1 text-[11px]"
@@ -200,8 +196,6 @@ export const columns = (
         return med != null ? (
           <VariationContainer
             value={med}
-            freshness={combinedFreshness(rows.map(r => performanceFreshness(r.original, '5y')))}
-            calculation
             entity="%"
             background={false}
             className="m-0 p-0 text-[10px]"
@@ -215,8 +209,6 @@ export const columns = (
         ) : (
           <VariationContainer
             value={val}
-            freshness={performanceFreshness(row.original, '5y')}
-            calculation
             entity="%"
             background={false}
             className="m-0 p-0 py-1 text-[11px]"
@@ -241,8 +233,6 @@ export const columns = (
         return med != null ? (
           <VariationContainer
             value={med}
-            freshness={combinedFreshness(rows.map(r => performanceFreshness(r.original, '10y')))}
-            calculation
             entity="%"
             background={false}
             className="m-0 p-0 text-[10px]"
@@ -256,8 +246,6 @@ export const columns = (
         ) : (
           <VariationContainer
             value={val}
-            freshness={performanceFreshness(row.original, '10y')}
-            calculation
             entity="%"
             background={false}
             className="m-0 p-0 py-1 text-[11px]"
@@ -290,8 +278,6 @@ export const columns = (
               return med != null ? (
                 <VariationContainer
                   value={med}
-                  freshness={combinedFreshness(rows.map(r => combinedFreshness([performanceFreshness(r.original, selectedPeriod), performanceFreshness(benchmark, selectedPeriod)])))}
-                  calculation={selectedPeriod !== '1d'}
                   entity="%"
                   background={false}
                   className="m-0 p-0 text-[10px]"
@@ -309,8 +295,6 @@ export const columns = (
               return (
                 <VariationContainer
                   value={chg}
-                  freshness={combinedFreshness([performanceFreshness(row.original, selectedPeriod), performanceFreshness(benchmark, selectedPeriod)])}
-                  calculation={selectedPeriod !== '1d'}
                   entity="%"
                   background={false}
                   className="m-0 p-0 py-1 text-[11px]"
@@ -447,8 +431,6 @@ export const columns = (
         return med != null ? (
           <VariationContainer
             value={med}
-            freshness={combinedFreshness(rows.map(r => performanceFreshness(r.original, selectedPeriod)))}
-            calculation={selectedPeriod !== '1d'}
             entity="%"
             background={false}
             className="m-0 p-0 text-[10px]"
@@ -462,8 +444,6 @@ export const columns = (
         return (
           <VariationContainer
             value={val}
-            freshness={performanceFreshness(row.original, selectedPeriod)}
-            calculation={selectedPeriod !== '1d'}
             entity="%"
             background={false}
             className="m-0 p-0 py-1 text-[11px]"

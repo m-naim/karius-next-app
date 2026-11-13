@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { quoteFreshness, performanceFreshness, combinedFreshness } from '@/lib/data-freshness'
+import { securityFreshness, combinedFreshness } from '@/lib/data-freshness'
 import { MetricColumnHeader } from '@/components/molecules/table/MetricColumnHeader'
 import { Actions } from 'app/app/watchlist/[id]/components/Actions'
 import { PriceValue } from '@/components/molecules/table/PriceValue'
@@ -96,11 +96,11 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
         const med = calculateMedian(vals)
         return med != null ? (
           <div className="font-mono tabular-nums text-right px-2 py-1 text-xs font-medium">
-            <PriceValue value={med} currency="EUR" freshness={combinedFreshness(rows.map(r => quoteFreshness(r.original)))} />
+            <PriceValue value={med} currency="EUR" freshness={combinedFreshness(rows.map(r => securityFreshness(r.original, selectedPeriod)))} />
           </div>
         ) : null
       },
-      cell: ({ row }) => <PriceValue value={Number(row.getValue('regularMarketPrice'))} currency={row.original.currency || 'EUR'} freshness={quoteFreshness(row.original)} />,
+      cell: ({ row }) => <PriceValue value={Number(row.getValue('regularMarketPrice'))} currency={row.original.currency || 'EUR'} freshness={securityFreshness(row.original, selectedPeriod)} />,
     },
     {
       accessorFn: (row) => {
@@ -125,8 +125,6 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
           <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
             <VariationContainer
               value={med}
-              freshness={combinedFreshness(rows.map(r => performanceFreshness(r.original, selectedPeriod)))}
-              calculation={selectedPeriod !== '1d'}
               entity="%"
               background={false}
               className="m-0 p-0 text-[10px]"
@@ -146,8 +144,6 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
           <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
             <VariationContainer
               value={chg}
-              freshness={performanceFreshness(row.original, selectedPeriod)}
-              calculation={selectedPeriod !== '1d'}
               entity="%"
               background={false}
               className="m-0 p-0 text-[11px]"
@@ -326,8 +322,6 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
           <div className="font-mono tabular-nums text-right px-2 py-1 text-xs">
             <VariationContainer
               value={med}
-              freshness={combinedFreshness(rows.map(r => performanceFreshness(r.original, selectedPeriod)))}
-              calculation={selectedPeriod !== '1d'}
               entity="%"
               background={false}
               className="m-0 p-0 text-[11px]"
@@ -342,8 +336,6 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
           <div className="font-mono tabular-nums text-right px-2 py-1 text-xs md:text-sm">
             <VariationContainer
               value={val}
-              freshness={performanceFreshness(row.original, selectedPeriod)}
-              calculation={selectedPeriod !== '1d'}
               entity="%"
               background={false}
               className="m-0 p-0 text-[11px]"

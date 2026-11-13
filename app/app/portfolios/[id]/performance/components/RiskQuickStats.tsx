@@ -113,7 +113,7 @@ export function RiskQuickStats({
         <p className="flex-1 px-2 text-xs text-muted-foreground">Les indicateurs ne sont pas disponibles.</p>
       )}
 
-      <DataFreshness info={metrics?.freshness} calculation label="Indicateurs de risque" />
+      {metrics && !loading && <DataFreshness display="status" info={metrics.freshness} calculation label="Indicateurs de risque" />}
       {action}
     </div>
   )

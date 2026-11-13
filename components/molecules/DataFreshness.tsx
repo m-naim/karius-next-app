@@ -1,9 +1,16 @@
 'use client'
 
 import { useSyncExternalStore } from 'react'
+import { Clock3 } from 'lucide-react'
 import { InfoTooltip } from '@/components/ui/info-tooltip'
 import { cn } from '@/lib/utils'
-import { FreshnessInfo, formatFreshnessDate, freshnessState } from '@/lib/data-freshness'
+import {
+  FreshnessInfo,
+  combinedFreshness,
+  formatFreshnessDate,
+  formatSourceFreshnessDate,
+  freshnessState,
+} from '@/lib/data-freshness'
 
 // All indicators share one clock, including tables with hundreds of rows.
 let clock = Date.now()
@@ -27,18 +34,23 @@ function subscribe(listener: () => void) {
   }
 }
 
+type FreshnessSection = { label: string; info?: FreshnessInfo | null }
+
 export function DataFreshness({
   info,
   calculation = false,
   label,
   className,
   interactive = true,
-  compact = false,
+  display = 'icon',
+  sections,
 }: {
   info?: FreshnessInfo | null
   calculation?: boolean
   interactive?: boolean
   compact?: boolean
+  display?: 'icon' | 'status' | 'date'
+  sections?: FreshnessSection[]
   label?: string
   className?: string
 }) {
@@ -47,56 +59,85 @@ export function DataFreshness({
     () => clock,
     () => 0
   )
-  // Avoid server/client date disagreement around midnight or hydration.
-  if (!now) return <span className="block min-h-5" />
-  const data = info || { sources: [] }
+  if (!now) return <span className="inline-block h-6 w-6 shrink-0 align-middle" />
+  const data = sections
+    ? combinedFreshness(sections.map((section) => section.info || { sources: [] }))
+    : info || { sources: [] }
   const { stale, unknown, isStale } = freshnessState(data, now)
-  const single = data.sources.length === 1
-  const summary = calculation
-    ? `Calculé : ${formatFreshnessDate(data.calculatedAt, now)}`
-    : single
-    ? formatFreshnessDate(data.sources[0].asOf, now) === 'Date inconnue'
-      ? 'Date du cours inconnue'
-      : formatFreshnessDate(data.sources[0].asOf, now)
-    : 'Dates des cours'
-  const issue = stale.length
-    ? `${stale.length} cours sur ${data.sources.length} antérieur${
-        stale.length > 1 ? 's' : ''
-      } à aujourd’hui`
+  const dated = data.sources.length === 1 ? formatSourceFreshnessDate(data.sources[0], now) : null
+  const status = isStale
+    ? 'Données anciennes'
     : unknown.length
-    ? `${unknown.length} date${unknown.length > 1 ? 's' : ''} de cours inconnue${
-        unknown.length > 1 ? 's' : ''
-      }`
+    ? 'Dates à préciser'
+    : 'Dates des données'
+  const totalCount = new Set(data.sources.map((source) => source.symbol)).size
+  const staleCount = new Set(stale.map((source) => source.symbol)).size
+  const issue = staleCount
+    ? `${staleCount} cours sur ${totalCount} antérieur${staleCount > 1 ? 's' : ''} à aujourd’hui`
     : null
-
+  const accessibleLabel = `${label ? `${label} — ` : ''}${status}${issue ? ` — ${issue}` : ''}${
+    dated ? ` — ${dated}` : ''
+  }`
   const visible = (
     <>
-      {isStale && (
+      {isStale ? (
         <span
           aria-hidden="true"
           data-freshness="stale"
           className="h-1.5 w-1.5 shrink-0 rounded-full bg-orange-500"
         />
+      ) : (
+        <Clock3 aria-hidden="true" className="h-3 w-3 shrink-0" />
       )}
-      <span className="min-w-0 whitespace-normal">
-        {label && <span className="font-medium">{label} · </span>}
-        {summary}
-        {calculation && data.unknownCalculation && (
-          <span className="block">Certaines dates de calcul sont inconnues</span>
-        )}
-        {issue && (calculation || !single) && <span className="block">{issue}</span>}
-        {!compact && !calculation && single && stale.length > 0 && <span> · Cours ancien</span>}
-      </span>
+      {display === 'status' && isStale && <span>Données anciennes</span>}
+      {display === 'date' && <span>{dated || formatFreshnessDate(data.calculatedAt, now)}</span>}
     </>
   )
+
+  const details = (value: FreshnessInfo, showCalculation: boolean) => (
+    <>
+      {(showCalculation || value.calculatedAt != null) && (
+        <p>Calculé : {formatFreshnessDate(value.calculatedAt, now, true)}</p>
+      )}
+      {value.upstreamCalculatedAt && (
+        <p>Historique calculé : {formatFreshnessDate(value.upstreamCalculatedAt, now, true)}</p>
+      )}
+      {value.unknownCalculation && (
+        <p className="text-muted-foreground">Certaines dates de calcul ne sont pas renseignées.</p>
+      )}
+      {value.sources.length > 0 && (
+        <ul className="space-y-2">
+          {value.sources.map((source, index) => (
+            <li key={`${source.symbol}-${index}`} className="space-y-0.5">
+              <span className="block font-medium">
+                {source.symbol}
+                {source.label && ` · ${source.label}`}
+              </span>
+              <span className="block text-muted-foreground">
+                {formatSourceFreshnessDate(source, now, true)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {!value.sources.length && value.calculatedAt == null && (
+        <p className="text-muted-foreground">Date non renseignée.</p>
+      )}
+    </>
+  )
+
   if (!interactive)
     return (
       <span
         className={cn(
-          'flex items-center gap-1.5 text-[10px] font-normal leading-snug text-muted-foreground',
+          'inline-flex h-6 items-center gap-1.5 text-[10px] font-normal text-muted-foreground',
           className
         )}
-        title={`${summary}${issue ? ` · ${issue}` : ''} (heure de Paris)`}
+        title={`${accessibleLabel}${
+          data.calculatedAt
+            ? ` · Calculé : ${formatFreshnessDate(data.calculatedAt, now, true)}`
+            : ''
+        }`}
       >
         {visible}
       </span>
@@ -104,40 +145,27 @@ export function DataFreshness({
 
   return (
     <InfoTooltip
-      label={`${label ? `${label} — ` : ''}${summary}${issue ? ` — ${issue}` : ''}`}
+      label={accessibleLabel}
       className={cn(
-        'max-w-full justify-start gap-1.5 py-0.5 text-left text-[10px] font-normal leading-snug text-muted-foreground md:min-h-5',
+        'h-6 min-h-6 min-w-6 gap-1.5 px-1 text-[10px] font-normal leading-snug text-muted-foreground md:min-h-6 md:min-w-6',
         className
       )}
       content={
-        <div className="space-y-2 [&_p]:m-0 [&_p]:text-xs [&_p]:font-normal [&_p]:leading-relaxed [&_li]:text-xs [&_li]:font-normal [&_li]:leading-relaxed">
-          {label && <p className="font-medium text-foreground">{label}</p>}
-          {calculation && <p>Calculé : {formatFreshnessDate(data.calculatedAt, now, true)}</p>}
-          {data.upstreamCalculatedAt && (
-            <p>Historique calculé : {formatFreshnessDate(data.upstreamCalculatedAt, now, true)}</p>
-          )}
-          {data.unknownCalculation && <p>Certaines dates de calcul ne sont pas enregistrées.</p>}
-          <p className="text-xs text-muted-foreground">
-            {isStale
-              ? 'Le calcul ou un cours utilisé est antérieur à aujourd’hui, y compris les jours de fermeture des marchés.'
-              : 'Dates des données utilisées (heure de Paris).'}
-          </p>
-          {data.sources.length > 0 && (
-            <ul className="max-h-60 space-y-1 overflow-y-auto text-xs">
-              {data.sources.map((source, index) => (
-                <li
-                  key={`${source.symbol}-${index}`}
-                  className="flex flex-col gap-0.5 border-b border-border/50 pb-1 last:border-0"
-                >
-                  <span className="font-medium">{source.symbol}</span>
-                  <span>{formatFreshnessDate(source.asOf, now, true)}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-          {unknown.length > 0 && (
-            <p className="text-xs">La fraîcheur des cours sans date ne peut pas être vérifiée.</p>
-          )}
+        <div className="max-h-80 space-y-3 overflow-y-auto [&_p]:m-0 [&_p]:text-xs [&_p]:font-normal [&_p]:leading-relaxed [&_li]:text-xs [&_li]:font-normal [&_li]:leading-relaxed">
+          <div className="space-y-1">
+            <p className="font-medium text-foreground">
+              {label || (calculation ? 'Dates du calcul' : 'Dates des données')}
+            </p>
+            {issue && <p className="text-muted-foreground">{issue}</p>}
+          </div>
+          {sections
+            ? sections.map((section) => (
+                <div key={section.label} className="space-y-2 border-t border-border/60 pt-2">
+                  <p className="font-medium text-foreground">{section.label}</p>
+                  {details(section.info || { sources: [] }, true)}
+                </div>
+              ))
+            : details(data, calculation)}
         </div>
       }
     >

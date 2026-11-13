@@ -160,7 +160,7 @@ export default function PerformanceBox({
           <div className="min-w-0">
             <p className="mb-1 text-[10px] font-black uppercase tracking-[0.16em] text-primary">Évolution</p>
             <CardTitle className="text-lg font-black tracking-tight">{selectedChart?.label}</CardTitle>
-            {!loading && <DataFreshness info={freshness} calculation />}
+            {!loading && <DataFreshness display="status" info={freshness} calculation />}
             <p className="mt-1 text-xs text-muted-foreground">{selectedChart?.description}</p>
           </div>
 

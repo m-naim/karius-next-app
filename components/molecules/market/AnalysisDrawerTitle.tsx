@@ -8,9 +8,10 @@ type AnalysisDrawerTitleProps = {
   price?: number | null
   currency?: string | null
   quoteAsOf?: DateInput
+  lastUpdated?: DateInput
 }
 
-export function AnalysisDrawerTitle({ symbol, price, currency, quoteAsOf }: AnalysisDrawerTitleProps) {
+export function AnalysisDrawerTitle({ symbol, price, currency, quoteAsOf, lastUpdated }: AnalysisDrawerTitleProps) {
   const numericPrice = Number(price)
   const hasPrice = price != null && Number.isFinite(numericPrice)
   const formattedPrice = hasPrice
@@ -32,7 +33,7 @@ export function AnalysisDrawerTitle({ symbol, price, currency, quoteAsOf }: Anal
       {formattedPrice && (
         <span className="shrink-0 text-xs font-semibold tabular-nums text-muted-foreground">
           {formattedPrice}
-          <DataFreshness info={quoteFreshness({ symbol, quoteAsOf })} />
+          <DataFreshness info={quoteFreshness({ symbol, quoteAsOf, lastUpdated })} />
         </span>
       )}
     </div>

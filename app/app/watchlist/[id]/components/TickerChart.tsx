@@ -653,7 +653,7 @@ export function TickerChart({
             </div>
           )}
 
-          {!loading && <DataFreshness info={freshness} calculation label="Graphique et indicateurs" />}
+          {!loading && <DataFreshness display="status" info={freshness} calculation label="Graphique et indicateurs" />}
           <MetricsDisplay metrics={metrics} loading={loading} period={period} />
         </TabsContent>
 

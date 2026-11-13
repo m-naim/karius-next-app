@@ -7,9 +7,42 @@ import {
   quoteFreshness,
   performanceFreshness,
   combinedFreshness,
+  formatSourceFreshnessDate,
+  securityFreshness,
 } from '../lib/data-freshness.ts'
 
 const today = '2026-11-15T12:00:00Z' // Sunday: Friday prices must still be orange.
+
+test('a single row marker retains old performance data even when its quote is current', () => {
+  const info = securityFreshness({ symbol: 'A', quoteAsOf: today,
+    variationsAsOf: '2026-11-13', variationsCalculatedAt: today }, '1d')
+  assert.equal(freshnessState(info, today).isStale, true)
+  assert.deepEqual(info.sources.map(source => source.label), ['Cours', 'Performance'])
+})
+
+test('a row marker includes stale FX calculations alongside current quotes', () => {
+  const info = securityFreshness({ symbol: 'A', quoteAsOf: today }, '1d', false,
+    [{ calculatedAt: '2026-11-13', sources: [{ symbol: 'USD/EUR', asOf: '2026-11-13' }] }])
+  assert.equal(freshnessState(info, today).isStale, true)
+  assert.equal(info.sources.length, 2)
+})
+
+test('uses and labels the known lastUpdated when the quote time is unavailable', () => {
+  const info = quoteFreshness({ symbol: 'A', lastUpdated: '2026-11-13T13:44:53.786Z' })
+  const state = freshnessState(info, today)
+  assert.equal(state.unknown.length, 0)
+  assert.equal(state.isStale, true)
+  assert.match(
+    formatSourceFreshnessDate(info.sources[0], today),
+    /Données mises à jour.*13 nov.*14:44/
+  )
+})
+
+test('prefers the actual quotation date over a newer database update', () => {
+  const info = quoteFreshness({ symbol: 'A', quoteAsOf: '2026-11-13', lastUpdated: today })
+  assert.equal(freshnessState(info, today).isStale, true)
+  assert.doesNotMatch(formatSourceFreshnessDate(info.sources[0], today), /mises à jour/)
+})
 
 test('uses the Paris calendar day, including summer time and midnight', () => {
   assert.equal(calendarDate('2026-11-14T23:30:00Z'), '2026-11-15')
