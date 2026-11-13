@@ -1,4 +1,7 @@
-export function PriceValue({ value, currency = 'EUR' }: { value: number; currency?: string }) {
+import { DataFreshness } from '@/components/molecules/DataFreshness'
+import { FreshnessInfo } from '@/lib/data-freshness'
+
+export function PriceValue({ value, currency = 'EUR', freshness }: { value: number; currency?: string; freshness?: FreshnessInfo }) {
   if (!Number.isFinite(value)) return <span>—</span>
   const amount = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(value)
   const formatted = new Intl.NumberFormat('fr-FR', {
@@ -13,6 +16,7 @@ export function PriceValue({ value, currency = 'EUR' }: { value: number; currenc
         <span className="text-[10px] text-muted-foreground">{currency}</span>
       </span>
       <span className="hidden md:inline">{formatted}</span>
+      {freshness && <span className="block"><DataFreshness info={freshness} compact /></span>}
     </span>
   )
 }

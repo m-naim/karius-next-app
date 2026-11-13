@@ -505,6 +505,7 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
           <AnalysisDrawerTitle
             symbol={selectedTicker}
             price={selectedSecurity?.regularMarketPrice}
+            quoteAsOf={selectedSecurity?.quoteAsOf}
             currency={selectedSecurity?.currency}
           />
         ) : (

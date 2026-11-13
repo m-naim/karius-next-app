@@ -27,10 +27,13 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 import { ExploreTable } from '@/components/molecules/table/ExploreTable'
+import { DataFreshness } from '@/components/molecules/DataFreshness'
+import { FreshnessInfo } from '@/lib/data-freshness'
 import { OwnPortfolios } from './OwnPortfolios'
 import { follow, getPublicPortfolios } from '@/services/portfolioService'
 
 interface PortfolioSummary {
+  performanceFreshness?: FreshnessInfo
   id: string
   name: string
   followersSize: number
@@ -535,6 +538,7 @@ export default function PortfoliosPage() {
                 </td>
                 <td className="px-4 py-3 text-right">
                   <PerformanceValue value={portfolio.cumulativePerformance} />
+                  <DataFreshness info={portfolio.performanceFreshness} calculation className="ml-auto" />
                 </td>
                 <td className="px-4 py-3 text-right">
                   <span className="inline-flex items-center justify-end gap-1.5 font-semibold tabular-nums">

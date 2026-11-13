@@ -1,4 +1,6 @@
 'use client'
+import { DataFreshness } from '@/components/molecules/DataFreshness'
+import { FreshnessInfo } from '@/lib/data-freshness'
 import { useEffect, useState } from 'react'
 import { getStockHistoryAsync, search } from '@/services/stock.service'
 import { format } from 'date-fns'
@@ -79,6 +81,7 @@ export function TickerChart({
   onDeleteGlobalTag?: (tag: string) => void
   transactions?: any[]
 }) {
+  const [freshness, setFreshness] = useState<FreshnessInfo | null>(null)
   const [chartData, setChartData] = useState<ChartData>({ labels: [], datasets: [] })
   const [period, setPeriod] = useState('1y')
   const [loading, setLoading] = useState(true)
@@ -191,6 +194,12 @@ export function TickerChart({
     }
 
     const results = filteredHistory
+    setFreshness({ calculatedAt: new Date().toISOString(),
+      sources: Object.entries(results).map(([sourceSymbol, history]) => ({
+        symbol: sourceSymbol,
+        asOf: history.length ? new Date(Math.max(...history.map(point => point.day)) * 86_400_000).toISOString().slice(0, 10) : null,
+      })),
+    })
     // Normalize data to show percentage change or drawdown
     const historyData = Object.entries(results).map(([seriesSymbol, history]) => {
       let data = history.map((item) => item.close)
@@ -644,6 +653,7 @@ export function TickerChart({
             </div>
           )}
 
+          {!loading && <DataFreshness info={freshness} calculation label="Graphique et indicateurs" />}
           <MetricsDisplay metrics={metrics} loading={loading} period={period} />
         </TabsContent>
 

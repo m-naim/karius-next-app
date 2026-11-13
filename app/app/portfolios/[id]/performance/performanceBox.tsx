@@ -1,3 +1,5 @@
+import { DataFreshness } from '@/components/molecules/DataFreshness'
+import { FreshnessInfo } from '@/lib/data-freshness'
 import React, { useEffect, useState } from 'react'
 import { LineValue } from '@/components/molecules/charts/LineValue'
 import { BarValue } from '@/components/molecules/charts/BarValue'
@@ -87,6 +89,7 @@ export default function PerformanceBox({
   period,
   onPeriodChange,
 }: PerformanceBoxProps) {
+  const [freshness, setFreshness] = useState<FreshnessInfo | null>(null)
   const [chartType, setChartType] = useState(chartTypes[0].id)
   const [dates, setDates] = useState<string[]>([])
   const [chartValues, setChartValues] = useState<number[]>([])
@@ -117,6 +120,7 @@ export default function PerformanceBox({
         ? selectedBenchmarks
         : []
       const res = await getPerformances(id, benchmarksForRequest, days)
+      setFreshness(res.freshness || null)
       const formattedDates = res.timestamp.map((timestamp) =>
         new Date(timestamp * 24 * 60 * 60 * 1000).toLocaleDateString('fr-FR')
       )
@@ -156,6 +160,7 @@ export default function PerformanceBox({
           <div className="min-w-0">
             <p className="mb-1 text-[10px] font-black uppercase tracking-[0.16em] text-primary">Évolution</p>
             <CardTitle className="text-lg font-black tracking-tight">{selectedChart?.label}</CardTitle>
+            {!loading && <DataFreshness info={freshness} calculation />}
             <p className="mt-1 text-xs text-muted-foreground">{selectedChart?.description}</p>
           </div>
 

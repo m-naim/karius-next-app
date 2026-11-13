@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { DataFreshness } from '@/components/molecules/DataFreshness'
 import { TrendingUp, TrendingDown, Layers } from 'lucide-react'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
 import { MarketBreadthStats } from './MarketTopFlop'
@@ -14,6 +15,7 @@ export function MarketBreadthAndSectors({ stats }: MarketBreadthAndSectorsProps)
 
   return (
     <div className="mt-3 flex flex-col gap-2 rounded-lg border border-border/40 bg-muted/20 p-2.5">
+      <DataFreshness info={stats.freshness} calculation={!!stats.freshness?.calculatedAt} label="Répartition et secteurs" />
       {/* 1. Advance / Decline Breadth Bar */}
       <div className="space-y-1">
         <div className="flex items-center justify-between text-[10px] font-bold">

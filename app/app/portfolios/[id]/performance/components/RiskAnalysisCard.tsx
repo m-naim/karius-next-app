@@ -1,3 +1,4 @@
+import { DataFreshness } from '@/components/molecules/DataFreshness'
 import { InfoTooltip } from '@/components/ui/info-tooltip'
 import React from 'react'
 import type { RiskMetrics } from '@/hooks/useRiskMetrics'
@@ -77,6 +78,7 @@ export function RiskAnalysisCard({ metrics, loading, period }: RiskAnalysisCardP
               {period}
             </span>
           </div>
+          <DataFreshness info={metrics.freshness} calculation />
         </CardHeader>
 
         <CardContent className="space-y-3 p-4">

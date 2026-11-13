@@ -1,12 +1,16 @@
 'use client'
 
+import { DataFreshness } from '@/components/molecules/DataFreshness'
+import { DateInput, quoteFreshness } from '@/lib/data-freshness'
+
 type AnalysisDrawerTitleProps = {
   symbol: string
   price?: number | null
   currency?: string | null
+  quoteAsOf?: DateInput
 }
 
-export function AnalysisDrawerTitle({ symbol, price, currency }: AnalysisDrawerTitleProps) {
+export function AnalysisDrawerTitle({ symbol, price, currency, quoteAsOf }: AnalysisDrawerTitleProps) {
   const numericPrice = Number(price)
   const hasPrice = price != null && Number.isFinite(numericPrice)
   const formattedPrice = hasPrice
@@ -23,11 +27,12 @@ export function AnalysisDrawerTitle({ symbol, price, currency }: AnalysisDrawerT
     : null
 
   return (
-    <div className="flex min-w-0 items-baseline gap-2">
+    <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
       <span className="truncate text-base font-black tracking-tight text-foreground">{symbol}</span>
       {formattedPrice && (
         <span className="shrink-0 text-xs font-semibold tabular-nums text-muted-foreground">
           {formattedPrice}
+          <DataFreshness info={quoteFreshness({ symbol, quoteAsOf })} />
         </span>
       )}
     </div>

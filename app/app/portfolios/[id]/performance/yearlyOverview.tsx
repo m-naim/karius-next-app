@@ -1,3 +1,5 @@
+import { DataFreshness } from '@/components/molecules/DataFreshness'
+import { combinedFreshness, FreshnessInfo } from '@/lib/data-freshness'
 import React, { useEffect, useState, useMemo } from 'react'
 import Loader from '@/components/molecules/loader/loader'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
@@ -30,6 +32,7 @@ interface PerformanceSummary {
   year: number
   performance: number
   monthlyPerformance: { [key: string]: number }
+  freshness?: FreshnessInfo
 }
 
 interface YearlyOverviewProps {
@@ -142,6 +145,11 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
           )}
         </div>
       </CardHeader>
+      <div className="px-4 sm:px-5"><DataFreshness info={combinedFreshness([
+        perf[0]?.freshness || { sources: [{ symbol: 'Portefeuille', asOf: null }] },
+        ...selectedBenchmarks.map(symbol => benchmarksPerf[symbol]?.slice().sort((a, b) => b.year - a.year)[0]?.freshness
+          || { sources: [{ symbol, asOf: null }] }),
+      ])} calculation label="Synthèse historique" /></div>
       <CardContent className="p-0">
         <ScrollArea className="w-full">
           <div className="min-w-[1000px] p-2">

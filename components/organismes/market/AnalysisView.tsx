@@ -1,5 +1,7 @@
 'use client'
 
+import { DataFreshness } from '@/components/molecules/DataFreshness'
+import { combinedFreshness, performanceFreshness } from '@/lib/data-freshness'
 import { useMemo, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import VariationContainer from '@/components/molecules/portfolio/variationContainer'
@@ -224,10 +226,16 @@ export function AnalysisView({ securities, selectedPeriod, onPeriodChange }: Ana
     return { avgPerf, top5, bottom5 }
   }, [securities, selectedPeriod])
 
+  const freshness = useMemo(() => {
+    const inputs = combinedFreshness(securities.map(s => performanceFreshness(s, selectedPeriod)))
+    return { ...inputs, upstreamCalculatedAt: inputs.calculatedAt, calculatedAt: new Date().toISOString() }
+  }, [securities, selectedPeriod])
+
   const periods = ['1d', '1w', '1m', '1y', '5y']
 
   return (
     <div className="scrollbar-hide flex h-full flex-col gap-6 overflow-y-auto bg-background/50 p-6">
+      <DataFreshness info={freshness} calculation label="Données de l’analyse" />
       {/* 1. Ultra-Compact Top Bar */}
       <div className="flex flex-col gap-4 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-4">

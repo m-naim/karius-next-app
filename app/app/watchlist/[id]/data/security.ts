@@ -2,6 +2,9 @@ export interface security {
   id: string
   symbol: string
   lastUpdated: string
+  quoteAsOf?: string
+  variationsAsOf?: string
+  variationsCalculatedAt?: string
   exchange: string
   shortname: string
   quoteType: string

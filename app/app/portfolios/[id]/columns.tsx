@@ -1,6 +1,8 @@
 'use client'
 
 import * as React from 'react'
+import { FreshnessInfo, quoteFreshness, performanceFreshness, combinedFreshness } from '@/lib/data-freshness'
+import { DataFreshness } from '@/components/molecules/DataFreshness'
 import { Column } from '@tanstack/react-table'
 import { ChevronUp, ArrowUpDown, ChevronDown, ListFilterIcon } from 'lucide-react'
 
@@ -32,6 +34,10 @@ const getInitials = (str: string) => {
 
 export interface PortfolioSecurity {
   symbol: string
+  quoteAsOf?: string
+  valuationAsOf?: string
+  variationsAsOf?: string
+  variationsCalculatedAt?: string
   weight: number
   totalValue: number
   last: number
@@ -54,6 +60,7 @@ export interface PortfolioSecurity {
   nativeBep?: number
   nativeLast?: number
   currencyGain?: number | null
+  currencyGainFreshness?: FreshnessInfo
   shortname?: string
   dailyVariationPercent?: number | null
   regularMarketChangePercent?: number | null
@@ -226,7 +233,7 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
           style: 'currency',
           currency: currencyToUse,
         }).format(last)
-        return <div className="font-medium">{formatted}</div>
+        return <div className="flex flex-col gap-0.5 font-medium">{formatted}<DataFreshness info={quoteFreshness(row.original, !useNativeCurrency)} compact /></div>
       },
       enableHiding: true,
     },
@@ -317,6 +324,7 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
           {varPercent != null && (
             <VariationContainer
               value={varPercent}
+              freshness={quoteFreshness(row.original, true)}
               background={false}
               className="m-0 p-0"
             />
@@ -335,7 +343,7 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
         if (value == null || !row.original.currency || row.original.currency === baseCurrency) {
           return <span className="font-mono text-xs text-muted-foreground">—</span>
         }
-        return <VariationContainer value={value} entity={baseCurrency} background={false} className="m-0 p-0 text-xs font-semibold" />
+        return <VariationContainer value={value} freshness={row.original.currencyGainFreshness || { sources: [] }} calculation entity={baseCurrency} background={false} className="m-0 p-0 text-xs font-semibold" />
       },
       enableHiding: true,
     })
@@ -379,6 +387,11 @@ export const columns = (selectedPeriod?: any, baseCurrency = 'EUR', useNativeCur
                 />
               </div>
             )}
+            <DataFreshness
+              info={selectedPeriod === '1d' ? quoteFreshness(row.original, true)
+                : combinedFreshness([performanceFreshness(row.original, selectedPeriod), quoteFreshness(row.original, true)])}
+              calculation={selectedPeriod !== '1d'} compact
+            />
           </div>
         )
       },

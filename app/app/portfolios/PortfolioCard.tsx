@@ -1,3 +1,5 @@
+import { DataFreshness } from '@/components/molecules/DataFreshness'
+import { FreshnessInfo } from '@/lib/data-freshness'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, Users, BarChart3 } from 'lucide-react'
 import Link from 'next/link'
@@ -7,6 +9,7 @@ import { FavoritePortfolioButton } from '@/components/molecules/portfolio/Favori
 
 export interface PortfolioSummery {
   id: string
+  performanceFreshness?: FreshnessInfo
   name: string
   followersSize: number
   dayChangePercent: number
@@ -104,6 +107,7 @@ export function PortfolioCard(p: PortfolioSummery) {
         </CardContent>
         <div className="h-0.5 w-full origin-left scale-x-0 bg-primary transition-transform duration-500 group-hover:scale-x-100" />
       </Link>
+      <div className="px-4 pb-3"><DataFreshness info={p.performanceFreshness} calculation /></div>
     </Card>
   )
 }

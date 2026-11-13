@@ -37,10 +37,10 @@ function PagePerformance() {
       setRecalculating(true)
       await initPerformance(id)
 
-      const cacheKey1Y = `risk-v2-${id}-1Y-${selectedBenchmarks.join(',')}`
-      const cacheKey3Y = `risk-v2-${id}-3Y-${selectedBenchmarks.join(',')}`
-      const cacheKeyNoBench1Y = `risk-v2-${id}-1Y-`
-      const cacheKeyNoBench3Y = `risk-v2-${id}-3Y-`
+      const cacheKey1Y = `risk-v3-${id}-1Y-${selectedBenchmarks.join(',')}`
+      const cacheKey3Y = `risk-v3-${id}-3Y-${selectedBenchmarks.join(',')}`
+      const cacheKeyNoBench1Y = `risk-v3-${id}-1Y-`
+      const cacheKeyNoBench3Y = `risk-v3-${id}-3Y-`
       await Promise.all([
         deleteCache(cacheKey1Y),
         deleteCache(cacheKey3Y),

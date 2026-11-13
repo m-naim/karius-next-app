@@ -1,9 +1,11 @@
 'use client'
 
+import { DataFreshness } from '@/components/molecules/DataFreshness'
+import { quoteFreshness } from '@/lib/data-freshness'
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { getStock } from '@/services/stock.service'
+import { getQuotes } from '@/services/stock.service'
 import { TickerChart } from '../../watchlist/[id]/components/TickerChart'
 import SecurityImage from '@/components/atoms/SecurityImage'
 import { Button } from '@/components/ui/button'
@@ -13,6 +15,7 @@ import { ArrowLeft, Loader2, TrendingUp, TrendingDown } from 'lucide-react'
 
 interface StockDetails {
   symbol: string
+  quoteAsOf?: string
   exchange: string
   shortname: string
   longname: string
@@ -37,8 +40,9 @@ export default function StockDetailPage() {
 
     setLoading(true)
     setError(false)
-    getStock(symbol)
-      .then((data) => {
+    getQuotes([symbol])
+      .then((quotes) => {
+        const data = quotes?.[0]
         if (data) {
           setStock(data)
         } else {
@@ -140,6 +144,7 @@ export default function StockDetailPage() {
         <div className="mt-4">
           <div className="text-left">
             <div className="text-2xl font-bold text-foreground">{formattedPrice}</div>
+            <DataFreshness info={quoteFreshness(stock)} />
             <div className={`flex items-center gap-1 text-sm font-semibold ${hasChange ? (isPositive ? 'text-emerald-500' : 'text-rose-500') : 'text-muted-foreground'}`}>
               {hasChange && (isPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />)}
               <span>{formattedChange}</span>

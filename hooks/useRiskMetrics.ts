@@ -1,3 +1,4 @@
+import { calendarDate, FreshnessInfo } from '@/lib/data-freshness';
 import { useState, useEffect } from 'react';
 import { getCache, setCache } from '../lib/idb-cache';
 import { getPerformances } from '../services/portfolioService';
@@ -11,6 +12,7 @@ export interface BenchmarkMetrics {
 }
 
 export interface RiskMetrics {
+  freshness?: FreshnessInfo;
   sharpe: number;
   sortino: number;
   maxDrawdown: number;
@@ -54,14 +56,14 @@ export function useRiskMetrics(portfolioId: string, period: string, selectedBenc
         }
         
         // Include benchmarks in the cache key to separate metric results, prefix with v2 to invalidate old cache
-        const cacheKey = `risk-v2-${portfolioId}-${period}-${selectedBenchmarks.join(',')}`;
+        const cacheKey = `risk-v3-${portfolioId}-${period}-${selectedBenchmarks.join(',')}`;
         const cached = await getCache(cacheKey);
         
         if (!isMounted) return;
 
-        const today = new Date().toISOString().split('T')[0];
+        const today = calendarDate(new Date());
 
-        if (cached && cached.timestamp === today && cached.data) {
+        if (cached && cached.timestamp === today && cached.data?.freshness) {
           if (isMounted) {
             setMetrics(cached.data);
             setLoading(false);
@@ -90,7 +92,14 @@ export function useRiskMetrics(portfolioId: string, period: string, selectedBenc
           
           if (type === 'RESULT') {
             if (worker) worker.terminate();
-            const calculatedMetrics = payload as RiskMetrics;
+            const calculatedMetrics: RiskMetrics = {
+              ...payload,
+              freshness: {
+                calculatedAt: new Date().toISOString(),
+                upstreamCalculatedAt: performanceData.freshness?.calculatedAt,
+                sources: performanceData.freshness?.sources || [{ symbol: 'Historique', asOf: null }],
+              },
+            };
             
             if (isMounted) {
               setMetrics(calculatedMetrics);

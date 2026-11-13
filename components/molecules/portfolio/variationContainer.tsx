@@ -1,6 +1,8 @@
 import React from 'react'
 import { round10 } from '@/lib/decimalAjustement'
 import { cn } from '@/lib/utils'
+import { DataFreshness } from '@/components/molecules/DataFreshness'
+import { FreshnessInfo } from '@/lib/data-freshness'
 
 export default function variationContainer({
   value,
@@ -9,6 +11,9 @@ export default function variationContainer({
   className,
   vaiationColor = true,
   sign = true,
+  freshness,
+  calculation = false,
+  interactiveFreshness = true,
 }: {
   value: number
   entity?: string
@@ -16,6 +21,9 @@ export default function variationContainer({
   className?: string
   vaiationColor?: boolean
   sign?: boolean
+  freshness?: FreshnessInfo
+  calculation?: boolean
+  interactiveFreshness?: boolean
 }) {
   const getVariation = (value) => {
     return round10(value, -2)
@@ -42,12 +50,13 @@ export default function variationContainer({
     <div
       className={cn(
         vaiationColor && getVariationColor(value),
+        freshness && 'flex flex-col items-start gap-0.5',
         'm-1 h-fit  rounded-md p-1 text-xs font-medium ',
         className
       )}
     >
-      {numberFormatter.format(getVariation(value))}
-      {entity}
+      <span className="whitespace-nowrap">{numberFormatter.format(getVariation(value))}{entity}</span>
+      {freshness && <DataFreshness compact info={freshness} calculation={calculation} interactive={interactiveFreshness} className="flex" />}
     </div>
   )
 }

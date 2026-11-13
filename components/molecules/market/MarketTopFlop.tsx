@@ -1,5 +1,6 @@
 'use client'
 
+import { FreshnessInfo, performanceFreshness, combinedFreshness } from '@/lib/data-freshness'
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import marketService from '@/services/marketService'
@@ -14,6 +15,7 @@ const holdingsCache = new Map<string, any[]>()
 const topFlopComputedCache = new Map<string, { top: any[]; flop: any[]; stats?: any }>()
 
 export interface MarketBreadthStats {
+  freshness?: FreshnessInfo
   total: number
   up: number
   down: number
@@ -109,6 +111,10 @@ export function MarketTopFlop({
       const bottomSectors = sectors.slice(-2).reverse()
 
       const stats: MarketBreadthStats = {
+        freshness: (() => {
+          const inputs = combinedFreshness(validHoldings.map(s => performanceFreshness(s, period)))
+          return { ...inputs, upstreamCalculatedAt: inputs.calculatedAt, calculatedAt: new Date().toISOString() }
+        })(),
         total: validHoldings.length,
         up,
         down,
@@ -233,6 +239,8 @@ export function MarketTopFlop({
               <div className="flex items-center gap-1.5 shrink-0 pl-2">
                 <VariationContainer
                   value={getPerf(s)}
+                  freshness={performanceFreshness(s, period)}
+                  calculation={period !== '1d'}
                   entity="%"
                   className="p-0 text-[11px] font-black"
                   background={false}
@@ -296,6 +304,8 @@ export function MarketTopFlop({
               <div className="flex items-center gap-1.5 shrink-0 pl-2">
                 <VariationContainer
                   value={getPerf(s)}
+                  freshness={performanceFreshness(s, period)}
+                  calculation={period !== '1d'}
                   entity="%"
                   className="p-0 text-[11px] font-black"
                   background={false}

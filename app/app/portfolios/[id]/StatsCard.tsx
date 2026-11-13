@@ -1,6 +1,7 @@
+import { DataFreshness } from '@/components/molecules/DataFreshness'
 import { round10 } from '@/lib/decimalAjustement'
 import VariationContainer from '../../../../components/molecules/portfolio/variationContainer'
-import { Clock, Globe } from 'lucide-react'
+import { Globe } from 'lucide-react'
 
 const StatsCard = ({ pftData, own = true }) => {
   const currencySymbol = new Intl.NumberFormat('fr-FR', { 
@@ -91,6 +92,8 @@ const StatsCard = ({ pftData, own = true }) => {
             <span className="text-[11px]">Effet devises:</span>
             <VariationContainer
               value={pftData.currencyGain}
+              freshness={pftData.currencyGainFreshness || { sources: [] }}
+              calculation
               entity={currencySymbol}
               background={false}
               className="p-0 text-xs font-bold"
@@ -111,15 +114,10 @@ const StatsCard = ({ pftData, own = true }) => {
           />
         </div>
 
-        {pftData?.last_perfs_update && (
-          <>
-            <div className="h-3.5 w-px bg-border/60 shrink-0 hidden md:block" />
-            <div className="items-center gap-1 text-[11px] text-muted-foreground/70 hidden md:flex">
-              <Clock className="h-3 w-3" />
-              <span>{pftData.last_perfs_update}</span>
-            </div>
-          </>
-        )}
+        <div className="flex w-full flex-wrap items-start gap-x-4 gap-y-1 sm:w-auto">
+          <DataFreshness info={pftData?.valuationFreshness} calculation label="Valorisation" />
+          <DataFreshness info={pftData?.performanceFreshness} calculation label="Performances historiques" />
+        </div>
       </div>
     </div>
   )

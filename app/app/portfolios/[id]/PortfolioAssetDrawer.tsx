@@ -1,5 +1,7 @@
 'use client'
 
+import { DataFreshness } from '@/components/molecules/DataFreshness'
+import { quoteFreshness } from '@/lib/data-freshness'
 import React, { useMemo } from 'react'
 import { PortfolioSecurity } from './columns'
 import { RightSidebar } from '@/components/organismes/layout/RightSidebar'
@@ -162,6 +164,7 @@ export default function PortfolioAssetDrawer({
         </div>
       }
     >
+      <div className="px-4 py-2"><DataFreshness info={quoteFreshness(security, true)} label="Cours et calculs de la position" /></div>
       <Tabs defaultValue={own ? "achats" : "technical"} className="flex h-full flex-col min-h-0">
         <div className="border-b bg-muted/20 px-4 py-2 shrink-0">
           <TabsList className={cn("grid w-full h-9 bg-muted/60 p-1", own ? "grid-cols-4" : "grid-cols-3")}>
@@ -194,6 +197,7 @@ export default function PortfolioAssetDrawer({
               <div className="space-y-0.5">
                 <span className="text-xs font-semibold text-muted-foreground">Cours Actuel</span>
                 <div className="text-base font-bold tabular-nums">{formatMoney(security.last)}</div>
+                <DataFreshness info={quoteFreshness(security, true)} />
               </div>
               <div className="space-y-0.5">
                 <span className="text-xs font-semibold text-muted-foreground">PRU Moyen</span>

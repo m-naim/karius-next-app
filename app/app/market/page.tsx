@@ -1,5 +1,7 @@
 'use client'
 
+import { DataFreshness } from '@/components/molecules/DataFreshness'
+import { FreshnessInfo, quoteFreshness } from '@/lib/data-freshness'
 import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import {
@@ -108,6 +110,7 @@ export default function MarketListingPage() {
 
   // Stable initial state for SSR & client hydration matching
   const [marketQuotes, setMarketQuotes] = useState<Record<string, any>>({})
+  const [variationFreshness, setVariationFreshness] = useState<Record<string, FreshnessInfo>>({})
   const [marketVariations, setMarketVariations] = useState<Record<string, Record<string, number>>>({})
   const [watchlists, setWatchlists] = useState<any[]>([])
   const [breadthStats, setBreadthStats] = useState<MarketBreadthStats | null>(null)
@@ -204,12 +207,18 @@ export default function MarketListingPage() {
 
       if (!isMounted) return
 
+      const freshnessMap: Record<string, FreshnessInfo> = {}
       const variationMap: Record<string, Record<string, number>> = {}
       if (Array.isArray(variationsData)) {
         variationsData.forEach((variation: any) => {
-          if (variation?.symbol) variationMap[variation.symbol] = variation.variations || {}
+          if (variation?.symbol) {
+            variationMap[variation.symbol] = variation.variations || {}
+            freshnessMap[variation.symbol] = { calculatedAt: variation.calculatedAt,
+              sources: [{ symbol: variation.symbol, asOf: variation.asOf }] }
+          }
         })
       }
+      setVariationFreshness(freshnessMap)
       setMarketVariations(variationMap)
       marketOverviewRef.current.variations = variationMap
       if (Object.keys(marketOverviewRef.current.quotes).length > 0) {
@@ -240,6 +249,10 @@ export default function MarketListingPage() {
     }
     return marketVariations[symbol]?.[selectedPeriod] ?? null
   }
+
+  const getPerformanceFreshness = (symbol: string): FreshnessInfo => selectedPeriod === '1d'
+    ? quoteFreshness(marketQuotes[symbol] || { symbol })
+    : variationFreshness[symbol] || { sources: [{ symbol, asOf: null }] }
 
   const activeQuote = marketQuotes[activeMarket.symbol]
   const activePerf = getPerformance(activeMarket.symbol)
@@ -337,6 +350,7 @@ export default function MarketListingPage() {
                         })
                       : market.symbol}
                   </span>
+                  <DataFreshness info={quoteFreshness(quote || { symbol: market.symbol })} interactive={false} />
                 </div>
               </div>
 
@@ -344,6 +358,9 @@ export default function MarketListingPage() {
                 {perf != null ? (
                   <VariationContainer
                     value={perf}
+                    freshness={getPerformanceFreshness(market.symbol)}
+                    calculation={selectedPeriod !== '1d'}
+                    interactiveFreshness={false}
                     entity="%"
                     className="p-0 text-[10px] font-black"
                     background={false}
@@ -386,10 +403,13 @@ export default function MarketListingPage() {
                     maximumFractionDigits: 2,
                   })
                 : '--'}
+              <DataFreshness info={quoteFreshness(activeQuote || { symbol: activeMarket.symbol })} />
             </span>
             {activePerf != null && (
               <VariationContainer
                 value={activePerf}
+                freshness={getPerformanceFreshness(activeMarket.symbol)}
+                calculation={selectedPeriod !== '1d'}
                 entity="%"
                 className="p-0 text-xs font-black"
                 background={false}

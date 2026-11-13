@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ArrowUpRight, Activity } from "lucide-react";
 import { getQuotes } from "@/services/stock.service";
 import VariationContainer from "@/components/molecules/portfolio/variationContainer";
+import { DataFreshness } from "@/components/molecules/DataFreshness";
+import { quoteFreshness } from "@/lib/data-freshness";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const marketSymbols = [
@@ -79,6 +81,7 @@ export function MarketPulse() {
                           )
                         : "—"}
                     </span>
+                    <DataFreshness info={quoteFreshness(quote || { symbol })} />
                     {quote?.regularMarketChangePercent != null ? (
                       <VariationContainer
                         value={quote.regularMarketChangePercent}

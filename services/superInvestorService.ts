@@ -193,6 +193,7 @@ export interface PerformanceEvent {
 }
 
 export interface SuperInvestorPerformance {
+  freshness?: import('@/lib/data-freshness').FreshnessInfo
   status: ValuationState
   view: ValuationView
   currency: 'USD'

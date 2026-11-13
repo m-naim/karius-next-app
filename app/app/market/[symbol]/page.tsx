@@ -266,6 +266,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ symbol:
         <AnalysisDrawerTitle
           symbol={selectedTicker}
           price={selectedSecurity?.regularMarketPrice}
+            quoteAsOf={selectedSecurity?.quoteAsOf}
           currency={selectedSecurity?.currency}
         />
       ) : 'ANALYSE'}

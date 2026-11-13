@@ -1,6 +1,8 @@
 'use client'
 
 import React from 'react'
+import { DataFreshness } from '@/components/molecules/DataFreshness'
+import { quoteFreshness } from '@/lib/data-freshness'
 import { motion } from 'framer-motion'
 import {
   Activity,
@@ -106,6 +108,7 @@ export function MarketVixCockpit({ vixQuote, period }: MarketVixCockpitProps) {
           </div>
         </div>
 
+        <DataFreshness info={quoteFreshness(vixQuote || { symbol: '^VIX' })} label="Cours et baromètre VIX" />
         {/* Sparkline Graph */}
         <div className="h-[220px] sm:h-[260px] w-full pt-1">
           <MarketIndexSparkline

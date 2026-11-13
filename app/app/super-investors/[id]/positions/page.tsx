@@ -294,6 +294,14 @@ export default function SuperInvestorPositionsPage() {
             if (item?.symbol)
               variationMap[item.symbol.toUpperCase()] = item.variations || {}
           })
+        if (Array.isArray(variationData)) variationData.forEach(item => {
+          const quote = quoteMap[item.symbol?.toUpperCase()]
+          if (quote) {
+            quote.variationsAsOf = item.asOf
+            quote.variationsCalculatedAt = item.calculatedAt
+            quote.valuationAsOf = quote.quoteAsOf
+          }
+        })
         setQuotes(quoteMap)
         setVariations(variationMap)
       })

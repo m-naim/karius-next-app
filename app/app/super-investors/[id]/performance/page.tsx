@@ -1,5 +1,6 @@
 'use client'
 
+import { DataFreshness } from '@/components/molecules/DataFreshness'
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { AlertTriangle, BarChart3, CalendarClock, ChevronDown, ShieldCheck } from 'lucide-react'
@@ -76,6 +77,7 @@ export default function SuperInvestorPerformancePage() {
         </div>
 
         <div className="p-4 sm:p-5">
+          {!loading && data && <DataFreshness info={data.freshness} calculation label="Valorisation reconstruite" />}
           {view === 'PERFORMANCE' && <div className="mb-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><Badge variant="secondary">Comparaison : SPY</Badge><span>Les changements trimestriels de capital et de composition sont neutralisés. Les dividendes sont exclus.</span></div>}
           <div className="h-[360px] sm:h-[460px]">
             {loading ? <ChartState icon={BarChart3} title="Calcul de la série…" />
