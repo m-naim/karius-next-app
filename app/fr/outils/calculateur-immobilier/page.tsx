@@ -2,9 +2,8 @@ import { genPageMetadata } from 'app/seo'
 import SectionContainer from '@/components/organismes/layout/SectionContainer'
 import CalculateurImmobilier from '@/components/organismes/tools/CalculateurImmobilier'
 import { NewsletterForm } from '@/components/molecules/ui/NewsletterForm'
-import { Home, Calculator, TrendingUp, Info, ArrowRight } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
+import { Home, Calculator, TrendingUp, Info } from 'lucide-react'
+import { readPropertyQuery, readSimulationName } from '@/lib/calculator-simulations'
 
 export const metadata = genPageMetadata({
   title: 'Simulateur Immobilier : Achat vs Location | BourseHorus',
@@ -13,37 +12,44 @@ export const metadata = genPageMetadata({
   canonicalUrl: 'fr/outils/calculateur-immobilier',
 })
 
-export default function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const query = await searchParams
+  const transfer = readPropertyQuery(query)
+  const initialName = transfer.invalid ? undefined : readSimulationName(query)
   return (
     <div className="pb-12">
-      <SectionContainer className="pb-12 pt-8">
-        <div className="mb-12 flex flex-col items-center text-center">
-          <div className="mb-4 rounded-full bg-primary/10 p-3">
+      <SectionContainer className="pb-12 pt-4 sm:pt-8">
+        <div className="mb-4 flex flex-col items-start text-left sm:mb-12 sm:items-center sm:text-center">
+          <div className="mb-4 hidden rounded-full bg-primary/10 p-3 sm:block">
             <Home className="h-8 w-8 text-primary" />
           </div>
-          <h1 className="mb-4 text-4xl font-extrabold tracking-tight sm:text-5xl">
-            Simulateur Immobilier : <span className="text-primary">Achat vs Location</span>
+          <h1 className="mb-2 py-0 text-2xl font-extrabold tracking-tight sm:mb-4 sm:py-3 sm:text-5xl">
+            <span className="sm:hidden">Acheter ou louer ?</span>
+            <span className="hidden sm:inline">
+              Simulateur Immobilier : <span className="text-primary">Achat vs Location</span>
+            </span>
           </h1>
-          <p className="max-w-2xl text-lg text-muted-foreground">
-            Calculez votre mensualité, vos frais de notaire et déterminez après combien d'années
-            l'achat devient plus rentable que la location.
+          <p className="mb-0 max-w-2xl text-base text-muted-foreground sm:mb-6 sm:text-lg">
+            <span className="sm:hidden">
+              Comparez votre budget et votre patrimoine selon votre projet.
+            </span>
+            <span className="hidden sm:inline">
+              Comparez votre budget et votre patrimoine en achetant ou en louant, selon la durée
+              pendant laquelle vous comptez garder votre logement.
+            </span>
           </p>
         </div>
 
-        <CalculateurImmobilier />
-
-        <div className="mt-8 flex flex-col items-center gap-4 rounded-xl border border-primary/20 bg-primary/5 p-6 text-center">
-          <h3 className="text-xl font-bold">Besoin de voir le détail de vos mensualités ?</h3>
-          <p className="text-muted-foreground">
-            Découvrez la part des intérêts et du capital remboursé chaque année avec notre
-            simulateur d'amortissement détaillé.
-          </p>
-          <Button asChild>
-            <Link href="/fr/outils/calculateur-mensualite">
-              Voir le simulateur de mensualité <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
+        <CalculateurImmobilier
+          key={JSON.stringify({ ...transfer, initialName })}
+          initialValues={transfer.values}
+          initialName={initialName}
+          invalidTransfer={transfer.invalid}
+        />
 
         <div className="mt-16 grid grid-cols-1 gap-12 md:grid-cols-2">
           <div className="space-y-4">

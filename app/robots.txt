@@ -1,11 +1,5 @@
-RewriteEngine on
-RewriteCond %{HTTP_HOST} ^boursehorus.com$
-RewriteRule ^robots\.txt$ nobots.txt
-
-User-Agent: *
-Allow: /
-
 User-agent: *
+Allow: /
 Disallow: /_vercel
 
-Sitemap: https://www.BourseHorus.com/sitemap.xml
+Sitemap: https://www.boursehorus.com/sitemap.xml

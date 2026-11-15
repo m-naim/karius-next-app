@@ -5,6 +5,8 @@ import { NewsletterForm } from '@/components/molecules/ui/NewsletterForm'
 import { Calculator, ArrowRight, Info, Landmark, Home } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { readMortgageQuery } from '@/lib/mortgage-math'
+import { readSimulationName } from '@/lib/calculator-simulations'
 
 export const metadata = genPageMetadata({
   title: 'Calculateur de Mensualité et Amortissement | BourseHorus',
@@ -13,32 +15,58 @@ export const metadata = genPageMetadata({
   canonicalUrl: 'fr/outils/calculateur-mensualite',
 })
 
-export default function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const query = await searchParams
+  const transfer = readMortgageQuery(query)
+  const initialName = transfer.invalid ? undefined : readSimulationName(query)
   return (
     <div className="pb-12">
-      <SectionContainer className="pb-12 pt-8">
-        <div className="mb-12 flex flex-col items-center text-center">
-          <div className="mb-4 rounded-full bg-primary/10 p-3">
+      <SectionContainer className="pb-12 pt-4 sm:pt-8">
+        <div className="mb-4 flex flex-col items-start text-left sm:mb-12 sm:items-center sm:text-center">
+          <div className="mb-4 hidden rounded-full bg-primary/10 p-3 sm:block">
             <Landmark className="h-8 w-8 text-primary" />
           </div>
-          <h1 className="mb-4 text-4xl font-extrabold tracking-tight sm:text-5xl">
-            Calculateur de <span className="text-primary">Mensualité & Amortissement</span>
+          <h1 className="mb-2 py-0 text-2xl font-extrabold tracking-tight sm:mb-4 sm:py-3 sm:text-5xl">
+            <span className="sm:hidden">Votre crédit immobilier</span>
+            <span className="hidden sm:inline">
+              Calculateur de <span className="text-primary">Mensualité & Amortissement</span>
+            </span>
           </h1>
-          <p className="max-w-2xl text-lg text-muted-foreground">
-            Visualisez précisément comment votre mensualité se décompose entre le remboursement du
-            capital et les intérêts bancaires chaque année.
+          <p className="mb-0 max-w-2xl text-base text-muted-foreground sm:mb-6 sm:text-lg">
+            <span className="sm:hidden">
+              Calculez votre mensualité et consultez le détail des remboursements.
+            </span>
+            <span className="hidden sm:inline">
+              Visualisez précisément comment votre mensualité se décompose entre le remboursement du
+              capital et les intérêts bancaires chaque année.
+            </span>
           </p>
         </div>
 
-        <div className="mb-8 flex justify-center">
+        <div className="mb-4 flex sm:mb-8 sm:justify-center">
           <Button variant="outline" asChild size="sm">
-            <Link href="/fr/outils/calculateur-immobilier" className="flex items-center gap-2">
-              <Home className="h-4 w-4" /> Retour au simulateur Achat vs Location
+            <Link
+              href="/fr/outils/calculateur-immobilier"
+              className="flex min-h-11 items-center gap-2 whitespace-normal text-left sm:min-h-8"
+            >
+              <Home className="h-4 w-4 shrink-0" />{' '}
+              <span className="sm:hidden">Acheter ou louer ?</span>
+              <span className="hidden sm:inline">Retour au simulateur Achat vs Location</span>
             </Link>
           </Button>
         </div>
 
-        <CalculateurMensualite />
+        <CalculateurMensualite
+          key={JSON.stringify({ ...transfer, initialName })}
+          initialValues={transfer.values}
+          invalidTransfer={transfer.invalid}
+          transferred={transfer.transferred}
+          initialName={initialName}
+        />
 
         <div className="mt-16 grid grid-cols-1 gap-12 md:grid-cols-2">
           <div className="space-y-4">
