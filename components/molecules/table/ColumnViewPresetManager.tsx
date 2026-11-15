@@ -51,6 +51,7 @@ interface ColumnViewPresetManagerProps {
   table: Table<any>
   storageScope?: string
   systemPresets?: ColumnViewPreset[]
+  compactMobile?: boolean
 }
 
 export const ALL_COLUMNS_CONFIG: {
@@ -445,6 +446,7 @@ export function ColumnViewPresetManager({
   table,
   storageScope = 'global',
   systemPresets: systemPresetsProp,
+  compactMobile = false,
 }: ColumnViewPresetManagerProps) {
   const systemPresets = systemPresetsProp || SYSTEM_VIEW_PRESETS
   const customPresetsStorageKey =
@@ -782,20 +784,21 @@ export function ColumnViewPresetManager({
         <Button
           variant="outline"
           size="sm"
-          className="h-11 min-w-0 max-w-full flex-1 gap-1.5 rounded-full md:h-8 md:flex-none border-border/70 text-xs font-bold transition-all hover:bg-muted hover:text-foreground"
+          className={cn('h-11 min-w-0 max-w-full flex-1 gap-1.5 rounded-full md:h-8 md:flex-none border-border/70 text-xs font-bold transition-all hover:bg-muted hover:text-foreground', compactMobile && 'w-11 shrink-0 flex-none rounded-md px-0 md:w-auto md:rounded-full md:px-3')}
+          aria-label={`Vues et colonnes : ${activePreset?.name || 'vue personnalisée'}, ${visibleColumnIds.length} colonnes`}
           title="Gérer les vues et l'affichage des colonnes"
         >
           <LayoutGrid className="h-3.5 w-3.5 text-primary" />
-          <span className="truncate max-w-[130px] sm:max-w-[180px]">
+          <span className={cn('truncate max-w-[130px] sm:max-w-[180px]', compactMobile && 'hidden md:inline')}>
             {activePreset ? activePreset.name : 'Vues'}
           </span>
           <Badge
             variant="secondary"
-            className="ml-0.5 px-1.5 py-0 text-[10px] font-extrabold"
+            className={cn('ml-0.5 px-1.5 py-0 text-[10px] font-extrabold', compactMobile && 'hidden md:inline-flex')}
           >
             {visibleColumnIds.length} col.
           </Badge>
-          <ChevronDown className="h-3.5 w-3.5 opacity-60" />
+          <ChevronDown className={cn('h-3.5 w-3.5 opacity-60', compactMobile && 'hidden md:block')} />
         </Button>
       </DialogTrigger>
 

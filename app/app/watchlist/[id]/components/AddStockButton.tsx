@@ -23,9 +23,9 @@ export function AddStockButton({ addRow }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="h-8 gap-1">
+        <Button size="sm" className="h-11 w-11 shrink-0 gap-1 px-0 md:h-8 md:w-auto md:px-3">
           <Plus className="h-3.5 w-3.5" />
-          <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Ajouter une valeur</span>
+          <span className="sr-only md:not-sr-only md:whitespace-nowrap">Ajouter une valeur</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="gap-0 p-0 sm:max-w-[425px]">

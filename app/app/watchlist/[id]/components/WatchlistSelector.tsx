@@ -46,12 +46,12 @@ export function WatchlistSelector({ watchlists, currentId, currentName }: Watchl
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="h-auto min-h-11 w-full justify-between gap-2 whitespace-normal border-transparent px-1 py-1 text-left text-base font-bold md:h-9 md:min-h-9 md:max-w-[400px] md:whitespace-nowrap md:text-xl"
+          className="h-11 w-full min-w-0 justify-between gap-1 border-transparent px-1 py-1 text-left text-base font-bold md:h-9 md:max-w-[400px] md:gap-2 md:text-xl"
         >
-          <span className="min-w-0 break-words md:truncate md:break-normal">
+          <span className="min-w-0 truncate" title={currentValue}>
             {currentValue || 'Choisir une watchlist…'}
           </span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50 md:ml-2" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] min-w-[200px] p-0">

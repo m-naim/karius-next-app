@@ -448,6 +448,7 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
       isFixedLayout={true}
       header={
         <ListPageHeader
+          compactMobile
           backHref="/app/watchlist"
           title={<WatchlistSelector watchlists={allWatchlists} currentId={id} currentName={data.name} />}
           view={view}

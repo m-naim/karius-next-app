@@ -51,7 +51,7 @@ const COLUMN_DESCRIPTIONS: Record<string, string> = {
 
 const SortingButton = (title: string, customDesc?: string) => {
   return function Header({ column }: FiltrProps) {
-    return <MetricColumnHeader column={column} title={title} description={customDesc || COLUMN_DESCRIPTIONS[title] || title} />
+    return <MetricColumnHeader compactMobile column={column} title={title} description={customDesc || COLUMN_DESCRIPTIONS[title] || title} />
   }
 }
 

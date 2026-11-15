@@ -6,6 +6,7 @@ import { ArrowLeft, MoreHorizontal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { ViewToggleSwitch } from '@/components/atoms/ViewToggleSwitch'
+import { cn } from '@/lib/utils'
 
 export function ListPageHeader({
   backHref,
@@ -13,12 +14,14 @@ export function ListPageHeader({
   view,
   onViewChange,
   children,
+  compactMobile = false,
 }: {
   backHref: string
   title: React.ReactNode
   view: 'table' | 'analysis'
   onViewChange: (view: 'table' | 'analysis') => void
   children: React.ReactNode
+  compactMobile?: boolean
 }) {
   const [mobile, setMobile] = React.useState(false)
   React.useEffect(() => {
@@ -30,17 +33,30 @@ export function ListPageHeader({
   }, [])
 
   return (
-    <div className="bg-dark flex min-w-0 shrink-0 flex-col gap-2 rounded-lg border p-2 md:flex-row md:items-center md:justify-between md:gap-4 md:p-4">
-      <div className="flex min-w-0 flex-1 items-start gap-2 md:items-center">
-        <Button variant="ghost" size="icon" asChild className="h-11 w-9 shrink-0 md:h-8 md:w-8">
+    <div
+      className={cn(
+        'bg-dark flex min-w-0 shrink-0 flex-col gap-2 rounded-lg border p-2 md:flex-row md:items-center md:justify-between md:gap-4 md:p-4',
+        compactMobile && 'flex-row items-center gap-1 p-1'
+      )}
+    >
+      <div
+        className={cn(
+          'flex min-w-0 flex-1 items-start gap-2 md:items-center',
+          compactMobile && 'items-center gap-0'
+        )}
+      >
+        <Button variant="ghost" size="icon" asChild className="h-11 w-11 shrink-0 md:h-8 md:w-8">
           <Link href={backHref} aria-label="Retour à la liste">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
         <div className="min-w-0 flex-1">{title}</div>
       </div>
-      <div className="flex shrink-0 items-center justify-between gap-2">
+      <div
+        className={cn('flex shrink-0 items-center justify-between gap-2', compactMobile && 'gap-1')}
+      >
         <ViewToggleSwitch
+          compactMobile={compactMobile}
           view={view}
           onViewChange={onViewChange}
           className="[&_button]:min-h-11 md:[&_button]:min-h-0"

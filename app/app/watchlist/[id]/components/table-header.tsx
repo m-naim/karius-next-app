@@ -9,6 +9,14 @@ import {
 import { AddStockButton } from './AddStockButton'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
 import { ChevronDown, Filter, Search, Sparkles, Check, X, XCircleIcon } from 'lucide-react'
 import watchListService from '@/services/watchListService'
 import { DataTableFacetedFilter } from './data-table-filter'
@@ -22,7 +30,7 @@ import { ColumnViewPresetManager } from '@/components/molecules/table/ColumnView
 
 const periods = [
   { label: '1 jour', value: '1d' },
-  { label: '1 semaine', value: '1w' },
+  { label: '1 semaine', shortLabel: '1 sem.', value: '1w' },
   { label: '1 mois', value: '1m' },
   { label: '3 mois', value: '3m' },
   { label: '6 mois', value: '6m' },
@@ -56,17 +64,24 @@ export const TableContextHeader = ({
   setActiveScreener,
 }: TableContextHeaderProps) => {
   const [showFilters, setShowFilters] = React.useState(false)
-  const [searchExpanded, setSearchExpanded] = React.useState(() => Boolean(table.getState().globalFilter))
+  const [searchExpanded, setSearchExpanded] = React.useState(() =>
+    Boolean(table.getState().globalFilter)
+  )
   const searchInputRef = React.useRef<HTMLInputElement>(null)
+  const filterTriggerRef = React.useRef<HTMLButtonElement>(null)
+  const filtersId = React.useId()
 
   const colMap = React.useMemo(() => {
     const cols = table.getAllColumns()
     return new Map(cols.map((c) => [c.id, c]))
   }, [table])
 
-  const getCol = React.useCallback((colId: string) => {
-    return colMap.get(colId)
-  }, [colMap])
+  const getCol = React.useCallback(
+    (colId: string) => {
+      return colMap.get(colId)
+    },
+    [colMap]
+  )
 
   const addRow = async (symbol: string) => {
     const response = await watchListService.addStock(id, {
@@ -83,6 +98,11 @@ export const TableContextHeader = ({
 
   const isFiltered = table.getState().columnFilters.length > 0 || !!table.getState().globalFilter
   const hasActiveFilter = isFiltered || !!activeScreener
+  const activeFilterCount =
+    table.getState().columnFilters.length +
+    (activeScreener ? 1 : 0) +
+    (table.getState().globalFilter ? 1 : 0)
+  const currentPeriod = periods.find((period) => period.value === selectedPeriod)
 
   const collapseSearchIfEmpty = () => {
     if (!table.getState().globalFilter) {
@@ -91,21 +111,24 @@ export const TableContextHeader = ({
   }
 
   return (
-    <div className="flex flex-col gap-2 p-2 sm:gap-4 sm:p-4">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-        <div className="flex min-w-0 flex-1 items-center gap-2">
+    <div className="flex flex-col gap-2 p-2 md:gap-4 md:p-4">
+      <div className="flex items-center justify-between gap-1 md:flex-wrap md:gap-4 xl:flex-nowrap">
+        <div className="flex min-w-0 flex-1 items-center gap-1 md:basis-full md:gap-2 xl:basis-auto">
           {owned && <AddStockButton addRow={addRow} />}
 
           <div
             className={cn(
-              'relative min-w-0 transition-[width] duration-200 ease-out md:max-w-sm',
-              searchExpanded ? 'w-full' : 'w-11 md:w-[250px]'
+              'relative min-w-0 md:max-w-sm',
+              searchExpanded ? 'flex-1 md:flex-none' : 'w-11 shrink-0 md:w-[250px]'
             )}
           >
-            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search
+              aria-hidden="true"
+              className="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            />
             <Input
               ref={searchInputRef}
-              placeholder="Search by name or symbol..."
+              placeholder="Nom ou symbole…"
               value={(table.getState().globalFilter as string) ?? ''}
               onChange={(event) => table.setGlobalFilter(event.target.value)}
               onFocus={() => setSearchExpanded(true)}
@@ -118,17 +141,27 @@ export const TableContextHeader = ({
               }}
               aria-label="Rechercher une action par nom ou symbole"
               className={cn(
-                'h-11 w-full pl-8 text-xs transition-colors md:h-8 md:w-[250px]',
-                !searchExpanded && 'cursor-pointer text-transparent placeholder:text-transparent md:cursor-text md:text-foreground md:placeholder:text-muted-foreground'
+                'h-11 w-full pl-8 text-base transition-colors md:h-8 md:w-[250px] md:text-xs',
+                !searchExpanded &&
+                  'cursor-pointer text-transparent placeholder:text-transparent md:cursor-text md:text-foreground md:placeholder:text-muted-foreground'
               )}
             />
           </div>
 
           <Button
-            variant={showFilters ? 'default' : hasActiveFilter ? 'outline' : 'outline'}
+            ref={filterTriggerRef}
+            variant={showFilters ? 'default' : 'outline'}
             size="sm"
+            aria-label={`Filtres${
+              activeFilterCount
+                ? ` (${activeFilterCount} ${activeFilterCount === 1 ? 'actif' : 'actifs'})`
+                : ''
+            }`}
+            aria-expanded={showFilters}
+            aria-controls={filtersId}
             className={cn(
-              'h-11 shrink-0 gap-1.5 rounded-full text-xs font-bold md:h-8 transition-all border border-border/70',
+              'relative h-11 w-11 shrink-0 gap-1.5 rounded-md px-0 text-xs font-bold md:h-8 md:w-auto md:rounded-full md:px-3 transition-colors border border-border/70',
+              searchExpanded && 'hidden md:inline-flex',
               showFilters
                 ? 'bg-primary text-primary-foreground border-primary shadow-xs'
                 : hasActiveFilter
@@ -138,34 +171,50 @@ export const TableContextHeader = ({
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="h-3.5 w-3.5" />
-            <span>Filtres</span>
+            <span className="sr-only md:not-sr-only">Filtres</span>
             {hasActiveFilter && (
-              <span className="rounded-full bg-primary text-primary-foreground px-1.5 py-0.2 text-[10px] font-bold">
-                {table.getState().columnFilters.length + (activeScreener ? 1 : 0)}
+              <span className="absolute -right-1 -top-1 rounded-full bg-primary text-primary-foreground px-1.5 text-[10px] font-bold md:static">
+                {activeFilterCount}
               </span>
             )}
             <ChevronDown
-              className={cn('h-3.5 w-3.5 transition-transform duration-200', showFilters && 'rotate-180')}
+              className={cn(
+                'hidden h-3.5 w-3.5 transition-transform duration-200 motion-reduce:transition-none md:block',
+                showFilters && 'rotate-180'
+              )}
             />
           </Button>
         </div>
 
-        <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto">
+        <div
+          className={cn(
+            'flex min-w-0 shrink-0 items-center gap-1 md:ml-auto md:gap-2',
+            searchExpanded && 'hidden md:flex'
+          )}
+        >
           {/* Unified Column View & Preset Manager */}
-          <ColumnViewPresetManager table={table} />
+          <ColumnViewPresetManager table={table} compactMobile />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button size="sm" variant="outline" className="h-11 min-w-20 flex-1 justify-between whitespace-nowrap sm:h-8 sm:flex-none">
-                {periods.find((p) => p.value === selectedPeriod)?.label || 'Sélectionner'}
-                <ChevronDown className="ml-2 h-4 w-4" />
+              <Button
+                size="sm"
+                variant="outline"
+                aria-label={`Période : ${currentPeriod?.label}`}
+                className="h-11 justify-between gap-1 whitespace-nowrap px-2 text-xs md:h-8 md:px-3"
+              >
+                <span className="md:hidden">
+                  {currentPeriod?.shortLabel || currentPeriod?.label || 'Période'}
+                </span>
+                <span className="hidden md:inline">{currentPeriod?.label || 'Sélectionner'}</span>
+                <ChevronDown className="h-3 w-3 md:ml-2 md:h-4 md:w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-36">
               {periods.map((p) => (
                 <DropdownMenuCheckboxItem
                   key={p.value}
-                  className="capitalize"
+                  className="min-h-11 capitalize md:min-h-0"
                   checked={p.value === selectedPeriod}
                   onCheckedChange={() => setSelectedPeriod(p.value)}
                 >
@@ -179,10 +228,30 @@ export const TableContextHeader = ({
             {table.getRowModel().rows.length} actions
           </div>
         </div>
+        {searchExpanded && (
+          <Button
+            variant="ghost"
+            className="h-11 shrink-0 px-2 md:hidden"
+            onClick={() => {
+              table.setGlobalFilter('')
+              setSearchExpanded(false)
+            }}
+          >
+            {table.getState().globalFilter ? 'Effacer' : 'Fermer'}
+          </Button>
+        )}
       </div>
 
-      {showFilters && (
-        <div className="flex flex-col gap-3 rounded-xl border bg-card p-3 shadow-md border-border/70 transition-all duration-200 animate-in fade-in zoom-in-95">
+      <WatchlistFilterPanel
+        open={showFilters}
+        onOpenChange={setShowFilters}
+        onClose={() => filterTriggerRef.current?.focus()}
+        resultCount={table.getRowModel().rows.length}
+      >
+        <div
+          id={filtersId}
+          className="flex flex-col gap-3 bg-card p-3 max-md:[&_button]:min-h-11 md:rounded-xl md:border md:border-border/70"
+        >
           {/* SECTION 1: FILTRES RECOMMANDÉS / SCREENERS */}
           {setActiveScreener && (
             <div className="flex flex-col gap-2 pb-3 border-b border-border/40">
@@ -205,20 +274,20 @@ export const TableContextHeader = ({
                   const isActive = activeScreener === scr.id
                   return (
                     <span key={scr.id} className="inline-flex items-center gap-0.5">
-                    <button
-                      onClick={() => setActiveScreener(isActive ? null : scr.id)}
-                      aria-pressed={isActive}
-                      className={cn(
-                        'flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition-all border',
-                        isActive
-                          ? 'bg-primary border-primary text-primary-foreground shadow-xs ring-2 ring-primary/20'
-                          : 'bg-muted/40 text-muted-foreground border-border/60 hover:bg-muted hover:text-foreground'
-                      )}
-                    >
-                      {isActive && <Check className="h-3 w-3" />}
-                      <span>{scr.label}</span>
-                    </button>
-                    <InfoTooltip label={scr.label} content={scr.desc} />
+                      <button
+                        onClick={() => setActiveScreener(isActive ? null : scr.id)}
+                        aria-pressed={isActive}
+                        className={cn(
+                          'flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition-all border',
+                          isActive
+                            ? 'bg-primary border-primary text-primary-foreground shadow-xs ring-2 ring-primary/20'
+                            : 'bg-muted/40 text-muted-foreground border-border/60 hover:bg-muted hover:text-foreground'
+                        )}
+                      >
+                        {isActive && <Check className="h-3 w-3" />}
+                        <span>{scr.label}</span>
+                      </button>
+                      <InfoTooltip label={scr.label} content={scr.desc} />
                     </span>
                   )
                 })}
@@ -476,21 +545,81 @@ export const TableContextHeader = ({
               )}
 
               {getCol('regularMarketPrice') && (
-                <DataTableRangeFilter column={getCol('regularMarketPrice')!} title="Prix" step={1} />
+                <DataTableRangeFilter
+                  column={getCol('regularMarketPrice')!}
+                  title="Prix"
+                  step={1}
+                />
               )}
 
               {getCol('marketCap') && (
-                <DataTableRangeFilter column={getCol('marketCap')!} title="Cap. Boursière" step={1000000} />
+                <DataTableRangeFilter
+                  column={getCol('marketCap')!}
+                  title="Cap. Boursière"
+                  step={1000000}
+                />
               )}
 
               {getCol('weight') && (
-                <DataTableRangeFilter column={getCol('weight')!} title="Pondération" unit="%" step={1} />
+                <DataTableRangeFilter
+                  column={getCol('weight')!}
+                  title="Pondération"
+                  unit="%"
+                  step={1}
+                />
               )}
             </div>
           </div>
         </div>
-      )}
+      </WatchlistFilterPanel>
     </div>
   )
 }
 
+function WatchlistFilterPanel({
+  open,
+  onOpenChange,
+  onClose,
+  resultCount,
+  children,
+}: {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onClose: () => void
+  resultCount: number
+  children: React.ReactNode
+}) {
+  const [mobile, setMobile] = React.useState(false)
+  React.useEffect(() => {
+    const media = window.matchMedia('(max-width: 767px)')
+    const update = () => setMobile(media.matches)
+    update()
+    media.addEventListener('change', update)
+    return () => media.removeEventListener('change', update)
+  }, [])
+
+  if (!mobile) return open ? children : null
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent
+        className="flex max-h-[85dvh] flex-col gap-0 overflow-hidden p-0 motion-reduce:animate-none [&>button]:right-1 [&>button]:top-1 [&>button]:h-11 [&>button]:w-11 [&>button]:inline-flex [&>button]:items-center [&>button]:justify-center"
+        onCloseAutoFocus={(event) => {
+          event.preventDefault()
+          onClose()
+        }}
+      >
+        <DialogHeader className="shrink-0 border-b p-4 pr-10 text-left">
+          <DialogTitle>Filtres de la watchlist</DialogTitle>
+          <DialogDescription>Les filtres sont enregistrés automatiquement.</DialogDescription>
+        </DialogHeader>
+        <div className="min-h-0 overflow-y-auto">{children}</div>
+        <DialogFooter className="shrink-0 border-t p-3">
+          <Button className="min-h-11 w-full" onClick={() => onOpenChange(false)}>
+            Voir les {resultCount} actions
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
