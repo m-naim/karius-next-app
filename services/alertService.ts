@@ -3,19 +3,20 @@ import http from './http'
 
 const host = config.API_URL
 
-const syncCurrentBrowserSubscription = async () => {
+const testBrowserNotification = async () => {
   if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) {
     throw new Error('Les notifications Push ne sont pas disponibles dans ce navigateur.')
   }
 
-  const registration = await navigator.serviceWorker.register('/sw.js')
+  await navigator.serviceWorker.register('/sw.js')
+  const registration = await navigator.serviceWorker.ready
   const subscription = await registration.pushManager.getSubscription()
   if (!subscription) {
     throw new Error('Aucun abonnement navigateur actif sur cet appareil. Activez d’abord les notifications.')
   }
 
   await http.post(`${host}/api/v1/alerts/browser/subscription`, subscription.toJSON())
-  return subscription
+  await http.post(`${host}/api/v1/alerts/browser/test`, { endpoint: subscription.endpoint })
 }
 
 export const alertService = {
@@ -33,12 +34,11 @@ export const alertService = {
   getBrowserConfig: () => http.get(`${host}/api/v1/alerts/browser/config`),
   saveBrowserSubscription: (subscription: PushSubscriptionJSON) =>
     http.post(`${host}/api/v1/alerts/browser/subscription`, subscription),
-  syncCurrentBrowserSubscription,
   removeBrowserSubscription: (endpoint?: string) =>
     endpoint
       ? http.deleteReq(`${host}/api/v1/alerts/browser/subscription?endpoint=${encodeURIComponent(endpoint)}`)
       : http.deleteReq(`${host}/api/v1/alerts/browser/subscription`),
-  testBrowserNotification: () => http.post(`${host}/api/v1/alerts/browser/test`, {}),
+  testBrowserNotification,
   testLastNotification: () => http.post(`${host}/api/v1/alerts/test-last`, {}),
   testLastBatchNotification: () => http.post(`${host}/api/v1/alerts/test-batch`, {}),
   trackEvent: (event: string, channel: 'telegram' | 'ntfy' | 'browser' = 'telegram', metadata: Record<string, string> = {}) =>

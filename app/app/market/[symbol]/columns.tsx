@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { securityFreshness, combinedFreshness } from '@/lib/data-freshness'
 import { MetricColumnHeader } from '@/components/molecules/table/MetricColumnHeader'
+import { momentumColumn } from '@/components/molecules/table/momentum-column'
 import { Actions } from 'app/app/watchlist/[id]/components/Actions'
 import { PriceValue } from '@/components/molecules/table/PriceValue'
 import { SecurityIdentity } from '@/components/molecules/table/SecurityIdentity'
@@ -154,6 +155,7 @@ export const columns = (selectedPeriod: any, allWatchlists: any[] = []): ColumnD
       filterFn: genericNumericFilterFn,
     },
 
+    momentumColumn(),
     {
       accessorKey: 'trailingPE',
       header: SortingButton('P/E', true),

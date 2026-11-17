@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 
 const MOBILE_LABELS: Record<string, string> = {
   Variation: 'Var.',
+  'Momentum 12‑1': 'Mom. 12‑1',
   Résultats: 'Résult.',
   'Rendement Div.': 'Div. %',
   Capitalisation: 'Cap.',

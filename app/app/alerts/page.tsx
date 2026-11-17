@@ -317,7 +317,6 @@ export default function AlertsPage() {
   const handleTestNotification = async () => {
     if (settings.channel === 'browser') {
       try {
-        await alertService.syncCurrentBrowserSubscription()
         await alertService.testBrowserNotification()
         toast({
           title: 'Notification de test envoyée',

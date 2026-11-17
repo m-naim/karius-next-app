@@ -82,6 +82,12 @@ export const ALL_COLUMNS_CONFIG: {
       'Performance du cours de bourse sur la période temporelle sélectionnée (1j, 1w, 1m, 1y, 5y).',
   },
   {
+    id: 'momentum12m1',
+    label: 'Momentum 12‑1',
+    group: 'Général',
+    description: 'Rendement du cours entre les clôtures de fin des mois M−12 et M−1.',
+  },
+  {
     id: 'sector',
     label: 'Secteur',
     group: 'Général',
@@ -302,6 +308,7 @@ export const SYSTEM_VIEW_PRESETS: ColumnViewPreset[] = [
       symbol: true,
       regularMarketPrice: true,
       variation: true,
+      momentum12m1: true,
       sector: true,
       trailingPE: true,
       dividendYield: true,
@@ -314,6 +321,7 @@ export const SYSTEM_VIEW_PRESETS: ColumnViewPreset[] = [
       'symbol',
       'regularMarketPrice',
       'variation',
+      'momentum12m1',
       'sector',
       'trailingPE',
       'dividendYield',

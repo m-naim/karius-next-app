@@ -5,6 +5,8 @@ export interface security {
   quoteAsOf?: string
   variationsAsOf?: string
   variationsCalculatedAt?: string
+  momentum12m1?: number | null
+  momentumSignalMonth?: string | null
   exchange: string
   shortname: string
   quoteType: string

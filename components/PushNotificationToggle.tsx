@@ -100,7 +100,8 @@ export function PushNotificationToggle({
       if (!config?.configured || !config.publicKey)
         throw new Error('Le serveur de notifications navigateur n’est pas configuré.')
 
-      const registration = await navigator.serviceWorker.register('/sw.js')
+      await navigator.serviceWorker.register('/sw.js')
+      const registration = await navigator.serviceWorker.ready
       const subscription =
         (await registration.pushManager.getSubscription()) ||
         (await registration.pushManager.subscribe({
@@ -174,7 +175,6 @@ export function PushNotificationToggle({
   const sendTestNotification = async () => {
     setLoading(true)
     try {
-      await alertService.syncCurrentBrowserSubscription()
       await alertService.testBrowserNotification()
       toast({
         title: 'Notification de test envoyée',

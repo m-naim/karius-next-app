@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { securityFreshness, performanceFreshness, combinedFreshness } from '@/lib/data-freshness'
 import { MetricColumnHeader } from '@/components/molecules/table/MetricColumnHeader'
+import { momentumColumn } from '@/components/molecules/table/momentum-column'
 import { InfoTooltip } from '@/components/ui/info-tooltip'
 import { PriceValue } from '@/components/molecules/table/PriceValue'
 import { SecurityIdentity } from '@/components/molecules/table/SecurityIdentity'
@@ -179,6 +180,7 @@ export const columns = (
         return mode === 'is' ? matches : !matches
       },
     },
+    momentumColumn(),
     {
       accessorFn: (row) => {
         const variations = row.variations as Record<string, number>
