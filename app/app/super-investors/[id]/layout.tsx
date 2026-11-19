@@ -14,6 +14,7 @@ import {
 import SectionContainer from '@/components/organismes/layout/SectionContainer'
 import { Badge } from '@/components/ui/badge'
 import { BackButton } from '@/components/atoms/BackButton'
+import { SuperInvestorAlertButton } from '@/components/notifications/SuperInvestorAlertButton'
 import {
   getSuperInvestorById,
   getSuperInvestorValuationStatus,
@@ -75,6 +76,7 @@ export default function SuperInvestorLayout({
               </div>
 
               <div className="flex shrink-0 items-center gap-2">
+                {investor?.slug === slug && <SuperInvestorAlertButton key={slug} slug={slug} />}
                 {valuation?.latestCoveragePercent != null && (
                   <Badge variant="outline" className="hidden gap-1.5 sm:flex">
                     <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
@@ -82,6 +84,7 @@ export default function SuperInvestorLayout({
                   </Badge>
                 )}
                 <Badge
+                  className="hidden md:inline-flex"
                   variant={
                     valuation?.status === 'AVAILABLE' ? 'secondary' : 'outline'
                   }
