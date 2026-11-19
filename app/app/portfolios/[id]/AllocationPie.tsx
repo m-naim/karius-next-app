@@ -14,6 +14,7 @@ interface AllocationPieProps {
   }>
   totalValue: number
   currency?: string
+  showAmounts?: boolean
 }
 
 type ViewType = 'assets' | 'sectors' | 'industries'
@@ -41,11 +42,16 @@ const AllocationPie = ({
   data,
   totalValue,
   currency = 'EUR',
+  showAmounts = true,
 }: AllocationPieProps) => {
   const [view, setView] = useState<ViewType>('assets')
   const [hoveredData, setHoveredData] = useState<HoveredData | null>(null)
+  const allocationKey = showAmounts ? 'value' : 'weight'
 
   const pieData = useMemo(() => {
+    const byAllocation = (a: HoveredData, b: HoveredData) =>
+      b[allocationKey] - a[allocationKey]
+
     if (view === 'assets') {
       return data
         .map((item) => ({
@@ -53,7 +59,7 @@ const AllocationPie = ({
           value: item.totalValue,
           weight: item.weight * 100,
         }))
-        .sort((a, b) => b.value - a.value)
+        .sort(byAllocation)
     }
 
     const groupedData = data.reduce((acc, item) => {
@@ -72,8 +78,8 @@ const AllocationPie = ({
       acc[key].weight += item.weight * 100
       return acc
     }, {} as Record<string, HoveredData>)
-    return Object.values(groupedData).sort((a, b) => b.value - a.value)
-  }, [data, view])
+    return Object.values(groupedData).sort(byAllocation)
+  }, [data, view, allocationKey])
 
   const topItems = useMemo(() => pieData.slice(0, 5), [pieData])
 
@@ -117,7 +123,7 @@ const AllocationPie = ({
           <PieChart>
             <Pie
               data={pieData}
-              dataKey="value"
+              dataKey={allocationKey}
               nameKey="name"
               cx="50%"
               cy="50%"
@@ -149,18 +155,24 @@ const AllocationPie = ({
               <div className="text-lg font-black">
                 {hoveredData.weight.toFixed(1)}%
               </div>
-              <div className="text-xs font-medium text-muted-foreground">
-                {formatValue(hoveredData.value)}
-              </div>
+              {showAmounts && (
+                <div className="text-xs font-medium text-muted-foreground">
+                  {formatValue(hoveredData.value)}
+                </div>
+              )}
             </div>
           ) : (
             <div className="duration-200 animate-in fade-in zoom-in-95">
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Total
-              </div>
-              <div className="text-lg font-black">
-                {formatValue(totalValue)}
-              </div>
+              {showAmounts && (
+                <>
+                  <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Total
+                  </div>
+                  <div className="text-lg font-black">
+                    {formatValue(totalValue)}
+                  </div>
+                </>
+              )}
               <div className="text-[11px] font-medium text-muted-foreground">
                 {pieData.length} catégories
               </div>
