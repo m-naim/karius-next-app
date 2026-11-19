@@ -19,7 +19,16 @@ const testBrowserNotification = async () => {
   await http.post(`${host}/api/v1/alerts/browser/test`, { endpoint: subscription.endpoint })
 }
 
+export interface SuperInvestorAlertSettings {
+  enabled: boolean
+  deliveryReady: boolean
+}
+
 export const alertService = {
+  getSuperInvestorAlert: (slug: string, signal?: AbortSignal): Promise<SuperInvestorAlertSettings> =>
+    http.get(`${host}/api/v1/alerts/super-investors/${encodeURIComponent(slug)}`, { signal }),
+  updateSuperInvestorAlert: (slug: string, enabled: boolean): Promise<SuperInvestorAlertSettings> =>
+    http.put(`${host}/api/v1/alerts/super-investors/${encodeURIComponent(slug)}`, { enabled }),
   getMyAlerts: () => http.get(`${host}/api/v1/alerts/`),
   createAlert: (data: { symbol: string; type: string; operator: string; value: number }) =>
     http.post(`${host}/api/v1/alerts/`, data),
