@@ -117,7 +117,9 @@ export default function PortfolioSettings() {
               <div className="mt-1 flex items-start gap-2 font-medium">
                 <Lock className="mt-0.5 h-4 w-4 shrink-0" />
                 <span>
-                  <strong>Confidentialité garantie</strong> : Vos montants exacts (capital, liquidités, gains en devises) sont totalement masqués. Seuls les pourcentages de performance et le poids de chaque action sont visibles.
+                  Vos montants, prix d’exécution et quantités restent privés. Les visiteurs peuvent
+                  voir votre performance, la répartition du portefeuille et le sens de vos ordres,
+                  avec une estimation de leur poids par tranche.
                 </span>
               </div>
             </div>

@@ -332,9 +332,18 @@ function PageTransactions() {
         </div>
 
         <TabsContent value="transactions" className="mt-2 border-none p-0">
+          {!own && filteredTransactions.length > 0 && (
+            <p className="mb-2 text-xs text-muted-foreground">
+              Le poids de l’ordre estime sa part dans la valeur du portefeuille à la date de
+              l’opération. Il est affiché par tranche lorsque l’estimation est disponible.
+            </p>
+          )}
           <Card className="overflow-hidden border-border bg-card shadow-sm">
             <CardContent className="p-0">
-              <SimpleDataTable table={transactionsTable} colSpan={transactionColumns.length} />
+              <SimpleDataTable
+                table={transactionsTable}
+                colSpan={transactionsTable.getVisibleLeafColumns().length}
+              />
             </CardContent>
           </Card>
         </TabsContent>

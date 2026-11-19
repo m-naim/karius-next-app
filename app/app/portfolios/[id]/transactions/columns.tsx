@@ -81,6 +81,14 @@ interface Transaction {
   type: string
   id: string
   freeShares?: boolean
+  side?: 'BUY' | 'SELL'
+  sizeBand?: keyof typeof sizeBandLabels
+}
+
+const sizeBandLabels = {
+  UNDER_ONE_PERCENT: '< 1 %',
+  ONE_TO_FIVE_PERCENT: '1 à < 5 %',
+  FIVE_PERCENT_OR_MORE: '≥ 5 %',
 }
 
 export const columns = (
@@ -113,7 +121,38 @@ export const columns = (
       header: SortingButton('Produit'),
       cell: ({ row }) => <div className="capitalize">{row.getValue('symbol')}</div>,
     },
+  ]
 
+  if (!owned) {
+    return [
+      ...colList,
+      {
+        accessorKey: 'side',
+        header: SortingButton('Sens', false),
+        cell: ({ row }) => {
+          const { side, freeShares } = row.original
+          if (freeShares) return 'Attribution'
+          if (side === 'BUY') {
+            return <span className="font-medium text-emerald-600 dark:text-emerald-400">Achat</span>
+          }
+          if (side === 'SELL') {
+            return <span className="font-medium text-rose-600 dark:text-rose-400">Vente</span>
+          }
+          return '—'
+        },
+      },
+      {
+        id: 'sizeBand',
+        header: 'Poids de l’ordre',
+        cell: ({ row }) => {
+          const { sizeBand } = row.original
+          return sizeBand ? sizeBandLabels[sizeBand] : '—'
+        },
+      },
+    ]
+  }
+
+  colList.push(
     {
       accessorKey: 'price',
       header: SortingButton('Prix', false),
@@ -129,11 +168,7 @@ export const columns = (
         return <div className="font-medium ">{formatted}</div>
       },
     },
-
-  ]
-
-  if (owned) {
-    colList.push({
+    {
       accessorKey: 'qty',
       header: SortingButton('Quantité', false),
       cell: ({ row }) => {
@@ -146,9 +181,8 @@ export const columns = (
 
         return <div className="font-medium ">{formatted}</div>
       },
-    })
-
-    colList.push({
+    },
+    {
       accessorKey: 'actions',
       header: '',
       cell: ({ row }) => {
@@ -178,8 +212,8 @@ export const columns = (
           </div>
         )
       },
-    })
-  }
+    }
+  )
 
   return colList
 }
