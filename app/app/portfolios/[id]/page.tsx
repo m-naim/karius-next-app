@@ -642,7 +642,11 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
                   <h3 className="text-sm font-semibold">Répartition</h3>
                 </CardHeader>
                 <CardContent className="p-4">
-                  <AllocationPie data={data} totalValue={portfolio.totalValue} />
+                  <AllocationPie
+                    data={data}
+                    totalValue={portfolio.totalValue}
+                    showAmounts={own}
+                  />
                 </CardContent>
               </Card>
             )}
