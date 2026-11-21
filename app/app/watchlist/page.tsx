@@ -6,7 +6,7 @@ import { Plus, Bookmark, Globe, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { WatchCard } from './watchlistCard'
 import watchListService from '@/services/watchListService'
-import authService from '@/services/authService'
+import { useAuth } from '@/hooks/useAuth'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
@@ -30,7 +30,8 @@ export default function WatchlistHubPage() {
   const [loadingMy, setLoadingMy] = useState(true)
   const [loadingPublic, setLoadingPublic] = useState(true)
 
-  const { authentificated } = authService.getCurrentUser()
+  const { user } = useAuth()
+  const authentificated = !!user
 
   useEffect(() => {
     setMounted(true)

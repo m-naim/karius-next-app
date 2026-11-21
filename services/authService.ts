@@ -1,5 +1,6 @@
 import config from './config'
 import http from './http'
+import { clearSession, decodeSession, storedToken, saveSession } from '@/lib/auth-session'
 
 const host = config.API_URL
 
@@ -12,7 +13,7 @@ const register = (username, email, password) => {
     })
     .then((response) => {
       if (response) {
-        if (typeof window !== 'undefined') localStorage.setItem('accessToken', response.accessToken)
+        saveSession(response.accessToken)
       }
       return response
     })
@@ -26,33 +27,16 @@ const login = (email, password) => {
     })
     .then((response) => {
       if (response) {
-        if (typeof window !== 'undefined') localStorage.setItem('accessToken', response.accessToken)
+        saveSession(response.accessToken)
       }
       return response
     })
 }
-const logOut = () => {
-  if (typeof window !== 'undefined') localStorage.removeItem('accessToken')
-}
+const logOut = () => clearSession()
 
 const getCurrentUser = () => {
-  if (typeof window !== 'undefined') {
-    let token = localStorage.getItem('accessToken')
-
-    if (token != null && token.length > 2) {
-      const decodedJwt = JSON.parse(atob(token.split('.')[1]))
-      if (decodedJwt.exp * 1000 < Date.now()) {
-        authService.logOut()
-      }
-      return {
-        authentificated: true,
-        user: decodedJwt,
-      }
-    }
-  }
-  return {
-    authentificated: false,
-  }
+  const user = decodeSession(storedToken())
+  return user ? { authentificated: true, user } : { authentificated: false }
 }
 
 const getProfile = () => {

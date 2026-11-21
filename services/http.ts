@@ -1,4 +1,5 @@
 import { toast } from '@/hooks/use-toast'
+import { accessToken, clearSession } from '@/lib/auth-session'
 
 export class HttpError extends Error {
   status: number
@@ -12,7 +13,7 @@ export class HttpError extends Error {
   }
 }
 
-async function CheckError(response: Response) {
+async function CheckError(response: Response, token: string | null, authenticationRequest: boolean) {
   if (response.ok) {
     try {
       // Handle empty responses
@@ -32,7 +33,7 @@ async function CheckError(response: Response) {
     if (errorData && (errorData.message || errorData.error)) {
       errorMessage = errorData.message || errorData.error
     }
-  } catch (e) {
+  } catch {
     // If not JSON, ignore
   }
 
@@ -43,18 +44,14 @@ async function CheckError(response: Response) {
   })
 
   // Specific handling for common status codes
-  if (response.status === 401) {
-    if (typeof window !== 'undefined') {
-      const hadToken = !!localStorage.getItem('accessToken')
-      localStorage.removeItem('accessToken')
-      if (hadToken) {
-        toast({
-          variant: 'destructive',
-          title: 'Session expirée',
-          description: 'Veuillez vous reconnecter pour continuer à synchroniser vos données.',
-        })
-      }
-    }
+  if (response.status === 401 && !authenticationRequest) {
+    clearSession(token ? 'rejected' : 'required', token)
+  } else if (response.status === 403 && !authenticationRequest) {
+    toast({
+      variant: 'destructive',
+      title: 'Accès refusé',
+      description: 'Votre compte ne dispose pas des droits nécessaires pour cette action.',
+    })
   } else if (response.status === 429) {
     if (typeof window !== 'undefined') {
       toast({
@@ -90,96 +87,33 @@ function handleNetworkError(err: any) {
   }
 }
 
-function authHeader(): Record<string, string> {
-  if (typeof window !== 'undefined') {
-    const accessToken = localStorage.getItem('accessToken')
-    if (accessToken) {
-      return { Authorization: `Bearer ${accessToken}` }
-    }
+async function request(path: string, method: string, body?: unknown, options: { signal?: AbortSignal } = {}) {
+  const authenticationRequest = /\/auth\/(login|register)\/?(?:\?|$)/.test(path)
+  const token = authenticationRequest ? null : accessToken()
+  try {
+    const response = await fetch(path, {
+      credentials: 'omit',
+      headers: {
+        'content-type': 'application/json;charset=UTF-8',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+      method,
+      mode: 'cors',
+      signal: options.signal,
+    })
+    return await CheckError(response, token, authenticationRequest)
+  } catch (err) {
+    handleNetworkError(err)
+    throw err
   }
-  return {}
-}
-
-function post(path: string, body: any) {
-  return fetch(`${path}`, {
-    credentials: 'omit',
-    headers: {
-      'content-type': 'application/json;charset=UTF-8',
-      'sec-fetch-mode': 'cors',
-      ...authHeader(),
-    },
-    body: JSON.stringify(body),
-    method: 'POST',
-    mode: 'cors',
-  })
-    .then(CheckError)
-    .catch((err) => {
-      handleNetworkError(err)
-      throw err
-    })
-}
-
-function get(path: string, options: { signal?: AbortSignal } = {}) {
-  return fetch(`${path}`, {
-    credentials: 'omit',
-    headers: {
-      'content-type': 'application/json;charset=UTF-8',
-      'sec-fetch-mode': 'cors',
-      ...authHeader(),
-    },
-    method: 'GET',
-    mode: 'cors',
-    signal: options.signal,
-  })
-    .then(CheckError)
-    .catch((err) => {
-      handleNetworkError(err)
-      throw err
-    })
-}
-
-function put(path: string, body: any) {
-  return fetch(`${path}`, {
-    credentials: 'omit',
-    headers: {
-      'content-type': 'application/json;charset=UTF-8',
-      'sec-fetch-mode': 'cors',
-      ...authHeader(),
-    },
-    body: JSON.stringify(body),
-    method: 'PUT',
-    mode: 'cors',
-  })
-    .then(CheckError)
-    .catch((err) => {
-      handleNetworkError(err)
-      throw err
-    })
-}
-
-function deleteReq(path: string) {
-  return fetch(`${path}`, {
-    credentials: 'omit',
-    headers: {
-      'content-type': 'application/json;charset=UTF-8',
-      'sec-fetch-mode': 'cors',
-      ...authHeader(),
-    },
-    method: 'DELETE',
-    mode: 'cors',
-  })
-    .then(CheckError)
-    .catch((err) => {
-      handleNetworkError(err)
-      throw err
-    })
 }
 
 const http = {
-  post,
-  get,
-  put,
-  deleteReq,
+  post: (path: string, body: unknown) => request(path, 'POST', body),
+  get: (path: string, options: { signal?: AbortSignal } = {}) => request(path, 'GET', undefined, options),
+  put: (path: string, body: unknown) => request(path, 'PUT', body),
+  deleteReq: (path: string) => request(path, 'DELETE'),
 }
 
 export default http

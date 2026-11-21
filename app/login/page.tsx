@@ -1,22 +1,29 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import authService from '../../services/authService'
+import { HttpError } from '@/services/http'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 import { Label } from '@/components/ui/label'
-import { useAuth } from '@/hooks/useAuth'
 import { getLoginDestination } from '@/lib/app-navigation'
 
 function Login() {
   const router = useRouter()
-  const { login } = useAuth()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+
+  useEffect(() => {
+    const reason = new URLSearchParams(window.location.search).get('reason')
+    if (reason === 'expired') setMessage('Votre session a expiré. Connectez-vous pour continuer.')
+    if (reason === 'rejected') setMessage('Votre session n’est plus acceptée. Veuillez vous reconnecter.')
+    if (reason === 'required') setMessage('Connectez-vous pour accéder à cette page.')
+  }, [])
 
   const onChangevalue = (e, setState) => {
     const value = e.target.value
@@ -25,20 +32,21 @@ function Login() {
 
   const logIn = async (e) => {
     e.preventDefault()
+    if (submitting) return
     if (email == null || email.length <= 0) return setMessage("L'email est obligatoire")
     if (password == null || password.length <= 0)
       return setMessage('Le mot de passe est obligatoire')
+    setSubmitting(true)
+    setMessage('')
     try {
-      const response = await authService.login(email, password)
-      login(response.accessToken)
+      await authService.login(email, password)
       router.replace(getLoginDestination(new URLSearchParams(window.location.search).get('redirect')))
     } catch (error) {
-      console.error(error)
-      const resMessage =
-        (error.response && error.response.data && error.response.data.message) ||
-        error.message ||
-        error.toString()
-      setMessage(resMessage)
+      setMessage(error instanceof HttpError && (error.status === 401 || error.status === 403)
+        ? 'Email ou mot de passe incorrect.'
+        : error.message || 'Connexion impossible. Veuillez réessayer.')
+    } finally {
+      setSubmitting(false)
     }
   }
   return (
@@ -92,14 +100,15 @@ function Login() {
             </div>
             <Button
               variant="link"
+              type="button"
               className="ml-auto text-sm text-primary hover:underline"
               data-umami-event="login-forgot-button"
             >
               Mot de passe oublié?
             </Button>
           </div>
-          <Button type="submit" className="btn-primary">
-            Se connecter
+          <Button type="submit" className="btn-primary" disabled={submitting}>
+            {submitting ? 'Connexion en cours…' : 'Se connecter'}
           </Button>
 
           {message.length > 0 && (

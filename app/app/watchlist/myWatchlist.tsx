@@ -1,5 +1,5 @@
 'use client'
-import authService from '@/services/authService'
+import { useAuth } from '@/hooks/useAuth'
 import { getAll } from '@/services/watchListService'
 import React, { useEffect } from 'react'
 import { WatchCard } from './watchlistCard'
@@ -12,7 +12,8 @@ import { LineChart, ChevronRight } from 'lucide-react'
 export function MyWatchLists() {
   const [mounted, setMounted] = React.useState(false)
   const [data, setData] = React.useState<WatchListInfos[]>([])
-  const { authentificated } = authService.getCurrentUser()
+  const { user } = useAuth()
+  const authentificated = !!user
 
   const fetchData = async () => {
     try {

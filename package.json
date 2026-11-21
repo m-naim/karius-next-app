@@ -13,7 +13,8 @@
     "analyze": "cross-env ANALYZE=true next build",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:auth": "node --experimental-strip-types --test scripts/test-auth-session.mjs"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.4.0",

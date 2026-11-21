@@ -1,5 +1,6 @@
 import config from './config'
 import http from './http'
+import { accessToken, decodeSession, storedToken } from '@/lib/auth-session'
 
 const host = config.API_URL
 type RequestOptions = { signal?: AbortSignal }
@@ -11,8 +12,24 @@ const CACHE_TTL_MS = 60 * 1000 // 1 minute
 let allWatchlistsCache: { data: any; timestamp: number } | null = null
 let inFlightAllWatchlists: Promise<any> | null = null
 
+let cacheSession: string | null = null
+function ensureSessionCache() {
+  const token = storedToken()
+  const currentSession = decodeSession(token) ? token : null
+  if (cacheSession !== currentSession) {
+    cacheSession = currentSession
+    watchlistCache.clear()
+    inFlightWatchlists.clear()
+    allWatchlistsCache = null
+    inFlightAllWatchlists = null
+  }
+  return currentSession
+}
+
 export async function getAll(forceRefresh = false, options: RequestOptions = {}) {
-  if (typeof window !== 'undefined' && !localStorage.getItem('accessToken')) {
+  const token = accessToken()
+  const session = ensureSessionCache()
+  if (!token) {
     return []
   }
 
@@ -27,10 +44,10 @@ export async function getAll(forceRefresh = false, options: RequestOptions = {})
   inFlightAllWatchlists = (async () => {
     try {
       const data = await http.get(`${host}/api/v1/watchlists/`, options)
-      allWatchlistsCache = { data, timestamp: Date.now() }
+      if (storedToken() === session) allWatchlistsCache = { data, timestamp: Date.now() }
       return data
     } finally {
-      inFlightAllWatchlists = null
+      if (storedToken() === session) inFlightAllWatchlists = null
     }
   })()
 
@@ -38,10 +55,12 @@ export async function getAll(forceRefresh = false, options: RequestOptions = {})
 }
 
 export function getAllCached() {
+  ensureSessionCache()
   return allWatchlistsCache?.data || null
 }
 
 export async function get(name = 'curent', forceRefresh = false) {
+  const session = ensureSessionCache()
   const cacheKey = name.toLowerCase()
   const cached = watchlistCache.get(cacheKey)
 
@@ -56,10 +75,10 @@ export async function get(name = 'curent', forceRefresh = false) {
   const promise = (async () => {
     try {
       const data = await http.get(`${host}/api/v1/watchlists/${name}`)
-      watchlistCache.set(cacheKey, { data, timestamp: Date.now() })
+      if (storedToken() === session) watchlistCache.set(cacheKey, { data, timestamp: Date.now() })
       return data
     } finally {
-      inFlightWatchlists.delete(cacheKey)
+      if (storedToken() === session) inFlightWatchlists.delete(cacheKey)
     }
   })()
 
@@ -68,11 +87,13 @@ export async function get(name = 'curent', forceRefresh = false) {
 }
 
 export function getCached(name: string) {
+  ensureSessionCache()
   const cached = watchlistCache.get(name.toLowerCase())
   return cached ? cached.data : null
 }
 
 export function prefetch(name: string) {
+  ensureSessionCache()
   const cacheKey = name.toLowerCase()
   const cached = watchlistCache.get(cacheKey)
   if (!cached || Date.now() - cached.timestamp >= CACHE_TTL_MS) {
