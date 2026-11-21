@@ -1,3 +1,9 @@
+allowBuilds:
+  better-sqlite3@12.11.1: true
+  esbuild@0.25.2 || 0.28.2: true
+  # Its postinstall only displays a support message; no build is required.
+  core-js: false
+
 overrides:
   'micromatch@<4.0.8': '^4.0.8'
   'yaml@>=2.0.0 <2.8.3': '^2.8.3'
