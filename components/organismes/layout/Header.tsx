@@ -18,12 +18,12 @@ import {
 } from '../../ui/dropdown-menu'
 
 import { useAuth } from '@/hooks/useAuth'
-import { ChevronDown, Bell, Search, MessageCircle } from 'lucide-react'
+import { ChevronDown, Bell, Search, MessageCircle, LogOut, UserRound, LoaderCircle } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/tooltip'
 
 const Header = () => {
   const pathname = usePathname()
-  const { user } = useAuth()
+  const { user, sessionStatus, sessionEndReason, retrySession, logout } = useAuth()
   const [stockCommandOpen, setStockCommandOpen] = useState(false)
 
   useEffect(() => {
@@ -49,8 +49,8 @@ const Header = () => {
   const resourceLink = headerNavLinks.find((link) => link.title === 'Ressources')
 
   return (
-    <header className="relative z-50 h-11 shrink-0 border-b bg-background">
-      <div className="mx-auto flex h-full w-full max-w-[1600px] items-center justify-between gap-2 px-3 sm:px-4 lg:px-6">
+    <header className="relative z-50 shrink-0 border-b bg-background">
+      <div className="mx-auto flex h-11 w-full max-w-[1600px] items-center justify-between gap-2 px-3 sm:px-4 lg:px-6">
         <div className="shrink-0">
           <Link 
             data-umami-event={'header-home'} 
@@ -133,31 +133,67 @@ const Header = () => {
           )}
           <ThemeSwitch />
           {user ? (
-            <Link href="/app/profile">
-              <Avatar className="h-7 w-7 cursor-pointer transition-opacity hover:opacity-80">
-                <AvatarFallback className="bg-primary text-white">
-                  {user.sub.substring(0, 1)}
-                </AvatarFallback>
-              </Avatar>
-            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 gap-2 px-1.5" aria-label={`Compte de ${user.sub}`}>
+                  <Avatar className="h-7 w-7">
+                    <AvatarFallback className="bg-primary text-white">
+                      {user.sub.substring(0, 1).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="hidden text-xs md:inline">Mon compte</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href="/app/profile"><UserRound className="mr-2 h-4 w-4" />Mon profil</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={logout}>
+                  <LogOut className="mr-2 h-4 w-4" />Se déconnecter
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : sessionStatus === 'checking' ? (
+            <span role="status" className="flex items-center gap-1.5 px-2 text-xs text-muted-foreground">
+              <LoaderCircle className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+              Vérification…
+            </span>
+          ) : sessionStatus === 'unavailable' ? (
+            <Button variant="ghost" size="sm" onClick={retrySession} className="h-8 px-2 text-xs">
+              Vérifier ma session
+            </Button>
           ) : (
-            <div className="hidden items-center gap-1 md:flex">
-              <Link href="/login">
-                <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
+            <div className="flex items-center gap-1">
+              <span className="hidden px-1 text-xs text-muted-foreground sm:inline">Déconnecté</span>
+              <Button asChild size="sm" className="h-8 px-2.5 text-xs">
+                <Link href={`/login?redirect=${encodeURIComponent(pathname || '/app')}`}>
                   Se connecter
-                </Button>
-              </Link>
-
-              <Link href="/signup" data-umami-event="header-Signup-button">
-                <Button className="h-8 px-2.5 text-xs" size="sm" data-umami-event="header-Signup-button">
-                  Créer un compte
-                </Button>
-              </Link>
+                </Link>
+              </Button>
+              <Button asChild variant="ghost" className="hidden h-8 px-2.5 text-xs lg:inline-flex" size="sm">
+                <Link href="/signup" data-umami-event="header-Signup-button">Créer un compte</Link>
+              </Button>
             </div>
           )}
           <MobileNav onOpenSearch={() => setStockCommandOpen(true)} />
         </div>
       </div>
+      {sessionStatus === 'anonymous' && sessionEndReason && sessionEndReason !== 'required' && (
+        <div role="status" className="border-t bg-muted px-3 py-2 text-center text-sm text-foreground">
+          {sessionEndReason === 'expired'
+            ? 'Session expirée. Vous êtes déconnecté.'
+            : sessionEndReason === 'rejected'
+              ? 'Session refusée par le serveur. Vous êtes déconnecté.'
+              : 'Vous êtes déconnecté.'}
+          {' '}<Link href={`/login?redirect=${encodeURIComponent(pathname || '/app')}`} className="font-medium text-primary underline underline-offset-4">Se reconnecter</Link>
+        </div>
+      )}
+      {sessionStatus === 'unavailable' && (
+        <div role="status" className="flex flex-wrap items-center justify-center gap-x-2 border-t bg-muted px-3 py-2 text-center text-sm text-foreground">
+          <span>Impossible de vérifier votre session. Votre connexion n’est pas confirmée.</span>
+          <button type="button" onClick={logout} className="font-medium text-primary underline underline-offset-4">Se déconnecter</button>
+        </div>
+      )}
       <StockCommand open={stockCommandOpen} onOpenChange={setStockCommandOpen} />
     </header>
   )

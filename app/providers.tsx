@@ -5,9 +5,9 @@ import { useUser } from 'hooks/useUser'
 import { TooltipProvider } from '@/components/ui/tooltip'
 
 export function Providers({ children }) {
-  const { user, addUser, removeUser } = useUser()
+  const session = useUser()
   return (
-    <AuthContext.Provider value={{ user, addUser, removeUser }}>
+    <AuthContext.Provider value={session}>
       <TooltipProvider>{children}</TooltipProvider>
     </AuthContext.Provider>
   )

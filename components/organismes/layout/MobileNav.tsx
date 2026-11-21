@@ -11,7 +11,7 @@ import { useAuth } from '@/hooks/useAuth'
 const MobileNav = ({ onOpenSearch }: { onOpenSearch?: () => void }) => {
   const pathname = usePathname()
   const [navShow, setNavShow] = useState(false)
-  const { user } = useAuth()
+  const { user, sessionStatus, logout } = useAuth()
 
   const onToggleNav = () => {
     setNavShow((status) => !status)
@@ -57,7 +57,7 @@ const MobileNav = ({ onOpenSearch }: { onOpenSearch?: () => void }) => {
         </div>
 
         <nav className="flex flex-1 flex-col items-center gap-4 overflow-y-auto px-12 py-4">
-          {!user && (
+          {!user && sessionStatus === 'anonymous' && (
             <>
               <Button
                 asChild
@@ -92,6 +92,12 @@ const MobileNav = ({ onOpenSearch }: { onOpenSearch?: () => void }) => {
                 Recherche
               </button>
             </div>
+          )}
+
+          {user && (
+            <Button variant="outline" onClick={() => { setNavShow(false); logout() }}>
+              Se déconnecter
+            </Button>
           )}
 
           {headerNavLinks

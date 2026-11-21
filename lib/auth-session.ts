@@ -66,3 +66,18 @@ export function accessToken(): string | null {
   }
   return token
 }
+
+export type SessionVerification = 'valid' | 'rejected' | 'unavailable'
+
+export async function verifySessionToken(token: string, endpoint: string, signal?: AbortSignal): Promise<SessionVerification> {
+  try {
+    const response = await fetch(endpoint, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      credentials: 'omit', cache: 'no-store', signal,
+    })
+    if (response.status === 401) return 'rejected'
+    return response.ok ? 'valid' : 'unavailable'
+  } catch {
+    return 'unavailable'
+  }
+}

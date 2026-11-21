@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { test, beforeEach } from 'node:test'
 import { build } from 'esbuild'
 import { resolve } from 'node:path'
-import { decodeSession, saveSession, accessToken, clearSession, storedToken, SESSION_EVENT } from '../lib/auth-session.ts'
+import { decodeSession, saveSession, accessToken, clearSession, storedToken, SESSION_EVENT, verifySessionToken } from '../lib/auth-session.ts'
 
 const token = claims => `header.${Buffer.from(JSON.stringify(claims)).toString('base64url')}.signature`
 const valid = (sub = 'user@example.com') => token({ sub, exp: Math.floor(Date.now() / 1000) + 3600 })
@@ -113,4 +113,33 @@ test('an anonymous request rejected after login cannot clear the new session', a
   respond(new Response('{}', { status: 401 }))
   await assert.rejects(pending, { status: 401 })
   assert.equal(storedToken(), renewed)
+})
+
+
+test('a stored JWT is only confirmed after server validation', async () => {
+  const jwt = valid()
+  globalThis.fetch = async (_url, options) => {
+    assert.equal(options.headers.Authorization, `Bearer ${jwt}`)
+    assert.equal(options.cache, 'no-store')
+    return new Response('{}', { status: 200 })
+  }
+  assert.equal(await verifySessionToken(jwt, 'https://api.test/profile'), 'valid')
+})
+
+test('server rejection is detected even for a JWT whose expiry is in the future', async () => {
+  globalThis.fetch = async () => new Response('{}', { status: 401 })
+  assert.equal(await verifySessionToken(valid(), 'https://api.test/profile'), 'rejected')
+})
+
+test('server outages never falsely confirm a session or destroy the saved token', async () => {
+  const jwt = valid()
+  saveSession(jwt)
+  for (const status of [403, 429, 500, 503]) {
+    globalThis.fetch = async () => new Response('{}', { status })
+    assert.equal(await verifySessionToken(jwt, 'https://api.test/profile'), 'unavailable')
+    assert.equal(storedToken(), jwt)
+  }
+  globalThis.fetch = async () => { throw new TypeError('Failed to fetch') }
+  assert.equal(await verifySessionToken(jwt, 'https://api.test/profile'), 'unavailable')
+  assert.equal(storedToken(), jwt)
 })
