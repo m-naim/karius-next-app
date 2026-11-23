@@ -7,6 +7,7 @@ import YearlyOverview from './yearlyOverview'
 import { validateBenchmark } from './components/BenchmarkSelector'
 import { useRiskMetrics } from '@/hooks/useRiskMetrics'
 import { initPerformance } from '@/services/portfolioService'
+import { HttpError } from '@/services/http'
 import { deleteCache } from '@/lib/idb-cache'
 import RiskQuickStats from './components/RiskQuickStats'
 import RiskAnalysisCard from './components/RiskAnalysisCard'
@@ -18,6 +19,7 @@ function PagePerformance() {
   const [period, setPeriod] = useState<string>('1M')
   const [refreshKey, setRefreshKey] = useState<number>(0)
   const [recalculating, setRecalculating] = useState<boolean>(false)
+  const [recalculationError, setRecalculationError] = useState<string | null>(null)
 
   const { metrics, loading } = useRiskMetrics(id, period, selectedBenchmarks, refreshKey)
   const hasRiskAnalysis = period === '1Y' || period === '3Y'
@@ -34,6 +36,7 @@ function PagePerformance() {
 
   const handleRecalculate = async () => {
     try {
+      setRecalculationError(null)
       setRecalculating(true)
       await initPerformance(id)
 
@@ -50,6 +53,9 @@ function PagePerformance() {
 
       setRefreshKey((prev) => prev + 1)
     } catch (e) {
+      if (e instanceof HttpError && e.status === 503 && e.data?.message?.startsWith('Taux de change indisponible')) {
+        setRecalculationError(`${e.message}. Les performances déjà enregistrées restent disponibles.`)
+      }
       console.error('Failed to recalculate performance', e)
     } finally {
       setRecalculating(false)
@@ -76,6 +82,10 @@ function PagePerformance() {
           Données historiques
         </div>
       </div>
+
+      {recalculationError && (
+        <p role="alert" className="text-sm text-destructive">{recalculationError}</p>
+      )}
 
       <RiskQuickStats
         metrics={metrics}
