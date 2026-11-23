@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { getQuotes } from '@/services/stock.service'
+import { useQuoteRefresh } from '@/hooks/useQuoteRefresh'
 import { TickerChart } from '../../watchlist/[id]/components/TickerChart'
 import SecurityImage from '@/components/atoms/SecurityImage'
 import { Button } from '@/components/ui/button'
@@ -58,6 +59,14 @@ export default function StockDetailPage() {
         setLoading(false)
       })
   }, [symbol])
+
+  useQuoteRefresh(async (signal) => {
+    const quotes = await getQuotes([symbol])
+    if (!signal.aborted && quotes?.[0]) {
+      setStock(quotes[0])
+      setError(false)
+    }
+  }, symbol, Boolean(symbol) && !loading)
 
   if (loading) {
     return (

@@ -21,6 +21,7 @@ import { LineChart, Settings, Download } from 'lucide-react'
 import Loader from '@/components/molecules/loader/loader'
 import { useLocalStorage } from '@/hooks/useLocalStorage' // Re-import useLocalStorage
 import { useToast } from '@/hooks/use-toast'
+import { useQuoteRefresh } from '@/hooks/useQuoteRefresh'
 
 import { getSavedColumnVisibility, getSavedColumnOrder } from '@/lib/column-persistence'
 import {
@@ -440,6 +441,25 @@ export default function WatchlistPage({ params }: { params: Promise<{ id: string
       isMounted = false
     }
   }, [id, cachedWatchlist])
+
+  useQuoteRefresh(async (signal) => {
+    const { watchlist } = await watchListService.get(id, true)
+    if (signal.aborted || !watchlist) return
+
+    const quotes = new Map<string, security>(
+      (watchlist.securities || []).map((quote: security) => [quote.symbol, quote])
+    )
+    setData((current) => ({
+      ...current,
+      benchMark: current.benchMark?.symbol === watchlist.benchMark?.symbol
+        ? watchlist.benchMark ?? current.benchMark
+        : current.benchMark,
+      securities: current.securities.map((security) => {
+        const quote = quotes.get(security.symbol)
+        return quote ? { ...security, ...quote, tags: security.tags } : security
+      }),
+    }))
+  }, id, !loading && Boolean(data.id || data._id))
 
   return loading ? (
     <Loader />

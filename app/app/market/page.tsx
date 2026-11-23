@@ -24,6 +24,7 @@ import VariationContainer from '@/components/molecules/portfolio/variationContai
 import { getQuotes, getStocksVariations } from '@/services/stock.service'
 import marketService, { PREFETCH_DELAY_MS } from '@/services/marketService'
 import watchListService from '@/services/watchListService'
+import { useQuoteRefresh } from '@/hooks/useQuoteRefresh'
 import { getStoredMarketOverview, saveStoredMarketOverview } from '@/services/marketCache'
 import { cn } from '@/lib/utils'
 
@@ -157,42 +158,32 @@ export default function MarketListingPage() {
     }
   }, [])
 
+  const refreshQuotes = async (signal: AbortSignal) => {
+    const quotes = await getQuotes(MARKETS.map((market) => market.symbol))
+    if (signal.aborted || !Array.isArray(quotes) || quotes.length === 0) return
+
+    const nextQuotes = { ...marketOverviewRef.current.quotes }
+    quotes.forEach((quote) => {
+      if (quote?.symbol) nextQuotes[quote.symbol] = quote
+    })
+    setMarketQuotes(nextQuotes)
+    marketOverviewRef.current.quotes = nextQuotes
+    saveStoredMarketOverview(nextQuotes, marketOverviewRef.current.variations)
+  }
+
+  useQuoteRefresh(refreshQuotes, 'market')
+
   useEffect(() => {
-    let isMounted = true
     const controller = new AbortController()
-    const symbols = MARKETS.map((m) => m.symbol)
-
-    const fetchMarketOverview = async () => {
-      try {
-        const [quotesData, userWatchlists] = await Promise.all([
-          getQuotes(symbols, false, { signal: controller.signal }).catch(() => []),
-          watchListService.getAll(false, { signal: controller.signal }).catch(() => []),
-        ])
-
-        if (!isMounted) return
-
-        const qMap: Record<string, any> = {}
-        if (Array.isArray(quotesData)) {
-          quotesData.forEach((q: any) => {
-            if (q?.symbol) qMap[q.symbol] = q
-          })
-        }
-        setMarketQuotes(qMap)
-        marketOverviewRef.current.quotes = qMap
-        saveStoredMarketOverview(qMap, marketOverviewRef.current.variations)
-
-        setWatchlists(userWatchlists || [])
-
-      } catch (err) {
-        console.error('Failed to load market overview:', err)
-      }
-    }
-
-    fetchMarketOverview()
-    return () => {
-      isMounted = false
-      controller.abort()
-    }
+    refreshQuotes(controller.signal).catch((error) => {
+      if (!controller.signal.aborted) console.error('Failed to load market quotes:', error)
+    })
+    watchListService.getAll(false, { signal: controller.signal }).then((watchlists) => {
+      if (!controller.signal.aborted) setWatchlists(watchlists || [])
+    }).catch((error) => {
+      if (!controller.signal.aborted) console.error('Failed to load watchlists:', error)
+    })
+    return () => controller.abort()
   }, [])
 
   useEffect(() => {

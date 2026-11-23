@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import React, { useState, useEffect, useMemo } from 'react'
 import { useToast } from '@/hooks/use-toast'
+import { useQuoteRefresh } from '@/hooks/useQuoteRefresh'
 import {
   ColumnFiltersState,
   ColumnOrderState,
@@ -199,6 +200,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = React.useState('')
   const lastMutationTimestamp = React.useRef<number>(0)
+  const portfolioRevision = React.useRef(0)
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(() =>
     getSavedColumnVisibility(DEFAULT_PORTFOLIO_VISIBILITY, 'portfolio')
   )
@@ -241,6 +243,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
         router.replace('/app/portfolios/explore')
         return
       }
+      portfolioRevision.current++
       setOwn(res.own)
       setPortfolio(res.data)
       setData(res.data.allocation || [])
@@ -295,6 +298,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
           }
         }
 
+        portfolioRevision.current++
         setPortfolio(eventData)
         setData(eventData.allocation || [])
         try {
@@ -313,6 +317,27 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
       es.close()
     }
   }, [id, data.length])
+
+  useQuoteRefresh(async (signal) => {
+    const revision = portfolioRevision.current
+    const lastMutation = lastMutationTimestamp.current
+    if (Date.now() - lastMutation < 3000) return
+
+    const response = await get(id, { signal })
+    if (signal.aborted || !response?.data ||
+      revision !== portfolioRevision.current || lastMutation !== lastMutationTimestamp.current) return
+
+    const allocation: PortfolioSecurity[] = response.data.allocation || []
+    setOwn(response.own)
+    setPortfolio(response.data)
+    setData(allocation)
+    setSelectedSecurity((current) =>
+      current ? allocation.find((item) => item.symbol === current.symbol) ?? current : null
+    )
+    try {
+      sessionStorage.setItem(`bh_pft_${id}`, JSON.stringify({ own: response.own, data: response.data }))
+    } catch {}
+  }, id, !loading && Boolean(portfolio.id || portfolio._id))
 
   const table = useReactTable({
     data,
@@ -351,6 +376,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
       const res = await AddTransaction(id, transactionData)
       setOwn(res.own)
       setPortfolio(res.data)
+      portfolioRevision.current++
       setData(res.data?.allocation || [])
       try {
         sessionStorage.setItem(`bh_pft_${id}`, JSON.stringify({ own: res.own, data: res.data }))
@@ -380,6 +406,7 @@ export default function PortfolioView({ params }: { params: Promise<{ id: string
       const res = await addMouvementService(id, data)
       setOwn(res.own)
       setPortfolio(res.data)
+      portfolioRevision.current++
       setData(res.data?.allocation || [])
       try {
         sessionStorage.setItem(`bh_pft_${id}`, JSON.stringify({ own: res.own, data: res.data }))

@@ -24,8 +24,8 @@ export function getStocksContains(name) {
   return http.get(`${host}/api/v1/stocks/contains/${name}`)
 }
 
-export function get(portfolioID = 'curent') {
-  return http.get(`${host}/api/v1/portfolios/${portfolioID}`)
+export function get(portfolioID = 'curent', options: { signal?: AbortSignal } = {}) {
+  return http.get(`${host}/api/v1/portfolios/${portfolioID}`, options)
 }
 
 export function getMetadata(portfolioID = 'curent') {
