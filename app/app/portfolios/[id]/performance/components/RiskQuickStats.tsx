@@ -1,6 +1,4 @@
 import { usePortfolioFreshness } from '@/components/molecules/portfolio/PortfolioFreshness'
-import { FreshnessInfo } from '@/lib/data-freshness'
-import { DataFreshness } from '@/components/molecules/DataFreshness'
 import React from 'react'
 import type { RiskMetrics } from '@/hooks/useRiskMetrics'
 import { Button } from '@/components/ui/button'
@@ -108,9 +106,9 @@ export function RiskQuickStats({
         </div>
       ) : metrics ? (
         <div className="grid flex-1 grid-cols-3 gap-2">
-          <StatBadge freshness={metrics.freshness} label="Sharpe" value={formatNumber(metrics.sharpe)} colorClass={getSharpeColor(metrics.sharpe)} />
-          <StatBadge freshness={metrics.freshness} label="Drawdown max" value={formatPercent(metrics.maxDrawdown)} colorClass={getDrawdownColor(metrics.maxDrawdown)} />
-          <StatBadge freshness={metrics.freshness} label="Volatilité" value={formatPercent(metrics.volatility)} colorClass={getVolatilityColor(metrics.volatility)} />
+          <StatBadge label="Sharpe" value={formatNumber(metrics.sharpe)} colorClass={getSharpeColor(metrics.sharpe)} />
+          <StatBadge label="Drawdown max" value={formatPercent(metrics.maxDrawdown)} colorClass={getDrawdownColor(metrics.maxDrawdown)} />
+          <StatBadge label="Volatilité" value={formatPercent(metrics.volatility)} colorClass={getVolatilityColor(metrics.volatility)} />
         </div>
       ) : (
         <p className="flex-1 px-2 text-xs text-muted-foreground">Les indicateurs ne sont pas disponibles.</p>
@@ -121,11 +119,11 @@ export function RiskQuickStats({
   )
 }
 
-function StatBadge({ label, value, colorClass, freshness }: { label: string; value: string; colorClass: string; freshness?: FreshnessInfo }) {
+function StatBadge({ label, value, colorClass }: { label: string; value: string; colorClass: string }) {
   return (
     <div className="min-w-0 rounded-lg border border-border/60 bg-muted/20 px-2 py-2 text-center">
       <span className="block truncate text-[9px] font-black uppercase tracking-[0.12em] text-muted-foreground">{label}</span>
-      <span className={`mt-0.5 block text-base font-black tabular-nums sm:text-lg ${colorClass}`}><DataFreshness info={freshness} calculation label={label}>{value}</DataFreshness></span>
+      <span className={`mt-0.5 block text-base font-black tabular-nums sm:text-lg ${colorClass}`}>{value}</span>
     </div>
   )
 }

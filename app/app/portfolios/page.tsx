@@ -528,17 +528,17 @@ export default function PortfoliosPage() {
                         {portfolio.name}
                       </span>
                     </Link>
-                    <DataFreshness className="-ml-2" display="dot" graceDays={1} info={portfolio.performanceFreshness} calculation label="Dates du portefeuille" />
+                    <DataFreshness className="-ml-2" display="dot" staleOnly graceDays={1} info={portfolio.performanceFreshness} calculation label="Dates du portefeuille" />
                   </div>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <DataFreshness info={portfolio.performanceFreshness} calculation valueLabel={String(portfolio.annualizedReturn)}><PerformanceValue value={portfolio.annualizedReturn} /></DataFreshness>
+                  <PerformanceValue value={portfolio.annualizedReturn} />
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <DataFreshness info={portfolio.performanceFreshness} calculation valueLabel={String(portfolio.dayChangePercent)}><PerformanceValue value={portfolio.dayChangePercent} /></DataFreshness>
+                  <PerformanceValue value={portfolio.dayChangePercent} />
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <DataFreshness info={portfolio.performanceFreshness} calculation valueLabel={String(portfolio.cumulativePerformance)}><PerformanceValue value={portfolio.cumulativePerformance} /></DataFreshness>
+                  <PerformanceValue value={portfolio.cumulativePerformance} />
                 </td>
                 <td className="px-4 py-3 text-right">
                   <span className="inline-flex items-center justify-end gap-1.5 font-semibold tabular-nums">

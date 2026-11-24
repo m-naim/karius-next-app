@@ -200,7 +200,7 @@ export default function YearlyOverview({ id, selectedBenchmarks }: YearlyOvervie
                               getHeatmapClass(val)
                             )}>
                               {val ? (
-                                <VariationContainer freshness={yearPerf.freshness} background={false} value={val} className="text-xs font-bold" />
+                                <VariationContainer background={false} value={val} className="text-xs font-bold" />
                               ) : (
                                 <span className="text-muted-foreground/30">—</span>
                               )}

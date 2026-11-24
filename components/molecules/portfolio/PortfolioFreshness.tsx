@@ -50,8 +50,9 @@ export function PortfolioFreshnessIndicator() {
   if (!context?.sections.length) return null
   return (
     <DataFreshness
-      className="-ml-3 sm:-ml-4"
+      className="h-11 min-h-11 min-w-11 sm:h-6 sm:min-h-6 sm:min-w-6"
       display="dot"
+      staleOnly
       graceDays={1}
       label="Dates du portefeuille"
       sections={context.sections}

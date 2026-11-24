@@ -1,6 +1,4 @@
 import { usePortfolioFreshness } from '@/components/molecules/portfolio/PortfolioFreshness'
-import { combinedFreshness } from '@/lib/data-freshness'
-import { DataFreshness } from '@/components/molecules/DataFreshness'
 import { round10 } from '@/lib/decimalAjustement'
 import VariationContainer from '../../../../components/molecules/portfolio/variationContainer'
 import { Globe } from 'lucide-react'
@@ -9,7 +7,6 @@ const StatsCard = ({ pftData, own = true }) => {
   usePortfolioFreshness('Valorisation', pftData?.valuationFreshness)
   usePortfolioFreshness('Performances historiques', pftData?.performanceFreshness)
   usePortfolioFreshness('Effet devises', own && pftData?.currencyGain != null ? pftData.currencyGainFreshness : null)
-  const returnsFreshness = combinedFreshness([pftData?.valuationFreshness || { sources: [] }, pftData?.performanceFreshness || { sources: [] }])
   const currencySymbol = new Intl.NumberFormat('fr-FR', { 
     style: 'currency', 
     currency: pftData?.baseCurrency || 'EUR' 
@@ -40,19 +37,17 @@ const StatsCard = ({ pftData, own = true }) => {
               className="text-xl sm:text-2xl font-black tracking-tight text-foreground tabular-nums" 
               title={fullFormattedValue}
             >
-              <DataFreshness info={pftData?.valuationFreshness} calculation label="Valorisation" valueLabel={fullFormattedValue}>{formatCompactValue(pftData?.totalValue)}</DataFreshness>
+              {formatCompactValue(pftData?.totalValue)}
             </h1>
             <div className="flex items-center gap-1.5">
               <VariationContainer
                 value={pftData?.dayChangeValue}
-              freshness={pftData?.valuationFreshness}
                 entity={currencySymbol}
                 className="text-xs font-bold p-0"
                 background={false}
               />
               <VariationContainer 
                 value={pftData?.dayChangePercent}
-              freshness={pftData?.valuationFreshness}
                 entity="%" 
                 className="text-[11px] font-bold px-1.5 py-0.2 rounded-full" 
               />
@@ -65,7 +60,6 @@ const StatsCard = ({ pftData, own = true }) => {
             {pftData?.dayChangePercent != null && (
               <VariationContainer 
                 value={pftData?.dayChangePercent}
-              freshness={pftData?.valuationFreshness}
                 entity="%" 
                 className="text-[11px] font-bold px-1.5 py-0.2 rounded-full" 
               />
@@ -83,7 +77,6 @@ const StatsCard = ({ pftData, own = true }) => {
             {own && pftData?.cumulativeReturn != null && (
               <VariationContainer
                 value={pftData?.cumulativeReturn}
-              freshness={returnsFreshness}
                 entity={currencySymbol}
                 background={false}
                 className="p-0 text-xs font-bold"
@@ -91,7 +84,6 @@ const StatsCard = ({ pftData, own = true }) => {
             )}
             <VariationContainer
               value={pftData?.cumulativePerformance}
-              freshness={returnsFreshness}
               entity="%"
               className="px-1.5 py-0.2 text-[11px] rounded-md font-bold"
             />
@@ -103,7 +95,6 @@ const StatsCard = ({ pftData, own = true }) => {
             <span className="text-[11px]">Effet devises:</span>
             <VariationContainer
               value={pftData.currencyGain}
-              freshness={pftData.currencyGainFreshness}
               entity={currencySymbol}
               background={false}
               className="p-0 text-xs font-bold"
@@ -118,7 +109,6 @@ const StatsCard = ({ pftData, own = true }) => {
           <span className="text-[11px]">Annuel:</span>
           <VariationContainer
             value={pftData?.annualizedReturn}
-              freshness={pftData?.performanceFreshness}
             entity=" %/an"
             background={false}
             className="p-0 text-xs font-bold tabular-nums"

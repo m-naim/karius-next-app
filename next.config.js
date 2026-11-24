@@ -84,6 +84,15 @@ module.exports = () => {
       }
       return config
     },
+    async redirects() {
+      return [
+        {
+          source: '/app/portfolios/6141fcfef2ae7e6fb0122251/:path*',
+          destination: '/app/portfolios/f4f1fc13-5da3-46c4-b414-ca21fed4c218/:path*',
+          permanent: true,
+        },
+      ]
+    },
     async rewrites() {
       const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080').replace(/\/$/, '')
       return [

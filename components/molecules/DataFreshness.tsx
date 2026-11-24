@@ -46,6 +46,7 @@ export function DataFreshness({
   children,
   valueLabel,
   graceDays = 0,
+  staleOnly = false,
 }: {
   info?: FreshnessInfo | null
   calculation?: boolean
@@ -57,6 +58,7 @@ export function DataFreshness({
   children?: ReactNode
   valueLabel?: string
   graceDays?: number
+  staleOnly?: boolean
 }) {
   const now = useSyncExternalStore(
     subscribe,
@@ -130,6 +132,15 @@ export function DataFreshness({
     </>
   )
 
+  const overdueSections = staleOnly
+    ? (sections ?? [{ label, info: data }]).flatMap(({ label, info }) => {
+        if (!info) return []
+        const state = freshnessState(info, now, graceDays)
+        if (!state.isStale) return []
+        return [{ label, info, symbols: [...new Set(state.stale.map(({ symbol }) => symbol))].sort() }]
+      })
+    : []
+
   if (!interactive)
     return (
       <span
@@ -164,9 +175,26 @@ export function DataFreshness({
             <p className="font-medium text-foreground">
               {label || (calculation ? 'Dates du calcul' : 'Dates des données')}
             </p>
-            {issue && <p className="text-muted-foreground">{issue}</p>}
+            {issue && !staleOnly && <p className="text-muted-foreground">{issue}</p>}
           </div>
-          {sections
+          {staleOnly
+            ? overdueSections.map(({ label, info, symbols }) => (
+                <div key={label} className="space-y-1.5 border-t border-border/60 pt-2">
+                  {sections && <p className="font-medium text-foreground">{label}</p>}
+                  {info.calculatedAt && (
+                    <p className="text-muted-foreground">Calculé · {formatFreshnessDate(info.calculatedAt, now)}</p>
+                  )}
+                  {info.upstreamCalculatedAt && (
+                    <p className="text-muted-foreground">Historique calculé · {formatFreshnessDate(info.upstreamCalculatedAt, now)}</p>
+                  )}
+                  {symbols.length > 0 && (
+                    <ul aria-label="Titres en retard" className="flex flex-wrap gap-x-2.5 gap-y-1 text-foreground">
+                      {symbols.map((symbol) => <li key={symbol}>{symbol}</li>)}
+                    </ul>
+                  )}
+                </div>
+              ))
+            : sections
             ? sections.map((section) => (
                 <div key={section.label} className="space-y-2 border-t border-border/60 pt-2">
                   <p className="font-medium text-foreground">{section.label}</p>

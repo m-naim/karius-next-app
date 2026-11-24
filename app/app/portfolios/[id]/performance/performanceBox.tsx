@@ -1,5 +1,4 @@
 import { usePortfolioFreshness } from '@/components/molecules/portfolio/PortfolioFreshness'
-import { DataFreshness } from '@/components/molecules/DataFreshness'
 import { FreshnessInfo } from '@/lib/data-freshness'
 import React, { useEffect, useState } from 'react'
 import { LineValue } from '@/components/molecules/charts/LineValue'
@@ -161,7 +160,7 @@ export default function PerformanceBox({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <p className="mb-1 text-[10px] font-black uppercase tracking-[0.16em] text-primary">Évolution</p>
-            <CardTitle className="text-lg font-black tracking-tight"><DataFreshness info={freshness} calculation>{selectedChart?.label}</DataFreshness></CardTitle>
+            <CardTitle className="text-lg font-black tracking-tight">{selectedChart?.label}</CardTitle>
             <p className="mt-1 text-xs text-muted-foreground">{selectedChart?.description}</p>
           </div>
 

@@ -75,8 +75,6 @@ export function PortfolioCard(p: PortfolioSummery) {
                     <TrendingUp className="h-3 w-3 text-primary" />
                     <VariationContainer
                       value={p.annualizedReturn}
-                      freshness={p.performanceFreshness}
-                      interactiveFreshness={false}
                       entity="%"
                       background={false}
                       className="p-0 font-bold"
