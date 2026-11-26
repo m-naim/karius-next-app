@@ -86,6 +86,8 @@ export default function AlertsPage() {
 
   // Edit Alert State
   const [editingAlert, setEditingAlert] = useState<Alert | null>(null)
+  const [newSymbol, setNewSymbol] = useState('')
+  const [newType, setNewType] = useState<Alert['type']>('PRICE')
   const [editOperator, setEditOperator] = useState('>')
   const [editValue, setEditValue] = useState('')
   const [isEditingOpen, setIsEditingOpen] = useState(false)
@@ -99,6 +101,9 @@ export default function AlertsPage() {
   const [portfolios, setPortfolios] = useState<any[]>([])
   const [watchlists, setWatchlists] = useState<any[]>([])
   const [savingReports, setSavingReports] = useState(false)
+  const [preview, setPreview] = useState('')
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const [testingReport, setTestingReport] = useState(false)
 
   const fetchData = async () => {
     setLoading(true)
@@ -177,27 +182,35 @@ export default function AlertsPage() {
     setIsEditingOpen(true)
   }
 
+  const handleCreateInit = () => {
+    setEditingAlert(null)
+    setNewSymbol('')
+    setNewType('PRICE')
+    setEditOperator('>')
+    setEditValue('')
+    setIsEditingOpen(true)
+  }
+
   const handleSaveEdit = async () => {
-    if (!editingAlert || !editValue) return
+    const value = Number(editValue)
+    const symbol = newSymbol.trim().toUpperCase()
+    if (!Number.isFinite(value) || value <= 0 || (!editingAlert && !symbol)) return
     setSavingEdit(true)
     try {
-      await alertService.deleteAlert(editingAlert.id)
-      await alertService.createAlert({
-        symbol: editingAlert.symbol,
-        type: editingAlert.type,
-        operator: editOperator,
-        value: parseFloat(editValue),
-      })
-      await fetchData()
+      const condition = { operator: editOperator, value }
+      if (editingAlert) {
+        await alertService.updateAlert(editingAlert.id, condition)
+      } else {
+        await alertService.createAlert({ symbol, type: newType, ...condition })
+      }
       setIsEditingOpen(false)
-      toast({ title: 'Alerte modifiée' })
-    } catch (error) {
-      console.error('Failed to edit alert:', error)
+      toast({ title: editingAlert ? 'Alerte modifiée' : 'Alerte créée' })
+      await fetchData()
+    } catch {
       toast({
         variant: 'destructive',
-        title: 'Modification impossible',
-        description:
-          "L'alerte n'a pas pu être mise à jour. Vérifiez la valeur saisie et réessayez.",
+        title: 'Enregistrement impossible',
+        description: 'Vérifiez le symbole et le seuil saisis, puis réessayez.',
       })
     } finally {
       setSavingEdit(false)
@@ -385,21 +398,26 @@ export default function AlertsPage() {
     }
   }
 
+  const handleReportPreview = async () => {
+    setPreviewLoading(true)
+    try {
+      setPreview((await alertService.getReportPreview()).text)
+    } catch {
+      toast({ variant: 'destructive', title: 'Aperçu indisponible', description: 'Réessayez dans quelques instants.' })
+    } finally {
+      setPreviewLoading(false)
+    }
+  }
+
   const handleTestBatchNotification = async () => {
+    setTestingReport(true)
     try {
       await alertService.testLastBatchNotification()
-      toast({
-        title: 'Synthèse test envoyée',
-        description: 'Le rapport journalier a été envoyé.',
-      })
-    } catch (error) {
-      console.error('Failed to test batch notification:', error)
-      toast({
-        variant: 'destructive',
-        title: 'Aucune synthèse disponible',
-        description:
-          "Aucun historique de notification journalière récent n'a été trouvé pour le test.",
-      })
+      toast({ title: 'Rapport de test envoyé', description: 'Vérifiez votre canal de réception.' })
+    } catch {
+      toast({ variant: 'destructive', title: 'Échec de l’envoi du rapport', description: 'Vérifiez votre canal dans l’onglet Réception, puis réessayez.' })
+    } finally {
+      setTestingReport(false)
     }
   }
 
@@ -478,7 +496,7 @@ export default function AlertsPage() {
             Centre d'Alertes
           </h1>
           <p className="font-medium text-muted-foreground mt-1">
-            Surveillance temps réel et rapports de vos actifs.
+            Alertes de seuil et rapports de variation.
           </p>
         </div>
 
@@ -538,18 +556,27 @@ export default function AlertsPage() {
         <Dialog open={isEditingOpen} onOpenChange={setIsEditingOpen}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Modifier l'Alerte</DialogTitle>
+              <DialogTitle>{editingAlert ? 'Modifier l’alerte' : 'Créer une alerte'}</DialogTitle>
               <DialogDescription>
-                {editingAlert && (
-                  <>
-                    Modifier la condition pour <strong>{editingAlert.symbol}</strong> (
-                    {editingAlert.type}
-                    ).
-                  </>
-                )}
+                {editingAlert ? `Condition pour ${editingAlert.symbol}` : 'Choisissez un titre et le seuil à surveiller.'}
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
+              {!editingAlert && (
+                <>
+                  <div className="grid gap-2">
+                    <Label htmlFor="alert-symbol">Symbole</Label>
+                    <Input id="alert-symbol" value={newSymbol} maxLength={60} placeholder="AIR.PA" onChange={(event) => setNewSymbol(event.target.value)} />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="alert-type">Indicateur</Label>
+                    <select id="alert-type" value={newType} onChange={(event) => setNewType(event.target.value as Alert['type'])} className="h-10 rounded-md border border-input bg-background px-3 text-sm">
+                      <option value="PRICE">Cours</option>
+                      <option value="PE">Ratio P/E</option>
+                    </select>
+                  </div>
+                </>
+              )}
               <div className="grid gap-2">
                 <Label htmlFor="operator">Opérateur</Label>
                 <select
@@ -569,7 +596,7 @@ export default function AlertsPage() {
                 <Input
                   id="value"
                   type="number"
-                  step="0.01"
+                  step="any"
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
                 />
@@ -583,7 +610,7 @@ export default function AlertsPage() {
               >
                 Annuler
               </Button>
-              <Button onClick={handleSaveEdit} disabled={savingEdit || !editValue}>
+              <Button onClick={handleSaveEdit} disabled={savingEdit || Number(editValue) <= 0 || (!editingAlert && !newSymbol.trim())}>
                 {savingEdit ? 'Enregistrement...' : 'Enregistrer'}
               </Button>
             </div>
@@ -594,6 +621,20 @@ export default function AlertsPage() {
           value="price-alerts"
           className="m-0 space-y-6 animate-in fade-in slide-in-from-bottom-2"
         >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Button onClick={handleCreateInit} disabled={loading}>
+              <Bell className="mr-2 h-4 w-4" /> Créer une alerte
+            </Button>
+            {!loading && !error && (
+              <Button variant="ghost" onClick={() => setActiveTab('settings')}>
+                {notificationsEnabled ? ({
+                  telegram: settings.telegramChatId ? 'Telegram connecté' : 'Telegram à connecter',
+                  ntfy: settings.ntfyTopic ? 'ntfy configuré' : 'ntfy à configurer',
+                  browser: settings.browserPushEnabled ? 'Notifications navigateur actives' : 'Navigateur à configurer',
+                })[settings.channel] : 'Notifications en pause'}
+              </Button>
+            )}
+          </div>
           <div className="grid gap-8 lg:grid-cols-12">
             <div className="lg:col-span-12">
               <Tabs defaultValue="all" className="w-full">
@@ -689,7 +730,7 @@ export default function AlertsPage() {
                   <CardTitle className="flex items-center justify-between text-sm uppercase tracking-widest">
                     <div className="flex items-center gap-2">
                       <BellOff className="h-4 w-4 text-blue-400" />
-                      Rapports Top/Flop
+                      Rapports de variation
                     </div>
                     <Button
                       size="sm"
@@ -806,6 +847,25 @@ export default function AlertsPage() {
                         )}
                       </div>
                     </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            <div className="lg:col-span-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Aperçu Telegram</CardTitle>
+                  <CardDescription>Exemple de rapport groupé avec des données fictives.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {preview && <p className="whitespace-pre-wrap rounded-lg bg-muted p-4 text-sm">{preview}</p>}
+                  <div className="flex flex-wrap gap-2">
+                    {!preview && <Button variant="outline" onClick={handleReportPreview} disabled={previewLoading}>
+                      {previewLoading ? 'Chargement…' : 'Voir un exemple'}
+                    </Button>}
+                    <Button variant="outline" onClick={handleTestBatchNotification} disabled={testingReport}>
+                      {testingReport ? 'Envoi…' : 'Envoyer un rapport test'}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -1082,15 +1142,16 @@ export default function AlertsPage() {
                           className="border-dashed border-primary/50 text-[9px] font-bold text-primary hover:bg-primary/5 px-1"
                           onClick={handleTestNotification}
                         >
-                          <Send className="mr-1 h-3 w-3" /> TEST ALERT
+                          <Send className="mr-1 h-3 w-3" /> Alerte test
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
                           className="border-dashed border-primary/50 text-[9px] font-bold text-primary hover:bg-primary/5 px-1"
                           onClick={handleTestBatchNotification}
+                          disabled={testingReport}
                         >
-                          <Layers className="mr-1 h-3 w-3" /> TEST BATCH
+                          <Layers className="mr-1 h-3 w-3" /> Rapport test
                         </Button>
                       </div>
                     </div>
@@ -1219,13 +1280,13 @@ function AlertCard({
                 <span className="rounded bg-muted px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-foreground/70">
                   {alert.type === 'PRICE' ? 'PRIX' : 'P/E'}
                 </span>
-                <span>{alert.operator}</span>
+                <span>{({ '>': 'supérieur à', '<': 'inférieur à', '>=': 'au moins', '<=': 'au plus' } as Record<string, string>)[alert.operator] || alert.operator}</span>
                 <span
                   className={`text-sm font-bold ${
                     isTriggered ? 'text-orange-600 dark:text-orange-400' : 'text-primary'
                   }`}
                 >
-                  {alert.value.toLocaleString()}
+                  {alert.value.toLocaleString('fr-FR', { maximumFractionDigits: 4 })}
                 </span>
               </div>
             </div>

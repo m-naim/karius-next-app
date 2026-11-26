@@ -32,6 +32,8 @@ export const alertService = {
   getMyAlerts: () => http.get(`${host}/api/v1/alerts/`),
   createAlert: (data: { symbol: string; type: string; operator: string; value: number }) =>
     http.post(`${host}/api/v1/alerts/`, data),
+  updateAlert: (id: string, data: { operator: string; value: number }) =>
+    http.put(`${host}/api/v1/alerts/${id}`, data),
   deleteAlert: (id: string) => http.deleteReq(`${host}/api/v1/alerts/${id}`),
   restartAlert: (id: string) => http.post(`${host}/api/v1/alerts/${id}/restart`, {}),
   updateTelegram: (chatId: string) => http.post(`${host}/api/v1/alerts/telegram`, { chatId }),
@@ -49,6 +51,7 @@ export const alertService = {
       : http.deleteReq(`${host}/api/v1/alerts/browser/subscription`),
   testBrowserNotification,
   testLastNotification: () => http.post(`${host}/api/v1/alerts/test-last`, {}),
+  getReportPreview: (): Promise<{ text: string }> => http.get(`${host}/api/v1/alerts/reports/preview`),
   testLastBatchNotification: () => http.post(`${host}/api/v1/alerts/test-batch`, {}),
   trackEvent: (event: string, channel: 'telegram' | 'ntfy' | 'browser' = 'telegram', metadata: Record<string, string> = {}) =>
     http.post(`${host}/api/v1/alerts/events`, { event, channel, metadata }),
