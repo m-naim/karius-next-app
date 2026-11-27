@@ -24,6 +24,12 @@ export interface SuperInvestorAlertSettings {
   deliveryReady: boolean
 }
 
+export interface NotificationTestSelection {
+  source: 'EXAMPLE' | 'ALERT' | 'PORTFOLIO' | 'WATCHLIST'
+  id: string
+  frequency: string
+}
+
 export const alertService = {
   getSuperInvestorAlert: (slug: string, signal?: AbortSignal): Promise<SuperInvestorAlertSettings> =>
     http.get(`${host}/api/v1/alerts/super-investors/${encodeURIComponent(slug)}`, { signal }),
@@ -51,7 +57,10 @@ export const alertService = {
       : http.deleteReq(`${host}/api/v1/alerts/browser/subscription`),
   testBrowserNotification,
   testLastNotification: () => http.post(`${host}/api/v1/alerts/test-last`, {}),
-  getReportPreview: (): Promise<{ text: string }> => http.get(`${host}/api/v1/alerts/reports/preview`),
+  previewNotification: (selection: NotificationTestSelection): Promise<{ text: string }> =>
+    http.get(`${host}/api/v1/alerts/notifications/preview?${new URLSearchParams({ ...selection })}`),
+  sendNotificationTest: (selection: NotificationTestSelection, channel: string, preview: string) =>
+    http.post(`${host}/api/v1/alerts/notifications/test`, { ...selection, channel, preview }),
   testLastBatchNotification: () => http.post(`${host}/api/v1/alerts/test-batch`, {}),
   trackEvent: (event: string, channel: 'telegram' | 'ntfy' | 'browser' = 'telegram', metadata: Record<string, string> = {}) =>
     http.post(`${host}/api/v1/alerts/events`, { event, channel, metadata }),

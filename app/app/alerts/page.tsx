@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import alertService from '@/services/alertService'
+import alertService, { type NotificationTestSelection } from '@/services/alertService'
 import authService from '@/services/authService'
+import { HttpError } from '@/services/http'
 import { PushNotificationToggle } from '@/components/PushNotificationToggle'
 import { getAll as getPortfolios, getFollowed } from '@/services/portfolioService'
 import { getAll as getWatchlists } from '@/services/watchListService'
@@ -106,6 +107,11 @@ export default function AlertsPage() {
   const [watchlists, setWatchlists] = useState<any[]>([])
   const [savingReports, setSavingReports] = useState(false)
   const [preview, setPreview] = useState('')
+  const [previewError, setPreviewError] = useState('')
+  const [testSelection, setTestSelection] = useState<NotificationTestSelection>({
+    source: 'EXAMPLE', id: '', frequency: 'WEEKLY',
+  })
+  const [testChannel, setTestChannel] = useState<NotificationSettings['channel'] | ''>('')
   const [previewLoading, setPreviewLoading] = useState(false)
   const [testingReport, setTestingReport] = useState(false)
 
@@ -414,13 +420,40 @@ export default function AlertsPage() {
 
   const handleReportPreview = async () => {
     setPreviewLoading(true)
+    setPreview('')
+    setPreviewError('')
     try {
-      setPreview((await alertService.getReportPreview()).text)
-    } catch {
-      toast({ variant: 'destructive', title: 'Aperçu indisponible', description: 'Réessayez dans quelques instants.' })
+      setPreview((await alertService.previewNotification(testSelection)).text)
+    } catch (error) {
+      setPreviewError(error instanceof HttpError && error.status === 422
+        ? 'Aucune variation disponible pour cette période. Choisissez une autre période ou un exemple fictif.'
+        : 'Impossible de charger cet aperçu. Vérifiez votre sélection et réessayez.')
     } finally {
       setPreviewLoading(false)
     }
+  }
+
+  const handleSendPreview = async () => {
+    setTestingReport(true)
+    try {
+      await alertService.sendNotificationTest(testSelection, selectedTestChannel, preview)
+      toast({ title: 'Notification de test envoyée', description: 'Vérifiez le canal sélectionné.' })
+    } catch (error) {
+      if (error instanceof HttpError && error.status === 409) {
+        setPreview('')
+        setPreviewError('Les données ont changé. Affichez le nouvel aperçu avant de l’envoyer.')
+      } else {
+        toast({ variant: 'destructive', title: 'Échec de l’envoi', description: 'Vérifiez la configuration du canal.' })
+      }
+    } finally {
+      setTestingReport(false)
+    }
+  }
+
+  const updateTestSelection = (selection: Partial<NotificationTestSelection>) => {
+    setPreview('')
+    setPreviewError('')
+    setTestSelection((previous) => ({ ...previous, ...selection }))
   }
 
   const handleTestBatchNotification = async () => {
@@ -508,6 +541,19 @@ export default function AlertsPage() {
     browser: { label: 'Navigateur', ready: Boolean(settings.browserPushEnabled) },
   }[settings.channel]
   const receiving = notificationsEnabled && channel.ready
+
+  const availableTestChannels = ([
+    { value: 'telegram', label: 'Telegram', ready: Boolean(settings.telegramChatId) },
+    { value: 'ntfy', label: 'ntfy', ready: Boolean(settings.ntfyTopic) },
+    { value: 'browser', label: 'Navigateur', ready: Boolean(settings.browserPushEnabled) },
+  ] as const).filter((option) => option.ready)
+  const selectedTestChannel = availableTestChannels.find((option) => option.value === testChannel)?.value
+    || availableTestChannels.find((option) => option.value === settings.channel)?.value
+    || availableTestChannels[0]?.value || ''
+  const previewOptions = testSelection.source === 'ALERT'
+    ? alerts.map((alert) => ({ id: alert.id, name: `${alert.symbol} · ${alert.operator} ${alert.value}` }))
+    : testSelection.source === 'PORTFOLIO' ? portfolios : watchlists
+  const previewBusy = previewLoading || testingReport
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-10 [&_p]:mb-0">
@@ -835,19 +881,69 @@ export default function AlertsPage() {
             <div className="lg:col-span-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Aperçu Telegram</CardTitle>
-                  <CardDescription>Exemple de rapport groupé avec des données fictives.</CardDescription>
+                  <CardTitle>Aperçu et test</CardTitle>
+                  <CardDescription>Prévisualisez une notification, puis envoyez-la sur un canal configuré.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  {preview && <p className="whitespace-pre-wrap rounded-lg bg-muted p-4 text-sm">{preview}</p>}
-                  <div className="flex flex-wrap gap-2">
-                    {!preview && <Button variant="outline" onClick={handleReportPreview} disabled={previewLoading}>
-                      {previewLoading ? 'Chargement…' : 'Voir un exemple'}
-                    </Button>}
-                    <Button variant="outline" onClick={handleTestBatchNotification} disabled={testingReport}>
-                      {testingReport ? 'Envoi…' : 'Envoyer un rapport test'}
-                    </Button>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="test-source">Contenu</Label>
+                    <select id="test-source" value={testSelection.source} disabled={previewBusy}
+                      onChange={(event) => updateTestSelection({ source: event.target.value as NotificationTestSelection['source'], id: '' })}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                      <option value="EXAMPLE">Exemple fictif</option>
+                      <option value="ALERT">Alerte de seuil</option>
+                      <option value="PORTFOLIO">Rapport de portefeuille</option>
+                      <option value="WATCHLIST">Rapport de liste de suivi</option>
+                    </select>
                   </div>
+                  {testSelection.source !== 'EXAMPLE' && (
+                    <div className="grid gap-2">
+                      <Label htmlFor="test-entity">Élément à prévisualiser</Label>
+                      <select id="test-entity" value={testSelection.id} disabled={previewBusy}
+                        onChange={(event) => updateTestSelection({ id: event.target.value })}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                        <option value="">{previewOptions.length ? 'Sélectionner un élément' : 'Aucun élément disponible'}</option>
+                        {previewOptions.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
+                      </select>
+                    </div>
+                  )}
+                  {(testSelection.source === 'PORTFOLIO' || testSelection.source === 'WATCHLIST') && (
+                    <div className="grid gap-2">
+                      <Label htmlFor="test-period">Période</Label>
+                      <select id="test-period" value={testSelection.frequency} disabled={previewBusy}
+                        onChange={(event) => updateTestSelection({ frequency: event.target.value })}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                        <option value="DAILY">Un jour</option>
+                        <option value="WEEKLY">Une semaine</option>
+                        <option value="MONTHLY">Un mois</option>
+                      </select>
+                    </div>
+                  )}
+                  <Button variant="outline" onClick={handleReportPreview}
+                    disabled={previewBusy || (testSelection.source !== 'EXAMPLE' && !testSelection.id)}>
+                    {previewLoading ? 'Chargement…' : 'Afficher l’aperçu'}
+                  </Button>
+                  {previewError && <p role="alert" className="text-sm text-destructive">{previewError}</p>}
+                  {preview && (
+                    <>
+                      <p className="whitespace-pre-wrap rounded-lg bg-muted p-4 text-sm">{preview}</p>
+                      {availableTestChannels.length ? (
+                        <div className="grid gap-2">
+                          <Label htmlFor="test-channel">Envoyer sur</Label>
+                          <select id="test-channel" value={selectedTestChannel} disabled={previewBusy}
+                            onChange={(event) => setTestChannel(event.target.value as NotificationSettings['channel'])}
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                            {availableTestChannels.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                          </select>
+                          <Button onClick={handleSendPreview} disabled={previewBusy}>
+                            {testingReport ? 'Envoi…' : 'M’envoyer ce test'}
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button variant="outline" onClick={() => setActiveTab('settings')}>Configurer un canal</Button>
+                      )}
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </div>
