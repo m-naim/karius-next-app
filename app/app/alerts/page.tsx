@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import alertService from '@/services/alertService'
 import authService from '@/services/authService'
@@ -19,9 +19,11 @@ import {
   Send,
   Trash2,
   CheckCircle2,
-  Clock,
   Search,
   MoreVertical,
+  Plus,
+  ArrowRight,
+  X,
   Play,
   Settings2,
   AlertCircle,
@@ -29,7 +31,6 @@ import {
   Radio,
   ExternalLink,
   Copy,
-  Info,
   Layers,
 } from 'lucide-react'
 import { format } from 'date-fns'
@@ -57,8 +58,8 @@ interface Alert {
   operator: string
   value: number
   isTriggered: boolean
-  lastTriggeredAt?: string
-  createdAt: string
+  lastTriggeredAt?: string | number[]
+  createdAt: string | number[]
 }
 
 interface NotificationSettings {
@@ -80,6 +81,9 @@ export default function AlertsPage() {
   const [openingTelegram, setOpeningTelegram] = useState(false)
   const [awaitingTelegram, setAwaitingTelegram] = useState(false)
   const [updatingSettings, setUpdatingSettings] = useState(false)
+  const [alertFilter, setAlertFilter] = useState('all')
+  const [pendingAlertId, setPendingAlertId] = useState<string | null>(null)
+  const [alertToDelete, setAlertToDelete] = useState<Alert | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [activeTab, setActiveTab] = useState('price-alerts')
   const { toast } = useToast()
@@ -155,23 +159,33 @@ export default function AlertsPage() {
     }
   }, [])
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async () => {
+    if (!alertToDelete || pendingAlertId) return
+    const { id } = alertToDelete
+    setPendingAlertId(id)
     try {
       await alertService.deleteAlert(id)
-      setAlerts(alerts.filter((a) => a.id !== id))
+      setAlerts((previous) => previous.filter((alert) => alert.id !== id))
+      setAlertToDelete(null)
       toast({ title: 'Alerte supprimée' })
-    } catch (error) {
-      console.error('Failed to delete alert:', error)
+    } catch {
+      toast({ variant: 'destructive', title: 'Suppression impossible', description: 'Réessayez dans quelques instants.' })
+    } finally {
+      setPendingAlertId(null)
     }
   }
 
   const handleRestart = async (id: string) => {
+    if (pendingAlertId) return
+    setPendingAlertId(id)
     try {
-      const updated = await alertService.restartAlert(id)
-      setAlerts(alerts.map((a) => (a.id === id ? updated : a)))
+      await alertService.restartAlert(id)
+      setAlerts((previous) => previous.map((alert) => alert.id === id ? { ...alert, isTriggered: false } : alert))
       toast({ title: 'Alerte réactivée' })
-    } catch (error) {
-      console.error('Failed to restart alert:', error)
+    } catch {
+      toast({ variant: 'destructive', title: 'Réactivation impossible', description: 'Réessayez dans quelques instants.' })
+    } finally {
+      setPendingAlertId(null)
     }
   }
 
@@ -194,7 +208,7 @@ export default function AlertsPage() {
   const handleSaveEdit = async () => {
     const value = Number(editValue)
     const symbol = newSymbol.trim().toUpperCase()
-    if (!Number.isFinite(value) || value <= 0 || (!editingAlert && !symbol)) return
+    if (savingEdit || !Number.isFinite(value) || value <= 0 || (!editingAlert && !symbol)) return
     setSavingEdit(true)
     try {
       const condition = { operator: editOperator, value }
@@ -202,6 +216,8 @@ export default function AlertsPage() {
         await alertService.updateAlert(editingAlert.id, condition)
       } else {
         await alertService.createAlert({ symbol, type: newType, ...condition })
+        setSearchTerm('')
+        setAlertFilter('all')
       }
       setIsEditingOpen(false)
       toast({ title: editingAlert ? 'Alerte modifiée' : 'Alerte créée' })
@@ -225,9 +241,7 @@ export default function AlertsPage() {
       void alertService.trackEvent('notification_channel_selected', channel)
       toast({
         title: 'Canal mis à jour',
-        description: `Vous recevrez désormais vos alertes via ${
-          channel === 'browser' ? 'le navigateur' : channel
-        }.`,
+        description: 'Vérifiez la configuration du canal et envoyez un test.',
       })
     } catch (error) {
       console.error('Failed to update channel:', error)
@@ -456,7 +470,7 @@ export default function AlertsPage() {
     toast({ title: 'Copié !' })
   }
 
-  const safeFormat = (dateData: any, formatStr: string) => {
+  const safeFormat = (dateData: string | number[], formatStr: string) => {
     if (!dateData) return 'N/A'
     try {
       let date: Date
@@ -476,84 +490,47 @@ export default function AlertsPage() {
 
       if (isNaN(date.getTime())) return 'N/A'
       return format(date, formatStr, { locale: fr })
-    } catch (e) {
+    } catch {
       return 'N/A'
     }
   }
 
-  const filteredAlerts = useMemo(() => {
-    return alerts.filter((a) => a.symbol.toLowerCase().includes(searchTerm.toLowerCase()))
-  }, [alerts, searchTerm])
-
-  const activeAlerts = filteredAlerts.filter((a) => !a.isTriggered)
-  const triggeredAlerts = filteredAlerts.filter((a) => a.isTriggered)
+  const query = searchTerm.trim().toUpperCase()
+  const activeCount = alerts.filter((alert) => !alert.isTriggered).length
+  const triggeredCount = alerts.length - activeCount
+  const visibleAlerts = alerts.filter((alert) => {
+    const matchesStatus = alertFilter === 'all' || alert.isTriggered === (alertFilter === 'triggered')
+    return matchesStatus && alert.symbol.toUpperCase().includes(query)
+  })
+  const channel = {
+    telegram: { label: 'Telegram', ready: Boolean(settings.telegramChatId) },
+    ntfy: { label: 'ntfy', ready: Boolean(settings.ntfyTopic) },
+    browser: { label: 'Navigateur', ready: Boolean(settings.browserPushEnabled) },
+  }[settings.channel]
+  const receiving = notificationsEnabled && channel.ready
 
   return (
-    <div className="container mx-auto max-w-6xl px-4 py-8">
-      <div className="mb-8 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-10 [&_p]:mb-0">
+      <header className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-extrabold tracking-tight uppercase text-foreground">
-            Centre d'Alertes
-          </h1>
-          <p className="font-medium text-muted-foreground mt-1">
-            Alertes de seuil et rapports de variation.
-          </p>
+          <h1 className="p-0 text-3xl font-semibold tracking-tight sm:text-4xl">Alertes</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Surveillez vos seuils et recevez les variations de vos actifs.</p>
         </div>
-
-        {/* Stats perfectly integrated into the header */}
-        <div className="flex items-center gap-6 rounded-2xl bg-muted/30 px-6 py-3 border border-border/50 backdrop-blur-sm">
-          <div className="flex flex-col items-center">
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-              Actives
-            </span>
-            <span className="text-2xl font-black text-primary drop-shadow-sm">
-              {activeAlerts.length}
-            </span>
-          </div>
-          <div className="h-10 w-px bg-border/80" />
-          <div className="flex flex-col items-center">
-            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-              Déclenchées
-            </span>
-            <span className="text-2xl font-black text-orange-500 drop-shadow-sm">
-              {triggeredAlerts.length}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="mb-6">
-        <PushNotificationToggle
-          onSubscriptionChange={(active) =>
-            setSettings((prev) => ({ ...prev, browserPushEnabled: active }))
-          }
-        />
-      </div>
+        {activeTab === 'price-alerts' && (
+          <Button onClick={handleCreateInit} disabled={loading}>
+            <Plus className="mr-2 h-4 w-4" /> Créer une alerte
+          </Button>
+        )}
+      </header>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="mb-6 grid h-12 w-full grid-cols-3 border-b bg-transparent p-0 sm:flex sm:justify-start">
-          <TabsTrigger
-            value="price-alerts"
-            className="rounded-none border-b-2 border-transparent px-2 py-3 text-xs font-bold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none sm:px-6 sm:text-sm"
-          >
-            Alertes
-          </TabsTrigger>
-          <TabsTrigger
-            value="periodic-reports"
-            className="rounded-none border-b-2 border-transparent px-2 py-3 text-xs font-bold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none sm:px-6 sm:text-sm"
-          >
-            Rapports
-          </TabsTrigger>
-          <TabsTrigger
-            value="settings"
-            className="rounded-none border-b-2 border-transparent px-2 py-3 text-xs font-bold data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none sm:px-6 sm:text-sm"
-          >
-            Réception
-          </TabsTrigger>
+        <TabsList aria-label="Sections des alertes" className="mb-6 grid h-11 w-full grid-cols-3 sm:w-fit">
+          <TabsTrigger value="price-alerts" className="px-3 sm:px-5">Mes alertes</TabsTrigger>
+          <TabsTrigger value="periodic-reports" className="px-3 sm:px-5">Rapports</TabsTrigger>
+          <TabsTrigger value="settings" className="px-3 sm:px-5">Réception</TabsTrigger>
         </TabsList>
 
-        {/* Dialog Edit Alert */}
-        <Dialog open={isEditingOpen} onOpenChange={setIsEditingOpen}>
+        <Dialog open={isEditingOpen} onOpenChange={(open) => { if (!savingEdit) setIsEditingOpen(open) }}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>{editingAlert ? 'Modifier l’alerte' : 'Créer une alerte'}</DialogTitle>
@@ -561,162 +538,172 @@ export default function AlertsPage() {
                 {editingAlert ? `Condition pour ${editingAlert.symbol}` : 'Choisissez un titre et le seuil à surveiller.'}
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              {!editingAlert && (
-                <>
-                  <div className="grid gap-2">
-                    <Label htmlFor="alert-symbol">Symbole</Label>
-                    <Input id="alert-symbol" value={newSymbol} maxLength={60} placeholder="AIR.PA" onChange={(event) => setNewSymbol(event.target.value)} />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="alert-type">Indicateur</Label>
-                    <select id="alert-type" value={newType} onChange={(event) => setNewType(event.target.value as Alert['type'])} className="h-10 rounded-md border border-input bg-background px-3 text-sm">
-                      <option value="PRICE">Cours</option>
-                      <option value="PE">Ratio P/E</option>
-                    </select>
-                  </div>
-                </>
-              )}
-              <div className="grid gap-2">
-                <Label htmlFor="operator">Opérateur</Label>
-                <select
-                  id="operator"
-                  value={editOperator}
-                  onChange={(e) => setEditOperator(e.target.value)}
-                  className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            <form onSubmit={(event) => {
+              event.preventDefault()
+              void handleSaveEdit()
+            }}>
+              <div className="grid gap-4 py-4">
+                {!editingAlert && (
+                  <>
+                    <div className="grid gap-2">
+                      <Label htmlFor="alert-symbol">Symbole</Label>
+                      <Input id="alert-symbol" value={newSymbol} maxLength={60} placeholder="AIR.PA" onChange={(event) => setNewSymbol(event.target.value)} />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="alert-type">Indicateur</Label>
+                      <select id="alert-type" value={newType} onChange={(event) => setNewType(event.target.value as Alert['type'])} className="h-10 rounded-md border border-input bg-background px-3 text-sm">
+                        <option value="PRICE">Cours</option>
+                        <option value="PE">Ratio P/E</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+                <div className="grid gap-2">
+                  <Label htmlFor="operator">Opérateur</Label>
+                  <select
+                    id="operator"
+                    value={editOperator}
+                    onChange={(e) => setEditOperator(e.target.value)}
+                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value=">">Supérieur à (&gt;)</option>
+                    <option value="<">Inférieur à (&lt;)</option>
+                    <option value=">=">Supérieur ou égal (&gt;=)</option>
+                    <option value="<=">Inférieur ou égal (&lt;=)</option>
+                  </select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="value">Valeur cible</Label>
+                  <Input
+                    id="value"
+                    type="number"
+                    step="any"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => setIsEditingOpen(false)}
+                  disabled={savingEdit}
                 >
-                  <option value=">">Supérieur à (&gt;)</option>
-                  <option value="<">Inférieur à (&lt;)</option>
-                  <option value=">=">Supérieur ou égal (&gt;=)</option>
-                  <option value="<=">Inférieur ou égal (&lt;=)</option>
-                </select>
+                  Annuler
+                </Button>
+                <Button type="submit" disabled={savingEdit || Number(editValue) <= 0 || (!editingAlert && !newSymbol.trim())}>
+                  {savingEdit ? 'Enregistrement…' : 'Enregistrer'}
+                </Button>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="value">Valeur cible</Label>
-                <Input
-                  id="value"
-                  type="number"
-                  step="any"
-                  value={editValue}
-                  onChange={(e) => setEditValue(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setIsEditingOpen(false)}
-                disabled={savingEdit}
-              >
-                Annuler
-              </Button>
-              <Button onClick={handleSaveEdit} disabled={savingEdit || Number(editValue) <= 0 || (!editingAlert && !newSymbol.trim())}>
-                {savingEdit ? 'Enregistrement...' : 'Enregistrer'}
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={Boolean(alertToDelete)} onOpenChange={(open) => {
+          if (!open && !pendingAlertId) setAlertToDelete(null)
+        }}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Supprimer l’alerte sur {alertToDelete?.symbol} ?</DialogTitle>
+              <DialogDescription>Ce seuil ne sera plus surveillé.</DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setAlertToDelete(null)} disabled={Boolean(pendingAlertId)}>Annuler</Button>
+              <Button variant="destructive" onClick={handleDelete} disabled={Boolean(pendingAlertId)}>
+                {pendingAlertId ? 'Suppression…' : 'Supprimer'}
               </Button>
             </div>
           </DialogContent>
         </Dialog>
 
-        <TabsContent
-          value="price-alerts"
-          className="m-0 space-y-6 animate-in fade-in slide-in-from-bottom-2"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <Button onClick={handleCreateInit} disabled={loading}>
-              <Bell className="mr-2 h-4 w-4" /> Créer une alerte
-            </Button>
-            {!loading && !error && (
-              <Button variant="ghost" onClick={() => setActiveTab('settings')}>
-                {notificationsEnabled ? ({
-                  telegram: settings.telegramChatId ? 'Telegram connecté' : 'Telegram à connecter',
-                  ntfy: settings.ntfyTopic ? 'ntfy configuré' : 'ntfy à configurer',
-                  browser: settings.browserPushEnabled ? 'Notifications navigateur actives' : 'Navigateur à configurer',
-                })[settings.channel] : 'Notifications en pause'}
+        <TabsContent value="price-alerts" className="m-0 space-y-5">
+          {!loading && !error && (
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border bg-card px-4 py-3">
+              <div className="flex items-center gap-3">
+                <Bell className={receiving ? 'h-4 w-4 text-primary' : 'h-4 w-4 text-muted-foreground'} />
+                <div>
+                  <p className="text-sm font-medium">{channel.label}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {receiving ? 'Réception activée' : channel.ready ? 'Notifications en pause' : 'Canal à configurer'}
+                  </p>
+                </div>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setActiveTab('settings')}>
+                {receiving ? 'Gérer la réception' : 'Configurer la réception'}
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-            )}
-          </div>
-          <div className="grid gap-8 lg:grid-cols-12">
-            <div className="lg:col-span-12">
-              <Tabs defaultValue="all" className="w-full">
-                <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                  <TabsList className="h-10 bg-muted/50 p-1">
-                    <TabsTrigger
-                      value="all"
-                      className="px-4 text-xs font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                    >
-                      TOUT
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="active"
-                      className="px-4 text-xs font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                    >
-                      ACTIVES
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="triggered"
-                      className="px-4 text-xs font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                    >
-                      HISTORIQUE
-                    </TabsTrigger>
-                  </TabsList>
-                  <div className="relative group">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                    <Input
-                      placeholder="Rechercher un ticker..."
-                      className="h-10 w-full border-border bg-background/50 backdrop-blur-sm pl-9 sm:w-[280px] focus-visible:ring-1 focus-visible:ring-primary transition-all"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+            </div>
+          )}
+
+          {loading ? (
+            <p role="status" className="rounded-xl border p-8 text-center text-sm text-muted-foreground">Chargement des alertes…</p>
+          ) : error ? (
+            <div role="alert" className="grid justify-items-center gap-3 rounded-xl border p-8 text-center">
+              <AlertCircle className="h-6 w-6 text-destructive" />
+              <p className="font-medium">{error}</p>
+              <Button onClick={fetchData} variant="outline">Réessayer</Button>
+            </div>
+          ) : (
+            <>
+              {alerts.length > 0 && (
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div role="group" aria-label="Filtrer par état" className="flex flex-wrap gap-1">
+                    {[
+                      { value: 'all', label: 'Toutes', count: alerts.length },
+                      { value: 'active', label: 'Actives', count: activeCount },
+                      { value: 'triggered', label: 'Déclenchées', count: triggeredCount },
+                    ].map(({ value, label, count }) => (
+                      <Button key={value} variant={alertFilter === value ? 'secondary' : 'ghost'}
+                        size="sm" aria-pressed={alertFilter === value} onClick={() => setAlertFilter(value)}>
+                        {label} <span className="ml-1.5 tabular-nums text-muted-foreground">{count}</span>
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="relative w-full sm:w-64">
+                    <Search aria-hidden className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input aria-label="Rechercher un symbole" placeholder="Rechercher un symbole"
+                      value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} className="pl-9 pr-9" />
+                    {searchTerm && (
+                      <Button aria-label="Effacer la recherche" variant="ghost" size="icon"
+                        className="absolute right-1 top-1 h-8 w-8" onClick={() => setSearchTerm('')}>
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
+              )}
 
-                {loading ? (
-                  <div className="flex flex-col items-center justify-center gap-4 py-20">
-                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-                  </div>
-                ) : error ? (
-                  <div className="flex flex-col items-center justify-center gap-4 py-16 text-center border border-dashed border-destructive/30 rounded-2xl bg-destructive/5 px-6">
-                    <AlertCircle className="h-8 w-8 text-destructive" />
-                    <h3 className="text-lg font-bold text-foreground">Échec du chargement</h3>
-                    <p className="max-w-md text-sm text-muted-foreground">{error}</p>
-                    <Button onClick={fetchData} variant="outline" className="mt-2">
-                      Réessayer
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="max-h-[600px] overflow-y-auto pr-2 pb-4 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
-                    <TabsContent value="all" className="m-0 mt-1">
-                      <AlertList
-                        alerts={filteredAlerts}
-                        onDelete={handleDelete}
-                        onRestart={handleRestart}
-                        onEdit={handleEditInit}
-                        safeFormat={safeFormat}
-                      />
-                    </TabsContent>
-                    <TabsContent value="active" className="m-0 mt-1">
-                      <AlertList
-                        alerts={activeAlerts}
-                        onDelete={handleDelete}
-                        onRestart={handleRestart}
-                        onEdit={handleEditInit}
-                        safeFormat={safeFormat}
-                      />
-                    </TabsContent>
-                    <TabsContent value="triggered" className="m-0 mt-1">
-                      <AlertList
-                        alerts={triggeredAlerts}
-                        onDelete={handleDelete}
-                        onRestart={handleRestart}
-                        onEdit={handleEditInit}
-                        safeFormat={safeFormat}
-                      />
-                    </TabsContent>
-                  </div>
-                )}
-              </Tabs>
-            </div>
-          </div>
+              {visibleAlerts.length ? (
+                <ul className="divide-y rounded-xl border bg-card">
+                  {visibleAlerts.map((alert) => (
+                    <AlertRow key={alert.id} alert={alert} pending={Boolean(pendingAlertId)}
+                      onEdit={() => handleEditInit(alert)} onRestart={() => handleRestart(alert.id)}
+                      onDelete={() => setAlertToDelete(alert)} safeFormat={safeFormat} />
+                  ))}
+                </ul>
+              ) : (
+                <div className="grid justify-items-center gap-3 rounded-xl border border-dashed px-5 py-10 text-center sm:py-14">
+                  <BellOff className="h-6 w-6 text-muted-foreground" />
+                  <h2 className="p-0 text-base font-semibold text-foreground">
+                    {alerts.length === 0 ? 'Créez votre première alerte' : query ? 'Aucun symbole trouvé' :
+                      alertFilter === 'active' ? 'Aucune alerte active' : 'Aucune alerte déclenchée'}
+                  </h2>
+                  {alerts.length === 0 ? (
+                    <>
+                      <p className="text-sm text-muted-foreground">Choisissez une action et le seuil de cours ou de ratio P/E à surveiller.</p>
+                      <Button variant="outline" onClick={handleCreateInit}>Créer une alerte</Button>
+                    </>
+                  ) : (
+                    <Button variant="outline" onClick={() => {
+                      setSearchTerm('')
+                      setAlertFilter('all')
+                    }}>Afficher toutes les alertes</Button>
+                  )}
+                </div>
+              )}
+            </>
+          )}
         </TabsContent>
 
         <TabsContent
@@ -726,21 +713,14 @@ export default function AlertsPage() {
           <div className="grid gap-8 lg:grid-cols-12">
             <div className="space-y-6 lg:col-span-8">
               <Card className="overflow-hidden border-border/60 shadow-sm">
-                <CardHeader className="bg-slate-900 p-4 text-white">
-                  <CardTitle className="flex items-center justify-between text-sm uppercase tracking-widest">
-                    <div className="flex items-center gap-2">
-                      <BellOff className="h-4 w-4 text-blue-400" />
-                      Rapports de variation
-                    </div>
-                    <Button
-                      size="sm"
-                      onClick={handleSaveReports}
-                      disabled={savingReports}
-                      className="h-7 text-[10px] font-bold"
-                    >
-                      {savingReports ? '...' : 'ENREGISTRER'}
-                    </Button>
-                  </CardTitle>
+                <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3 space-y-0">
+                  <div>
+                    <CardTitle className="text-lg">Rapports de variation</CardTitle>
+                    <CardDescription className="mt-1">Choisissez les actifs suivis et la fréquence de vos récapitulatifs.</CardDescription>
+                  </div>
+                  <Button size="sm" onClick={handleSaveReports} disabled={savingReports || loading || Boolean(error)}>
+                    {savingReports ? 'Enregistrement…' : 'Enregistrer'}
+                  </Button>
                 </CardHeader>
                 <CardContent className="space-y-8 p-6">
                   <div className="space-y-4">
@@ -757,24 +737,26 @@ export default function AlertsPage() {
                     </div>
                     <div className="grid gap-6 md:grid-cols-2">
                       <div className="space-y-2">
-                        <Label className="text-xs font-bold uppercase">Portefeuilles</Label>
-                        <select
+                        <Label htmlFor="portfolio-frequency">Portefeuilles</Label>
+                        <select id="portfolio-frequency"
                           value={portfolioNotifFreq}
                           onChange={(e) => setPortfolioNotifFreq(e.target.value)}
                           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                         >
+                          <option value="NONE">Aucun rapport</option>
                           <option value="DAILY">Quotidien</option>
                           <option value="WEEKLY">Hebdomadaire</option>
                           <option value="MONTHLY">Mensuel</option>
                         </select>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-xs font-bold uppercase">Watchlists</Label>
-                        <select
+                        <Label htmlFor="watchlist-frequency">Listes de suivi</Label>
+                        <select id="watchlist-frequency"
                           value={watchlistNotifFreq}
                           onChange={(e) => setWatchlistNotifFreq(e.target.value)}
                           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                         >
+                          <option value="NONE">Aucun rapport</option>
                           <option value="DAILY">Quotidien</option>
                           <option value="WEEKLY">Hebdomadaire</option>
                           <option value="MONTHLY">Mensuel</option>
@@ -785,17 +767,16 @@ export default function AlertsPage() {
 
                   <div className="space-y-4">
                     <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground border-b pb-2">
-                      Ciblage des notifications
+                      Éléments inclus
                     </h3>
                     <p className="text-xs text-muted-foreground">
-                      Décochez les entités pour lesquelles vous ne souhaitez pas recevoir de
-                      notifications.
+                      Cochez les portefeuilles et les listes à inclure dans les rapports.
                     </p>
 
                     <div className="grid gap-6 md:grid-cols-2">
                       <div className="space-y-3">
                         <Label className="text-xs font-bold uppercase text-primary">
-                          Portefeuilles Actifs
+                          Portefeuilles
                         </Label>
                         {portfolios.map((p) => (
                           <label
@@ -822,7 +803,7 @@ export default function AlertsPage() {
 
                       <div className="space-y-3">
                         <Label className="text-xs font-bold uppercase text-primary">
-                          Watchlists Actives
+                          Listes de suivi
                         </Label>
                         {watchlists.map((w) => (
                           <label
@@ -843,7 +824,7 @@ export default function AlertsPage() {
                           </label>
                         ))}
                         {watchlists.length === 0 && (
-                          <p className="text-xs italic text-muted-foreground">Aucune watchlist</p>
+                          <p className="text-xs italic text-muted-foreground">Aucune liste de suivi</p>
                         )}
                       </div>
                     </div>
@@ -873,292 +854,260 @@ export default function AlertsPage() {
           </div>
         </TabsContent>
         <TabsContent value="settings" className="m-0 animate-in fade-in slide-in-from-bottom-2">
-          <div className="grid gap-8 lg:grid-cols-12">
-            <div className="space-y-6 lg:col-span-6">
-              <Card className="overflow-hidden border-border/60 shadow-sm">
-                <CardHeader className="bg-slate-900 p-4 text-white">
-                  <CardTitle className="flex items-center gap-2 text-sm uppercase tracking-widest">
-                    <Settings2 className="h-4 w-4 text-blue-400" />
-                    Canal de Réception
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6 p-4">
-                  <div className="space-y-3">
-                    <Label className="text-[10px] font-black uppercase text-slate-500">
-                      Où recevoir vos alertes
-                    </Label>
-                    <RadioGroup
-                      value={settings.channel}
-                      onValueChange={(v) =>
-                        handleChannelChange(v as 'telegram' | 'ntfy' | 'browser')
-                      }
-                      className="grid grid-cols-3 gap-2"
-                    >
-                      <div>
-                        <RadioGroupItem value="telegram" id="tg" className="peer sr-only" />
-                        <Label
-                          htmlFor="tg"
-                          className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                        >
-                          <MessageSquare className="mb-1 h-4 w-4" />
-                          <span className="text-[10px] font-bold">TELEGRAM</span>
-                        </Label>
-                      </div>
-                      <div>
-                        <RadioGroupItem value="ntfy" id="ntfy" className="peer sr-only" />
-                        <Label
-                          htmlFor="ntfy"
-                          className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                        >
-                          <Radio className="mb-1 h-4 w-4" />
-                          <span className="text-[10px] font-bold">NTFY (WEB)</span>
-                        </Label>
-                      </div>
-                      <div>
-                        <RadioGroupItem value="browser" id="browser" className="peer sr-only" />
-                        <Label
-                          htmlFor="browser"
-                          className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                        >
-                          <Bell className="mb-1 h-4 w-4" />
-                          <span className="text-[10px] font-bold">NAVIGATEUR</span>
-                        </Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
+          <div className="max-w-2xl">
+            <Card className="overflow-hidden border-border/60 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg">Canal de réception</CardTitle>
+                <CardDescription>Choisissez où recevoir vos alertes et vos rapports.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6 p-4">
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-black uppercase text-slate-500">
+                    Où recevoir vos alertes
+                  </Label>
+                  <RadioGroup
+                    aria-label="Canal de réception"
+                    disabled={updatingSettings || loading}
+                    value={settings.channel}
+                    onValueChange={(v) =>
+                      handleChannelChange(v as 'telegram' | 'ntfy' | 'browser')
+                    }
+                    className="grid grid-cols-3 gap-2"
+                  >
+                    <div>
+                      <RadioGroupItem value="telegram" id="tg" className="peer sr-only" />
+                      <Label
+                        htmlFor="tg"
+                        className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                      >
+                        <MessageSquare className="mb-1 h-4 w-4" />
+                        <span className="text-[10px] font-bold">TELEGRAM</span>
+                      </Label>
+                    </div>
+                    <div>
+                      <RadioGroupItem value="ntfy" id="ntfy" className="peer sr-only" />
+                      <Label
+                        htmlFor="ntfy"
+                        className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                      >
+                        <Radio className="mb-1 h-4 w-4" />
+                        <span className="text-[10px] font-bold">NTFY (WEB)</span>
+                      </Label>
+                    </div>
+                    <div>
+                      <RadioGroupItem value="browser" id="browser" className="peer sr-only" />
+                      <Label
+                        htmlFor="browser"
+                        className="flex cursor-pointer flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-2 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                      >
+                        <Bell className="mb-1 h-4 w-4" />
+                        <span className="text-[10px] font-bold">NAVIGATEUR</span>
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </div>
 
-                  <Separator />
+                <Separator />
+                {settings.channel === 'browser' && (
+                  <PushNotificationToggle
+                    compact
+                    onSubscriptionChange={(active) => {
+                      setSettings((previous) => ({ ...previous, browserPushEnabled: active }))
+                      setNotificationsEnabled(active)
+                    }}
+                  />
+                )}
 
-                  {settings.channel === 'telegram' && (
-                    <div className="space-y-4 animate-in fade-in slide-in-from-left-2 pt-1">
-                      <div className="rounded-xl border border-[#24A1DE]/25 bg-[#24A1DE]/5 p-4">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                          <div>
-                            <h4 className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-[#168ac0] dark:text-[#58c5f0]">
-                              <MessageSquare className="h-4 w-4" />
-                              Connexion Telegram
-                            </h4>
-                            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                              Ouvrez votre lien personnel, cliquez sur <strong>Démarrer</strong>{' '}
-                              dans Telegram, puis revenez ici.
-                            </p>
-                          </div>
-                          {settings.telegramChatId ? (
-                            <Badge
-                              variant="outline"
-                              className="w-fit gap-1 border-emerald-500/30 bg-emerald-500/10 text-[10px] font-bold text-emerald-600"
-                            >
-                              <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-                              Compte lié
-                            </Badge>
-                          ) : (
-                            <Badge
-                              variant="outline"
-                              className="w-fit gap-1 border-amber-500/30 bg-amber-500/10 text-[10px] font-bold text-amber-700"
-                            >
-                              En attente
-                            </Badge>
-                          )}
+                {settings.channel === 'telegram' && (
+                  <div className="space-y-4 animate-in fade-in slide-in-from-left-2 pt-1">
+                    <div className="rounded-xl border border-[#24A1DE]/25 bg-[#24A1DE]/5 p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <h4 className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-[#168ac0] dark:text-[#58c5f0]">
+                            <MessageSquare className="h-4 w-4" />
+                            Connexion Telegram
+                          </h4>
+                          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                            Ouvrez votre lien personnel, cliquez sur <strong>Démarrer</strong>{' '}
+                            dans Telegram, puis revenez ici.
+                          </p>
                         </div>
+                        {settings.telegramChatId ? (
+                          <Badge
+                            variant="outline"
+                            className="w-fit gap-1 border-emerald-500/30 bg-emerald-500/10 text-[10px] font-bold text-emerald-600"
+                          >
+                            <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                            Compte lié
+                          </Badge>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className="w-fit gap-1 border-amber-500/30 bg-amber-500/10 text-[10px] font-bold text-amber-700"
+                          >
+                            En attente
+                          </Badge>
+                        )}
+                      </div>
 
-                        {!settings.telegramChatId ? (
-                          <div className="mt-4 space-y-3">
+                      {!settings.telegramChatId ? (
+                        <div className="mt-4 space-y-3">
+                          <div>
+                            <Button
+                              onClick={handleOpenTelegram}
+                              disabled={openingTelegram}
+                              className="h-10 w-full gap-2 bg-[#24A1DE] font-bold text-white hover:bg-[#2092ca]"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                              {openingTelegram ? 'Ouverture...' : 'Activer avec Telegram'}
+                            </Button>
+                          </div>
+                          <Button
+                            variant="outline"
+                            onClick={handleRefreshTelegramStatus}
+                            disabled={checkingTelegram}
+                            className="h-9 w-full gap-2 text-xs font-bold"
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            {checkingTelegram
+                              ? 'Vérification...'
+                              : 'J’ai démarré le bot — vérifier'}
+                          </Button>
+                          <p className="text-center text-[11px] text-muted-foreground">
+                            Le lien expire dans 15 minutes et ne peut être utilisé que pour votre
+                            compte.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="mt-4 space-y-3 rounded-lg border border-border/60 bg-background p-3">
+                          <div className="flex items-center justify-between gap-3">
                             <div>
-                              <Button
-                                onClick={handleOpenTelegram}
-                                disabled={openingTelegram}
-                                className="h-10 w-full gap-2 bg-[#24A1DE] font-bold text-white hover:bg-[#2092ca]"
-                              >
-                                <ExternalLink className="h-4 w-4" />
-                                {openingTelegram ? 'Ouverture...' : 'Activer avec Telegram'}
-                              </Button>
+                              <p className="text-xs font-bold text-foreground">
+                                Notifications Telegram
+                              </p>
+                              <p className="mt-0.5 text-[11px] text-muted-foreground">
+                                Recevoir les alertes de prix et les rapports périodiques.
+                              </p>
                             </div>
                             <Button
+                              size="sm"
+                              variant={notificationsEnabled ? 'outline' : 'default'}
+                              onClick={() => handleNotificationsToggle(!notificationsEnabled)}
+                              disabled={updatingSettings}
+                              aria-pressed={notificationsEnabled}
+                              className="shrink-0 text-xs font-bold"
+                            >
+                              {notificationsEnabled ? 'Désactiver' : 'Activer les notifications'}
+                            </Button>
+                          </div>
+                          <div className="flex flex-col gap-2 sm:flex-row">
+                            <Button
                               variant="outline"
+                              size="sm"
+                              onClick={handleTestNotification}
+                              disabled={updatingSettings}
+                              className="flex-1 gap-2 text-xs font-bold"
+                            >
+                              <Send className="h-3.5 w-3.5" />
+                              Envoyer un test
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={handleRefreshTelegramStatus}
                               disabled={checkingTelegram}
-                              className="h-9 w-full gap-2 text-xs font-bold"
+                              className="text-xs font-bold text-muted-foreground"
                             >
-                              <CheckCircle2 className="h-3.5 w-3.5" />
-                              {checkingTelegram
-                                ? 'Vérification...'
-                                : 'J’ai démarré le bot — vérifier'}
+                              Vérifier la liaison
                             </Button>
-                            <p className="text-center text-[11px] text-muted-foreground">
-                              Le lien expire dans 15 minutes et ne peut être utilisé que pour votre
-                              compte.
-                            </p>
                           </div>
-                        ) : (
-                          <div className="mt-4 space-y-3 rounded-lg border border-border/60 bg-background p-3">
-                            <div className="flex items-center justify-between gap-3">
-                              <div>
-                                <p className="text-xs font-bold text-foreground">
-                                  Notifications Telegram
-                                </p>
-                                <p className="mt-0.5 text-[11px] text-muted-foreground">
-                                  Recevoir les alertes de prix et les rapports périodiques.
-                                </p>
-                              </div>
-                              <Button
-                                size="sm"
-                                variant={notificationsEnabled ? 'outline' : 'default'}
-                                onClick={() => handleNotificationsToggle(!notificationsEnabled)}
-                                disabled={updatingSettings}
-                                aria-pressed={notificationsEnabled}
-                                className="shrink-0 text-xs font-bold"
-                              >
-                                {notificationsEnabled ? 'Désactiver' : 'Activer les notifications'}
-                              </Button>
-                            </div>
-                            <div className="flex flex-col gap-2 sm:flex-row">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleTestNotification}
-                                disabled={updatingSettings}
-                                className="flex-1 gap-2 text-xs font-bold"
-                              >
-                                <Send className="h-3.5 w-3.5" />
-                                Envoyer un test
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleRefreshTelegramStatus}
-                                disabled={checkingTelegram}
-                                className="text-xs font-bold text-muted-foreground"
-                              >
-                                Vérifier la liaison
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {settings.channel === 'ntfy' && (
-                    <div className="space-y-4 animate-in fade-in slide-in-from-right-2">
-                      <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase text-slate-500">
-                          Votre canal ntfy privé
-                        </Label>
-                        <div className="flex items-center gap-2 rounded-md border bg-muted/30 p-2">
-                          <code className="flex-1 truncate text-[10px] font-bold">
-                            ntfy.sh/{settings.ntfyTopic || 'chargement...'}
-                          </code>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-6 w-6"
-                            onClick={() => copyToClipboard(`https://ntfy.sh/${settings.ntfyTopic}`)}
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
                         </div>
-                      </div>
-                      <div className="space-y-2">
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {settings.channel === 'ntfy' && (
+                  <div className="space-y-4 animate-in fade-in slide-in-from-right-2">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase text-slate-500">
+                        Votre canal ntfy privé
+                      </Label>
+                      <div className="flex items-center gap-2 rounded-md border bg-muted/30 p-2">
+                        <code className="flex-1 truncate text-[10px] font-bold">
+                          ntfy.sh/{settings.ntfyTopic || 'chargement...'}
+                        </code>
                         <Button
-                          variant="outline"
-                          size="sm"
-                          className="w-full gap-2 text-[10px] font-bold"
-                          asChild
+                          size="icon"
+                          variant="ghost"
+                          className="h-6 w-6"
+                          aria-label="Copier le lien ntfy"
+                          disabled={!settings.ntfyTopic}
+                          onClick={() => copyToClipboard(`https://ntfy.sh/${settings.ntfyTopic}`)}
                         >
-                          <a
-                            href={`https://ntfy.sh/${settings.ntfyTopic}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            OUVRIR LE CANAL <ExternalLink className="h-3 w-3" />
-                          </a>
+                          <Copy className="h-3 w-3" />
                         </Button>
                       </div>
-                      <div className="rounded-lg border border-amber-100 bg-amber-50/50 p-3">
-                        <div className="flex gap-2 mb-1">
-                          <AlertCircle className="h-4 w-4 shrink-0 text-amber-600" />
-                          <span className="text-[10px] font-bold uppercase text-amber-700">
-                            Information Format
-                          </span>
-                        </div>
-                        <p className="text-[10px] font-medium leading-relaxed text-amber-800">
-                          ntfy n'accepte pas le HTML. Les messages seront reçus en texte brut
-                          optimisé.
-                        </p>
-                      </div>
                     </div>
-                  )}
-
-                  {settings.channel === 'browser' && (
-                    <div className="space-y-4 animate-in fade-in slide-in-from-right-2">
-                      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
-                        <h4 className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-primary">
-                          <Bell className="h-4 w-4" /> Notifications navigateur
-                        </h4>
-                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                          Activez d’abord cet appareil avec la carte située au-dessus, puis activez
-                          ce canal pour recevoir vos alertes.
-                        </p>
-                        {!settings.browserPushConfigured && (
-                          <p className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-[11px] font-medium text-amber-700">
-                            Le serveur doit être configuré avec ses clés Web Push avant de pouvoir
-                            enregistrer un appareil.
-                          </p>
-                        )}
-                      </div>
-                      <Button
-                        size="sm"
-                        variant={notificationsEnabled ? 'outline' : 'default'}
-                        className="w-full text-xs font-bold"
+                    {settings.ntfyTopic && (
+                      <Button variant="outline" size="sm" asChild>
+                        <a
+                          href={`https://ntfy.sh/${settings.ntfyTopic}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Ouvrir le canal <ExternalLink className="ml-2 h-3 w-3" />
+                        </a>
+                      </Button>
+                    )}
+                    <div className="flex flex-wrap gap-2">
+                      <Button size="sm" variant={notificationsEnabled ? 'outline' : 'default'}
                         onClick={() => handleNotificationsToggle(!notificationsEnabled)}
-                        disabled={updatingSettings || !settings.browserPushEnabled}
-                        aria-pressed={notificationsEnabled}
+                        disabled={updatingSettings || !settings.ntfyTopic}>
+                        {notificationsEnabled ? 'Mettre en pause' : 'Activer les notifications'}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={handleTestBatchNotification}
+                        disabled={testingReport || !settings.ntfyTopic}>
+                        {testingReport ? 'Envoi…' : 'Envoyer un rapport test'}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {settings.channel === 'browser' && !settings.browserPushConfigured && (
+                  <p role="status" className="rounded-lg border p-3 text-sm text-muted-foreground">
+                    Les notifications navigateur sont indisponibles sur ce serveur.
+                  </p>
+                )}
+
+                {process.env.NODE_ENV === 'development' && (
+                  <div className="space-y-2 pt-2">
+                    <p className="text-[8px] font-black uppercase text-primary/60 text-center">
+                      Outils de Développement
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-dashed border-primary/50 text-[9px] font-bold text-primary hover:bg-primary/5 px-1"
+                        onClick={handleTestNotification}
                       >
-                        {notificationsEnabled
-                          ? 'Désactiver les notifications'
-                          : 'Activer les notifications navigateur'}
+                        <Send className="mr-1 h-3 w-3" /> Alerte test
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="w-full gap-2 text-xs font-bold"
-                        onClick={handleTestNotification}
-                        disabled={updatingSettings || !settings.browserPushEnabled}
+                        className="border-dashed border-primary/50 text-[9px] font-bold text-primary hover:bg-primary/5 px-1"
+                        onClick={handleTestBatchNotification}
+                        disabled={testingReport}
                       >
-                        <Send className="h-3.5 w-3.5" /> Envoyer un test navigateur
+                        <Layers className="mr-1 h-3 w-3" /> Rapport test
                       </Button>
                     </div>
-                  )}
-
-                  {process.env.NODE_ENV === 'development' && (
-                    <div className="space-y-2 pt-2">
-                      <p className="text-[8px] font-black uppercase text-primary/60 text-center">
-                        Outils de Développement
-                      </p>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-dashed border-primary/50 text-[9px] font-bold text-primary hover:bg-primary/5 px-1"
-                          onClick={handleTestNotification}
-                        >
-                          <Send className="mr-1 h-3 w-3" /> Alerte test
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="border-dashed border-primary/50 text-[9px] font-bold text-primary hover:bg-primary/5 px-1"
-                          onClick={handleTestBatchNotification}
-                          disabled={testingReport}
-                        >
-                          <Layers className="mr-1 h-3 w-3" /> Rapport test
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
       </Tabs>
@@ -1166,225 +1115,74 @@ export default function AlertsPage() {
   )
 }
 
-function AlertList({
-  alerts,
-  onDelete,
-  onRestart,
-  onEdit,
-  safeFormat,
-}: {
-  alerts: Alert[]
-  onDelete: (id: string) => void
-  onRestart: (id: string) => void
-  onEdit: (alert: Alert) => void
-  safeFormat: (d: any, f: string) => string
-}) {
-  if (alerts.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-muted/5 py-16 text-center transition-all hover:bg-muted/10">
-        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-background shadow-sm ring-1 ring-border/50">
-          <BellOff className="h-6 w-6 text-muted-foreground/40" />
-        </div>
-        <h3 className="text-lg font-bold tracking-tight text-foreground/80">Aucune alerte ici</h3>
-        <p className="mt-1 max-w-sm text-sm font-medium text-muted-foreground">
-          Utilisez la cloche à côté d’une action dans vos watchlists pour définir un seuil de prix.
-        </p>
-        <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-          <Button asChild size="sm">
-            <Link href="/app/watchlist">Choisir une action</Link>
-          </Button>
-          <Button asChild size="sm" variant="outline">
-            <Link href="/app/portfolios">Suivre un portefeuille</Link>
-          </Button>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="space-y-3">
-      {alerts.map((alert) => (
-        <AlertCard
-          key={alert.id}
-          alert={alert}
-          onDelete={onDelete}
-          onRestart={onRestart}
-          onEdit={onEdit}
-          safeFormat={safeFormat}
-        />
-      ))}
-    </div>
-  )
-}
-
-function AlertCard({
+function AlertRow({
   alert,
-  onDelete,
-  onRestart,
+  pending,
   onEdit,
+  onRestart,
+  onDelete,
   safeFormat,
 }: {
   alert: Alert
-  onDelete: (id: string) => void
-  onRestart: (id: string) => void
-  onEdit: (alert: Alert) => void
-  safeFormat: (d: any, f: string) => string
+  pending: boolean
+  onEdit: () => void
+  onRestart: () => void
+  onDelete: () => void
+  safeFormat: (date: Alert['createdAt'], pattern: string) => string
 }) {
-  const { toast } = useToast()
-
-  // Styles based on state
-  const isTriggered = alert.isTriggered
-
-  const cardBorder = isTriggered
-    ? 'border-orange-500/30 dark:border-orange-500/20'
-    : 'border-border/50'
-
-  const badgeColors = isTriggered
-    ? 'border-orange-500/30 bg-orange-500/10 text-orange-600 dark:text-orange-400'
-    : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-
-  const cardBg = isTriggered ? 'bg-orange-500/[0.02] dark:bg-orange-500/[0.01]' : 'bg-background/80'
-
+  const operatorLabel: Record<string, string> = {
+    '>': 'supérieur à',
+    '<': 'inférieur à',
+    '>=': 'au moins',
+    '<=': 'au plus',
+  }
   return (
-    <Card
-      className={`group relative overflow-hidden border transition-colors hover:bg-muted/10 ${cardBorder} ${cardBg}`}
-    >
-      <CardContent className="p-0 relative z-10">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4">
-          <div className="flex items-center gap-4">
-            <div
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl shadow-inner transition-colors ${
-                isTriggered
-                  ? 'bg-orange-100 dark:bg-orange-900/50'
-                  : 'bg-slate-100 dark:bg-slate-800'
-              }`}
-            >
-              {isTriggered ? (
-                <CheckCircle2 className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-              ) : (
-                <Clock className="h-5 w-5 text-slate-500 dark:text-slate-400" />
-              )}
-            </div>
-
-            <div className="flex flex-col justify-center">
-              <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-xl font-bold tracking-tight uppercase">{alert.symbol}</span>
-                <Badge
-                  variant="outline"
-                  className={`px-1.5 py-0 text-[9px] font-bold uppercase tracking-wider ${badgeColors}`}
-                >
-                  {isTriggered ? 'Déclenchée' : 'En veille'}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                <span className="rounded bg-muted px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-widest text-foreground/70">
-                  {alert.type === 'PRICE' ? 'PRIX' : 'P/E'}
-                </span>
-                <span>{({ '>': 'supérieur à', '<': 'inférieur à', '>=': 'au moins', '<=': 'au plus' } as Record<string, string>)[alert.operator] || alert.operator}</span>
-                <span
-                  className={`text-sm font-bold ${
-                    isTriggered ? 'text-orange-600 dark:text-orange-400' : 'text-primary'
-                  }`}
-                >
-                  {alert.value.toLocaleString('fr-FR', { maximumFractionDigits: 4 })}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between sm:justify-end gap-4 mt-2 sm:mt-0">
-            {/* The Date is always visible on desktop, hidden on mobile */}
-            <div className="hidden sm:flex flex-col items-end text-right text-muted-foreground group-hover:text-foreground transition-colors">
-              <span className="text-[9px] font-bold uppercase tracking-widest opacity-60">
-                Créée le
-              </span>
-              <span className="text-xs font-semibold">
-                {safeFormat(alert.createdAt, 'dd MMM yyyy')}
-              </span>
-            </div>
-
-            {/* Actions for Desktop (visible on hover) */}
-            <div className="hidden sm:flex gap-1.5 opacity-0 transition-opacity duration-300 group-hover:opacity-100 mr-2">
-              {isTriggered && (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8 rounded-full border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-950"
-                  onClick={() => onRestart(alert.id)}
-                  title="Relancer"
-                >
-                  <Play className="h-3.5 w-3.5" />
-                </Button>
-              )}
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"
-                onClick={() => onEdit(alert)}
-                title="Paramètres"
-              >
-                <Settings2 className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-8 w-8 rounded-full border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950"
-                onClick={() => onDelete(alert.id)}
-                title="Supprimer"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-
-            {/* Mobile layout Dropdown - Always visible on small screens */}
-            <div className="sm:hidden flex items-center justify-between w-full">
-              <div className="flex flex-col text-muted-foreground">
-                <span className="text-[9px] font-bold uppercase tracking-widest opacity-60">
-                  Créée le
-                </span>
-                <span className="text-xs font-semibold">
-                  {safeFormat(alert.createdAt, 'dd MMM yyyy')}
-                </span>
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 px-2 rounded-md">
-                    <MoreVertical className="h-4 w-4 text-muted-foreground" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="rounded-xl shadow-md">
-                  {isTriggered && (
-                    <DropdownMenuItem
-                      onClick={() => onRestart(alert.id)}
-                      className="font-medium text-emerald-600"
-                    >
-                      <Play className="mr-2 h-3 w-3" /> Relancer
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem onClick={() => onEdit(alert)} className="font-medium">
-                    <Settings2 className="mr-2 h-3 w-3" /> Paramètres
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="font-medium text-red-600"
-                    onClick={() => onDelete(alert.id)}
-                  >
-                    <Trash2 className="mr-2 h-3 w-3" /> Supprimer
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
+    <li className="flex items-start justify-between gap-3 px-4 py-4 sm:items-center sm:px-5">
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href={`/app/stocks/${encodeURIComponent(alert.symbol)}`}
+            className="break-all font-semibold hover:underline">{alert.symbol}</Link>
+          <Badge variant={alert.isTriggered ? 'secondary' : 'outline'}>
+            {alert.isTriggered ? 'Déclenchée' : 'Active'}
+          </Badge>
         </div>
-
-        {isTriggered && alert.lastTriggeredAt && (
-          <div className="flex items-center gap-2 border-t border-border/40 bg-orange-500/5 px-4 py-2">
-            <Send className="h-3 w-3 text-orange-500" />
-            <span className="text-[9px] font-bold uppercase tracking-widest text-orange-700 dark:text-orange-400">
-              Notification le {safeFormat(alert.lastTriggeredAt, 'dd/MM à HH:mm')}
-            </span>
-          </div>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {alert.type === 'PRICE' ? 'Cours' : 'Ratio P/E'} {operatorLabel[alert.operator] || alert.operator}{' '}
+          <strong className="font-medium tabular-nums text-foreground">
+            {alert.value.toLocaleString('fr-FR', { maximumFractionDigits: 4 })}
+          </strong>
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {alert.isTriggered && alert.lastTriggeredAt
+            ? `Déclenchée le ${safeFormat(alert.lastTriggeredAt, 'dd MMM yyyy à HH:mm')}`
+            : `Créée le ${safeFormat(alert.createdAt, 'dd MMM yyyy')}`}
+        </p>
+      </div>
+      <div className="flex shrink-0 items-center gap-1">
+        {alert.isTriggered && (
+          <Button variant="outline" size="sm" className="hidden sm:inline-flex" onClick={onRestart} disabled={pending}>
+            Réactiver
+          </Button>
         )}
-      </CardContent>
-    </Card>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label={`Actions pour ${alert.symbol}`} disabled={pending}>
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {alert.isTriggered && (
+              <DropdownMenuItem className="sm:hidden" onSelect={onRestart}>
+                <Play className="mr-2 h-4 w-4" /> Réactiver
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onSelect={onEdit}><Settings2 className="mr-2 h-4 w-4" /> Modifier</DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={onDelete}>
+              <Trash2 className="mr-2 h-4 w-4" /> Supprimer
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </li>
   )
 }
