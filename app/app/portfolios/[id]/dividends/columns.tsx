@@ -1,116 +1,39 @@
-'use client'
+import type { ColumnDef } from '@tanstack/react-table'
 
-import * as React from 'react'
-import { Column, ColumnDef } from '@tanstack/react-table'
-import { ChevronUp, ArrowUpDown, ChevronDown, MoreHorizontal, ListFilterIcon } from 'lucide-react'
-
-import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
-import { cn } from '@/lib/utils'
-import { format } from 'date-fns/format'
-
-type FiltrProps = {
-  column: Column<unknown>
+export interface DividendRow {
+  date: number
+  symbol: string
+  amountByShare: number | null
+  totalAmount: number
 }
 
-const FilterButton = ({ column }: FiltrProps) => (
-  <DropdownMenu>
-    <DropdownMenuTrigger asChild>
-      <Button variant="ghost" className="mx-1 p-0">
-        <ListFilterIcon
-          className={cn(' h-4 w-4', column?.getFilterValue() != null ? 'text-primary' : '')}
-        />
-      </Button>
-    </DropdownMenuTrigger>
-    <DropdownMenuContent align="end">
-      <Input
-        placeholder="filtrer..."
-        value={(column?.getFilterValue() as string) ?? ''}
-        onChange={(event) => column.setFilterValue(event.target.value)}
-        className="max-w-sm"
-      />
-    </DropdownMenuContent>
-  </DropdownMenu>
-)
+const dateFormat = new Intl.DateTimeFormat('fr-FR', {
+  day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC',
+})
 
-const SortingButton = (title, activateFilter = true) => {
-  return function GhostButton({ column }: FiltrProps) {
-    return (
-      <div className="flex">
-        <Button
-          className="p-0 capitalize"
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          {title}
-          {column.getIsSorted() === 'asc' ? <ChevronUp className="ml-2 h-4 w-4" /> : null}
-          {column.getIsSorted() === 'desc' ? <ChevronDown className="ml-2 h-4 w-4" /> : null}
-          {!column.getIsSorted() ? <ArrowUpDown className="ml-2 h-4 w-4" /> : null}
-        </Button>
+export const dividendTotalFormat = new Intl.NumberFormat('fr-FR', {
+  minimumFractionDigits: 2, maximumFractionDigits: 2,
+})
 
-        {activateFilter && <FilterButton column={column}></FilterButton>}
-      </div>
-    )
-  }
-}
+const amountByShareFormat = new Intl.NumberFormat('fr-FR', {
+  maximumFractionDigits: 6,
+})
 
-export const columns: ColumnDef<unknown>[] = [
+export const columns: ColumnDef<DividendRow>[] = [
   {
     accessorKey: 'date',
-    header: SortingButton('Date', false),
-    cell: ({ row }) => {
-      const rawDate = row.getValue('date')
-      if (!rawDate) return <div className="text-muted-foreground">—</div>
-      try {
-        const timestamp = typeof rawDate === 'number' ? rawDate * 1000 : new Date(rawDate as string).getTime()
-        if (isNaN(timestamp)) return <div className="text-muted-foreground">{String(rawDate)}</div>
-        return <div className="font-medium tabular-nums">{format(new Date(timestamp), 'yyyy-MM-dd')}</div>
-      } catch {
-        return <div className="text-muted-foreground">{String(rawDate)}</div>
-      }
-    },
+    header: 'Détachement',
+    cell: ({ row }) => dateFormat.format(row.original.date * 1000),
   },
-
-  {
-    accessorKey: 'symbol',
-    header: SortingButton('Produit'),
-    cell: ({ row }) => <div className="capitalize">{row.getValue('symbol')}</div>,
-  },
-
+  { accessorKey: 'symbol', header: 'Action' },
   {
     accessorKey: 'amountByShare',
-    header: SortingButton('montant par actif', false),
-    cell: ({ row }) => {
-      const last = parseFloat(row.getValue('amountByShare'))
-
-      // Format the prix as a dollar prix
-      const formatted = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'EUR',
-      }).format(last)
-
-      return <div className="font-medium ">{formatted}</div>
-    },
+    header: 'Par action',
+    cell: ({ row }) => row.original.amountByShare == null ? '—' : amountByShareFormat.format(row.original.amountByShare),
   },
-
   {
     accessorKey: 'totalAmount',
-    header: SortingButton('Total', false),
-    cell: ({ row }) => {
-      const qty = parseFloat(row.getValue('totalAmount'))
-
-      // Format the prix as a dollar prix
-      const formatted = new Intl.NumberFormat('en-US', {
-        style: 'decimal',
-        signDisplay: 'always',
-      }).format(qty)
-
-      return <div className="font-medium ">{formatted}</div>
-    },
+    header: 'Pour la position',
+    cell: ({ row }) => <span className="font-medium tabular-nums">{dividendTotalFormat.format(row.original.totalAmount)}</span>,
   },
 ]

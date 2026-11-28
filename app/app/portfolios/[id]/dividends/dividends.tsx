@@ -1,85 +1,66 @@
-import React, { useState, useEffect } from 'react'
 import { Bar } from 'react-chartjs-2'
-import { format } from 'date-fns'
-
-import { Chart, CategoryScale, LinearScale, BarElement } from 'chart.js'
+import { Chart, CategoryScale, LinearScale, BarElement, Tooltip, type ChartOptions } from 'chart.js'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import Loader from '@/components/molecules/loader/loader'
 
-Chart.register(CategoryScale, LinearScale, BarElement)
+Chart.register(CategoryScale, LinearScale, BarElement, Tooltip)
 
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  radius: 0,
-  scales: {
-    x: {
-      grid: {
-        display: true,
-        drawBorder: true,
-        drawOnChartArea: false,
-        drawTicks: true,
-      },
-    },
-    y: {
-      ticks: {
-        callback: function (val, index) {
-          return this.getLabelForValue(val as number) + '€'
-        },
-      },
-      grid: {
-        display: false,
-        drawBorder: false,
-        drawOnChartArea: false,
-        drawTicks: false,
-      },
-    },
-  },
-  plugins: {
-    legend: {
-      display: false,
-    },
-    title: {
-      display: false,
-    },
-  },
+interface DividendsViewProps {
+  years: number[]
+  totals: number[]
+  selectedYear: number
+  onSelectYear: (year: number) => void
 }
 
-function DividendsView({ id, loading, dates, values }) {
+export default function DividendsView({ years, totals, selectedYear, onSelectYear }: DividendsViewProps) {
+  const options: ChartOptions<'bar'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    onClick: (_, elements) => {
+      if (elements.length) onSelectYear(years[elements[0].index])
+    },
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false } },
+      y: {
+        ticks: { callback: (value) => Number(value).toLocaleString('fr-FR') },
+      },
+    },
+  }
 
-
-  return loading ? (
-    <Loader />
-  ) : (
+  return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
-        <CardTitle className="text-md font-semibold capitalize">Dividendes</CardTitle>
-        {/* <MultiSelect list={['Mensuel', 'Annuel']} active={period} select={handlePeriodClick} /> */}
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base">Dividendes par année</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[250px] sm:h-[350px] w-full">
-          {dates.length > 0 ? (
-            <Bar
-              id={'Dividends'}
-              data={{
-                labels: dates,
-                datasets: [
-                  {
-                    label: 'Dividends',
-                    backgroundColor: 'rgb(109, 99, 255,0.7)',
-                    borderColor: 'rgb(109, 99, 255',
-                    data: values,
-                    maxBarThickness: 32,
-                  },
-                ],
-              }}
-              options={chartOptions}
-            />
-          ) : null}
+        <div className="h-56 w-full sm:h-72">
+          <Bar
+            role="img"
+            aria-label="Graphique annuel des dividendes. Les boutons sous le graphique donnent accès au détail de chaque année."
+            data={{
+              labels: years.map(String),
+              datasets: [{
+                label: 'Dividendes comptabilisés',
+                data: totals,
+                backgroundColor: years.map((year) =>
+                  year === selectedYear ? '#6d63ff' : 'rgba(109, 99, 255, 0.35)'
+                ),
+                maxBarThickness: 40,
+              }],
+            }}
+            options={options}
+          />
+        </div>
+        <div role="group" aria-label="Choisir l’année" className="mt-4 flex flex-wrap gap-2">
+          {years.map((year, index) => (
+            <button key={year} type="button" aria-pressed={year === selectedYear}
+              onClick={() => onSelectYear(year)}
+              className="rounded-md border px-3 py-1.5 text-sm tabular-nums hover:bg-muted aria-pressed:border-primary aria-pressed:bg-primary/10">
+              {year} · {totals[index].toLocaleString('fr-FR', { maximumFractionDigits: 2 })}
+            </button>
+          ))}
         </div>
       </CardContent>
     </Card>
   )
 }
-
-export default DividendsView
