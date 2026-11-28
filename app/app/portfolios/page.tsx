@@ -31,6 +31,7 @@ import { DataFreshness } from '@/components/molecules/DataFreshness'
 import { FreshnessInfo } from '@/lib/data-freshness'
 import { OwnPortfolios } from './OwnPortfolios'
 import { follow, getPublicPortfolios } from '@/services/portfolioService'
+import { formatRisk, riskStatusMessage, type RiskSnapshot } from '@/hooks/useRiskMetrics'
 
 interface PortfolioSummary {
   performanceFreshness?: FreshnessInfo
@@ -43,6 +44,8 @@ interface PortfolioSummary {
   annualizedReturn: number | null
   followed: boolean
   own: boolean
+  risk?: RiskSnapshot
+  firstPurchase?: string | null
 }
 
 interface PagedResponse {
@@ -59,12 +62,43 @@ const sortOptions = [
   { value: 'cumulative_performance', label: 'Performance cumulée' },
   { value: 'followers_size', label: 'Plus suivis' },
   { value: 'name', label: 'Nom' },
+  { value: 'sharpe', label: 'Sharpe · 1 an' },
+  { value: 'max_drawdown', label: 'Baisse max. · 1 an' },
+  { value: 'volatility', label: 'Volatilité · 1 an' },
+  { value: 'first_purchase', label: 'Ancienneté' },
 ]
 
 const numeric = (value: number | string | null | undefined) => {
   if (value == null || value === '') return null
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : null
+}
+
+function portfolioAge(date: string | null | undefined) {
+  if (!date) return null
+  const start = new Date(date)
+  if (!Number.isFinite(start.getTime())) return null
+  const today = new Date()
+  let months = (today.getUTCFullYear() - start.getUTCFullYear()) * 12
+    + today.getUTCMonth() - start.getUTCMonth()
+  if (today.getUTCDate() < start.getUTCDate()) months--
+  months = Math.max(0, months)
+  const years = Math.floor(months / 12)
+  const remainder = months % 12
+  return {
+    short: months === 0 ? '< 1 m' : [years && `${years} a`, remainder && `${remainder} m`].filter(Boolean).join(' '),
+    long: months === 0 ? 'Moins d’un mois' : [years && `${years} an${years > 1 ? 's' : ''}`, remainder && `${remainder} mois`].filter(Boolean).join(' '),
+    firstPurchase: new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeZone: 'UTC' }).format(start),
+  }
+}
+
+function PublicRiskValue({ risk, metric }: { risk?: RiskSnapshot; metric: 'sharpe' | 'maxDrawdown' | 'volatility' }) {
+  const value = risk?.[metric]
+  const reason = value == null ? riskStatusMessage[risk?.status ?? 'INSUFFICIENT_HISTORY'] : ''
+  return <span title={reason || undefined} className="font-semibold tabular-nums">
+    {formatRisk(value, metric !== 'sharpe')}
+    {reason && <span className="sr-only"> {reason}</span>}
+  </span>
 }
 
 function PerformanceValue({
@@ -199,7 +233,7 @@ export default function PortfoliosPage() {
       setDirection((current) => (current === 'ASC' ? 'DESC' : 'ASC'))
     else {
       setSortBy(column)
-      setDirection(column === 'name' ? 'ASC' : 'DESC')
+      setDirection(['name', 'first_purchase', 'volatility'].includes(column) ? 'ASC' : 'DESC')
     }
     setPage(0)
   }
@@ -421,6 +455,16 @@ export default function PortfoliosPage() {
         </div>
       </section>
 
+      <details className="text-sm text-muted-foreground">
+        <summary className="cursor-pointer">Comment lire les indicateurs de risque ?</summary>
+        <p className="mb-0 mt-2 text-sm text-muted-foreground">
+          Les indicateurs de risque couvrent les 12 derniers mois. Le Sharpe mesure le rendement
+          au-dessus du taux de référence par rapport à la volatilité. La baisse maximale mesure
+          le recul le plus important depuis un sommet sur la période.
+          Un tiret indique un historique insuffisant ou un indicateur indisponible.
+        </p>
+      </details>
+
       {error ? (
         <Card className="border-rose-500/30 p-10 text-center">
           <AlertCircle className="mx-auto h-7 w-7 text-rose-500" />
@@ -438,7 +482,7 @@ export default function PortfoliosPage() {
       ) : loading ? (
         <LoadingTable />
       ) : filteredContent.length ? (
-        <ExploreTable metricCount={6} label="Portefeuilles publics">
+        <ExploreTable metricCount={sortBy === 'volatility' ? 10 : 9} label="Portefeuilles publics">
           <thead className="border-b border-border bg-muted/35 text-xs text-muted-foreground">
             <tr>
               <th className="sticky left-0 z-10 md:min-w-[280px] bg-muted px-4 py-3 text-left font-semibold">
@@ -450,6 +494,20 @@ export default function PortfoliosPage() {
                 onSort={handleSort}
               >
                 <SortIcon column="annualized_return" />
+              </SortableHead>
+              <SortableHead label="Sharpe · 1 an" column="sharpe" onSort={handleSort}>
+                <SortIcon column="sharpe" />
+              </SortableHead>
+              <SortableHead label="Baisse max. · 1 an" column="max_drawdown" onSort={handleSort}>
+                <SortIcon column="max_drawdown" />
+              </SortableHead>
+              {sortBy === 'volatility' && (
+                <SortableHead label="Volatilité · 1 an" column="volatility" onSort={handleSort}>
+                  <SortIcon column="volatility" />
+                </SortableHead>
+              )}
+              <SortableHead label="Ancienneté" column="first_purchase" onSort={handleSort}>
+                <SortIcon column="first_purchase" />
               </SortableHead>
               <SortableHead
                 label="24 h"
@@ -481,8 +539,9 @@ export default function PortfoliosPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border/70">
-            {filteredContent.map((portfolio, index) => (
-              <tr
+            {filteredContent.map((portfolio, index) => {
+              const age = portfolioAge(portfolio.firstPurchase)
+              return <tr
                 key={portfolio.id}
                 className="group transition-colors hover:bg-muted/35"
               >
@@ -528,12 +587,28 @@ export default function PortfoliosPage() {
                         {portfolio.name}
                       </span>
                     </Link>
+                    {age && <span className="sr-only">Premier achat le {age.firstPurchase}</span>}
                     <DataFreshness className="-ml-2" display="dot" staleOnly graceDays={1} info={portfolio.performanceFreshness} calculation label="Dates du portefeuille" />
+                  </div>
+                  <div className="ml-7 text-[11px] text-muted-foreground md:hidden">
+                    <span className="block">{age?.short ?? '—'}</span>
+                    {sortBy === 'volatility' && <span className="block">Vol. <PublicRiskValue risk={portfolio.risk} metric="volatility" /></span>}
+                    {sortBy === 'max_drawdown' && <span className="block">Baisse <PublicRiskValue risk={portfolio.risk} metric="maxDrawdown" /></span>}
                   </div>
                 </td>
                 <td className="px-4 py-3 text-right">
                   <PerformanceValue value={portfolio.annualizedReturn} />
                 </td>
+                <td className="px-4 py-3 text-right">
+                  <PublicRiskValue risk={portfolio.risk} metric="sharpe" />
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <PublicRiskValue risk={portfolio.risk} metric="maxDrawdown" />
+                </td>
+                {sortBy === 'volatility' && (
+                  <td className="px-4 py-3 text-right"><PublicRiskValue risk={portfolio.risk} metric="volatility" /></td>
+                )}
+                <td className="px-4 py-3 text-right tabular-nums" title={age?.firstPurchase}>{age?.long ?? '—'}</td>
                 <td className="px-4 py-3 text-right">
                   <PerformanceValue value={portfolio.dayChangePercent} />
                 </td>
@@ -565,7 +640,7 @@ export default function PortfoliosPage() {
                   </Button>
                 </td>
               </tr>
-            ))}
+            })}
           </tbody>
         </ExploreTable>
       ) : (
@@ -651,7 +726,7 @@ function SortableHead({
         className="ml-auto inline-flex items-center hover:text-foreground"
       >
         <span className="md:hidden">
-          {column === 'annualized_return' ? 'Perf. / an' : label}
+          {column === 'annualized_return' ? 'Perf. / an' : column === 'sharpe' ? 'Sharpe' : label}
         </span>
         <span className="hidden md:inline">{label}</span>
         {children}

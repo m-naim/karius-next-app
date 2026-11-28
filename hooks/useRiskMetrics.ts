@@ -1,160 +1,64 @@
-import { calendarDate, FreshnessInfo } from '@/lib/data-freshness';
-import { useState, useEffect } from 'react';
-import { getCache, setCache } from '../lib/idb-cache';
-import { getPerformances } from '../services/portfolioService';
+import { useEffect, useState } from 'react'
+import { getPortfolioRisk } from '@/services/portfolioService'
 
-export interface BenchmarkMetrics {
-  volatility: number;
-  sharpe: number;
-  sortino: number;
-  maxDrawdown: number;
-  beta: number;
+export interface RiskSnapshot {
+  asOf: string | null
+  calculatedAt?: string | null
+  sharpe: number | null
+  sortino: number | null
+  maxDrawdown: number | null
+  volatility: number | null
+  status: 'READY' | 'INSUFFICIENT_HISTORY' | 'REFERENCE_UNAVAILABLE' | 'ZERO_VOLATILITY'
 }
 
-export interface RiskMetrics {
-  freshness?: FreshnessInfo;
-  sharpe: number;
-  sortino: number;
-  maxDrawdown: number;
-  volatility: number;
-  calmar?: number;
-  benchmarks?: { [symbol: string]: BenchmarkMetrics };
+export interface PortfolioRiskResult {
+  snapshot: RiskSnapshot
+  currency: string
+  reference: string | null
+  benchmarks: Record<string, {
+    beta: number | null
+    volatility: number | null
+    maxDrawdown: number | null
+    sharpe: number | null
+    sortino: number | null
+  }>
 }
 
-export function useRiskMetrics(portfolioId: string, period: string, selectedBenchmarks: string[] = [], refreshKey: number = 0) {
-  const [metrics, setMetrics] = useState<RiskMetrics | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+export const riskNumber = new Intl.NumberFormat('fr-FR', {
+  minimumFractionDigits: 2, maximumFractionDigits: 2,
+})
+const riskPercent = new Intl.NumberFormat('fr-FR', { style: 'percent', maximumFractionDigits: 1 })
+
+export function formatRisk(value: number | null | undefined, percent = false) {
+  return value == null ? '—' : (percent ? riskPercent : riskNumber).format(value)
+}
+
+export const riskStatusMessage = {
+  READY: '',
+  INSUFFICIENT_HISTORY: 'Historique insuffisant pour cette période.',
+  REFERENCE_UNAVAILABLE: 'Taux de référence indisponible pour le Sharpe et le Sortino.',
+  ZERO_VOLATILITY: 'Volatilité nulle. Sharpe indisponible.',
+}
+
+export function useRiskMetrics(id: string, years: 1 | 3, benchmarks: string[], refreshKey: number) {
+  const key = benchmarks.join(',')
+  const [result, setResult] = useState<{ id: string; years: number; data: PortfolioRiskResult }>()
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
   useEffect(() => {
-    let worker: Worker | null = null;
-    let isMounted = true;
+    const controller = new AbortController()
+    setLoading(true)
+    setError(false)
+    getPortfolioRisk(id, years, key, controller.signal).then((data) => {
+      if (!controller.signal.aborted) setResult({ id, years, data })
+    }).catch(() => {
+      if (!controller.signal.aborted) setError(true)
+    }).finally(() => {
+      if (!controller.signal.aborted) setLoading(false)
+    })
+    return () => controller.abort()
+  }, [id, years, key, refreshKey])
 
-    async function loadMetrics() {
-      if (!portfolioId) {
-        if (isMounted) {
-          setLoading(false);
-          setMetrics(null);
-        }
-        return;
-      }
-
-      const isEligiblePeriod = period === '1Y' || period === '3Y';
-      if (!isEligiblePeriod) {
-        if (isMounted) {
-          setLoading(false);
-          setMetrics(null);
-        }
-        return;
-      }
-
-      try {
-        if (isMounted) {
-          setLoading(true);
-          setError(null);
-          setMetrics(null);
-        }
-        
-        // Include benchmarks in the cache key to separate metric results, prefix with v2 to invalidate old cache
-        const cacheKey = `risk-v3-${portfolioId}-${period}-${selectedBenchmarks.join(',')}`;
-        const cached = await getCache(cacheKey);
-        
-        if (!isMounted) return;
-
-        const today = calendarDate(new Date());
-
-        if (cached && cached.timestamp === today && cached.data?.freshness) {
-          if (isMounted) {
-            setMetrics(cached.data);
-            setLoading(false);
-          }
-          return;
-        }
-
-        const days = period === '1Y' ? 365 : 1095;
-        const performanceData = await getPerformances(portfolioId, selectedBenchmarks, days);
-        
-        if (!performanceData || !performanceData.value) {
-          throw new Error('Invalid performance data received');
-        }
-
-        if (!isMounted) return;
-
-        worker = new Worker(new URL('../workers/risk.worker.ts', import.meta.url));
-
-        worker.onmessage = async (event) => {
-          if (!isMounted) {
-            if (worker) worker.terminate();
-            return;
-          }
-          
-          const { type, payload } = event.data;
-          
-          if (type === 'RESULT') {
-            if (worker) worker.terminate();
-            const calculatedMetrics: RiskMetrics = {
-              ...payload,
-              freshness: {
-                calculatedAt: new Date().toISOString(),
-                upstreamCalculatedAt: performanceData.freshness?.calculatedAt,
-                sources: performanceData.freshness?.sources || [{ symbol: 'Historique', asOf: null }],
-              },
-            };
-            
-            if (isMounted) {
-              setMetrics(calculatedMetrics);
-              setLoading(false);
-            }
-
-            try {
-              await setCache(cacheKey, {
-                timestamp: today,
-                data: calculatedMetrics
-              });
-            } catch (err) {
-              console.error('Failed to save to cache', err);
-            }
-          } else if (type === 'ERROR') {
-            if (worker) worker.terminate();
-            if (isMounted) {
-              setError(payload.error || 'Calculation error');
-              setLoading(false);
-            }
-          }
-        };
-
-        worker.onerror = () => {
-          if (worker) worker.terminate();
-          if (!isMounted) return;
-          setError('Worker error');
-          setLoading(false);
-        };
-
-        worker.postMessage({
-          type: 'CALCULATE',
-          payload: {
-            values: performanceData.CumulativePerformance,
-            benchmarks: performanceData.benchmarks
-          }
-        });
-
-      } catch (err: any) {
-        if (isMounted) {
-          setError(err.message || 'Failed to load metrics');
-          setLoading(false);
-        }
-      }
-    }
-
-    loadMetrics();
-
-    return () => {
-      isMounted = false;
-      if (worker) {
-        worker.terminate();
-      }
-    };
-  }, [portfolioId, period, selectedBenchmarks.join(','), refreshKey]); // serialize benchmarks array for dependency tracking
-
-  return { metrics, loading, error };
+  return { metrics: result?.id === id && result.years === years ? result.data : undefined, loading, error }
 }

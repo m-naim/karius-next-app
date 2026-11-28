@@ -8,9 +8,7 @@ import { validateBenchmark } from './components/BenchmarkSelector'
 import { useRiskMetrics } from '@/hooks/useRiskMetrics'
 import { initPerformance } from '@/services/portfolioService'
 import { HttpError } from '@/services/http'
-import { deleteCache } from '@/lib/idb-cache'
 import RiskQuickStats from './components/RiskQuickStats'
-import RiskAnalysisCard from './components/RiskAnalysisCard'
 import { Activity, Clock3 } from 'lucide-react'
 
 function PagePerformance() {
@@ -21,8 +19,10 @@ function PagePerformance() {
   const [recalculating, setRecalculating] = useState<boolean>(false)
   const [recalculationError, setRecalculationError] = useState<string | null>(null)
 
-  const { metrics, loading } = useRiskMetrics(id, period, selectedBenchmarks, refreshKey)
-  const hasRiskAnalysis = period === '1Y' || period === '3Y'
+  const [riskYears, setRiskYears] = useState<1 | 3>(1)
+  const [riskRetry, setRiskRetry] = useState(0)
+  const { metrics, loading, error } = useRiskMetrics(id, riskYears, selectedBenchmarks, refreshKey + riskRetry)
+
 
   const handleAddBenchmark = (benchmark: string) => {
     if (!validateBenchmark(benchmark)) return
@@ -40,21 +40,12 @@ function PagePerformance() {
       setRecalculating(true)
       await initPerformance(id)
 
-      const cacheKey1Y = `risk-v3-${id}-1Y-${selectedBenchmarks.join(',')}`
-      const cacheKey3Y = `risk-v3-${id}-3Y-${selectedBenchmarks.join(',')}`
-      const cacheKeyNoBench1Y = `risk-v3-${id}-1Y-`
-      const cacheKeyNoBench3Y = `risk-v3-${id}-3Y-`
-      await Promise.all([
-        deleteCache(cacheKey1Y),
-        deleteCache(cacheKey3Y),
-        deleteCache(cacheKeyNoBench1Y),
-        deleteCache(cacheKeyNoBench3Y),
-      ])
-
       setRefreshKey((prev) => prev + 1)
     } catch (e) {
       if (e instanceof HttpError && e.status === 503 && e.data?.message?.startsWith('Taux de change indisponible')) {
         setRecalculationError(`${e.message}. Les performances déjà enregistrées restent disponibles.`)
+      } else {
+        setRecalculationError('Le recalcul a échoué. Les derniers résultats restent affichés.')
       }
       console.error('Failed to recalculate performance', e)
     } finally {
@@ -87,33 +78,20 @@ function PagePerformance() {
         <p role="alert" className="text-sm text-destructive">{recalculationError}</p>
       )}
 
-      <RiskQuickStats
-        metrics={metrics}
-        loading={loading}
+      <RiskQuickStats metrics={metrics} loading={loading} error={error}
+        years={riskYears} onYearsChange={setRiskYears}
+        onRecalculate={handleRecalculate} recalculating={recalculating}
+        onRetry={() => setRiskRetry((value) => value + 1)} />
+
+      <PerformanceBox
+        key={`box-${refreshKey}`}
+        id={id}
+        selectedBenchmarks={selectedBenchmarks}
+        onAddBenchmark={handleAddBenchmark}
+        onRemoveBenchmark={handleRemoveBenchmark}
         period={period}
-        onRecalculate={handleRecalculate}
-        recalculating={recalculating}
+        onPeriodChange={setPeriod}
       />
-
-      <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-12 lg:items-start">
-        <div className={`min-w-0 ${hasRiskAnalysis ? 'lg:col-span-8' : 'lg:col-span-12'}`}>
-          <PerformanceBox
-            key={`box-${refreshKey}`}
-            id={id}
-            selectedBenchmarks={selectedBenchmarks}
-            onAddBenchmark={handleAddBenchmark}
-            onRemoveBenchmark={handleRemoveBenchmark}
-            period={period}
-            onPeriodChange={setPeriod}
-          />
-        </div>
-
-        {hasRiskAnalysis && (
-          <div className="min-w-0 lg:col-span-4">
-            <RiskAnalysisCard metrics={metrics} loading={loading} period={period} />
-          </div>
-        )}
-      </div>
 
       <YearlyOverview key={`overview-${refreshKey}`} id={id} selectedBenchmarks={selectedBenchmarks} />
     </div>

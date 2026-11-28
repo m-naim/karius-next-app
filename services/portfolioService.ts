@@ -205,3 +205,9 @@ export function initPortfolioSSE(id: string) {
 export function initPerformance(id: string) {
   return http.get(`${host}/api/v1/portfolios/${id}/performance/init`)
 }
+
+export function getPortfolioRisk(id: string, years: number, benchmarks: string, signal: AbortSignal) {
+  const query = new URLSearchParams({ years: String(years) })
+  if (benchmarks) query.set('benchmarks', benchmarks)
+  return http.get(`${host}/api/v1/portfolios/${encodeURIComponent(id)}/performance/risk?${query}`, { signal })
+}

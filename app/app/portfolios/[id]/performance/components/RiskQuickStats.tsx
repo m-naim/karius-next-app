@@ -1,131 +1,99 @@
-import { usePortfolioFreshness } from '@/components/molecules/portfolio/PortfolioFreshness'
-import React from 'react'
-import type { RiskMetrics } from '@/hooks/useRiskMetrics'
 import { Button } from '@/components/ui/button'
-import { RefreshCw, ShieldCheck } from 'lucide-react'
+import { formatRisk, riskStatusMessage, type PortfolioRiskResult } from '@/hooks/useRiskMetrics'
 
-interface RiskQuickStatsProps {
-  metrics: RiskMetrics | null
+interface Props {
+  metrics?: PortfolioRiskResult
+  years: 1 | 3
+  onYearsChange: (years: 1 | 3) => void
   loading: boolean
-  period?: string
-  onRecalculate?: () => void
-  recalculating?: boolean
+  error: boolean
+  recalculating: boolean
+  onRecalculate: () => void
+  onRetry: () => void
 }
 
-export function RiskQuickStats({
-  metrics,
-  loading,
-  period,
-  onRecalculate,
-  recalculating = false,
-}: RiskQuickStatsProps) {
-  usePortfolioFreshness('Indicateurs de risque', metrics?.freshness)
-  const isEligiblePeriod = period === '1Y' || period === '3Y'
-
-  const formatPercent = (value: number) =>
-    new Intl.NumberFormat('fr-FR', {
-      style: 'percent',
-      minimumFractionDigits: 1,
-      maximumFractionDigits: 2,
-    }).format(value)
-
-  const formatNumber = (value: number) =>
-    new Intl.NumberFormat('fr-FR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value)
-
-  const getSharpeColor = (value: number) => {
-    if (value > 1) return 'text-emerald-600 dark:text-emerald-400'
-    if (value > 0) return 'text-amber-600 dark:text-amber-400'
-    return 'text-rose-600 dark:text-rose-400'
-  }
-
-  const getDrawdownColor = (value: number) =>
-    value > -0.1
-      ? 'text-emerald-600 dark:text-emerald-400'
-      : value > -0.2
-        ? 'text-amber-600 dark:text-amber-400'
-        : 'text-rose-600 dark:text-rose-400'
-
-  const getVolatilityColor = (value: number) =>
-    value < 0.1
-      ? 'text-emerald-600 dark:text-emerald-400'
-      : value < 0.2
-        ? 'text-amber-600 dark:text-amber-400'
-        : 'text-rose-600 dark:text-rose-400'
-
-  const action = onRecalculate ? (
-    <Button
-      onClick={onRecalculate}
-      disabled={recalculating}
-      variant="outline"
-      size="sm"
-      className="h-8 shrink-0 gap-1.5 rounded-lg border-border/70 bg-background px-3 text-xs font-bold"
-    >
-      <RefreshCw className={`h-3.5 w-3.5 ${recalculating ? 'animate-spin' : ''}`} />
-      <span>{recalculating ? 'Calcul...' : 'Actualiser'}</span>
-    </Button>
-  ) : null
-
-  if (!isEligiblePeriod) {
-    return (
-      <div className="flex w-full flex-col gap-3 rounded-2xl border border-border/70 bg-card px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <ShieldCheck className="h-4 w-4" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs font-black text-foreground">Indicateurs de risque</p>
-            <p className="truncate text-xs text-muted-foreground">
-              Disponibles sur les périodes 1 an et 3 ans · période active : {period}
-            </p>
-          </div>
-        </div>
-        {action}
-      </div>
-    )
-  }
+export default function RiskQuickStats({
+  metrics, years, onYearsChange, loading, error, recalculating, onRecalculate, onRetry,
+}: Props) {
+  const risk = metrics?.snapshot
 
   return (
-    <div className="flex w-full flex-col gap-3 rounded-2xl border border-border/70 bg-card p-3 shadow-sm sm:flex-row sm:items-center">
-      <div className="flex shrink-0 items-center gap-2 px-1 sm:w-36">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <ShieldCheck className="h-4 w-4" />
-        </div>
+    <section aria-labelledby="portfolio-risk-title" className="rounded-xl border bg-card p-4 sm:p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-black text-foreground">Risque</p>
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{period}</p>
+          <h3 id="portfolio-risk-title" className="p-0 text-base font-semibold">Risque du portefeuille</h3>
+          {risk?.asOf && <p className="mb-0 text-xs text-muted-foreground">Données au {new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(risk.asOf))}</p>}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <div role="group" aria-label="Période du risque" className="flex gap-1 rounded-lg bg-muted p-1">
+            {([1, 3] as const).map((period) => (
+              <Button key={period} size="sm" variant={period === years ? 'secondary' : 'ghost'}
+                aria-pressed={period === years} onClick={() => onYearsChange(period)}>
+                {period === 1 ? '1 an' : '3 ans'}
+              </Button>
+            ))}
+          </div>
+          <Button variant="outline" size="sm" onClick={onRecalculate} disabled={recalculating}>
+            {recalculating ? 'Recalcul en cours…' : 'Recalculer'}
+          </Button>
         </div>
       </div>
 
-      {loading ? (
-        <div className="flex min-h-14 flex-1 items-center justify-center gap-2 text-xs text-muted-foreground">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary/25 border-t-primary" />
-          Calcul des indicateurs...
+      <dl className="mt-4 grid grid-cols-3 divide-x rounded-lg border py-3">
+        <div className="px-2 sm:px-4">
+          <dt className="text-xs text-muted-foreground">Sharpe</dt>
+          <dd className="text-lg font-semibold tabular-nums">{formatRisk(risk?.sharpe)}</dd>
         </div>
-      ) : metrics ? (
-        <div className="grid flex-1 grid-cols-3 gap-2">
-          <StatBadge label="Sharpe" value={formatNumber(metrics.sharpe)} colorClass={getSharpeColor(metrics.sharpe)} />
-          <StatBadge label="Drawdown max" value={formatPercent(metrics.maxDrawdown)} colorClass={getDrawdownColor(metrics.maxDrawdown)} />
-          <StatBadge label="Volatilité" value={formatPercent(metrics.volatility)} colorClass={getVolatilityColor(metrics.volatility)} />
+        <div className="px-2 sm:px-4">
+          <dt className="text-xs text-muted-foreground">Baisse maximale</dt>
+          <dd className="text-lg font-semibold tabular-nums">{formatRisk(risk?.maxDrawdown, true)}</dd>
         </div>
-      ) : (
-        <p className="flex-1 px-2 text-xs text-muted-foreground">Les indicateurs ne sont pas disponibles.</p>
+        <div className="px-2 sm:px-4">
+          <dt className="text-xs text-muted-foreground">Volatilité</dt>
+          <dd className="text-lg font-semibold tabular-nums">{formatRisk(risk?.volatility, true)}</dd>
+        </div>
+      </dl>
+
+      {loading && <p role="status" className="mb-0 mt-3 text-sm text-muted-foreground">Chargement des indicateurs…</p>}
+      {error && (
+        <div role="alert" className="mt-3 flex flex-wrap items-center gap-2 text-sm text-destructive">
+          Les indicateurs n’ont pas pu être actualisés.
+          <Button size="sm" variant="outline" onClick={onRetry}>Réessayer</Button>
+        </div>
       )}
-
-      {action}
-    </div>
+      {risk && risk.status !== 'READY' && (
+        <p className="mb-0 mt-3 text-sm text-muted-foreground">{riskStatusMessage[risk.status]}</p>
+      )}
+      <details className="mt-3 border-t pt-3 text-sm">
+        <summary className="cursor-pointer font-medium">Méthode et comparaisons</summary>
+        <p className="mb-0 mt-2 text-sm text-muted-foreground">
+          Sharpe · rendement au-dessus du taux de référence rapporté à la volatilité.
+          {metrics?.reference && ` Référence ${metrics.reference} (${metrics.currency}).`}
+        </p>
+        {risk?.calculatedAt && <p className="mb-0 mt-1 text-xs text-muted-foreground">Calculé le {new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(risk.calculatedAt))}</p>}
+        <dl className="mt-3 space-y-2">
+          <div className="flex justify-between gap-3"><dt>Sortino</dt><dd>{formatRisk(risk?.sortino)}</dd></div>
+        </dl>
+        {Object.entries(metrics?.benchmarks ?? {}).map(([symbol, comparison]) => (
+          <div key={symbol} className="mt-3 rounded-lg border p-3">
+            <h4 className="font-semibold">{symbol.replace('SUPER_INVESTOR:', '')}</h4>
+            <dl className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5">
+              {([
+                ['Sharpe', comparison.sharpe, false],
+                ['Baisse max.', comparison.maxDrawdown, true],
+                ['Volatilité', comparison.volatility, true],
+                ['Sortino', comparison.sortino, false],
+                ['Bêta', comparison.beta, false],
+              ] as const).map(([label, value, percent]) => (
+                <div key={label}>
+                  <dt className="text-xs text-muted-foreground">{label}</dt>
+                  <dd className="tabular-nums">{formatRisk(value, percent)}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ))}
+      </details>
+    </section>
   )
 }
-
-function StatBadge({ label, value, colorClass }: { label: string; value: string; colorClass: string }) {
-  return (
-    <div className="min-w-0 rounded-lg border border-border/60 bg-muted/20 px-2 py-2 text-center">
-      <span className="block truncate text-[9px] font-black uppercase tracking-[0.12em] text-muted-foreground">{label}</span>
-      <span className={`mt-0.5 block text-base font-black tabular-nums sm:text-lg ${colorClass}`}>{value}</span>
-    </div>
-  )
-}
-
-export default RiskQuickStats
